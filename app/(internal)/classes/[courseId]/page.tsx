@@ -51,7 +51,13 @@ export default async function CourseDetailPage({
   }
 
   await ensureUpcomingSessions();
-  const upcoming = await listSessions({ courseId: course.id, pageSize: 12 });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcoming = await listSessions({
+    courseId: course.id,
+    fromDate: today,
+    pageSize: 12,
+  });
   const attendanceCounts = await getAttendanceCountsBySession(
     upcoming.sessions.map((session) => session.id),
   );

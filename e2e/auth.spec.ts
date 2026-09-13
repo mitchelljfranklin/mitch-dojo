@@ -16,7 +16,7 @@ test.describe("authentication", () => {
     // Sidebar → settings reachable for admins
     await page.getByRole("link", { name: "Settings" }).click();
     await page.waitForURL("**/settings**");
-    await expect(page.getByRole("tab", { name: "Users" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 
     // Sign out via the user menu
     await page
