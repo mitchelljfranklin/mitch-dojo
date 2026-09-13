@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { requirePermission } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getOrganizationSettings } from "@/lib/settings";
 
@@ -16,7 +16,10 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
-  const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
+  // The dashboard is the landing page every signed-in staff member reaches —
+  // requiring a permission here would redirect to /dashboard in a loop for
+  // roles without it. Gate content, not the page itself.
+  const user = await requireUser();
   const organization = await getOrganizationSettings();
 
   return (

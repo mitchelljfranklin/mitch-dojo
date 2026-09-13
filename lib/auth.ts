@@ -112,6 +112,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
             session.user.permissions = [];
             return session;
           }
+
+          // Deleted user with a stale session cookie: zero the role out so
+          // requireUser can force a clean re-login instead of rendering pages
+          // with empty permissions.
+          if (!dbUser) {
+            session.user.roleId = "";
+            session.user.roleName = "";
+            session.user.permissions = [];
+            return session;
+          }
         }
 
         if (typeof token.roleId === "string" && token.roleId.length > 0) {
@@ -140,6 +150,13 @@ export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
+  }
+  // A session whose user (or role) no longer exists — e.g. the database was
+  // reset while a browser cookie survived — has empty permissions; force a
+  // clean re-login rather than letting guards redirect to /dashboard in a
+  // loop (the dashboard itself is the redirect target).
+  if (!user.roleId) {
+    await signOut({ redirectTo: "/login" });
   }
   return user;
 }
