@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+const isoBeltDate = z
+  .string()
+  .trim()
+  .min(1, "Award date is required")
+  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+    message: "Enter a valid date (YYYY-MM-DD)",
+  });
+
 const optionalString = z
   .string()
   .trim()
@@ -38,3 +46,21 @@ export const promotionSchema = z.object({
 });
 
 export type PromotionInput = z.infer<typeof promotionSchema>;
+
+// CSV row for the belt-history import. The course is chosen on the import
+// page (not per row); belts must already exist in that course's ladder.
+export const beltHistoryCsvRowSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .default("")
+    .transform((value) => value.toLowerCase()),
+  firstName: z.string().trim().optional().default(""),
+  lastName: z.string().trim().optional().default(""),
+  belt: z.string().trim().min(1, "Belt is required"),
+  awardedAt: isoBeltDate,
+  notes: z.string().trim().optional().default(""),
+});
+
+export type BeltHistoryCsvRow = z.infer<typeof beltHistoryCsvRowSchema>;

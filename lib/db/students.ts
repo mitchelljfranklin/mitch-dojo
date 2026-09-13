@@ -250,6 +250,65 @@ export async function deleteStudent(studentId: string): Promise<void> {
   }
 }
 
+export type ImportStudentMatch =
+  | { status: "found"; studentId: string; name: string }
+  | { status: "not_found" }
+  | { status: "ambiguous" }
+  | { status: "not_at_location" };
+
+// Resolves a CSV import row's student: by email (verified against the
+// location) or by first+last name within the course's location roster.
+// Names that match several students are ambiguous — the row is rejected so
+// attendance is never attributed to the wrong person.
+export async function findStudentForImport(
+  input: { email?: string; firstName?: string; lastName?: string },
+  locationId: string,
+): Promise<ImportStudentMatch> {
+  if (input.email) {
+    const student = await prisma.student.findUnique({
+      where: { email: input.email.toLowerCase() },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        locations: { select: { locationId: true } },
+      },
+    });
+    if (!student) return { status: "not_found" };
+    const atLocation = student.locations.some(
+      (link) => link.locationId === locationId,
+    );
+    if (!atLocation) return { status: "not_at_location" };
+    return {
+      status: "found",
+      studentId: student.id,
+      name: `${student.firstName} ${student.lastName}`,
+    };
+  }
+
+  if (input.firstName && input.lastName) {
+    const matches = await prisma.student.findMany({
+      where: {
+        status: { in: ["ACTIVE", "TRIAL"] },
+        locations: { some: { locationId } },
+        firstName: { equals: input.firstName.trim(), mode: "insensitive" },
+        lastName: { equals: input.lastName.trim(), mode: "insensitive" },
+      },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    if (matches.length === 0) return { status: "not_found" };
+    if (matches.length > 1) return { status: "ambiguous" };
+    const match = matches[0]!;
+    return {
+      status: "found",
+      studentId: match.id,
+      name: `${match.firstName} ${match.lastName}`,
+    };
+  }
+
+  return { status: "not_found" };
+}
+
 export type StudentExportRow = {
   id: string;
   firstName: string;

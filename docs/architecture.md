@@ -43,9 +43,9 @@ enforced server-side and hidden client-side when absent.
 ## Roadmap
 
 **Locations & students (1)** → Classes & schedule (2) → Attendance & QR
-check-in (3) → Belts & gradings (4) → Memberships & manual payments (5) →
-Communication (6) → Analytics (7) → Trials (8) → Member portal (9) →
-Gateways & extras (10+).
+check-in (3) → Belts & gradings (4) → **Historical attendance & belt-history
+import (5)** → Memberships & manual payments (6) → Communication (7) →
+Analytics (8) → Trials (9) → Member portal (10) → Gateways & extras (11+).
 
 ## Multi-location
 
@@ -53,3 +53,12 @@ The tenant is the **school**; `Location` rows are its dojo sites. Students
 train at one or more locations with exactly one primary (home) dojo; every
 class belongs to exactly one location (Phase 2). Locations are organisational
 only — all staff see all locations, and views filter by them.
+
+## Importing history (Phase 5)
+
+Migrating schools bring their history in three ways: a per-student **past
+attendance** sheet (creates missing past sessions automatically), a
+**attendance CSV** import (long format, idempotent — already-recorded rows
+are skipped), and a **belt history** CSV import (belts must exist in the
+course's ladder first). Unknown courses/students/belts are reported as row
+errors, never auto-created.

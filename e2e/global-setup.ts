@@ -25,6 +25,7 @@ const E2E_LOCATION_NAME = "E2E Dojo";
 const E2E_STUDENT_QUERY = { firstName: "E2E", lastName: "Student" };
 const ATTENDANCE_KID_QUERY = { firstName: "E2E", lastName: "Attend Kid" };
 const ATTENDANCE_COURSE_NAME = "E2E Attend Course";
+const HISTORY_COURSE_NAME = "E2E History Course";
 
 export default async function globalSetup() {
   // The suite signs in many times from one IP; raise the login throttle so the
@@ -57,11 +58,19 @@ export default async function globalSetup() {
   // Remove leftovers from previous runs so create-flows stay deterministic.
   await prisma.classSession.deleteMany({
     where: {
-      course: { name: { in: ["E2E Course", ATTENDANCE_COURSE_NAME] } },
+      course: {
+        name: {
+          in: ["E2E Course", ATTENDANCE_COURSE_NAME, HISTORY_COURSE_NAME],
+        },
+      },
     },
   });
   await prisma.course.deleteMany({
-    where: { name: { in: ["E2E Course", ATTENDANCE_COURSE_NAME] } },
+    where: {
+      name: {
+        in: ["E2E Course", ATTENDANCE_COURSE_NAME, HISTORY_COURSE_NAME],
+      },
+    },
   });
   await prisma.trainer.deleteMany({ where: { name: "E2E Sensei" } });
   await prisma.location.deleteMany({ where: { name: "E2E Dojo Two" } });
@@ -104,6 +113,31 @@ export default async function globalSetup() {
     },
   });
   await ensureUpcomingSessions();
+
+  // A second course with its own ladder for the history-import spec (belts
+  // must exist before import, per design).
+  const historyCourse = await prisma.course.create({
+    data: {
+      name: HISTORY_COURSE_NAME,
+      locationId: e2eDojo.id,
+      beltLevels: {
+        create: [
+          {
+            name: "Novice",
+            colorHex: "#FFFFFF",
+            order: 0,
+            requiredTrainings: 0,
+          },
+          {
+            name: "Advanced",
+            colorHex: "#8B4513",
+            order: 1,
+            requiredTrainings: 99,
+          },
+        ],
+      },
+    },
+  });
 
   // Issue the public check-in token for the e2e location and share it with
   // the specs (same pattern as mitch-risk's portal token file).

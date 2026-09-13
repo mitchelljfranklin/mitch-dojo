@@ -28,15 +28,14 @@ principles:
 | 1 | **Students & locations**: Location CRUD + student↔location assignment (multi-location, primary/home dojo), student CRUD, search, CSV import/export, photo + attachments | Done |
 | 2 | **Classes & schedule**: Trainer roster (optional User account link), courses (required locationId — one location per class), recurring weekly training times, generated sessions, weekly timetable view | Done |
 | 3 | **Attendance & QR check-in**: session attendance sheets (Present/Late/Excused/Absent), bulk mark-all, public per-location QR check-in pages (no-login, revocable token), student attendance history | Done |
-| 4 | **Belts & gradings**: per-course belt levels (colour + order + required trainings), student promotion history (denormalised), attendance-based eligibility badges | **Current** |
-| 3 | Attendance & QR check-in: session marking, per-location public check-in pages, analytics | Planned |
-| 4 | Belts & gradings: belt levels per course, promotions, eligibility from attendance, optional grading location | Planned |
-| 5 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Planned |
-| 6 | Communication: templates, reminders (class/payment/birthday) via scheduler | Planned |
-| 7 | Analytics: active members, attendance trends, retention signals, revenue summary — per-location breakdowns | Planned |
-| 8 | Trials & leads: trial pipeline, conversion tracking, public booking page | Planned |
-| 9 | Member portal: self-service schedule/check-in/details | Planned |
-| 10+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |
+| 4 | **Belts & gradings**: per-course belt levels (colour + order + required trainings), student promotion history (denormalised), cumulative attendance-based eligibility with instructor override, standard belt range in Settings | Done |
+| 5 | **Historical attendance & belt-history import**: per-student backfill sheet, attendance CSV import (creates missing past sessions, idempotent), belt-history CSV import (belts must exist first) | **Current** |
+| 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Planned |
+| 7 | Communication: templates, reminders (class/payment/birthday) via scheduler | Planned |
+| 8 | Analytics: active members, attendance trends, retention signals, revenue summary — per-location breakdowns | Planned |
+| 9 | Trials & leads: trial pipeline, conversion tracking, public booking page | Planned |
+| 10 | Member portal: self-service schedule/check-in/details | Planned |
+| 11+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
 builders, POS storefront, project management, kiosk apps, native mobile apps.

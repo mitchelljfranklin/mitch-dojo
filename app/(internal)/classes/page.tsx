@@ -23,6 +23,10 @@ type ClassesPageProps = {
 export default async function ClassesPage({ searchParams }: ClassesPageProps) {
   const user = await requirePermission(PERMISSIONS.CLASSES_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.CLASSES_EDIT);
+  const canImportAttendance = hasPermission(
+    user.permissions,
+    PERMISSIONS.ATTENDANCE_MARK,
+  );
 
   const sp = await searchParams;
   const sort = (sp.sort as CourseSort) || "name";
@@ -54,6 +58,11 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
           <Button asChild variant="outline">
             <Link href="/classes/schedule">Weekly schedule</Link>
           </Button>
+          {canImportAttendance ? (
+            <Button asChild variant="outline">
+              <Link href="/attendance/import">Import attendance</Link>
+            </Button>
+          ) : null}
           {canEdit ? (
             <Button asChild>
               <Link href="/classes/new">New course</Link>

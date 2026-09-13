@@ -186,6 +186,21 @@ async function resolveEntityNames(
             select: { id: true, name: true },
           });
           for (const course of courses) map.set(course.id, course.name);
+        } else if (type === "ClassSession") {
+          const sessions = await prisma.classSession.findMany({
+            where: { id: { in: uniqueIds } },
+            select: {
+              id: true,
+              date: true,
+              course: { select: { name: true } },
+            },
+          });
+          for (const session of sessions) {
+            map.set(
+              session.id,
+              `${session.course.name} ${session.date.toISOString().slice(0, 10)}`,
+            );
+          }
         } else if (type === "BeltLevel") {
           const levels = await prisma.beltLevel.findMany({
             where: { id: { in: uniqueIds } },
@@ -264,6 +279,8 @@ export const AUDIT_ACTIONS = {
   UPDATE_COURSE: "UPDATE_COURSE",
   DELETE_COURSE: "DELETE_COURSE",
   UPDATE_ATTENDANCE: "UPDATE_ATTENDANCE",
+  IMPORT_ATTENDANCE: "IMPORT_ATTENDANCE",
+  IMPORT_BELT_HISTORY: "IMPORT_BELT_HISTORY",
   CREATE_BELT_LEVEL: "CREATE_BELT_LEVEL",
   UPDATE_BELT_LEVEL: "UPDATE_BELT_LEVEL",
   DELETE_BELT_LEVEL: "DELETE_BELT_LEVEL",

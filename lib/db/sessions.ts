@@ -96,6 +96,52 @@ export async function ensureUpcomingSessions(
   return result.count;
 }
 
+// Finds or creates a ClassSession for a course on a given LOCAL calendar
+// date — used for historical backfill and imports, where no generated
+// session may exist for the date. Slot: the course's weekday training time
+// (earliest start when several), else a default 18:00–19:00 slot.
+export async function ensureHistoricalSession(
+  courseId: string,
+  date: Date,
+): Promise<string> {
+  const day = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
+  const existing = await prisma.classSession.findFirst({
+    where: { courseId, date: day },
+    orderBy: { startTime: "asc" },
+    select: { id: true },
+  });
+  if (existing) return existing.id;
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: { trainingTimes: true },
+  });
+  if (!course) throw new Error("Course not found.");
+
+  const weekday = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getDay();
+  const weekdaySlots = course.trainingTimes
+    .filter((slot) => slot.weekday === weekday)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const slot = weekdaySlots[0] ?? null;
+
+  const created = await prisma.classSession.create({
+    data: {
+      courseId,
+      locationId: course.locationId,
+      date: day,
+      startTime: slot?.startTime ?? "18:00",
+      endTime: slot?.endTime ?? "19:00",
+    },
+  });
+  return created.id;
+}
+
 export type SessionFilters = {
   courseId?: string;
   locationId?: string;

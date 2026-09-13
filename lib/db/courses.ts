@@ -158,3 +158,51 @@ export async function updateCourse(
 export async function deleteCourse(courseId: string): Promise<void> {
   await prisma.course.delete({ where: { id: courseId } });
 }
+
+// Courses a student could be backfilled against: every course at the
+// student's locations (active first), used by the past-attendance sheet.
+export async function listCoursesForStudent(
+  studentId: string,
+): Promise<
+  { id: string; name: string; locationName: string; isActive: boolean }[]
+> {
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { locations: { select: { locationId: true } } },
+  });
+  if (!student) return [];
+
+  const locationIds = student.locations.map((link) => link.locationId);
+  const courses = await prisma.course.findMany({
+    where: { locationId: { in: locationIds } },
+    orderBy: [{ isActive: "desc" }, { name: "asc" }],
+    include: { location: { select: { name: true } } },
+  });
+
+  return courses.map((course) => ({
+    id: course.id,
+    name: course.name,
+    locationName: course.location.name,
+    isActive: course.isActive,
+  }));
+}
+
+// Simple id/name options for import pickers.
+export async function listCourseOptions(): Promise<
+  { id: string; name: string; locationName: string }[]
+> {
+  const courses = await prisma.course.findMany({
+    orderBy: [{ isActive: "desc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      isActive: true,
+      location: { select: { name: true } },
+    },
+  });
+  return courses.map((course) => ({
+    id: course.id,
+    name: course.name,
+    locationName: course.location.name,
+  }));
+}

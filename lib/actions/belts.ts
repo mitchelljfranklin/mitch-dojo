@@ -11,15 +11,23 @@ import {
   createBeltLevel,
   createBeltRangeEntry,
   deleteBeltLevel,
+  deleteBeltRangeEntry,
   deletePromotion,
+  recordHistoricalPromotion,
   recordPromotion,
   updateBeltLevel,
   updateBeltRangeEntry,
-  deleteBeltRangeEntry,
 } from "@/lib/db/belts";
+import { findStudentForImport } from "@/lib/db/students";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { getField } from "@/lib/utils";
-import { beltLevelSchema, promotionSchema } from "@/lib/schemas/belt";
+import { prisma } from "@/lib/prisma";
+import { parseCsvWithHeaders } from "@/lib/csv-parser";
+import {
+  beltHistoryCsvRowSchema,
+  beltLevelSchema,
+  promotionSchema,
+} from "@/lib/schemas/belt";
 
 export type BeltActionState =
   { error: string } | { ok: true; message: string } | undefined;
@@ -330,4 +338,149 @@ export async function deleteBeltRangeEntryAction(formData: FormData) {
     );
   }
   revalidatePath("/settings");
+}
+
+export type BeltImportState =
+  | { ok: true; message: string; created: number; skipped: number }
+  | { ok: false; error: string }
+  | undefined;
+
+// Feeds useActionState — must not revalidatePath (see AGENTS.md). Belts must
+// already exist in the selected course's ladder (per design: no auto-creation).
+export async function importBeltHistoryAction(
+  previousState: BeltImportState,
+  formData: FormData,
+): Promise<BeltImportState> {
+  const actor = await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const courseId = getField(formData, "courseId");
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, locationId: true },
+  });
+  if (!course) {
+    return { ok: false, error: "Choose a course." };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "No file selected." };
+  }
+  if (file.size > 1_000_000) {
+    return { ok: false, error: "File is too large (max 1 MB)." };
+  }
+
+  const text = await file.text();
+  const rows = parseCsvWithHeaders(text);
+  if (rows.length === 0) {
+    return {
+      ok: false,
+      error: "No rows found in CSV. The first row must be a header.",
+    };
+  }
+
+  const belts = await prisma.beltLevel.findMany({
+    where: { courseId },
+    select: { id: true, name: true },
+  });
+  const beltByName = new Map(
+    belts.map((belt) => [belt.name.toLowerCase(), belt]),
+  );
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  const rowErrors: string[] = [];
+  const validRows: {
+    studentId: string;
+    beltLevelId: string;
+    awardedAt: Date;
+    notes: string | null;
+  }[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const raw = rows[i];
+    const parsed = beltHistoryCsvRowSchema.safeParse({
+      email: raw.email ?? raw.studentemail ?? "",
+      firstName: raw.firstname ?? raw.firstName ?? "",
+      lastName: raw.lastname ?? raw.lastName ?? "",
+      belt: raw.belt ?? "",
+      awardedAt: raw.awardedat ?? raw.awardedAt ?? "",
+      notes: raw.notes ?? "",
+    });
+    if (!parsed.success) {
+      rowErrors.push(
+        `Row ${i + 2}: ${parsed.error.issues[0]?.message ?? "invalid"}`,
+      );
+      continue;
+    }
+
+    const row = parsed.data;
+    const belt = beltByName.get(row.belt.toLowerCase());
+    if (!belt) {
+      rowErrors.push(
+        `Row ${i + 2}: unknown belt "${row.belt}" — add it to the course's ladder first.`,
+      );
+      continue;
+    }
+
+    const awardedAt = new Date(`${row.awardedAt}T00:00:00`);
+    if (awardedAt > endOfToday) {
+      rowErrors.push(
+        `Row ${i + 2}: award dates in the future cannot be imported (${row.awardedAt}).`,
+      );
+      continue;
+    }
+
+    const match = await findStudentForImport(
+      { email: row.email, firstName: row.firstName, lastName: row.lastName },
+      course.locationId,
+    );
+    if (match.status !== "found") {
+      const reason =
+        match.status === "not_found"
+          ? "student not found"
+          : match.status === "ambiguous"
+            ? "student name matches several students"
+            : "student is not at this course's location";
+      rowErrors.push(`Row ${i + 2}: ${reason}.`);
+      continue;
+    }
+
+    validRows.push({
+      studentId: match.studentId,
+      beltLevelId: belt.id,
+      awardedAt,
+      notes: row.notes.length > 0 ? row.notes : null,
+    });
+  }
+
+  let created = 0;
+  let skipped = 0;
+  for (const row of validRows) {
+    const result = await recordHistoricalPromotion(row);
+    if (result === "created") created++;
+    else skipped++;
+  }
+
+  await logAudit(
+    actor.id,
+    AUDIT_ACTIONS.IMPORT_BELT_HISTORY,
+    "Course",
+    courseId,
+    { created, skipped },
+  );
+
+  if (created > 0 || skipped > 0) {
+    return {
+      ok: true,
+      message: `Imported ${created} promotion${created === 1 ? "" : "s"} (${skipped} duplicates skipped).`,
+      created,
+      skipped,
+    };
+  }
+  return {
+    ok: false,
+    error: `No promotions imported. First error: ${rowErrors[0] ?? "unknown"}`,
+  };
 }

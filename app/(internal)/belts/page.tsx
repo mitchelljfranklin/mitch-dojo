@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { listCoursesWithBeltCounts } from "@/lib/db/belts";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Belts & gradings" };
 
 export default async function BeltsPage() {
-  await requirePermission(PERMISSIONS.BELTS_VIEW);
+  const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
+  const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
   const courses = await listCoursesWithBeltCounts();
 
   return (
@@ -28,9 +29,16 @@ export default async function BeltsPage() {
             Belt requirements and student progression per course.
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/classes">View courses</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline">
+            <Link href="/classes">View courses</Link>
+          </Button>
+          {canEdit ? (
+            <Button asChild variant="outline">
+              <Link href="/belts/import">Import history</Link>
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {courses.length === 0 ? (

@@ -4,6 +4,7 @@ import {
 } from "../../prisma/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { ensureHistoricalSession } from "@/lib/db/sessions";
 import {
   TRAINED_STATUSES,
   type AttendanceEntryInput,
@@ -39,6 +40,50 @@ export async function setSessionAttendance(
       });
     }
   });
+}
+
+// Records one historical attendance entry, creating the session row when no
+// session exists for the course on that date (historical backfill / imports).
+// Never overwrites: an existing row for the student+session is reported back
+// so callers can surface "already marked" instead of silently changing data.
+export async function recordBackfillAttendance(input: {
+  studentId: string;
+  courseId: string;
+  date: Date;
+  status: AttendanceStatus;
+  markedById: string | null;
+}): Promise<
+  | { outcome: "created"; sessionId: string }
+  | {
+      outcome: "already_recorded";
+      sessionId: string;
+      existingStatus: AttendanceStatus;
+    }
+> {
+  const sessionId = await ensureHistoricalSession(input.courseId, input.date);
+
+  const existing = await prisma.attendance.findUnique({
+    where: { sessionId_studentId: { sessionId, studentId: input.studentId } },
+    select: { status: true },
+  });
+  if (existing) {
+    return {
+      outcome: "already_recorded",
+      sessionId,
+      existingStatus: existing.status,
+    };
+  }
+
+  await prisma.attendance.create({
+    data: {
+      sessionId,
+      studentId: input.studentId,
+      status: input.status,
+      source: "MANUAL",
+      markedById: input.markedById,
+    },
+  });
+  return { outcome: "created", sessionId };
 }
 
 export type RosterEntry = {

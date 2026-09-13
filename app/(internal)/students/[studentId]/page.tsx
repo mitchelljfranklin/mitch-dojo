@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { FlashToast } from "@/components/flash-toast";
 import { StudentAttachments } from "@/components/student-attachments";
+import { PastAttendanceSheet } from "@/components/past-attendance-sheet";
 import { deleteStudentAction } from "@/lib/actions/students";
 import { deletePromotionAction } from "@/lib/actions/belts";
 import { requirePermission } from "@/lib/auth";
@@ -21,6 +22,7 @@ import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
 import { getStudentRecentAttendance } from "@/lib/db/attendance";
 import { getStudentBeltHistory } from "@/lib/db/belts";
+import { listCoursesForStudent } from "@/lib/db/courses";
 import { prisma } from "@/lib/prisma";
 import {
   ATTENDANCE_STATUS_LABELS,
@@ -63,10 +65,14 @@ export default async function StudentDetailPage({
     user.permissions,
     PERMISSIONS.BELTS_EDIT,
   );
+  const canMarkAttendance = hasPermission(
+    user.permissions,
+    PERMISSIONS.ATTENDANCE_MARK,
+  );
 
   const { studentId } = await params;
   const sp = await searchParams;
-  const [student, attachments, recentAttendance, beltHistory] =
+  const [student, attachments, recentAttendance, beltHistory, backfillCourses] =
     await Promise.all([
       getStudent(studentId),
       prisma.attachment.findMany({
@@ -75,6 +81,9 @@ export default async function StudentDetailPage({
       }),
       getStudentRecentAttendance(studentId),
       getStudentBeltHistory(studentId),
+      canMarkAttendance
+        ? listCoursesForStudent(studentId)
+        : Promise.resolve([]),
     ]);
   if (!student) {
     notFound();
@@ -316,13 +325,26 @@ export default async function StudentDetailPage({
           </CardContent>
         </Card>
       ) : null}
-      {recentAttendance.length > 0 ? (
+      {recentAttendance.length > 0 || canMarkAttendance ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Recent attendance</CardTitle>
-            <CardDescription>
-              Last {recentAttendance.length} recorded classes.
-            </CardDescription>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+            <div>
+              <CardTitle>Recent attendance</CardTitle>
+              <CardDescription>
+                Last {recentAttendance.length} recorded classes.
+              </CardDescription>
+            </div>
+            <PastAttendanceSheet
+              studentId={student.id}
+              studentName={fullName}
+              courses={backfillCourses.map((course) => ({
+                id: course.id,
+                name: course.name,
+                locationName: course.locationName,
+                isActive: course.isActive,
+              }))}
+              canMark={canMarkAttendance}
+            />
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {recentAttendance.map((row) => (

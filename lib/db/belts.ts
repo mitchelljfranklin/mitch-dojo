@@ -244,6 +244,53 @@ export async function deletePromotion(promotionId: string): Promise<void> {
   await prisma.studentBelt.delete({ where: { id: promotionId } });
 }
 
+// Records one historical promotion row for imports. Skips when the same
+// student already holds the same belt awarded on the same calendar day, so
+// re-running an import is idempotent.
+export async function recordHistoricalPromotion(input: {
+  studentId: string;
+  beltLevelId: string;
+  awardedAt: Date;
+  notes: string | null;
+}): Promise<"created" | "skipped"> {
+  const beltLevel = await prisma.beltLevel.findUnique({
+    where: { id: input.beltLevelId },
+    select: { name: true, colorHex: true },
+  });
+  if (!beltLevel) {
+    throw new Error("Belt level not found.");
+  }
+
+  const dayStart = new Date(
+    input.awardedAt.getFullYear(),
+    input.awardedAt.getMonth(),
+    input.awardedAt.getDate(),
+  );
+  const dayEnd = new Date(dayStart.getTime());
+  dayEnd.setDate(dayEnd.getDate() + 1);
+  const duplicate = await prisma.studentBelt.findFirst({
+    where: {
+      studentId: input.studentId,
+      beltLevelId: input.beltLevelId,
+      awardedAt: { gte: dayStart, lt: dayEnd },
+    },
+    select: { id: true },
+  });
+  if (duplicate) return "skipped";
+
+  await prisma.studentBelt.create({
+    data: {
+      studentId: input.studentId,
+      beltLevelId: input.beltLevelId,
+      beltName: beltLevel.name,
+      colorHex: beltLevel.colorHex,
+      awardedAt: input.awardedAt,
+      notes: input.notes,
+    },
+  });
+  return "created";
+}
+
 export type PromotionEligibility = {
   eligible: boolean;
   trainingsTotal: number;
