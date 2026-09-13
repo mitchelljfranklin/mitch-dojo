@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import { mkdirSync } from "node:fs";
 import { Prisma, PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaPGlite } from "pglite-prisma-adapter";
@@ -74,6 +75,8 @@ const defaultSettings: DefaultSetting[] = [
 async function createClient(provider: DatabaseProvider): Promise<PrismaClient> {
   if (provider === "pglite") {
     const dataDir = resolveDataDir();
+    // PGlite does not create missing parent directories on first run.
+    mkdirSync(dataDir, { recursive: true });
     const client = new PGlite(dataDir);
     const adapter = new PrismaPGlite(client);
     return new PrismaClient({ adapter });

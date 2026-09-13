@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 
 import { PrismaClient } from "../prisma/generated/prisma/client";
@@ -18,9 +19,12 @@ function createPrismaClient(): PrismaClient {
   const provider = resolveDatabaseProvider(process.env.DATABASE_PROVIDER);
 
   if (provider === "pglite") {
+    const dataDir = process.env.DATABASE_DIR!;
+    // PGlite does not create missing parent directories on first run.
+    mkdirSync(dataDir, { recursive: true });
     const { PGlite } = require("@electric-sql/pglite");
     const { PrismaPGlite } = require("pglite-prisma-adapter");
-    const client = new PGlite(process.env.DATABASE_DIR!);
+    const client = new PGlite(dataDir);
     const adapter = new PrismaPGlite(client);
     return new PrismaClient({
       adapter,
