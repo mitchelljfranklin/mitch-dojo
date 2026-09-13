@@ -36,6 +36,7 @@ model User {
   passwordResetTokens  PasswordResetToken[]
   sentNotificationLogs NotificationLog[]    @relation("NotificationSentBy")
   trainerProfile       Trainer?
+  markedAttendance     Attendance[]         @relation("AttendanceMarkedBy")
 
   @@index([roleId])
   @@map("users")
@@ -112,16 +113,24 @@ enum SessionStatus {
   CANCELLED
 }
 
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  EXCUSED
+  ABSENT
+}
+
 model Location {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  address   String?
-  phone     String?
-  email     String?
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String   @unique
+  address       String?
+  phone         String?
+  email         String?
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  checkinToken  String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   studentLocations StudentLocation[]
   courses          Course[]
@@ -149,7 +158,8 @@ model Student {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  locations StudentLocation[]
+  locations  StudentLocation[]
+  attendance Attendance[]
 
   @@index([lastName, firstName])
   @@index([status])
@@ -256,8 +266,29 @@ model ClassSession {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  attendance Attendance[]
+
   @@unique([courseId, date, startTime])
   @@index([date])
   @@index([status])
   @@map("class_sessions")
+}
+
+model Attendance {
+  id         String           @id @default(cuid())
+  sessionId  String
+  session    ClassSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status     AttendanceStatus @default(PRESENT)
+  source     String           @default("MANUAL")
+  markedById String?
+  markedBy   User?            @relation("AttendanceMarkedBy", fields: [markedById], references: [id], onDelete: SetNull)
+  markedAt   DateTime         @default(now())
+
+  @@unique([sessionId, studentId])
+  @@index([sessionId])
+  @@index([studentId])
+  @@index([markedAt])
+  @@map("attendance")
 }

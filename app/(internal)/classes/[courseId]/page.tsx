@@ -21,6 +21,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getCourse } from "@/lib/db/courses";
 import { ensureUpcomingSessions, listSessions } from "@/lib/db/sessions";
+import { getAttendanceCountsBySession } from "@/lib/db/attendance";
 import { WEEKDAY_LABELS } from "@/lib/schemas/course";
 import { formatDate } from "@/lib/utils";
 
@@ -36,6 +37,10 @@ export default async function CourseDetailPage({
   searchParams,
 }: CourseDetailPageProps) {
   const user = await requirePermission(PERMISSIONS.CLASSES_VIEW);
+  const canViewAttendance = hasPermission(
+    user.permissions,
+    PERMISSIONS.ATTENDANCE_VIEW,
+  );
   const canEdit = hasPermission(user.permissions, PERMISSIONS.CLASSES_EDIT);
 
   const { courseId } = await params;
@@ -47,6 +52,9 @@ export default async function CourseDetailPage({
 
   await ensureUpcomingSessions();
   const upcoming = await listSessions({ courseId: course.id, pageSize: 12 });
+  const attendanceCounts = await getAttendanceCountsBySession(
+    upcoming.sessions.map((session) => session.id),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -153,71 +161,95 @@ export default async function CourseDetailPage({
                 No upcoming sessions. Add weekly slots first.
               </p>
             ) : (
-              upcoming.sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
-                >
-                  <div className="flex flex-col">
-                    <span>
-                      {formatDate(session.date)} ·{" "}
-                      <span className="font-mono text-xs">
-                        {session.startTime}–{session.endTime}
+              upcoming.sessions.map((session) => {
+                const counts = attendanceCounts.get(session.id) ?? {
+                  total: 0,
+                  trained: 0,
+                };
+                return (
+                  <div
+                    key={session.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
+                  >
+                    <div className="flex min-w-0 flex-col">
+                      <span>
+                        {formatDate(session.date)} ·{" "}
+                        <span className="font-mono text-xs">
+                          {session.startTime}–{session.endTime}
+                        </span>
                       </span>
-                    </span>
-                    <span className="text-muted-foreground text-xs">
-                      {session.locationName}
-                    </span>
+                      <span className="text-muted-foreground text-xs">
+                        {session.locationName}
+                        {counts.total > 0
+                          ? ` · ${counts.trained}/${counts.total} attended`
+                          : ""}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {canViewAttendance ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/sessions/${session.id}`}>
+                            Attendance
+                          </Link>
+                        </Button>
+                      ) : null}
+                      {canEdit ? (
+                        <form action={setSessionStatusAction}>
+                          <input
+                            type="hidden"
+                            name="sessionId"
+                            value={session.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="courseId"
+                            value={course.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="status"
+                            value={
+                              session.status === "CANCELLED"
+                                ? "SCHEDULED"
+                                : "CANCELLED"
+                            }
+                          />
+                          <Button
+                            type="submit"
+                            size="sm"
+                            variant={
+                              session.status === "CANCELLED"
+                                ? "secondary"
+                                : "ghost"
+                            }
+                            className={
+                              session.status === "CANCELLED"
+                                ? ""
+                                : "text-destructive"
+                            }
+                          >
+                            {session.status === "CANCELLED"
+                              ? "Restore"
+                              : "Cancel"}
+                          </Button>
+                        </form>
+                      ) : (
+                        <Badge
+                          variant={
+                            session.status === "CANCELLED"
+                              ? "destructive"
+                              : "outline"
+                          }
+                        >
+                          {session.status === "CANCELLED"
+                            ? "Cancelled"
+                            : "Scheduled"}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  {canEdit ? (
-                    <form action={setSessionStatusAction}>
-                      <input
-                        type="hidden"
-                        name="sessionId"
-                        value={session.id}
-                      />
-                      <input type="hidden" name="courseId" value={course.id} />
-                      <input
-                        type="hidden"
-                        name="status"
-                        value={
-                          session.status === "CANCELLED"
-                            ? "SCHEDULED"
-                            : "CANCELLED"
-                        }
-                      />
-                      <Button
-                        type="submit"
-                        size="sm"
-                        variant={
-                          session.status === "CANCELLED" ? "secondary" : "ghost"
-                        }
-                        className={
-                          session.status === "CANCELLED"
-                            ? ""
-                            : "text-destructive"
-                        }
-                      >
-                        {session.status === "CANCELLED"
-                          ? "Restore"
-                          : "Cancel session"}
-                      </Button>
-                    </form>
-                  ) : (
-                    <Badge
-                      variant={
-                        session.status === "CANCELLED"
-                          ? "destructive"
-                          : "outline"
-                      }
-                    >
-                      {session.status === "CANCELLED"
-                        ? "Cancelled"
-                        : "Scheduled"}
-                    </Badge>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </CardContent>
         </Card>

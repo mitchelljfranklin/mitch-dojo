@@ -10,6 +10,7 @@ import {
   deleteLocation,
   updateLocation,
 } from "@/lib/db/locations";
+import { regenerateCheckinToken } from "@/lib/db/checkin";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { getField } from "@/lib/utils";
 import { locationSchema } from "@/lib/schemas/location";
@@ -36,6 +37,8 @@ function parseLocationInput(formData: FormData) {
   });
 }
 
+// Feeds useActionState — must not revalidatePath (see AGENTS.md); the client
+// refreshes via useActionFeedback after the sheet closes.
 export async function createLocationAction(
   previousState: LocationActionState,
   formData: FormData,
@@ -65,7 +68,6 @@ export async function createLocationAction(
       parsed.data.name,
     );
   }
-  revalidatePath("/settings");
   return { ok: true, message: "Location created." };
 }
 
@@ -99,7 +101,6 @@ export async function updateLocationAction(
       locationId,
     );
   }
-  revalidatePath("/settings");
   return { ok: true, message: "Location updated." };
 }
 
@@ -125,6 +126,25 @@ export async function deleteLocationAction(formData: FormData) {
       AUDIT_ACTIONS.DELETE_LOCATION,
       "Location",
       locationId,
+    );
+  }
+  revalidatePath("/settings");
+}
+
+export async function regenerateCheckinTokenAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.LOCATIONS_EDIT);
+  const locationId = getField(formData, "locationId");
+
+  await regenerateCheckinToken(locationId);
+
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Location",
+      locationId,
+      { action: "checkin-token-regenerated" },
     );
   }
   revalidatePath("/settings");

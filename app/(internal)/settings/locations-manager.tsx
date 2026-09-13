@@ -22,8 +22,10 @@ import {
   createLocationAction,
   deleteLocationAction,
   updateLocationAction,
+  regenerateCheckinTokenAction,
   type LocationActionState,
 } from "@/lib/actions/locations";
+import { CopyLink } from "@/components/copy-link";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 export type LocationView = {
@@ -35,6 +37,7 @@ export type LocationView = {
   isActive: boolean;
   sortOrder: number;
   studentCount: number;
+  checkinToken: string | null;
 };
 
 type EditorTarget = LocationView | "new";
@@ -151,11 +154,18 @@ function EditLocationForm({
   );
   useActionFeedback(state);
 
+  const [qrBust, setQrBust] = useState(0);
+
   useEffect(() => {
     if (state && "ok" in state && state.ok) {
       onClose();
     }
   }, [state, onClose]);
+
+  const checkinUrl =
+    location.checkinToken && typeof window !== "undefined"
+      ? `${window.location.origin}/checkin/${location.checkinToken}`
+      : null;
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4">
@@ -172,6 +182,46 @@ function EditLocationForm({
           {state.error}
         </p>
       ) : null}
+
+      <div className="grid gap-2 border-t pt-4">
+        <Label>Public QR check-in</Label>
+        <p className="text-muted-foreground text-xs">
+          Print this QR at the door. Students scan it and tap their name to
+          check in — no app or login required.
+        </p>
+        <div className="flex items-start gap-4">
+          <img
+            key={qrBust}
+            src={`/api/locations/${location.id}/checkin-qr?v=${qrBust}`}
+            alt={`Check-in QR for ${location.name}`}
+            className="size-32 rounded-md border bg-white p-1"
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            {checkinUrl ? (
+              <CopyLink value={checkinUrl} />
+            ) : (
+              <p className="text-muted-foreground text-xs">
+                QR not generated yet — it appears the first time this image
+                loads.
+              </p>
+            )}
+            <form action={regenerateCheckinTokenAction}>
+              <input type="hidden" name="locationId" value={location.id} />
+              <Button
+                type="submit"
+                variant="secondary"
+                size="sm"
+                onClick={() => setQrBust(Date.now())}
+              >
+                Regenerate QR
+              </Button>
+            </form>
+            <p className="text-muted-foreground text-xs">
+              Regenerating invalidates any previously printed QR.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-auto grid gap-2 border-t pt-4">
         <Label>Danger zone</Label>

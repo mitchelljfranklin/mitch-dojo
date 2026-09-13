@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
@@ -216,7 +215,6 @@ export async function saveOperationsSettings(
       "Setting",
       "operations",
     );
-  revalidatePath("/settings");
   return { ok: true, message: "Operations settings saved." };
 }
 

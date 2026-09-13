@@ -56,4 +56,5 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   CREATE_COURSE: "Created course",
   UPDATE_COURSE: "Updated course",
   DELETE_COURSE: "Deleted course",
+  UPDATE_ATTENDANCE: "Updated attendance",
 };

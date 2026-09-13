@@ -17,16 +17,17 @@ test.describe("students", () => {
     await page.waitForURL("**/settings**");
     await page.getByRole("tab", { name: "Locations" }).click();
     await page.getByRole("button", { name: "New location" }).click();
-    await page.getByLabel("Name", { exact: true }).fill("E2E Dojo");
+    await page.getByLabel("Name", { exact: true }).fill("E2E Dojo Two");
     await page.getByRole("button", { name: "Create location" }).click();
+    await expect(page.getByText("Location created.")).toBeVisible();
 
     // Create a student assigned to the new location
     await page.goto("/students/new");
     await page.getByLabel("First name").fill("E2E");
     await page.getByLabel("Last name").fill("Student");
-    await page.getByRole("checkbox", { name: "E2E Dojo" }).click();
+    await page.getByRole("checkbox", { name: "E2E Dojo Two" }).click();
     await page.getByLabel("Primary (home) dojo").selectOption({
-      label: "E2E Dojo",
+      label: "E2E Dojo Two",
     });
     await page.getByRole("button", { name: "Create student" }).click();
 
@@ -34,7 +35,7 @@ test.describe("students", () => {
     await expect(
       page.getByRole("heading", { name: "E2E Student" }),
     ).toBeVisible();
-    await expect(page.getByText("E2E Dojo (home)")).toBeVisible();
+    await expect(page.getByText("E2E Dojo Two (home)")).toBeVisible();
 
     // The list shows the new student with their home dojo
     await page.goto("/students");

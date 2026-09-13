@@ -125,6 +125,7 @@ export default async function SettingsPage({
     isActive: location.isActive,
     sortOrder: location.sortOrder,
     studentCount: location._count.studentLocations,
+    checkinToken: location.checkinToken,
   }));
 
   const auditLogs = await listAuditLogs({

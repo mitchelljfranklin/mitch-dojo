@@ -26,7 +26,8 @@ principles:
 |---|---|---|
 | 0 | Scaffold: auth, RBAC, settings, audit, scheduler, storage, email, dual-mode DB, Docker, CI, docs | Done |
 | 1 | **Students & locations**: Location CRUD + student↔location assignment (multi-location, primary/home dojo), student CRUD, search, CSV import/export, photo + attachments | Done |
-| 2 | **Classes & schedule**: Trainer roster (optional User account link), courses (required locationId — one location per class), recurring weekly training times, generated sessions, weekly timetable view | **Current** |
+| 2 | **Classes & schedule**: Trainer roster (optional User account link), courses (required locationId — one location per class), recurring weekly training times, generated sessions, weekly timetable view | Done |
+| 3 | **Attendance & QR check-in**: session attendance sheets (Present/Late/Excused/Absent), bulk mark-all, public per-location QR check-in pages (no-login, revocable token), student attendance history | **Current** |
 | 3 | Attendance & QR check-in: session marking, per-location public check-in pages, analytics | Planned |
 | 4 | Belts & gradings: belt levels per course, promotions, eligibility from attendance, optional grading location | Planned |
 | 5 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Planned |
@@ -113,6 +114,7 @@ AppSetting (category/key/value Json/isSecret)  — all runtime config
 
 Location ──< StudentLocation >── Student
 Location ──< Course ──< TrainingTime (weekly recurring slot)
+Location ──< ClassSession ──< Attendance >── Student
 Location ──< ClassSession (generated, location denormalised at generation time)
 Student (photoKey, status TRIAL/ACTIVE/INACTIVE/ALUMNI, guardian, emergency contact)
 Attachment (polymorphic entityType/entityId — "Student" documents)
@@ -124,6 +126,13 @@ Attachment (polymorphic entityType/entityId — "Student" documents)
 Session `locationId` is a copy taken at generation time so attendance history
 survives a course later moving locations. Cancelling a session flips its
 `SessionStatus` to `CANCELLED` (kept, not deleted).
+
+Attendance: one `Attendance` row per (session, student) with status
+`PRESENT/LATE/EXCUSED/ABSENT` and `source` `MANUAL` or `CHECKIN` (a staff
+overwrite keeps the manual source). The public check-in flow records
+`PRESENT` with source `CHECKIN`; staff saves overwrite status but the source
+becomes MANUAL. `TRAINED_STATUSES` = Present + Late — the basis for later
+retention analytics and belt eligibility.
 
 Key relationships follow mitch-risk conventions: user deletion preserves
 history via `SetNull` ("Deleted user"); delete cascades are explicit and

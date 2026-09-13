@@ -18,7 +18,12 @@ import { deleteStudentAction } from "@/lib/actions/students";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
+import { getStudentRecentAttendance } from "@/lib/db/attendance";
 import { prisma } from "@/lib/prisma";
+import {
+  ATTENDANCE_STATUS_LABELS,
+  type AttendanceStatusValue,
+} from "@/lib/schemas/attendance";
 import {
   STUDENT_STATUS_LABELS,
   type StudentStatus,
@@ -55,12 +60,13 @@ export default async function StudentDetailPage({
 
   const { studentId } = await params;
   const sp = await searchParams;
-  const [student, attachments] = await Promise.all([
+  const [student, attachments, recentAttendance] = await Promise.all([
     getStudent(studentId),
     prisma.attachment.findMany({
       where: { entityType: "Student", entityId: studentId },
       orderBy: { createdAt: "desc" },
     }),
+    getStudentRecentAttendance(studentId),
   ]);
   if (!student) {
     notFound();
@@ -233,6 +239,42 @@ export default async function StudentDetailPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm whitespace-pre-wrap">{student.notes}</p>
+          </CardContent>
+        </Card>
+      ) : null}
+      {recentAttendance.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent attendance</CardTitle>
+            <CardDescription>
+              Last {recentAttendance.length} recorded classes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {recentAttendance.map((row) => (
+              <div
+                key={row.sessionId}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
+              >
+                <div className="flex min-w-0 flex-col">
+                  <span>{row.courseName}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {formatDate(row.date)} · {row.locationName}
+                  </span>
+                </div>
+                <Badge
+                  variant={
+                    row.status === "ABSENT" ? "destructive" : "secondary"
+                  }
+                >
+                  {
+                    ATTENDANCE_STATUS_LABELS[
+                      row.status as AttendanceStatusValue
+                    ]
+                  }
+                </Badge>
+              </div>
+            ))}
           </CardContent>
         </Card>
       ) : null}
