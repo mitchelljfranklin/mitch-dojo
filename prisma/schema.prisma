@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions String[]
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  disabled     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs           AuditLog[]
+  passwordResetTokens PasswordResetToken[]
+  sentNotificationLogs NotificationLog[]  @relation("NotificationSentBy")
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model AppSetting {
+  id        String   @id @default(cuid())
+  category  String
+  key       String   @unique
+  value     Json
+  isSecret  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@map("app_settings")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String?
+  entityId   String?
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model NotificationLog {
+  id          String    @id @default(cuid())
+  assessmentId String?
+  type        String
+  sentTo      String
+  subject     String?
+  status      String
+  errorMessage String?
+  sentAt      DateTime  @default(now())
+  sentById    String?
+  sentBy      User?     @relation("NotificationSentBy", fields: [sentById], references: [id], onDelete: SetNull)
+
+  @@index([assessmentId])
+  @@index([sentAt])
+  @@index([status])
+  @@map("notification_logs")
+}

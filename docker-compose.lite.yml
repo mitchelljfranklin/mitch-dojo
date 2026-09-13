@@ -1,0 +1,38 @@
+# Lite mode: a single container with an embedded PostgreSQL (PGlite).
+# No separate database service — data lives in the pglite_data volume.
+# Same image, same migrations, same app; only the connection mode differs.
+services:
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_PROVIDER: pglite
+      DATABASE_DIR: /app/.data/pglite
+      AUTH_SECRET: "${AUTH_SECRET:-dev-only-auth-secret-change-me}"
+      APP_ENCRYPTION_KEY: "${APP_ENCRYPTION_KEY:-dev-only-encryption-key-change-me}"
+      APP_URL: "${APP_URL:-http://localhost:3000}"
+      CRON_SECRET: "${CRON_SECRET:?Set CRON_SECRET in .env - generate with: openssl rand -hex 32}"
+      DATA_STORAGE_PATH: "${DATA_STORAGE_PATH:-/app/.storage/files}"
+      TRUSTED_PROXY_COUNT: "${TRUSTED_PROXY_COUNT:-0}"
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_data:/app/.storage
+      - pglite_data:/app/.data/pglite
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "${APP_CPU_LIMIT:-1.0}"
+          memory: "${APP_MEMORY_LIMIT:-1g}"
+
+volumes:
+  app_data:
+  pglite_data:

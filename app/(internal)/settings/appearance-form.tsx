@@ -1,0 +1,214 @@
+"use client";
+
+import { useActionState, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useActionFeedback } from "@/hooks/use-action-feedback";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { saveAppearanceSettings } from "./actions";
+
+type AppearanceFormProps = {
+  primaryHex: string;
+  secondaryHex: string;
+  hasLogo: boolean;
+  logoKey: string;
+  borderRadius: number;
+  pageWidth: string;
+};
+
+function ColorField({
+  label,
+  description,
+  hexValue,
+  defaultHex,
+  name,
+}: {
+  label: string;
+  description: string;
+  hexValue: string;
+  defaultHex: string;
+  name: string;
+}) {
+  const [color, setColor] = useState(hexValue || defaultHex);
+
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={`${name}Color`}>{label}</Label>
+      <p className="text-muted-foreground text-xs">{description}</p>
+      <div className="flex items-center gap-3">
+        <input
+          id={`${name}Color`}
+          type="color"
+          value={color}
+          onChange={(event) => setColor(event.target.value)}
+          className="h-9 w-14 cursor-pointer rounded border p-1"
+        />
+        <Input
+          id={name}
+          name={name}
+          value={color}
+          onChange={(event) => setColor(event.target.value)}
+          className="w-32 font-mono"
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => setColor(defaultHex)}
+        >
+          Reset
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function AppearanceForm({
+  primaryHex,
+  secondaryHex,
+  hasLogo,
+  logoKey,
+  borderRadius,
+  pageWidth,
+}: AppearanceFormProps) {
+  const [state, action, isPending] = useActionState(
+    saveAppearanceSettings,
+    undefined,
+  );
+
+  useActionFeedback(state);
+
+  return (
+    <form id="appearance-form" action={action} className="grid gap-6">
+      <input
+        id="removeLogoInput"
+        name="removeLogo"
+        type="hidden"
+        value="false"
+      />
+      <div className="grid gap-2">
+        <Label htmlFor="logoFile">Logo</Label>
+        <Input
+          id="logoFile"
+          name="logoFile"
+          type="file"
+          accept="image/*"
+          className="cursor-pointer"
+        />
+        {state && !state.ok ? (
+          <p className="text-destructive text-xs" role="alert">
+            {state.message}
+          </p>
+        ) : null}
+        {hasLogo ? (
+          <div className="flex flex-col gap-2">
+            <img
+              src={`/api/brand/logo?v=${logoKey}`}
+              alt="Current logo"
+              width={48}
+              height={48}
+              className="h-12 w-auto rounded-md border object-contain"
+            />
+            <ConfirmDialog
+              title="Remove logo?"
+              description="The current logo will be removed from all pages. You can upload a new logo at any time."
+              confirmLabel="Remove"
+              formId="appearance-form"
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-destructive w-fit"
+                onClick={() => {
+                  const input = document.getElementById(
+                    "removeLogoInput",
+                  ) as HTMLInputElement | null;
+                  if (input) input.value = "true";
+                }}
+              >
+                Remove logo
+              </Button>
+            </ConfirmDialog>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            No logo uploaded. Upload a PNG or JPG (max 2 MB).
+          </p>
+        )}
+      </div>
+
+      <ColorField
+        label="Primary colour"
+        description="Used for main buttons, links, and active states."
+        hexValue={primaryHex}
+        defaultHex="#0a0a0a"
+        name="primaryHex"
+      />
+
+      <ColorField
+        label="Secondary colour"
+        description="Used for tags, pills, badges, and secondary elements."
+        hexValue={secondaryHex}
+        defaultHex="#f5f5f5"
+        name="secondaryHex"
+      />
+
+      <div className="border-t pt-6">
+        <p className="text-sm font-medium">Layout</p>
+        <p className="text-muted-foreground text-xs">
+          Adjust the overall look and feel of the platform.
+        </p>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="borderRadius">Border radius (px)</Label>
+          <p className="text-muted-foreground text-xs">
+            Controls how rounded corners are across the app.
+          </p>
+          <Input
+            id="borderRadius"
+            name="borderRadius"
+            type="number"
+            min={0}
+            max={16}
+            key={borderRadius}
+            defaultValue={borderRadius}
+            className="w-32"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="pageWidth">Page width</Label>
+          <p className="text-muted-foreground text-xs">
+            Constrain content to a readable width or use the full screen.
+          </p>
+          <Select name="pageWidth" defaultValue={pageWidth} key={pageWidth}>
+            <SelectTrigger id="pageWidth" className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="constrained">Constrained</SelectItem>
+              <SelectItem value="full">Full width</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={isPending} size="sm">
+          {isPending ? "Saving..." : "Save appearance"}
+        </Button>
+      </div>
+    </form>
+  );
+}

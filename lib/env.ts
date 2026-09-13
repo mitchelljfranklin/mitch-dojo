@@ -1,0 +1,109 @@
+import { z } from "zod";
+
+const databaseProviderSchema = z
+  .enum(["postgres", "pglite"])
+  .default("postgres");
+
+const environmentSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
+    DATABASE_PROVIDER: databaseProviderSchema.optional(),
+    DATABASE_URL: z.string().optional(),
+    DATABASE_DIR: z.string().optional(),
+    AUTH_SECRET: z
+      .string()
+      .min(32, "AUTH_SECRET must be at least 32 characters"),
+    APP_ENCRYPTION_KEY: z
+      .string()
+      .min(32, "APP_ENCRYPTION_KEY must be at least 32 characters"),
+    APP_URL: z.string().min(1).default("http://localhost:3000"),
+    CRON_SECRET: z.string().min(1).optional(),
+    DATA_STORAGE_PATH: z.string().min(1).default("./.storage/files"),
+    TRUSTED_PROXY_COUNT: z.coerce.number().int().min(0).default(0),
+    CLIENT_IP_HEADER: z.string().min(1).optional(),
+  })
+  .superRefine((values, context) => {
+    const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+    const isProduction = values.NODE_ENV === "production" && !isBuildPhase;
+    if (isProduction && !values.CRON_SECRET) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["CRON_SECRET"],
+        message: "CRON_SECRET is required in production",
+      });
+    }
+    // A short cron secret is brute-forceable online despite timing-safe
+    // comparison, so enforce real entropy where the endpoint is exposed.
+    if (
+      isProduction &&
+      values.CRON_SECRET !== undefined &&
+      values.CRON_SECRET.length < 32
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["CRON_SECRET"],
+        message: "CRON_SECRET must be at least 32 characters in production",
+      });
+    }
+
+    const provider = databaseProviderSchema.parse(values.DATABASE_PROVIDER);
+    if (provider === "postgres" && !values.DATABASE_URL) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DATABASE_URL"],
+        message: "DATABASE_URL is required when DATABASE_PROVIDER=postgres",
+      });
+    }
+    if (provider === "pglite" && !values.DATABASE_DIR) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DATABASE_DIR"],
+        message:
+          "DATABASE_DIR is required when DATABASE_PROVIDER=pglite (path to the embedded data directory)",
+      });
+    }
+  });
+
+export type Environment = z.infer<typeof environmentSchema>;
+export type DatabaseProvider = "postgres" | "pglite";
+
+export function deriveAuthUrl(
+  existingAuthUrl: string | undefined,
+  appUrl: string,
+): string {
+  const trimmed = existingAuthUrl?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : appUrl;
+}
+
+export function resolveDatabaseProvider(
+  rawProvider: string | undefined,
+): DatabaseProvider {
+  return databaseProviderSchema.parse(rawProvider);
+}
+
+function loadEnvironment(): Environment {
+  const parsed = environmentSchema.safeParse(process.env);
+
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .map(
+        (issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`,
+      )
+      .join("\n");
+    throw new Error(`Invalid environment variables:\n${issues}`);
+  }
+
+  // Auth.js (NextAuth) builds callback URLs from AUTH_URL, not APP_URL.
+  // Default it to APP_URL so a single public-URL setting drives both app links
+  // and future SSO redirect URIs; an explicit AUTH_URL still takes precedence.
+  process.env.AUTH_URL = deriveAuthUrl(
+    process.env.AUTH_URL,
+    parsed.data.APP_URL,
+  );
+
+  return parsed.data;
+}
+
+export const env = loadEnvironment();

@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_PROVIDER: postgres
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci_build"
+      AUTH_SECRET: "ci-build-auth-secret-00000000000000000000"
+      APP_ENCRYPTION_KEY: "ci-build-encryption-key-0000000000000"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund --legacy-peer-deps
+      - run: npx prisma generate
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund --legacy-peer-deps
+      - run: npx prisma generate
+      - run: npm run test
+
+  pglite-mode:
+    # Validates the embedded PGlite deployment path: generate -> apply the
+    # canonical migrations via the lite runner -> seed.
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_PROVIDER: pglite
+      DATABASE_DIR: /tmp/mitch-dojo-pglite-ci
+      AUTH_SECRET: "ci-pglite-auth-secret-00000000000000000000"
+      APP_ENCRYPTION_KEY: "ci-pglite-encryption-key-0000000000000"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund --legacy-peer-deps
+      - run: npx prisma generate
+      - name: Create initial migration if none exist yet
+        run: |
+          if [ -z "$(ls -A prisma/migrations 2>/dev/null)" ]; then
+            npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/000000000000_init/migration.sql --create
+          fi
+      - run: node scripts/migrate-pglite.mjs
+      - run: node scripts/migrate-pglite.mjs
+      - run: DATABASE_PROVIDER=pglite npx tsx prisma/seed.ts
+      - run: DATABASE_PROVIDER=pglite npx tsx prisma/seed.ts
+
+  postgres-mode:
+    # Validates the server deployment path: prisma migrate deploy + seed
+    # against a real PostgreSQL service.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: mitch_dojo_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d mitch_dojo_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_PROVIDER: postgres
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/mitch_dojo_ci?schema=public"
+      AUTH_SECRET: "ci-postgres-auth-secret-00000000000000000000"
+      APP_ENCRYPTION_KEY: "ci-postgres-encryption-key-00000000000000"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund --legacy-peer-deps
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+      - run: npx prisma db seed
+      - run: npx prisma db seed
