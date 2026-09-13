@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
