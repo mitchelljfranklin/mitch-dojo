@@ -73,7 +73,7 @@ export type ProgressRow = {
   currentBeltName: string | null;
   currentBeltColor: string | null;
   awardedAt: Date | null;
-  trainingsSince: number;
+  trainingsTotal: number;
   nextBeltName: string | null;
   nextBeltColor: string | null;
   requiredTrainings: number | null;
@@ -81,7 +81,7 @@ export type ProgressRow = {
 };
 
 // Students at the course's location (ACTIVE/TRIAL) with their belt progress
-// for this course: current rank, trainings since the last promotion, and
+// for this course: current rank, total trained sessions on the course, and
 // whether they have met the next belt's required trainings.
 export async function getCourseProgress(courseId: string): Promise<{
   course: {
@@ -155,28 +155,21 @@ export async function getCourseProgress(courseId: string): Promise<{
   const rows: ProgressRow[] = [];
   for (const student of students) {
     const currentRecord = currentByStudent.get(student.id) ?? null;
-    const currentBelt = currentRecord
-      ? (belts.find((belt) => belt.id === currentRecord.beltLevelId) ?? null)
-      : null;
 
-    const since = currentRecord
-      ? new Date(
-          Date.UTC(
-            currentRecord.awardedAt.getFullYear(),
-            currentRecord.awardedAt.getMonth(),
-            currentRecord.awardedAt.getDate(),
-          ),
-        )
-      : new Date(0);
-
-    const trainingsSince = await prisma.attendance.count({
+    // Cumulative eligibility: every trained session (Present/Late) on this
+    // course counts towards the student's current and future ranks, from
+    // their very first class.
+    const trainingsTotal = await prisma.attendance.count({
       where: {
         studentId: student.id,
         status: { in: TRAINED_STATUSES as unknown as AttendanceStatusValue[] },
-        session: { courseId, date: { gte: since } },
+        session: { courseId },
       },
     });
 
+    const currentBelt = currentRecord
+      ? (belts.find((belt) => belt.id === currentRecord.beltLevelId) ?? null)
+      : null;
     const nextBelt = currentBelt ? nextBeltOf(currentBelt) : (belts[0] ?? null);
     const requiredTrainings = nextBelt ? nextBelt.requiredTrainings : null;
 
@@ -187,12 +180,12 @@ export async function getCourseProgress(courseId: string): Promise<{
       currentBeltName: currentRecord?.beltName ?? null,
       currentBeltColor: currentRecord?.colorHex ?? null,
       awardedAt: currentRecord?.awardedAt ?? null,
-      trainingsSince,
+      trainingsTotal,
       nextBeltName: nextBelt?.name ?? null,
       nextBeltColor: nextBelt?.colorHex ?? null,
       requiredTrainings,
       isEligible:
-        requiredTrainings !== null && trainingsSince >= requiredTrainings,
+        requiredTrainings !== null && trainingsTotal >= requiredTrainings,
     });
   }
 
@@ -253,21 +246,22 @@ export async function deletePromotion(promotionId: string): Promise<void> {
 
 export type PromotionEligibility = {
   eligible: boolean;
-  trainingsSince: number;
+  trainingsTotal: number;
   requiredTrainings: number | null;
   currentBeltName: string | null;
   targetBeltName: string;
 };
 
-// Server-side eligibility gate for a promotion: counts Present/Late
-// attendance on the target belt's course after the student's current belt
-// award date. Reused by the record-promotion action and integration tests.
+// Server-side eligibility gate for a promotion: counts ALL Present/Late
+// attendance on the target belt's course (cumulative — every trained session
+// from the student's first class counts towards their ranks). Reused by the
+// record-promotion action and integration tests.
 export async function checkPromotionEligibility(
   studentId: string,
   beltLevelId: string,
 ): Promise<{
   status: "eligible" | "insufficient" | "no_belt" | "already_current";
-  trainingsSince: number;
+  trainingsTotal: number;
   requiredTrainings: number | null;
   currentBeltName: string | null;
   targetBeltName: string;
@@ -281,46 +275,25 @@ export async function checkPromotionEligibility(
   const currentRecord = await prisma.studentBelt.findFirst({
     where: { studentId, beltLevel: { courseId: target.courseId } },
     orderBy: { awardedAt: "desc" },
-    select: { beltName: true, awardedAt: true, beltLevelId: true },
+    select: { beltName: true },
   });
 
-  const currentBelt = currentRecord
-    ? await prisma.beltLevel.findUnique({
-        where: { id: currentRecord.beltLevelId ?? "" },
-        select: { order: true },
-      })
-    : null;
-
-  const trainingsSince = await prisma.attendance.count({
+  const trainingsTotal = await prisma.attendance.count({
     where: {
       studentId,
       status: { in: TRAINED_STATUSES as unknown as AttendanceStatusValue[] },
-      session: {
-        courseId: target.courseId,
-        date: { gte: sinceDateOf(currentRecord?.awardedAt ?? null) },
-      },
+      session: { courseId: target.courseId },
     },
   });
 
   return {
     status:
-      trainingsSince >= target.requiredTrainings ? "eligible" : "insufficient",
-    trainingsSince,
+      trainingsTotal >= target.requiredTrainings ? "eligible" : "insufficient",
+    trainingsTotal,
     requiredTrainings: target.requiredTrainings,
     currentBeltName: currentRecord?.beltName ?? null,
     targetBeltName: target.name,
   };
-}
-
-function sinceDateOf(awardedAt: Date | null): Date {
-  if (!awardedAt) return new Date(0);
-  return new Date(
-    Date.UTC(
-      awardedAt.getFullYear(),
-      awardedAt.getMonth(),
-      awardedAt.getDate(),
-    ),
-  );
 }
 
 // --------------- standard belt range (Settings) ---------------

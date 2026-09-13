@@ -139,76 +139,65 @@ describe.skipIf(!hasTestDatabase)("belt levels", () => {
 });
 
 describe.skipIf(!hasTestDatabase)("eligibility", () => {
-  it("counts trainings towards the next belt", async () => {
-    const extraSessionId = await createPastSession(
-      new Date(Date.UTC(2026, 8, 6)),
-    );
+  it("counts ALL trained sessions on the course cumulatively", async () => {
+    // Three sessions with trained attendance (2 Present + 1 LATE), plus one
+    // ABSENT that must not count. Yellow Stripe requires 3.
+    const sessionA = await createPastSession(new Date(Date.UTC(2026, 7, 6)));
+    const sessionB = await createPastSession(new Date(Date.UTC(2026, 7, 8)));
+    const sessionC = await createPastSession(new Date(Date.UTC(2026, 7, 10)));
+    const sessionD = await createPastSession(new Date(Date.UTC(2026, 7, 12)));
     await setSessionAttendance(
-      extraSessionId,
+      sessionA,
       [{ studentId: studentId!, status: "PRESENT" }],
       null,
     );
-    const anotherSessionId = await createPastSession(
-      new Date(Date.UTC(2026, 8, 8)),
+    await setSessionAttendance(
+      sessionB,
+      [{ studentId: studentId!, status: "LATE" }],
+      null,
     );
     await setSessionAttendance(
-      anotherSessionId,
+      sessionC,
       [{ studentId: studentId!, status: "PRESENT" }],
+      null,
+    );
+    await setSessionAttendance(
+      sessionD,
+      [{ studentId: studentId!, status: "ABSENT" }],
       null,
     );
 
     const { rows } = await getCourseProgress(courseId!);
     const row = rows.find((entry) => entry.studentId === studentId);
-    expect(row?.trainingsSince).toBe(2);
+    // Cumulative: 3 trained (Present/Late) of 4 marked; the ABSENT does not
+    // count. Yellow Stripe requires 3 — the student is eligible.
+    expect(row?.trainingsTotal).toBe(3);
     expect(row?.requiredTrainings).toBe(3);
-    expect(row?.isEligible).toBe(false);
+    expect(row?.isEligible).toBe(true);
   });
 
-  it("eligibility gate reports insufficient trainings then eligibility", async () => {
-    // A second White record awarded Sep 12 resets the since-date, so none of
-    // the earlier trained sessions count towards Yellow (needs 3).
-    const awardedAt = new Date(Date.UTC(2026, 8, 12, 12));
-    await prisma.studentBelt.create({
-      data: {
-        studentId: studentId!,
-        beltLevelId: whiteBeltId!,
-        beltName: "White",
-        colorHex: "#FFFFFF",
-        awardedAt,
-      },
+  it("eligibility gate reports cumulative counts and thresholds", async () => {
+    // The student has 3 trained sessions from the earlier test. A fresh
+    // Yellow threshold of 6 leaves them one short.
+    const updated = await updateBeltLevel(yellowBeltId!, {
+      name: "Yellow Stripe",
+      colorHex: "#FFCC00",
+      order: 1,
+      requiredTrainings: 4,
     });
+    expect(updated.requiredTrainings).toBe(4);
 
     const eligibility = await checkPromotionEligibility(
       studentId!,
       yellowBeltId!,
     );
     expect(eligibility?.status).toBe("insufficient");
-    expect(eligibility?.trainingsSince).toBe(0);
-    expect(eligibility?.requiredTrainings).toBe(3);
+    expect(eligibility?.trainingsTotal).toBe(3);
+    expect(eligibility?.requiredTrainings).toBe(4);
     expect(eligibility?.currentBeltName).toBe("White");
     expect(eligibility?.targetBeltName).toBe("Yellow Stripe");
 
-    // Two trained sessions after the award still leave the threshold unmet.
-    const sessionIdA = await createPastSession(new Date(Date.UTC(2026, 8, 12)));
-    const sessionIdB = await createPastSession(new Date(Date.UTC(2026, 8, 13)));
-    await setSessionAttendance(
-      sessionIdA,
-      [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
-    await setSessionAttendance(
-      sessionIdB,
-      [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
-    const stillInsufficient = await checkPromotionEligibility(
-      studentId!,
-      yellowBeltId!,
-    );
-    expect(stillInsufficient?.status).toBe("insufficient");
-    expect(stillInsufficient?.trainingsSince).toBe(2);
-
-    // …and the third crosses it.
+    // One more trained session crosses the cumulative threshold.
     const sessionIdC = await createPastSession(new Date(Date.UTC(2026, 9, 1)));
     await setSessionAttendance(
       sessionIdC,
@@ -221,5 +210,6 @@ describe.skipIf(!hasTestDatabase)("eligibility", () => {
       yellowBeltId!,
     );
     expect(afterThreshold?.status).toBe("eligible");
+    expect(afterThreshold?.trainingsTotal).toBe(4);
   });
 });

@@ -145,7 +145,8 @@ function BeltFields({
             className="border-input bg-background h-9 w-24 rounded-md border px-3 text-sm"
           />
           <p className="text-muted-foreground text-xs">
-            Trainings (present/late) needed to be eligible for this belt.
+            Trainings (present/late) needed in total on this course to be
+            awarded this belt — counted from the student&apos;s first class.
           </p>
         </div>
       </div>

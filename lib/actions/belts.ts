@@ -168,7 +168,7 @@ export async function recordPromotionAction(
       getField(formData, "overrideEligibility") === "on";
     if (!overrideConfirmed) {
       return {
-        error: `${eligibility.targetBeltName} requires ${eligibility.requiredTrainings} trainings — the student has ${eligibility.trainingsSince}. Tick "Override eligibility" to record anyway.`,
+        error: `${eligibility.targetBeltName} requires ${eligibility.requiredTrainings} trainings — the student has attended ${eligibility.trainingsTotal}. Tick "Override eligibility" to record anyway.`,
       };
     }
   }

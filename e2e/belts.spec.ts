@@ -50,8 +50,8 @@ test.describe("belts", () => {
 
     // Wait for the post-promotion refresh so the next sheet's default belt
     // is computed from the kid's NEW rank (White → next: Yellow). The
-    // count varies with the QR check-in specs, so match loosely.
-    await expect(page.getByText(/trainings? since promotion/)).toBeVisible();
+    // cumulative count varies with the QR check-in specs, so match loosely.
+    await expect(page.getByText(/trainings? on this course/)).toBeVisible();
 
     // Kid has at most a couple of trainings since the award — Yellow needs
     // 99, so the promotion is blocked until the instructor ticks Override.

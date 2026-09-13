@@ -122,6 +122,9 @@ function RangeFields({
             required
             className="w-24"
           />
+          <p className="text-muted-foreground text-xs">
+            Cumulative total of trained sessions needed to be awarded this belt.
+          </p>
         </div>
       </div>
     </>

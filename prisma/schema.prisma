@@ -236,8 +236,8 @@ model Course {
 }
 
 // Belt rank within one course. order 0 is the entry rank; requiredTrainings
-// is how many trainings (Present/Late) a student needs to be eligible for
-// THIS belt — 0 for the entry belt.
+// is the CUMULATIVE total of trained sessions (Present/Late) on the course a
+// student needs to be awarded THIS belt — 0 for the entry belt.
 model BeltLevel {
   id                String   @id @default(cuid())
   courseId          String

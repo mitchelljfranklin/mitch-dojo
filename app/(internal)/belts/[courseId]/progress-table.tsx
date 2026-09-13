@@ -83,7 +83,7 @@ export function ProgressTable({
         <div>
           <h2 className="text-base font-semibold">Student progression</h2>
           <p className="text-muted-foreground text-xs">
-            Current rank, trainings since promotion, and eligibility for the
+            Current rank, total trainings on the course, and eligibility for the
             next belt.
           </p>
         </div>
@@ -106,7 +106,7 @@ export function ProgressTable({
                   </span>
                   <span className="text-muted-foreground text-xs">
                     {row.currentBeltName
-                      ? `${row.trainingsSince} training${row.trainingsSince === 1 ? "" : "s"} since promotion`
+                      ? `${row.trainingsTotal} training${row.trainingsTotal === 1 ? "" : "s"} on this course`
                       : "No belt recorded yet"}
                   </span>
                 </div>
@@ -128,7 +128,7 @@ export function ProgressTable({
                     >
                       {row.isEligible
                         ? `Eligible: ${row.nextBeltName}`
-                        : `${row.nextBeltName}: ${row.trainingsSince}/${row.requiredTrainings}`}
+                        : `${row.nextBeltName}: ${row.trainingsTotal}/${row.requiredTrainings}`}
                     </Badge>
                   ) : null}
                   {canEdit ? (

@@ -131,14 +131,17 @@ async function run(): Promise<void> {
     });
 
     console.log("Seeding standard belt range...");
+    // Cumulative totals: a student is awarded each belt once their ALL-TIME
+    // trained sessions on a course reach the belt's threshold (~2 sessions
+    // per week, Black around the 3-year mark by default — edit in Settings).
     const standardRange = [
       { name: "White", colorHex: "#FFFFFF", order: 0, requiredTrainings: 0 },
-      { name: "Yellow", colorHex: "#FFD700", order: 1, requiredTrainings: 12 },
-      { name: "Orange", colorHex: "#FF8C00", order: 2, requiredTrainings: 24 },
-      { name: "Green", colorHex: "#228B22", order: 3, requiredTrainings: 36 },
-      { name: "Blue", colorHex: "#0057B8", order: 4, requiredTrainings: 48 },
-      { name: "Brown", colorHex: "#8B4513", order: 5, requiredTrainings: 60 },
-      { name: "Black", colorHex: "#000000", order: 6, requiredTrainings: 80 },
+      { name: "Yellow", colorHex: "#FFD700", order: 1, requiredTrainings: 25 },
+      { name: "Orange", colorHex: "#FF8C00", order: 2, requiredTrainings: 50 },
+      { name: "Green", colorHex: "#228B22", order: 3, requiredTrainings: 100 },
+      { name: "Blue", colorHex: "#0057B8", order: 4, requiredTrainings: 150 },
+      { name: "Brown", colorHex: "#8B4513", order: 5, requiredTrainings: 210 },
+      { name: "Black", colorHex: "#000000", order: 6, requiredTrainings: 300 },
     ];
     for (const entry of standardRange) {
       await prisma.beltRangeEntry.upsert({
