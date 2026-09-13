@@ -60,15 +60,23 @@ export async function runScheduledJobs(
 
   // --- orphaned file sweep ---
   // Every storage writer must be reflected here (AGENTS.md storage-writer
-  // rule). Phase 0 writers: the brand logo (appearance.logoKey).
-  const [storedFiles, appearance] = await Promise.all([
+  // rule): brand logo, student photos, and student attachments.
+  const [storedFiles, appearance, students, attachments] = await Promise.all([
     storage.list(),
     prisma.appSetting.findUnique({ where: { key: "appearance.logoKey" } }),
+    prisma.student.findMany({ select: { photoKey: true } }),
+    prisma.attachment.findMany({ select: { storageKey: true } }),
   ]);
   const referencedKeys = new Set<string>();
   const logoKey = appearance?.value;
   if (typeof logoKey === "string" && logoKey.length > 0) {
     referencedKeys.add(logoKey);
+  }
+  for (const student of students) {
+    if (student.photoKey) referencedKeys.add(student.photoKey);
+  }
+  for (const attachment of attachments) {
+    referencedKeys.add(attachment.storageKey);
   }
   const orphanKeys = findOrphanFileKeys({ storedFiles, referencedKeys, now });
   const deletedFileKeys: string[] = [];

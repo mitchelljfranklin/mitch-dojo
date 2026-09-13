@@ -123,6 +123,13 @@ async function run(): Promise<void> {
       });
     }
 
+    console.log("Seeding default location...");
+    await prisma.location.upsert({
+      where: { name: "Main Dojo" },
+      update: {},
+      create: { name: "Main Dojo", isActive: true, sortOrder: 0 },
+    });
+
     const adminCount = await prisma.user.count();
     if (adminCount === 0) {
       console.log(

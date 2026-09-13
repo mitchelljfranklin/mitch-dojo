@@ -42,6 +42,14 @@ enforced server-side and hidden client-side when absent.
 
 ## Roadmap
 
-Students (1) → Classes & schedule (2) → Attendance & QR check-in (3) →
-Belts & gradings (4) → Memberships & manual payments (5) → Communication (6)
-→ Analytics (7) → Trials (8) → Member portal (9) → Gateways & extras (10+).
+**Locations & students (1)** → Classes & schedule (2) → Attendance & QR
+check-in (3) → Belts & gradings (4) → Memberships & manual payments (5) →
+Communication (6) → Analytics (7) → Trials (8) → Member portal (9) →
+Gateways & extras (10+).
+
+## Multi-location
+
+The tenant is the **school**; `Location` rows are its dojo sites. Students
+train at one or more locations with exactly one primary (home) dojo; every
+class belongs to exactly one location (Phase 2). Locations are organisational
+only — all staff see all locations, and views filter by them.

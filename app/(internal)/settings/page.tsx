@@ -12,6 +12,7 @@ import { buildFilterQueryString } from "@/lib/nav";
 import { listAuditLogs, listAuditActions } from "@/lib/db/audit";
 import { listStaffAccounts } from "@/lib/db/users";
 import { listRoles } from "@/lib/db/roles";
+import { listLocationsWithCounts } from "@/lib/db/locations";
 import { prisma } from "@/lib/prisma";
 import {
   getOrganizationSettings,
@@ -25,6 +26,7 @@ import {
 } from "@/lib/settings";
 import { UsersManager } from "./users-manager";
 import { RolesManager } from "./roles-manager";
+import { LocationsManager } from "./locations-manager";
 import { FlashToast } from "@/components/flash-toast";
 
 import { OrganizationForm } from "./organization-form";
@@ -50,6 +52,7 @@ export default async function SettingsPage({
     PERMISSIONS.SETTINGS_MANAGE,
     PERMISSIONS.USERS_MANAGE,
     PERMISSIONS.ROLES_MANAGE,
+    PERMISSIONS.LOCATIONS_EDIT,
     PERMISSIONS.AUDIT_VIEW,
   ]);
   const permissions = currentUser.permissions;
@@ -59,6 +62,10 @@ export default async function SettingsPage({
   );
   const canManageUsers = hasPermission(permissions, PERMISSIONS.USERS_MANAGE);
   const canManageRoles = hasPermission(permissions, PERMISSIONS.ROLES_MANAGE);
+  const canManageLocations = hasPermission(
+    permissions,
+    PERMISSIONS.LOCATIONS_EDIT,
+  );
   const canViewAudit = hasPermission(permissions, PERMISSIONS.AUDIT_VIEW);
 
   const sp = await searchParams;
@@ -68,6 +75,7 @@ export default async function SettingsPage({
     operations,
     staffAccounts,
     roles,
+    locations,
     storageSettings,
     email,
     auditRetention,
@@ -78,6 +86,7 @@ export default async function SettingsPage({
     getOperationsSettings(),
     listStaffAccounts(),
     listRoles(),
+    listLocationsWithCounts(),
     getStorageSettingsView(),
     getEmailSettings(),
     getAuditRetention(),
@@ -107,6 +116,17 @@ export default async function SettingsPage({
     userCount: role._count.users,
   }));
 
+  const locationViews = locations.map((location) => ({
+    id: location.id,
+    name: location.name,
+    address: location.address,
+    phone: location.phone,
+    email: location.email,
+    isActive: location.isActive,
+    sortOrder: location.sortOrder,
+    studentCount: location._count.studentLocations,
+  }));
+
   const auditLogs = await listAuditLogs({
     action: sp.action,
     userId: sp.userId,
@@ -127,6 +147,7 @@ export default async function SettingsPage({
     ...(canManageSettings
       ? ["general", "operations", "storage", "email", "health"]
       : []),
+    ...(canManageLocations ? ["locations"] : []),
     ...(canManageUsers ? ["users"] : []),
     ...(canManageRoles ? ["roles"] : []),
     ...(canViewAudit ? ["audit"] : []),
@@ -155,6 +176,9 @@ export default async function SettingsPage({
                 <TabsTrigger value="email">Email</TabsTrigger>
                 <TabsTrigger value="health">Health</TabsTrigger>
               </>
+            ) : null}
+            {canManageLocations ? (
+              <TabsTrigger value="locations">Locations</TabsTrigger>
             ) : null}
             {canManageUsers ? (
               <TabsTrigger value="users">Users</TabsTrigger>
@@ -277,6 +301,24 @@ export default async function SettingsPage({
             </TabsContent>
           </>
         ) : null}
+
+        <TabsContent value="locations" className="mt-4 flex flex-col gap-6">
+          {sp.locationError ? (
+            <FlashToast variant="error" message={sp.locationError} />
+          ) : null}
+          <Card>
+            <CardHeader>
+              <CardTitle>Locations</CardTitle>
+              <CardDescription>
+                Dojo locations belonging to the school. Students are assigned to
+                one or more locations; every class runs at exactly one.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LocationsManager locations={locationViews} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="roles" className="mt-4 flex flex-col gap-6">
           {sp.roleError ? (

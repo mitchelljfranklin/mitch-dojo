@@ -98,3 +98,81 @@ model NotificationLog {
   @@index([status])
   @@map("notification_logs")
 }
+
+enum StudentStatus {
+  TRIAL
+  ACTIVE
+  INACTIVE
+  ALUMNI
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  address   String?
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentLocations StudentLocation[]
+
+  @@map("locations")
+}
+
+model Student {
+  id                    String        @id @default(cuid())
+  firstName             String
+  lastName              String
+  email                 String?       @unique
+  phone                 String?
+  dateOfBirth           DateTime?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  guardianName          String?
+  guardianEmail         String?
+  guardianPhone         String?
+  status                StudentStatus @default(TRIAL)
+  notes                 String?
+  photoKey              String?
+  joinedAt              DateTime      @default(now())
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  locations   StudentLocation[]
+
+  @@index([lastName, firstName])
+  @@index([status])
+  @@map("students")
+}
+
+model StudentLocation {
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  isPrimary  Boolean  @default(false)
+  joinedAt   DateTime @default(now())
+
+  @@id([studentId, locationId])
+  @@index([locationId])
+  @@map("student_locations")
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  entityType  String
+  entityId    String
+  fileName    String
+  storageKey  String
+  mimeType    String
+  sizeBytes   Int
+  displayName String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("attachments")
+}

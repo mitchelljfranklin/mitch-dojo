@@ -1,5 +1,7 @@
 type EmptyStateProps = {
   icon:
+    | "students"
+    | "locations"
     | "vendors"
     | "assessments"
     | "templates"
@@ -28,6 +30,35 @@ const SIZE = {
 } as const;
 
 const ICONS: Record<EmptyStateProps["icon"], React.ReactNode> = {
+  students: (
+    <svg viewBox="0 0 64 64" fill="none" className="size-16" aria-hidden="true">
+      <circle cx="24" cy="20" r="8" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M10 50c0-8 6-14 14-14s14 6 14 14"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="46" cy="24" r="6" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M38 50c0-6 4-11 8-11s8 5 8 11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
+  locations: (
+    <svg viewBox="0 0 64 64" fill="none" className="size-16" aria-hidden="true">
+      <path
+        d="M32 54c10-11 16-19 16-27a16 16 0 10-32 0c0 8 6 16 16 27z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <circle cx="32" cy="26" r="6" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  ),
   vendors: (
     <svg viewBox="0 0 64 64" fill="none" className="size-16" aria-hidden="true">
       <rect

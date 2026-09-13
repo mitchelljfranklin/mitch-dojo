@@ -160,6 +160,20 @@ async function resolveEntityNames(
             select: { id: true, name: true },
           });
           for (const role of roles) map.set(role.id, role.name);
+        } else if (type === "Student") {
+          const students = await prisma.student.findMany({
+            where: { id: { in: uniqueIds } },
+            select: { id: true, firstName: true, lastName: true },
+          });
+          for (const student of students) {
+            map.set(student.id, `${student.firstName} ${student.lastName}`);
+          }
+        } else if (type === "Location") {
+          const locations = await prisma.location.findMany({
+            where: { id: { in: uniqueIds } },
+            select: { id: true, name: true },
+          });
+          for (const location of locations) map.set(location.id, location.name);
         } else if (type === "Setting") {
           // Settings saves log the tab key as entityId (e.g. "general",
           // "operations") — the key itself is the readable name.
@@ -196,6 +210,14 @@ export const AUDIT_ACTIONS = {
   DUPLICATE_ROLE: "DUPLICATE_ROLE",
   DELETE_USER: "DELETE_USER",
   UPDATE_PROFILE: "UPDATE_PROFILE",
+  CREATE_STUDENT: "CREATE_STUDENT",
+  UPDATE_STUDENT: "UPDATE_STUDENT",
+  DELETE_STUDENT: "DELETE_STUDENT",
+  UPDATE_STUDENT_STATUS: "UPDATE_STUDENT_STATUS",
+  IMPORT_STUDENT: "IMPORT_STUDENT",
+  CREATE_LOCATION: "CREATE_LOCATION",
+  UPDATE_LOCATION: "UPDATE_LOCATION",
+  DELETE_LOCATION: "DELETE_LOCATION",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

@@ -42,4 +42,12 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   DUPLICATE_ROLE: "Duplicated role",
   RESET_PASSWORD: "Reset password",
   UPDATE_SETTINGS: "Updated settings",
+  CREATE_STUDENT: "Created student",
+  UPDATE_STUDENT: "Updated student",
+  DELETE_STUDENT: "Deleted student",
+  UPDATE_STUDENT_STATUS: "Changed student status",
+  IMPORT_STUDENT: "Imported students",
+  CREATE_LOCATION: "Created location",
+  UPDATE_LOCATION: "Updated location",
+  DELETE_LOCATION: "Deleted location",
 };

@@ -11,14 +11,14 @@ const DANGEROUS_UPLOAD_MIME_TYPES = new Set([
   "application/x-sh",
 ]);
 
-export const ALLOWED_ATTACHMENT_EXTS = [
+export const ALLOWED_ATTACHMENT_EXTS = new Set([
   "pdf",
   "png",
   "jpg",
   "jpeg",
   "docx",
   "xlsx",
-];
+]);
 
 export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 

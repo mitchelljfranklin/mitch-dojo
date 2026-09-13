@@ -182,10 +182,18 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   never returned to the client; never committed.
 - **Data lifecycle.** Deleting a record removes associated storage files; the
   cron orphan sweep is the backstop. **Every storage writer must be reflected
-  in the sweep's referenced-key set** (`lib/cron/run-jobs.ts` collects
-  referenced keys) — new key formats without registration there get deleted
-  within an hour. Deleting a user preserves audit history via nullable
-  `SetNull` relations ("Deleted user") — never cascade-delete audit trails.
+  in the sweep's referenced-key set** (`lib/cron/run-jobs.ts` collects the
+  brand logo, student photo keys, and attachment storage keys) — new key
+  formats without registration there get deleted within an hour. Deleting a
+  user preserves audit history via nullable `SetNull` relations ("Deleted
+  user") — never cascade-delete audit trails. Deleting a student removes
+  their photo + attachments.
+- **Multi-location semantics.** The tenant is the school; `Location` rows are
+  its dojo sites. Locations are organisational only (no per-location access
+  scoping). Students may train at several locations with exactly one primary
+  (`StudentLocation.isPrimary` — enforced in `lib/db/students.ts`). Every
+  class belongs to exactly one location (Phase 2+). Never hard-delete a
+  location that has students — deactivate it.
 - **Audit-log discipline.** Every state-changing admin action logs via
   `logAudit`/`logAuditSafe` with an action from `AUDIT_ACTIONS`.
 - Keep file text UTF-8; never introduce cp1252 mojibake.

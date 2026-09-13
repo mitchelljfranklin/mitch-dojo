@@ -18,6 +18,9 @@ export const E2E_ADMIN_PASSWORD = "admin-password-12345";
 export const E2E_VIEWER_EMAIL = "e2e-viewer@example.test";
 export const E2E_VIEWER_PASSWORD = "viewer-password-12345";
 
+const E2E_LOCATION_NAME = "E2E Dojo";
+const E2E_STUDENT_QUERY = { firstName: "E2E", lastName: "Student" };
+
 export default async function globalSetup() {
   // The suite signs in many times from one IP; raise the login throttle so the
   // per-IP rate limiter doesn't fail otherwise-unrelated tests. The original
@@ -31,6 +34,20 @@ export default async function globalSetup() {
   await updateOperationsSettings({ loginRateLimitPerMin: 1000 });
 
   await ensureSystemRoles();
+
+  // Seed locations used by the student specs; the default Main Dojo comes
+  // from the seed script, the e2e one is created (idempotently) here.
+  await prisma.location.upsert({
+    where: { name: E2E_LOCATION_NAME },
+    update: { isActive: true },
+    create: { name: E2E_LOCATION_NAME, isActive: true, sortOrder: 10 },
+  });
+
+  // Remove leftovers from previous runs so "create a student" tests stay clean.
+  await prisma.studentLocation.deleteMany({
+    where: { student: { is: E2E_STUDENT_QUERY } },
+  });
+  await prisma.student.deleteMany({ where: E2E_STUDENT_QUERY });
 
   const adminRole = await getRoleByName(SYSTEM_ROLE_NAMES.ADMIN);
   if (!adminRole) {

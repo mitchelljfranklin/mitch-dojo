@@ -16,6 +16,10 @@ process.env.DATA_STORAGE_PATH ??= "./.storage/files-test";
 if (process.env.TEST_DATABASE_URL) {
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
   process.env.DATABASE_PROVIDER = "postgres";
+} else {
+  // A bare `npm run test` has no database: drop any ambient DATABASE_URL (e.g.
+  // from .env) so integration suites skip and lib/env validates in PGlite mode.
+  delete process.env.DATABASE_URL;
 }
 
 // Default the provider to PGlite so suites that import lib/prisma transitively

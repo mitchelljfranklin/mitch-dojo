@@ -24,20 +24,36 @@ principles:
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Scaffold: auth, RBAC, settings, audit, scheduler, storage, email, dual-mode DB, Docker, CI, docs | **Current** |
-| 1 | Students: CRUD, search, CSV import/export, attachments | Planned |
-| 2 | Classes & schedule: courses, trainers, training times, sessions, calendar | Planned |
-| 3 | Attendance & QR check-in: session marking, public check-in pages, analytics | Planned |
-| 4 | Belts & gradings: belt levels per course, promotions, eligibility from attendance | Planned |
+| 0 | Scaffold: auth, RBAC, settings, audit, scheduler, storage, email, dual-mode DB, Docker, CI, docs | Done |
+| 1 | **Students & locations**: Location CRUD + student↔location assignment (multi-location, primary/home dojo), student CRUD, search, CSV import/export, photo + attachments | **Current** |
+| 2 | Classes & schedule: courses, trainers, training times (each class at exactly one location), sessions, calendar | Planned |
+| 3 | Attendance & QR check-in: session marking, per-location public check-in pages, analytics | Planned |
+| 4 | Belts & gradings: belt levels per course, promotions, eligibility from attendance, optional grading location | Planned |
 | 5 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Planned |
 | 6 | Communication: templates, reminders (class/payment/birthday) via scheduler | Planned |
-| 7 | Analytics: active members, attendance trends, retention signals, revenue summary | Planned |
+| 7 | Analytics: active members, attendance trends, retention signals, revenue summary — per-location breakdowns | Planned |
 | 8 | Trials & leads: trial pipeline, conversion tracking, public booking page | Planned |
 | 9 | Member portal: self-service schedule/check-in/details | Planned |
-| 10+ | Stripe/SEPA/PayPal, white-label, multi-location, REST API + Swagger | Planned |
+| 10+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
 builders, POS storefront, project management, kiosk apps, native mobile apps.
+
+## Multi-location model
+
+The tenant is the **school** (e.g. "Hino Tori Karate"); `Location` rows are
+its **dojo sites**. Semantics locked in at Phase 1:
+
+- **Locations are organisational, not an access boundary.** All staff see all
+  locations; locations exist to filter views and group data. Per-location
+  access isolation is explicitly out of scope.
+- **Students train at one or more locations** (`StudentLocation` M:N), with a
+  designated **primary (home) dojo** (`isPrimary` — exactly one per student,
+  enforced in the data layer) used for reporting and, later, eligibility.
+- **Every class belongs to exactly one location** (Phase 2: required
+  `locationId` on `Course`/`TrainingTime`).
+- Deletion safety: a location with assigned students cannot be deleted —
+  deactivate it instead; hard delete only when unreferenced.
 
 ## 3. Technology Stack
 
@@ -84,7 +100,7 @@ single environment variable. Constraints and mitigations:
 | Community adapter maturity | Pin versions; CI runs the lite path twice to prove idempotency |
 | WASM asset resolution in the standalone build | `serverExternalPackages` externalises PGlite in `next.config.ts` |
 
-## 5. Data Model (Phase 0)
+## 5. Data Model (Phases 0–1)
 
 ```
 Role ──< User ──< AuditLog
@@ -92,17 +108,23 @@ Role ──< User ──< AuditLog
               └─< NotificationLog (sentBy, SetNull)
 
 AppSetting (category/key/value Json/isSecret)  — all runtime config
+
+Location ──< StudentLocation >── Student
+Student (photoKey, status TRIAL/ACTIVE/INACTIVE/ALUMNI, guardian, emergency contact)
+Attachment (polymorphic entityType/entityId — "Student" documents)
 ```
 
-Domain models (Student, Trainer, Course, TrainingTime, ClassSession,
+Domain models still to come: Trainer, Course, TrainingTime, ClassSession,
 Attendance, BeltLevel, StudentBeltProgress, MembershipPlan, StudentMembership,
-Invoice/Payment) arrive with their phases. Trainer is a standalone entity with
-an optional nullable `User` link — roster data and auth identity stay
-decoupled, and trainers without system accounts still appear on schedules.
+Invoice/Payment. Trainer is a standalone entity with an optional nullable
+`User` link — roster data and auth identity stay decoupled, and trainers
+without system accounts still appear on schedules.
 
 Key relationships follow mitch-risk conventions: user deletion preserves
 history via `SetNull` ("Deleted user"); delete cascades are explicit and
-per-model.
+per-model. Deleting a student removes their photo and attachments from
+storage; the orphan sweep collects `students.photoKey`, `attachments.storageKey`,
+and the brand logo as referenced keys.
 
 ## 5.1 Identity & Access
 
