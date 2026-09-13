@@ -32,9 +32,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  auditLogs           AuditLog[]
-  passwordResetTokens PasswordResetToken[]
-  sentNotificationLogs NotificationLog[]  @relation("NotificationSentBy")
+  auditLogs            AuditLog[]
+  passwordResetTokens  PasswordResetToken[]
+  sentNotificationLogs NotificationLog[]    @relation("NotificationSentBy")
+  trainerProfile       Trainer?
 
   @@index([roleId])
   @@map("users")
@@ -82,16 +83,16 @@ model PasswordResetToken {
 }
 
 model NotificationLog {
-  id          String    @id @default(cuid())
+  id           String   @id @default(cuid())
   assessmentId String?
-  type        String
-  sentTo      String
-  subject     String?
-  status      String
+  type         String
+  sentTo       String
+  subject      String?
+  status       String
   errorMessage String?
-  sentAt      DateTime  @default(now())
-  sentById    String?
-  sentBy      User?     @relation("NotificationSentBy", fields: [sentById], references: [id], onDelete: SetNull)
+  sentAt       DateTime @default(now())
+  sentById     String?
+  sentBy       User?    @relation("NotificationSentBy", fields: [sentById], references: [id], onDelete: SetNull)
 
   @@index([assessmentId])
   @@index([sentAt])
@@ -106,6 +107,11 @@ enum StudentStatus {
   ALUMNI
 }
 
+enum SessionStatus {
+  SCHEDULED
+  CANCELLED
+}
+
 model Location {
   id        String   @id @default(cuid())
   name      String   @unique
@@ -118,6 +124,8 @@ model Location {
   updatedAt DateTime @updatedAt
 
   studentLocations StudentLocation[]
+  courses          Course[]
+  sessions         ClassSession[]
 
   @@map("locations")
 }
@@ -141,7 +149,7 @@ model Student {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  locations   StudentLocation[]
+  locations StudentLocation[]
 
   @@index([lastName, firstName])
   @@index([status])
@@ -175,4 +183,81 @@ model Attachment {
 
   @@index([entityType, entityId])
   @@map("attachments")
+}
+
+model Trainer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  bio       String?
+  isActive  Boolean  @default(true)
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses Course[]
+
+  @@map("trainers")
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id])
+  trainerId   String?
+  trainer     Trainer? @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trainingTimes TrainingTime[]
+  sessions      ClassSession[]
+
+  @@index([locationId])
+  @@index([trainerId])
+  @@map("courses")
+}
+
+// Recurring weekly slot for a course. Weekday follows JS getDay convention
+// (0 = Sunday … 6 = Saturday); times are wall-clock "HH:MM" strings so the
+// dojo's local timetable stays unambiguous across DST boundaries.
+model TrainingTime {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  weekday   Int
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, weekday, startTime])
+  @@map("training_times")
+}
+
+// Concrete occurrence generated from a course's training times.
+// locationId is denormalised at generation time so attendance history stays
+// stable even if the course later moves to a different location.
+model ClassSession {
+  id          String        @id @default(cuid())
+  courseId    String
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  locationId  String
+  location    Location      @relation(fields: [locationId], references: [id])
+  date        DateTime
+  startTime   String
+  endTime     String
+  status      SessionStatus @default(SCHEDULED)
+  cancelledAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([courseId, date, startTime])
+  @@index([date])
+  @@index([status])
+  @@map("class_sessions")
 }

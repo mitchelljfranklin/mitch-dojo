@@ -43,7 +43,12 @@ export default async function globalSetup() {
     create: { name: E2E_LOCATION_NAME, isActive: true, sortOrder: 10 },
   });
 
-  // Remove leftovers from previous runs so "create a student" tests stay clean.
+  // Remove leftovers from previous runs so create-flows stay deterministic.
+  await prisma.classSession.deleteMany({
+    where: { course: { name: "E2E Course" } },
+  });
+  await prisma.course.deleteMany({ where: { name: "E2E Course" } });
+  await prisma.trainer.deleteMany({ where: { name: "E2E Sensei" } });
   await prisma.studentLocation.deleteMany({
     where: { student: { is: E2E_STUDENT_QUERY } },
   });

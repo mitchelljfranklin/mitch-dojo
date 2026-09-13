@@ -13,6 +13,7 @@ test.describe("rbac viewer", () => {
     await page.waitForURL("**/dashboard");
     await expect(page.getByRole("link", { name: "Settings" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Students" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Schedule" })).toBeVisible();
 
     // Direct navigation to settings bounces back to the dashboard.
     await page.goto("/settings");

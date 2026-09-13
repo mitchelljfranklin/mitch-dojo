@@ -50,4 +50,10 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   CREATE_LOCATION: "Created location",
   UPDATE_LOCATION: "Updated location",
   DELETE_LOCATION: "Deleted location",
+  CREATE_TRAINER: "Created trainer",
+  UPDATE_TRAINER: "Updated trainer",
+  DELETE_TRAINER: "Deleted trainer",
+  CREATE_COURSE: "Created course",
+  UPDATE_COURSE: "Updated course",
+  DELETE_COURSE: "Deleted course",
 };

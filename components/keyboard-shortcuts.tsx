@@ -24,8 +24,20 @@ const ALL_ITEMS: PaletteItem[] = [
   },
   {
     label: "Classes",
-    subtitle: "Schedule & sessions",
+    subtitle: "Courses",
     href: "/classes",
+    permission: PERMISSIONS.CLASSES_VIEW,
+  },
+  {
+    label: "Weekly schedule",
+    subtitle: "Timetable",
+    href: "/classes/schedule",
+    permission: PERMISSIONS.CLASSES_VIEW,
+  },
+  {
+    label: "Trainers",
+    subtitle: "Instructor roster",
+    href: "/trainers",
     permission: PERMISSIONS.CLASSES_VIEW,
   },
   {

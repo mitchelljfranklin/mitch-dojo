@@ -174,6 +174,18 @@ async function resolveEntityNames(
             select: { id: true, name: true },
           });
           for (const location of locations) map.set(location.id, location.name);
+        } else if (type === "Trainer") {
+          const trainers = await prisma.trainer.findMany({
+            where: { id: { in: uniqueIds } },
+            select: { id: true, name: true },
+          });
+          for (const trainer of trainers) map.set(trainer.id, trainer.name);
+        } else if (type === "Course") {
+          const courses = await prisma.course.findMany({
+            where: { id: { in: uniqueIds } },
+            select: { id: true, name: true },
+          });
+          for (const course of courses) map.set(course.id, course.name);
         } else if (type === "Setting") {
           // Settings saves log the tab key as entityId (e.g. "general",
           // "operations") — the key itself is the readable name.
@@ -218,6 +230,12 @@ export const AUDIT_ACTIONS = {
   CREATE_LOCATION: "CREATE_LOCATION",
   UPDATE_LOCATION: "UPDATE_LOCATION",
   DELETE_LOCATION: "DELETE_LOCATION",
+  CREATE_TRAINER: "CREATE_TRAINER",
+  UPDATE_TRAINER: "UPDATE_TRAINER",
+  DELETE_TRAINER: "DELETE_TRAINER",
+  CREATE_COURSE: "CREATE_COURSE",
+  UPDATE_COURSE: "UPDATE_COURSE",
+  DELETE_COURSE: "DELETE_COURSE",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

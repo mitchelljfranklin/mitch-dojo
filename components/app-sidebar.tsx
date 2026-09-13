@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Settings,
   Users,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -62,6 +63,18 @@ export function AppSidebar({
       title: "Classes",
       href: "/classes",
       icon: CalendarDays,
+      permission: PERMISSIONS.CLASSES_VIEW,
+    },
+    {
+      title: "Schedule",
+      href: "/classes/schedule",
+      icon: Clock,
+      permission: PERMISSIONS.CLASSES_VIEW,
+    },
+    {
+      title: "Trainers",
+      href: "/trainers",
+      icon: Users,
       permission: PERMISSIONS.CLASSES_VIEW,
     },
     {
