@@ -1,5 +1,6 @@
 import {
-  type BeltLevel,
+  type BeltRangeEntry,
+  type Discipline,
   type Prisma,
 } from "../../prisma/generated/prisma/client";
 
@@ -8,63 +9,93 @@ import {
   TRAINED_STATUSES,
   type AttendanceStatusValue,
 } from "@/lib/schemas/attendance";
-import { type BeltLevelInput } from "@/lib/schemas/belt";
+import type { BeltLevelInput } from "@/lib/schemas/belt";
 
-export function listCoursesWithBeltCounts() {
-  return prisma.course.findMany({
+// --------------- disciplines ---------------
+
+export function listDisciplines(): Promise<
+  (Discipline & { _count: { beltRangeEntries: number; courses: number } })[]
+> {
+  return prisma.discipline.findMany({
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
     include: {
-      location: { select: { name: true } },
-      _count: { select: { beltLevels: true } },
+      _count: { select: { beltRangeEntries: true, courses: true } },
     },
   });
 }
 
-export function getCourseWithBelts(courseId: string) {
-  return prisma.course.findUnique({
-    where: { id: courseId },
-    include: {
-      location: { select: { id: true, name: true } },
-      trainer: { select: { id: true, name: true } },
-      beltLevels: { orderBy: { order: "asc" } },
-    },
+export function getDiscipline(id: string): Promise<Discipline | null> {
+  return prisma.discipline.findUnique({ where: { id } });
+}
+
+export function getDisciplineByName(name: string): Promise<Discipline | null> {
+  return prisma.discipline.findUnique({ where: { name } });
+}
+
+export async function createDiscipline(name: string): Promise<Discipline> {
+  return prisma.discipline.create({ data: { name: name.trim() } });
+}
+
+export async function deleteDiscipline(id: string): Promise<void> {
+  const discipline = await prisma.discipline.findUnique({
+    where: { id },
+    include: { _count: { select: { courses: true } } },
+  });
+  if (!discipline) {
+    throw new Error("Discipline not found.");
+  }
+  if (discipline._count.courses > 0) {
+    throw new Error(
+      "This discipline has courses assigned. Reassign or delete them first.",
+    );
+  }
+  await prisma.discipline.delete({ where: { id } });
+}
+
+// --------------- discipline belt ladder ---------------
+
+export function getDisciplineWithBelts(disciplineId: string) {
+  return prisma.discipline.findUnique({
+    where: { id: disciplineId },
+    include: { beltRangeEntries: { orderBy: { order: "asc" } } },
   });
 }
 
-export async function createBeltLevel(
-  courseId: string,
+export async function createBeltRangeEntry(
+  disciplineId: string,
   input: BeltLevelInput,
-): Promise<BeltLevel> {
-  return prisma.beltLevel.create({
-    data: { ...input, courseId },
+): Promise<BeltRangeEntry> {
+  return prisma.beltRangeEntry.create({
+    data: { ...input, disciplineId },
   });
 }
 
-export async function updateBeltLevel(
-  beltLevelId: string,
+export async function updateBeltRangeEntry(
+  id: string,
   input: BeltLevelInput,
-): Promise<BeltLevel> {
-  return prisma.beltLevel.update({ where: { id: beltLevelId }, data: input });
+): Promise<BeltRangeEntry> {
+  return prisma.beltRangeEntry.update({ where: { id }, data: input });
 }
 
-// Belt levels with awarded history cannot be hard-deleted — that would
-// orphan the denormalised history rows. Refuse and let the admin deactivate
-// the course or reorganise instead.
-export async function deleteBeltLevel(beltLevelId: string): Promise<void> {
-  const beltLevel = await prisma.beltLevel.findUnique({
-    where: { id: beltLevelId },
+// Belt entries that have been awarded cannot be hard-deleted — that would
+// orphan the denormalised history rows.
+export async function deleteBeltRangeEntry(id: string): Promise<void> {
+  const entry = await prisma.beltRangeEntry.findUnique({
+    where: { id },
     include: { _count: { select: { studentBelts: true } } },
   });
-  if (!beltLevel) {
-    throw new Error("Belt level not found.");
+  if (!entry) {
+    throw new Error("Belt not found.");
   }
-  if (beltLevel._count.studentBelts > 0) {
+  if (entry._count.studentBelts > 0) {
     throw new Error(
       "This belt has been awarded to students and cannot be removed.",
     );
   }
-  await prisma.beltLevel.delete({ where: { id: beltLevelId } });
+  await prisma.beltRangeEntry.delete({ where: { id } });
 }
+
+// --------------- student progression (per discipline, school-wide) ---------------
 
 export type ProgressRow = {
   studentId: string;
@@ -80,37 +111,29 @@ export type ProgressRow = {
   isEligible: boolean;
 };
 
-// Students at the course's location (ACTIVE/TRIAL) with their belt progress
-// for this course: current rank, total trained sessions on the course, and
-// whether they have met the next belt's required trainings.
-export async function getCourseProgress(courseId: string): Promise<{
-  course: {
+// All ACTIVE/TRIAL students school-wide with their belt progress for this
+// discipline: current rank, total trained sessions across ALL courses of
+// that discipline (cumulative, from their first class), and whether they
+// have met the next belt's required trainings.
+export async function getDisciplineProgress(disciplineId: string): Promise<{
+  discipline: {
     id: string;
     name: string;
-    locationName: string;
-    trainerName: string | null;
     isActive: boolean;
   } | null;
-  belts: BeltLevel[];
+  belts: BeltRangeEntry[];
   rows: ProgressRow[];
 }> {
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    include: {
-      location: { select: { id: true, name: true } },
-      trainer: { select: { name: true } },
-      beltLevels: { orderBy: { order: "asc" } },
-    },
+  const discipline = await prisma.discipline.findUnique({
+    where: { id: disciplineId },
+    include: { beltRangeEntries: { orderBy: { order: "asc" } } },
   });
-  if (!course) return { course: null, belts: [], rows: [] };
+  if (!discipline) return { discipline: null, belts: [], rows: [] };
 
-  const belts = course.beltLevels;
+  const belts = discipline.beltRangeEntries;
 
   const students = await prisma.student.findMany({
-    where: {
-      status: { in: ["ACTIVE", "TRIAL"] },
-      locations: { some: { locationId: course.locationId } },
-    },
+    where: { status: { in: ["ACTIVE", "TRIAL"] } },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: {
       id: true,
@@ -123,7 +146,7 @@ export async function getCourseProgress(courseId: string): Promise<{
   const history = await prisma.studentBelt.findMany({
     where: {
       studentId: { in: students.map((student) => student.id) },
-      beltLevel: { courseId },
+      beltRangeEntry: { disciplineId },
     },
     orderBy: { awardedAt: "desc" },
     select: {
@@ -132,7 +155,7 @@ export async function getCourseProgress(courseId: string): Promise<{
       beltName: true,
       colorHex: true,
       awardedAt: true,
-      beltLevelId: true,
+      beltRangeEntryId: true,
     },
   });
 
@@ -143,9 +166,15 @@ export async function getCourseProgress(courseId: string): Promise<{
     }
   }
 
-  const beltById = new Map(belts.map((belt) => [belt.id, belt]));
+  // All course ids belonging to this discipline — attendance across all of
+  // them counts towards the student's rank.
+  const disciplineCourses = await prisma.course.findMany({
+    where: { disciplineId },
+    select: { id: true },
+  });
+  const courseIds = disciplineCourses.map((course) => course.id);
 
-  function nextBeltOf(current: BeltLevel): BeltLevel | null {
+  function nextBeltOf(current: BeltRangeEntry): BeltRangeEntry | null {
     const next = belts
       .filter((belt) => belt.order > current.order)
       .sort((a, b) => a.order - b.order);
@@ -156,19 +185,22 @@ export async function getCourseProgress(courseId: string): Promise<{
   for (const student of students) {
     const currentRecord = currentByStudent.get(student.id) ?? null;
 
-    // Cumulative eligibility: every trained session (Present/Late) on this
-    // course counts towards the student's current and future ranks, from
-    // their very first class.
-    const trainingsTotal = await prisma.attendance.count({
-      where: {
-        studentId: student.id,
-        status: { in: TRAINED_STATUSES as unknown as AttendanceStatusValue[] },
-        session: { courseId },
-      },
-    });
+    const trainingsTotal =
+      courseIds.length > 0
+        ? await prisma.attendance.count({
+            where: {
+              studentId: student.id,
+              status: {
+                in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
+              },
+              session: { courseId: { in: courseIds } },
+            },
+          })
+        : 0;
 
     const currentBelt = currentRecord
-      ? (belts.find((belt) => belt.id === currentRecord.beltLevelId) ?? null)
+      ? (belts.find((belt) => belt.id === currentRecord.beltRangeEntryId) ??
+        null)
       : null;
     const nextBelt = currentBelt ? nextBeltOf(currentBelt) : (belts[0] ?? null);
     const requiredTrainings = nextBelt ? nextBelt.requiredTrainings : null;
@@ -190,49 +222,51 @@ export async function getCourseProgress(courseId: string): Promise<{
   }
 
   return {
-    course: {
-      id: course.id,
-      name: course.name,
-      locationName: course.location.name,
-      trainerName: course.trainer?.name ?? null,
-      isActive: course.isActive,
+    discipline: {
+      id: discipline.id,
+      name: discipline.name,
+      isActive: discipline.isActive,
     },
     belts,
     rows,
   };
 }
 
+// --------------- promotion history ---------------
+
 export async function getStudentBeltHistory(studentId: string) {
   return prisma.studentBelt.findMany({
     where: { studentId },
     orderBy: { awardedAt: "desc" },
     include: {
-      beltLevel: { include: { course: { select: { id: true, name: true } } } },
+      beltRangeEntry: {
+        include: { discipline: { select: { id: true, name: true } } },
+      },
     },
   });
 }
 
 export async function recordPromotion(input: {
   studentId: string;
-  beltLevelId: string;
+  beltRangeEntryId: string;
   awardedAt: Date;
   notes: string | null;
   awardedById: string | null;
 }): Promise<void> {
-  const beltLevel = await prisma.beltLevel.findUnique({
-    where: { id: input.beltLevelId },
+  const beltEntry = await prisma.beltRangeEntry.findUnique({
+    where: { id: input.beltRangeEntryId },
     select: { name: true, colorHex: true },
   });
-  if (!beltLevel) {
-    throw new Error("Belt level not found.");
+  if (!beltEntry) {
+    throw new Error("Belt not found.");
   }
 
   await prisma.studentBelt.create({
     data: {
       studentId: input.studentId,
-      beltLevelId: input.beltLevelId,
-      beltName: beltLevel.name,
-      colorHex: beltLevel.colorHex,
+      beltRangeEntryId: input.beltRangeEntryId,
+      beltName: beltEntry.name,
+      colorHex: beltEntry.colorHex,
       awardedAt: input.awardedAt,
       notes: input.notes,
       awardedById: input.awardedById,
@@ -244,21 +278,80 @@ export async function deletePromotion(promotionId: string): Promise<void> {
   await prisma.studentBelt.delete({ where: { id: promotionId } });
 }
 
-// Records one historical promotion row for imports. Skips when the same
-// student already holds the same belt awarded on the same calendar day, so
-// re-running an import is idempotent.
+// --------------- eligibility gate ---------------
+
+export type PromotionEligibility = {
+  status: "eligible" | "insufficient";
+  trainingsTotal: number;
+  requiredTrainings: number | null;
+  currentBeltName: string | null;
+  targetBeltName: string;
+};
+
+// Server-side eligibility gate for a promotion: counts ALL Present/Late
+// attendance across ALL courses of the target belt's discipline (cumulative
+// — every trained session from the student's first class counts towards
+// their ranks). Reused by the record-promotion action and integration tests.
+export async function checkPromotionEligibility(
+  studentId: string,
+  beltRangeEntryId: string,
+): Promise<NonNullable<PromotionEligibility> | null> {
+  const target = await prisma.beltRangeEntry.findUnique({
+    where: { id: beltRangeEntryId },
+    select: { name: true, requiredTrainings: true, disciplineId: true },
+  });
+  if (!target) return null;
+
+  const currentRecord = await prisma.studentBelt.findFirst({
+    where: { studentId, beltRangeEntry: { disciplineId: target.disciplineId } },
+    orderBy: { awardedAt: "desc" },
+    select: { beltName: true },
+  });
+
+  const disciplineCourseIds = await prisma.course.findMany({
+    where: { disciplineId: target.disciplineId },
+    select: { id: true },
+  });
+
+  const trainingsTotal =
+    disciplineCourseIds.length > 0
+      ? await prisma.attendance.count({
+          where: {
+            studentId,
+            status: {
+              in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
+            },
+            session: {
+              courseId: { in: disciplineCourseIds.map((course) => course.id) },
+            },
+          },
+        })
+      : 0;
+
+  return {
+    status:
+      trainingsTotal >= target.requiredTrainings ? "eligible" : "insufficient",
+    trainingsTotal,
+    requiredTrainings: target.requiredTrainings,
+    currentBeltName: currentRecord?.beltName ?? null,
+    targetBeltName: target.name,
+  };
+}
+
+// --------------- historical promotion import ---------------
+
 export async function recordHistoricalPromotion(input: {
   studentId: string;
-  beltLevelId: string;
+  beltRangeEntryId: string;
   awardedAt: Date;
   notes: string | null;
 }): Promise<"created" | "skipped"> {
-  const beltLevel = await prisma.beltLevel.findUnique({
-    where: { id: input.beltLevelId },
+  const beltEntry = await prisma.beltRangeEntry.findUnique({
+    where: { id: input.beltRangeEntryId },
     select: { name: true, colorHex: true },
   });
-  if (!beltLevel) {
-    throw new Error("Belt level not found.");
+  if (!beltEntry) {
+    throw new Error("Belt not found.");
   }
 
   const dayStart = new Date(
@@ -271,7 +364,7 @@ export async function recordHistoricalPromotion(input: {
   const duplicate = await prisma.studentBelt.findFirst({
     where: {
       studentId: input.studentId,
-      beltLevelId: input.beltLevelId,
+      beltRangeEntryId: input.beltRangeEntryId,
       awardedAt: { gte: dayStart, lt: dayEnd },
     },
     select: { id: true },
@@ -281,9 +374,9 @@ export async function recordHistoricalPromotion(input: {
   await prisma.studentBelt.create({
     data: {
       studentId: input.studentId,
-      beltLevelId: input.beltLevelId,
-      beltName: beltLevel.name,
-      colorHex: beltLevel.colorHex,
+      beltRangeEntryId: input.beltRangeEntryId,
+      beltName: beltEntry.name,
+      colorHex: beltEntry.colorHex,
       awardedAt: input.awardedAt,
       notes: input.notes,
     },
@@ -291,139 +384,8 @@ export async function recordHistoricalPromotion(input: {
   return "created";
 }
 
-export type PromotionEligibility = {
-  eligible: boolean;
-  trainingsTotal: number;
-  requiredTrainings: number | null;
-  currentBeltName: string | null;
-  targetBeltName: string;
-};
-
-// Server-side eligibility gate for a promotion: counts ALL Present/Late
-// attendance on the target belt's course (cumulative — every trained session
-// from the student's first class counts towards their ranks). Reused by the
-// record-promotion action and integration tests.
-export async function checkPromotionEligibility(
-  studentId: string,
-  beltLevelId: string,
-): Promise<{
-  status: "eligible" | "insufficient" | "no_belt" | "already_current";
-  trainingsTotal: number;
-  requiredTrainings: number | null;
-  currentBeltName: string | null;
-  targetBeltName: string;
-} | null> {
-  const target = await prisma.beltLevel.findUnique({
-    where: { id: beltLevelId },
-    select: { name: true, requiredTrainings: true, courseId: true },
-  });
-  if (!target) return null;
-
-  const currentRecord = await prisma.studentBelt.findFirst({
-    where: { studentId, beltLevel: { courseId: target.courseId } },
-    orderBy: { awardedAt: "desc" },
-    select: { beltName: true },
-  });
-
-  const trainingsTotal = await prisma.attendance.count({
-    where: {
-      studentId,
-      status: { in: TRAINED_STATUSES as unknown as AttendanceStatusValue[] },
-      session: { courseId: target.courseId },
-    },
-  });
-
-  return {
-    status:
-      trainingsTotal >= target.requiredTrainings ? "eligible" : "insufficient",
-    trainingsTotal,
-    requiredTrainings: target.requiredTrainings,
-    currentBeltName: currentRecord?.beltName ?? null,
-    targetBeltName: target.name,
-  };
-}
-
-// --------------- standard belt range (Settings) ---------------
-
-export function listBeltRange() {
-  return prisma.beltRangeEntry.findMany({ orderBy: { order: "asc" } });
-}
-
-export async function createBeltRangeEntry(
-  input: BeltLevelInput,
-): Promise<void> {
-  await prisma.beltRangeEntry.create({ data: input });
-}
-
-export async function updateBeltRangeEntry(
-  id: string,
-  input: BeltLevelInput,
-): Promise<void> {
-  await prisma.beltRangeEntry.update({ where: { id }, data: input });
-}
-
-export async function deleteBeltRangeEntry(id: string): Promise<void> {
-  await prisma.beltRangeEntry.delete({ where: { id } });
-}
-
-// Loads the school's standard ladder into a course: entries matching by name
-// are updated, missing ones are created, and unawarded course belts that are
-// not part of the standard range are removed. Awarded belts are always kept.
-export async function applyBeltRangeToCourse(
-  courseId: string,
-): Promise<number> {
-  const [range, courseBelts] = await Promise.all([
-    prisma.beltRangeEntry.findMany({ orderBy: { order: "asc" } }),
-    prisma.beltLevel.findMany({
-      where: { courseId },
-      include: { _count: { select: { studentBelts: true } } },
-    }),
-  ]);
-
-  const rangeByName = new Map(range.map((entry) => [entry.name, entry]));
-  let changes = 0;
-
-  await prisma.$transaction(async (tx) => {
-    for (const belt of courseBelts) {
-      const standard = rangeByName.get(belt.name);
-      if (standard) {
-        await tx.beltLevel.update({
-          where: { id: belt.id },
-          data: {
-            colorHex: standard.colorHex,
-            order: standard.order,
-            requiredTrainings: standard.requiredTrainings,
-          },
-        });
-        changes++;
-      } else if (belt._count.studentBelts === 0) {
-        await tx.beltLevel.delete({ where: { id: belt.id } });
-        changes++;
-      }
-    }
-
-    const existingNames = new Set(courseBelts.map((belt) => belt.name));
-    for (const entry of range) {
-      if (!existingNames.has(entry.name)) {
-        await tx.beltLevel.create({
-          data: {
-            courseId,
-            name: entry.name,
-            colorHex: entry.colorHex,
-            order: entry.order,
-            requiredTrainings: entry.requiredTrainings,
-          },
-        });
-        changes++;
-      }
-    }
-  });
-
-  return changes;
-}
-
 export type BeltHistoryRow = Awaited<
   ReturnType<typeof getStudentBeltHistory>
 >[number];
 
-export type BeltWhere = Prisma.BeltLevelWhereInput;
+export type DisciplineWhere = Prisma.DisciplineWhereInput;

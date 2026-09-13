@@ -45,9 +45,9 @@ describe("beltLevelSchema", () => {
 });
 
 describe("promotionSchema", () => {
-  it("requires a belt level and a valid date", () => {
+  it("requires a belt and a valid date", () => {
     const missingBelt = promotionSchema.safeParse({
-      beltLevelId: "",
+      beltRangeEntryId: "",
       awardedAt: "2026-09-13",
     });
     expect(missingBelt.success).toBe(false);
@@ -55,7 +55,7 @@ describe("promotionSchema", () => {
 
   it("rejects invalid dates", () => {
     const result = promotionSchema.safeParse({
-      beltLevelId: "belt-1",
+      beltRangeEntryId: "belt-1",
       awardedAt: "not-a-date",
     });
     expect(result.success).toBe(false);
@@ -63,7 +63,7 @@ describe("promotionSchema", () => {
 
   it("accepts a valid promotion", () => {
     const result = promotionSchema.safeParse({
-      beltLevelId: "belt-1",
+      beltRangeEntryId: "belt-1",
       awardedAt: "2026-09-13",
       notes: "  Grading day  ",
     });

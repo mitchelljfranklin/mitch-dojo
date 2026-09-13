@@ -45,6 +45,7 @@ describe("courseFormSchema", () => {
     name: "Kids Karate",
     description: "",
     locationId: "loc-1",
+    disciplineId: "disc-1",
     trainerId: "",
     isActive: true,
   };
@@ -70,6 +71,7 @@ describe("courseFormSchema", () => {
     const result = courseFormSchema.safeParse({
       ...base,
       trainerId: "",
+      disciplineId: "disc-1",
       trainingTimes: [{ weekday: 3, startTime: "17:30", endTime: "18:30" }],
     });
     expect(result.success).toBe(true);

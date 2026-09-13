@@ -4,29 +4,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { FlashToast } from "@/components/flash-toast";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
-import { listCoursesWithBeltCounts } from "@/lib/db/belts";
+import { listDisciplines } from "@/lib/db/belts";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Belts & gradings" };
 
-export default async function BeltsPage() {
+type BeltsPageProps = {
+  searchParams: Promise<Record<string, string | undefined>>;
+};
+
+export default async function BeltsPage({ searchParams }: BeltsPageProps) {
   const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
-  const courses = await listCoursesWithBeltCounts();
+  const disciplines = await listDisciplines();
+  const sp = await searchParams;
 
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumbs segments={[{ label: "Belts & gradings" }]} />
+      {sp.disciplineError ? (
+        <FlashToast variant="error" message={sp.disciplineError} />
+      ) : null}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
             Belts & gradings
           </h1>
           <p className="text-muted-foreground text-sm">
-            Belt requirements and student progression per course.
+            Belt ladders and student progression per discipline.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -41,41 +50,44 @@ export default async function BeltsPage() {
         </div>
       </div>
 
-      {courses.length === 0 ? (
+      {disciplines.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No courses yet</CardTitle>
+            <CardTitle>No disciplines yet</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              Create a course first — belt levels belong to courses.
+              Create a discipline (e.g. Karate, Jujitsu) to set up its belt
+              ladder. Courses are linked to a discipline so progression is
+              shared across all locations teaching it.
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
-            <a key={course.id} href={`/belts/${course.id}`}>
+          {disciplines.map((discipline) => (
+            <Link key={discipline.id} href={`/belts/${discipline.id}`}>
               <Card className="hover:bg-accent/40 h-full transition-colors">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="truncate">{course.name}</CardTitle>
-                    {course.isActive ? null : (
+                    <CardTitle className="truncate">
+                      {discipline.name}
+                    </CardTitle>
+                    {discipline.isActive ? null : (
                       <Badge variant="outline" className="shrink-0">
                         Inactive
                       </Badge>
                     )}
                   </div>
-                  <p className="text-muted-foreground text-xs">
-                    {course.location.name}
-                  </p>
                 </CardHeader>
                 <CardContent className="text-muted-foreground text-xs">
-                  {course._count.beltLevels} belt level
-                  {course._count.beltLevels === 1 ? "" : "s"} defined
+                  {discipline._count.beltRangeEntries} belt
+                  {discipline._count.beltRangeEntries === 1 ? "" : "s"} ·{" "}
+                  {discipline._count.courses} course
+                  {discipline._count.courses === 1 ? "" : "s"}
                 </CardContent>
               </Card>
-            </a>
+            </Link>
           ))}
         </div>
       )}

@@ -42,6 +42,7 @@ export type CourseListResult = {
     description: string | null;
     isActive: boolean;
     locationName: string;
+    disciplineName: string;
     trainerName: string | null;
     trainerId: string | null;
     weeklySlotCount: number;
@@ -81,6 +82,7 @@ export async function listCourses(
       orderBy: courseOrderBy(filters?.sort),
       include: {
         location: { select: { name: true } },
+        discipline: { select: { name: true } },
         trainer: { select: { name: true } },
         trainingTimes: { select: { id: true } },
       },
@@ -94,6 +96,7 @@ export async function listCourses(
     description: course.description,
     isActive: course.isActive,
     locationName: course.location.name,
+    disciplineName: course.discipline.name,
     trainerName: course.trainer?.name ?? null,
     trainerId: course.trainerId,
     weeklySlotCount: course.trainingTimes.length,
@@ -107,6 +110,7 @@ export async function getCourse(id: string) {
     where: { id },
     include: {
       location: true,
+      discipline: true,
       trainer: true,
       trainingTimes: { orderBy: [{ weekday: "asc" }, { startTime: "asc" }] },
     },

@@ -44,6 +44,7 @@ function parseCourseInput(formData: FormData) {
     name: getField(formData, "name"),
     description: getField(formData, "description"),
     locationId: getField(formData, "locationId"),
+    disciplineId: getField(formData, "disciplineId"),
     trainerId: getField(formData, "trainerId"),
     isActive: getField(formData, "isActive") === "on",
     trainingTimes: slots,

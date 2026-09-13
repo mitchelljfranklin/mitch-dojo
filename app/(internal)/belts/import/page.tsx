@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
-import { listCourseOptions } from "@/lib/db/courses";
+import { listDisciplines } from "@/lib/db/belts";
 
 import { BeltImportForm } from "./import-form";
 
@@ -18,7 +18,8 @@ export const metadata = { title: "Import belt history" };
 
 export default async function ImportBeltHistoryPage() {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const courses = await listCourseOptions();
+  const disciplines = await listDisciplines();
+  const activeDisciplines = disciplines.filter((d) => d.isActive);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -50,7 +51,7 @@ export default async function ImportBeltHistoryPage() {
               </li>
               <li>
                 <code>Belt</code> — required, exact belt name in the selected
-                course&apos;s ladder (belts are not auto-created)
+                discipline&apos;s ladder (belts are not auto-created)
               </li>
               <li>
                 <code>AwardedAt</code> — required, YYYY-MM-DD (today or earlier)
@@ -60,21 +61,22 @@ export default async function ImportBeltHistoryPage() {
               </li>
             </ul>
             <p className="text-muted-foreground mt-2 text-xs">
-              Students are matched within the selected course&apos;s location.
+              Students are matched school-wide (rank is global per discipline).
               Rows referring to unknown belts or students are reported as errors
               and skipped. Duplicate student+belt+date rows are skipped so
               re-running an import is safe.
             </p>
           </div>
-          {courses.length === 0 ? (
+          {activeDisciplines.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No courses exist yet — create one under Classes first.
+              No disciplines exist yet — create one on the Belts & gradings page
+              first.
             </p>
           ) : (
             <BeltImportForm
-              courses={courses.map((course) => ({
-                id: course.id,
-                name: `${course.name} (${course.locationName})`,
+              disciplines={activeDisciplines.map((d) => ({
+                id: d.id,
+                name: d.name,
               }))}
             />
           )}

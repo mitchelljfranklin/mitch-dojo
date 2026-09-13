@@ -17,18 +17,18 @@ import {
 import { getOperationsSettings } from "@/lib/settings";
 import { computeSessionExpiry } from "@/lib/session";
 
-export const getRolePermissions = cache(
-  async (roleId: string): Promise<{ name: string; permissions: string[] }> => {
-    const role = await prisma.role.findUnique({
-      where: { id: roleId },
-      select: { name: true, permissions: true },
-    });
-    return {
-      name: role?.name ?? "",
-      permissions: role?.permissions ?? [],
-    };
-  },
-);
+export async function getRolePermissions(
+  roleId: string,
+): Promise<{ name: string; permissions: string[] }> {
+  const role = await prisma.role.findUnique({
+    where: { id: roleId },
+    select: { name: true, permissions: true },
+  });
+  return {
+    name: role?.name ?? "",
+    permissions: role?.permissions ?? [],
+  };
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   return {
@@ -150,13 +150,6 @@ export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
-  }
-  // A session whose user (or role) no longer exists — e.g. the database was
-  // reset while a browser cookie survived — has empty permissions; force a
-  // clean re-login rather than letting guards redirect to /dashboard in a
-  // loop (the dashboard itself is the redirect target).
-  if (!user.roleId) {
-    await signOut({ redirectTo: "/login" });
   }
   return user;
 }

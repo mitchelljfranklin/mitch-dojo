@@ -27,6 +27,7 @@ let locationAId: string;
 let locationBId: string;
 let trainerId: string;
 let courseId: string;
+let disciplineId: string;
 
 function trainerInput(name: string): TrainerInput {
   return {
@@ -44,6 +45,7 @@ function courseInput(overrides?: Partial<CourseFormInput>): CourseFormInput {
     name: `Karate Basics ${suffix}`,
     description: null,
     locationId: locationAId,
+    disciplineId: typeof disciplineId === "string" ? disciplineId : "",
     trainerId: null,
     isActive: true,
     trainingTimes: [
@@ -55,6 +57,12 @@ function courseInput(overrides?: Partial<CourseFormInput>): CourseFormInput {
 }
 
 beforeAll(async () => {
+  const discipline = await prisma.discipline.upsert({
+    where: { name: `Discipline ${suffix}` },
+    update: {},
+    create: { name: `Discipline ${suffix}` },
+  });
+  disciplineId = discipline.id;
   const locationA = await createLocation({
     name: `Class Main ${suffix}`,
     address: null,
@@ -88,6 +96,9 @@ afterAll(async () => {
   await prisma.trainer.deleteMany({
     where: { name: { contains: suffix } },
   });
+  await prisma.discipline
+    .delete({ where: { id: disciplineId } })
+    .catch(() => undefined);
   await deleteLocation(locationAId).catch(() => undefined);
   await deleteLocation(locationBId).catch(() => undefined);
   await prisma.$disconnect();

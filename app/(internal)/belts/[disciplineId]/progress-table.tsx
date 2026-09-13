@@ -23,12 +23,12 @@ import {
   type BeltActionState,
 } from "@/lib/actions/belts";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
-import type { BeltLevelView } from "./belt-levels-manager";
+import type { BeltRangeView } from "./belt-ladder-manager";
 import type { ProgressRow } from "@/lib/db/belts";
 
 type ProgressTableProps = {
-  courseId: string;
-  belts: BeltLevelView[];
+  disciplineId: string;
+  belts: BeltRangeView[];
   rows: ProgressRow[];
   canEdit: boolean;
 };
@@ -56,25 +56,21 @@ function BeltChip({
   );
 }
 
-// Defaults the sheet's belt picker to the student's next belt in the ladder
-// (the rank they are working towards), falling back to the first belt.
 function defaultBeltIdFor(
   student: ProgressRow,
-  belts: BeltLevelView[],
+  belts: BeltRangeView[],
 ): string {
   const next = belts.find((belt) => belt.name === student.nextBeltName);
   return next?.id ?? belts[0]?.id ?? "";
 }
 
 export function ProgressTable({
-  courseId,
+  disciplineId,
   belts,
   rows,
   canEdit,
 }: ProgressTableProps) {
   const [promoting, setPromoting] = useState<ProgressRow | null>(null);
-  // Mount-time default for the sheet's belt picker: the next belt in the
-  // ladder for the promoted student (falls back to the first belt).
   const [defaultBeltId, setDefaultBeltId] = useState("");
 
   return (
@@ -83,15 +79,15 @@ export function ProgressTable({
         <div>
           <h2 className="text-base font-semibold">Student progression</h2>
           <p className="text-muted-foreground text-xs">
-            Current rank, total trainings on the course, and eligibility for the
-            next belt.
+            Current rank, total trained sessions across all courses of this
+            discipline, and eligibility for the next belt.
           </p>
         </div>
       </div>
       <CardContent className="pt-4">
         {rows.length === 0 ? (
           <p className="text-muted-foreground pb-2 text-sm">
-            No students at this course&apos;s location yet.
+            No active or trial students yet.
           </p>
         ) : (
           <div className="flex flex-col divide-y rounded-lg border">
@@ -106,7 +102,7 @@ export function ProgressTable({
                   </span>
                   <span className="text-muted-foreground text-xs">
                     {row.currentBeltName
-                      ? `${row.trainingsTotal} training${row.trainingsTotal === 1 ? "" : "s"} on this course`
+                      ? `${row.trainingsTotal} training${row.trainingsTotal === 1 ? "" : "s"} on this discipline`
                       : "No belt recorded yet"}
                   </span>
                 </div>
@@ -163,7 +159,7 @@ export function ProgressTable({
           // default.
           <PromotionSheet
             key={`${promoting.studentId}-${defaultBeltId}`}
-            courseId={courseId}
+            disciplineId={disciplineId}
             belts={belts}
             student={promoting}
             defaultBeltId={defaultBeltId}
@@ -176,14 +172,14 @@ export function ProgressTable({
 }
 
 function PromotionSheet({
-  courseId,
+  disciplineId,
   belts,
   student,
   defaultBeltId,
   onClose,
 }: {
-  courseId: string;
-  belts: BeltLevelView[];
+  disciplineId: string;
+  belts: BeltRangeView[];
   student: ProgressRow;
   defaultBeltId: string;
   onClose: () => void;
@@ -194,9 +190,6 @@ function PromotionSheet({
   >(recordPromotionAction, initialState);
   useActionFeedback(state);
 
-  // The sheet stays open after a successful save and shows the success
-  // message; closing is an explicit user action (event handler, not a
-  // setState-in-effect, which the lint rules forbid).
   const promotionSaved = state !== undefined && "ok" in state && state.ok;
 
   return (
@@ -212,17 +205,15 @@ function PromotionSheet({
       </SheetHeader>
       <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
         <input type="hidden" name="studentId" value={student.studentId} />
-        <input type="hidden" name="courseId" value={courseId} />
+        <input type="hidden" name="disciplineId" value={disciplineId} />
         <div className="grid gap-2">
           <Label htmlFor="promotion-belt">Belt</Label>
           {/* Uncontrolled with a mount-time default: React 19 resets forms
               after every action, which would revert a controlled select to
-              the browser default between attempts (the AGENTS.md uncontrolled
-              gotcha). The sheet remounts per attempt, so the default is
-              always fresh. */}
+              the browser default between attempts. */}
           <select
             id="promotion-belt"
-            name="beltLevelId"
+            name="beltRangeEntryId"
             defaultValue={defaultBeltId}
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             required

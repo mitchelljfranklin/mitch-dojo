@@ -22,6 +22,7 @@ export type CourseFormValues = {
   name: string;
   description: string | null;
   locationId: string;
+  disciplineId: string;
   trainerId: string | null;
   isActive: boolean;
   trainingTimes: { weekday: number; startTime: string; endTime: string }[];
@@ -39,6 +40,7 @@ type CourseFormProps = {
   action: CourseFormAction;
   values?: CourseFormValues;
   locations: { id: string; name: string; isActive: boolean }[];
+  disciplines: { id: string; name: string; isActive: boolean }[];
   trainers: { id: string; name: string }[];
   submitLabel: string;
   courseId?: string;
@@ -56,6 +58,7 @@ export function CourseForm({
   action,
   values,
   locations,
+  disciplines,
   trainers,
   submitLabel,
   courseId,
@@ -122,6 +125,25 @@ export function CourseForm({
           </Select>
           <p className="text-muted-foreground text-xs">
             Every course runs at exactly one location.
+          </p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="course-discipline">Discipline *</Label>
+          <Select name="disciplineId" defaultValue={values?.disciplineId ?? ""}>
+            <SelectTrigger id="course-discipline">
+              <SelectValue placeholder="Choose a discipline…" />
+            </SelectTrigger>
+            <SelectContent>
+              {disciplines.map((discipline) => (
+                <SelectItem key={discipline.id} value={discipline.id}>
+                  {discipline.name}
+                  {discipline.isActive ? null : " (inactive)"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-muted-foreground text-xs">
+            The discipline determines the belt ladder used for progression.
           </p>
         </div>
         <div className="grid gap-2">

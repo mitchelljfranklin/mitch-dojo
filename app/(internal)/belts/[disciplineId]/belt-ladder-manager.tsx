@@ -5,13 +5,6 @@ import { useActionState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,7 +17,6 @@ import {
 } from "@/components/ui/sheet";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
-  applyBeltRangeAction,
   createBeltLevelAction,
   deleteBeltLevelAction,
   updateBeltLevelAction,
@@ -32,7 +24,7 @@ import {
 } from "@/lib/actions/belts";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
-export type BeltLevelView = {
+export type BeltRangeView = {
   id: string;
   name: string;
   colorHex: string;
@@ -40,12 +32,10 @@ export type BeltLevelView = {
   requiredTrainings: number;
 };
 
-type EditorTarget = BeltLevelView | "new";
+type EditorTarget = BeltRangeView | "new";
 
 const initialState: BeltActionState = undefined;
 
-// Maps any valid hex (#RGB or #RRGGBB) to a #RRGGBB string the colour
-// picker accepts; falls back to white for non-hex input while typing.
 function normalizeHexForPicker(value: string): string {
   const trimmed = value.trim();
   if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toUpperCase();
@@ -60,11 +50,9 @@ function BeltFields({
   belt,
   defaultOrder,
 }: {
-  belt?: BeltLevelView;
+  belt?: BeltRangeView;
   defaultOrder: number;
 }) {
-  // Single source of truth for the colour so typing a hex code updates the
-  // picker and picking from the palette updates the hex field.
   const [color, setColor] = useState(belt?.colorHex ?? "#FFFFFF");
 
   return (
@@ -72,22 +60,17 @@ function BeltFields({
       <input type="hidden" name="colorHex" value={color} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <label htmlFor="belt-name" className="text-sm font-medium">
-            Name
-          </label>
-          <input
+          <Label htmlFor="belt-name">Name</Label>
+          <Input
             id="belt-name"
             name="name"
             defaultValue={belt?.name}
             required
             maxLength={40}
-            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
           />
         </div>
         <div className="grid gap-2">
-          <label htmlFor="belt-color" className="text-sm font-medium">
-            Colour
-          </label>
+          <Label htmlFor="belt-color">Colour</Label>
           <div className="flex items-center gap-2">
             <input
               id="belt-color"
@@ -97,7 +80,7 @@ function BeltFields({
               className="h-9 w-14 cursor-pointer rounded border p-1"
               aria-label="Colour palette"
             />
-            <input
+            <Input
               id="belt-color-hex"
               type="text"
               value={color}
@@ -105,21 +88,16 @@ function BeltFields({
               onBlur={(event) =>
                 setColor(normalizeHexForPicker(event.target.value))
               }
-              className="border-input bg-background h-9 w-28 rounded-md border px-3 font-mono text-sm"
+              className="w-28 font-mono"
               aria-label="Colour hex value"
               pattern="^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
               required
             />
           </div>
-          <p className="text-muted-foreground text-xs">
-            Pick a colour or type a hex code (e.g. #FFD700) — both stay in sync.
-          </p>
         </div>
         <div className="grid gap-2">
-          <label htmlFor="belt-order" className="text-sm font-medium">
-            Order (0 = entry rank)
-          </label>
-          <input
+          <Label htmlFor="belt-order">Order (0 = entry rank)</Label>
+          <Input
             id="belt-order"
             name="order"
             type="number"
@@ -127,14 +105,12 @@ function BeltFields({
             max={99}
             defaultValue={belt?.order ?? defaultOrder}
             required
-            className="border-input bg-background h-9 w-24 rounded-md border px-3 text-sm"
+            className="w-24"
           />
         </div>
         <div className="grid gap-2">
-          <label htmlFor="belt-required" className="text-sm font-medium">
-            Required trainings
-          </label>
-          <input
+          <Label htmlFor="belt-required">Required trainings</Label>
+          <Input
             id="belt-required"
             name="requiredTrainings"
             type="number"
@@ -142,11 +118,11 @@ function BeltFields({
             max={9999}
             defaultValue={belt?.requiredTrainings ?? 0}
             required
-            className="border-input bg-background h-9 w-24 rounded-md border px-3 text-sm"
+            className="w-24"
           />
           <p className="text-muted-foreground text-xs">
-            Trainings (present/late) needed in total on this course to be
-            awarded this belt — counted from the student&apos;s first class.
+            Cumulative total of trained sessions (across all courses of this
+            discipline) needed to be awarded this belt.
           </p>
         </div>
       </div>
@@ -155,11 +131,11 @@ function BeltFields({
 }
 
 function NewBeltForm({
-  courseId,
+  disciplineId,
   nextOrder,
   onClose,
 }: {
-  courseId: string;
+  disciplineId: string;
   nextOrder: number;
   onClose: () => void;
 }) {
@@ -177,7 +153,7 @@ function NewBeltForm({
 
   return (
     <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
-      <input type="hidden" name="courseId" value={courseId} />
+      <input type="hidden" name="disciplineId" value={disciplineId} />
       <BeltFields defaultOrder={nextOrder} />
       {state && "error" in state ? (
         <p className="text-destructive px-4 text-sm" role="alert">
@@ -197,12 +173,12 @@ function NewBeltForm({
 }
 
 function EditBeltForm({
-  courseId,
+  disciplineId,
   belt,
   onClose,
 }: {
-  courseId: string;
-  belt: BeltLevelView;
+  disciplineId: string;
+  belt: BeltRangeView;
   onClose: () => void;
 }) {
   const [state, formAction, isPending] = useActionState<
@@ -234,13 +210,13 @@ function EditBeltForm({
       ) : null}
 
       <div className="mt-auto grid gap-2 border-t pt-4">
-        <p className="text-sm font-medium">Danger zone</p>
+        <Label>Danger zone</Label>
         <form id={`delete-belt-${belt.id}`} action={deleteBeltLevelAction}>
           <input type="hidden" name="beltLevelId" value={belt.id} />
-          <input type="hidden" name="courseId" value={courseId} />
+          <input type="hidden" name="disciplineId" value={disciplineId} />
           <ConfirmDialog
             title="Remove belt level?"
-            description={`${belt.name} will be removed from this course. Belts that have been awarded cannot be removed.`}
+            description={`${belt.name} will be removed from this discipline. Belts that have been awarded cannot be removed.`}
             confirmLabel="Remove"
             formId={`delete-belt-${belt.id}`}
           >
@@ -267,13 +243,13 @@ function EditBeltForm({
   );
 }
 
-export function BeltLevelsManager({
-  courseId,
+export function BeltLadderManager({
+  disciplineId,
   belts,
   canEdit,
 }: {
-  courseId: string;
-  belts: BeltLevelView[];
+  disciplineId: string;
+  belts: BeltRangeView[];
   canEdit: boolean;
 }) {
   const [editing, setEditing] = useState<EditorTarget | null>(null);
@@ -287,65 +263,56 @@ export function BeltLevelsManager({
     belts.length > 0 ? Math.max(...belts.map((belt) => belt.order)) + 1 : 0;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <CardTitle>Belt levels</CardTitle>
-          <CardDescription>
-            Ranks for this course, lowest order first.
-          </CardDescription>
+          <h3 className="text-sm font-medium">Belt ladder</h3>
+          <p className="text-muted-foreground text-xs">
+            Ranks for this discipline, lowest order first.
+          </p>
         </div>
         {canEdit ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <form action={applyBeltRangeAction}>
-              <input type="hidden" name="courseId" value={courseId} />
-              <Button type="submit" variant="secondary" size="sm">
-                Load standard range
-              </Button>
-            </form>
-            <Button size="sm" onClick={() => setEditing("new")}>
-              Add belt
-            </Button>
-          </div>
+          <Button size="sm" onClick={() => setEditing("new")}>
+            Add belt
+          </Button>
         ) : null}
-      </CardHeader>
-      <CardContent>
-        {belts.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No belt levels yet. Add the entry belt first (0 required trainings).
-          </p>
-        ) : (
-          <div className="flex flex-col divide-y rounded-lg border">
-            {belts.map((belt) => (
-              <button
-                key={belt.id}
-                type="button"
-                onClick={() => canEdit && setEditing(belt)}
-                disabled={!canEdit}
-                className="hover:bg-muted/50 flex items-center justify-between gap-3 p-3 text-left"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-8 shrink-0 rounded-full border border-black/20"
-                    style={{ backgroundColor: belt.colorHex }}
-                  />
-                  <span className="truncate text-sm font-medium">
-                    {belt.name}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    order {belt.order}
-                  </span>
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {belt.requiredTrainings} training
-                  {belt.requiredTrainings === 1 ? "" : "s"}
-                </Badge>
-              </button>
-            ))}
-          </div>
-        )}
-      </CardContent>
+      </div>
+
+      {belts.length === 0 ? (
+        <p className="text-muted-foreground text-sm">
+          No belt levels yet. Add the entry belt first (0 required trainings).
+        </p>
+      ) : (
+        <div className="flex flex-col divide-y rounded-lg border">
+          {belts.map((belt) => (
+            <button
+              key={belt.id}
+              type="button"
+              onClick={() => canEdit && setEditing(belt)}
+              disabled={!canEdit}
+              className="hover:bg-muted/50 flex items-center justify-between gap-3 p-3 text-left"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-8 shrink-0 rounded-full border border-black/20"
+                  style={{ backgroundColor: belt.colorHex }}
+                />
+                <span className="truncate text-sm font-medium">
+                  {belt.name}
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  order {belt.order}
+                </span>
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                {belt.requiredTrainings} training
+                {belt.requiredTrainings === 1 ? "" : "s"}
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
 
       <Sheet
         open={isOpen}
@@ -358,11 +325,11 @@ export function BeltLevelsManager({
             <SheetHeader>
               <SheetTitle>Add belt level</SheetTitle>
               <SheetDescription>
-                Define a rank for this course.
+                Define a rank for this discipline.
               </SheetDescription>
             </SheetHeader>
             <NewBeltForm
-              courseId={courseId}
+              disciplineId={disciplineId}
               nextOrder={nextOrder}
               onClose={() => setEditing(null)}
             />
@@ -377,13 +344,13 @@ export function BeltLevelsManager({
               <SheetDescription>Update the belt definition.</SheetDescription>
             </SheetHeader>
             <EditBeltForm
-              courseId={courseId}
+              disciplineId={disciplineId}
               belt={editingBelt}
               onClose={() => setEditing(null)}
             />
           </SheetContent>
         ) : null}
       </Sheet>
-    </Card>
+    </div>
   );
 }

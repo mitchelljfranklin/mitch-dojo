@@ -11,6 +11,7 @@ import { createCourseAction } from "@/lib/actions/courses";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { listDisciplines } from "@/lib/db/belts";
 import { listTrainers } from "@/lib/db/trainers";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +20,9 @@ export const metadata = { title: "New course" };
 
 export default async function NewCoursePage() {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
-  const [locations, trainers] = await Promise.all([
+  const [locations, disciplines, trainers] = await Promise.all([
     listAssignableLocations(),
+    listDisciplines(),
     listTrainers(),
   ]);
 
@@ -41,6 +43,11 @@ export default async function NewCoursePage() {
           <CourseForm
             action={createCourseAction}
             locations={locations}
+            disciplines={disciplines.map((d) => ({
+              id: d.id,
+              name: d.name,
+              isActive: d.isActive,
+            }))}
             trainers={trainers.map((trainer) => ({
               id: trainer.id,
               name: trainer.name,

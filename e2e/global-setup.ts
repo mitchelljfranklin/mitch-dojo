@@ -97,30 +97,15 @@ export default async function globalSetup() {
 
   // A course at the e2e location with a slot TODAY so generated sessions
   // exist for the attendance and public check-in specs on any weekday.
-  await prisma.course.create({
+  // The discipline ladder is created separately (ladder lives on the
+  // discipline, not the course).
+  // Delete and recreate the discipline each run so the belt ladder is
+  // always fresh (beltRangeEntries live on the discipline, not the course).
+  await prisma.discipline.deleteMany({ where: { name: "E2E Karate" } });
+  const karateDiscipline = await prisma.discipline.create({
     data: {
-      name: ATTENDANCE_COURSE_NAME,
-      locationId: e2eDojo.id,
-      trainingTimes: {
-        create: [
-          {
-            weekday: new Date().getDay(),
-            startTime: "06:00",
-            endTime: "07:00",
-          },
-        ],
-      },
-    },
-  });
-  await ensureUpcomingSessions();
-
-  // A second course with its own ladder for the history-import spec (belts
-  // must exist before import, per design).
-  const historyCourse = await prisma.course.create({
-    data: {
-      name: HISTORY_COURSE_NAME,
-      locationId: e2eDojo.id,
-      beltLevels: {
+      name: "E2E Karate",
+      beltRangeEntries: {
         create: [
           {
             name: "Novice",
@@ -136,6 +121,33 @@ export default async function globalSetup() {
           },
         ],
       },
+    },
+  });
+  await prisma.course.create({
+    data: {
+      name: ATTENDANCE_COURSE_NAME,
+      locationId: e2eDojo.id,
+      disciplineId: karateDiscipline.id,
+      trainingTimes: {
+        create: [
+          {
+            weekday: new Date().getDay(),
+            startTime: "06:00",
+            endTime: "07:00",
+          },
+        ],
+      },
+    },
+  });
+  await ensureUpcomingSessions();
+
+  // A second course for the history-import spec (belt ladder lives on the
+  // discipline, so no belt setup needed here).
+  await prisma.course.create({
+    data: {
+      name: HISTORY_COURSE_NAME,
+      locationId: e2eDojo.id,
+      disciplineId: karateDiscipline.id,
     },
   });
 

@@ -201,17 +201,17 @@ async function resolveEntityNames(
               `${session.course.name} ${session.date.toISOString().slice(0, 10)}`,
             );
           }
-        } else if (type === "BeltLevel") {
-          const levels = await prisma.beltLevel.findMany({
+        } else if (type === "BeltRangeEntry") {
+          const entries = await prisma.beltRangeEntry.findMany({
             where: { id: { in: uniqueIds } },
             select: {
               id: true,
               name: true,
-              course: { select: { name: true } },
+              discipline: { select: { name: true } },
             },
           });
-          for (const level of levels) {
-            map.set(level.id, `${level.name} (${level.course.name})`);
+          for (const entry of entries) {
+            map.set(entry.id, `${entry.name} (${entry.discipline.name})`);
           }
         } else if (type === "StudentBelt") {
           const records = await prisma.studentBelt.findMany({

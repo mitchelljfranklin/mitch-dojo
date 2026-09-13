@@ -5,6 +5,7 @@ import { createCourse } from "@/lib/db/courses";
 import { createLocation, deleteLocation } from "@/lib/db/locations";
 import { createStudent, deleteStudent } from "@/lib/db/students";
 import { ensureUpcomingSessions } from "@/lib/db/sessions";
+import { createDiscipline } from "@/lib/db/belts";
 import {
   getAttendanceCountsBySession,
   getSessionRoster,
@@ -24,6 +25,7 @@ const hasTestDatabase = Boolean(process.env.TEST_DATABASE_URL);
 const suffix = Date.now().toString(36);
 
 let locationId: string;
+let disciplineId: string;
 let courseId: string;
 let sessionTodayId: string;
 let studentAId: string;
@@ -40,6 +42,9 @@ beforeAll(async () => {
     sortOrder: 0,
   });
   locationId = location.id;
+
+  const discipline = await createDiscipline(`Attend Disc ${suffix}`);
+  disciplineId = discipline.id;
 
   studentAId = await createStudent({
     firstName: "Roster",
@@ -112,6 +117,7 @@ describe.skipIf(!hasTestDatabase)("attendance data layer", () => {
       name: `Attendance Course ${suffix}`,
       description: null,
       locationId,
+      disciplineId: disciplineId!,
       trainerId: null,
       isActive: true,
       trainingTimes: [

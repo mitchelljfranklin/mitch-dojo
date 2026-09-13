@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from "./global-setup";
 
 test.describe("belts", () => {
-  test("adds belt levels and records a promotion for the attendance kid", async ({
+  test("views the discipline ladder and records a promotion for the attendance kid", async ({
     page,
   }) => {
     await page.goto("/login");
@@ -12,35 +12,21 @@ test.describe("belts", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
+    // Navigate to the discipline's progression page (global-setup creates
+    // "E2E Karate" with the Novice/Advanced ladder and the attendance kid).
     await page.goto("/belts");
-    await page.getByText("E2E Attend Course").first().click();
+    await page.getByText("E2E Karate", { exact: true }).first().click();
     await page.waitForURL("**/belts/*");
 
-    // Define the grading ladder
-    await page.getByRole("button", { name: "Add belt", exact: true }).click();
-    await page.getByLabel("Name", { exact: true }).fill("White");
-    await page.getByLabel("Order (0 = entry rank)").fill("0");
-    await page
-      .getByRole("button", { name: "Add belt level", exact: true })
-      .click();
+    // The ladder from global-setup is visible
     await expect(
-      page.getByText("White", { exact: true }).first(),
+      page.getByText("Novice", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Advanced", { exact: true }).first(),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Add belt", exact: true }).click();
-    await page.getByLabel("Name", { exact: true }).fill("Yellow");
-    await page.getByLabel("Order (0 = entry rank)").fill("1");
-    // Deliberately unreachable so the override path is always exercised —
-    // the kid may legitimately have trainings from the QR check-in specs.
-    await page.getByLabel("Required trainings").fill("99");
-    await page
-      .getByRole("button", { name: "Add belt level", exact: true })
-      .click();
-    await expect(
-      page.getByText("Yellow", { exact: true }).first(),
-    ).toBeVisible();
-
-    // Promote the attendance kid to White (entry rank — always eligible).
+    // Promote the attendance kid to Novice (entry rank — always eligible).
     // The sheet defaults to the next belt in the ladder, which for an
     // unranked student is the entry belt.
     await page.getByRole("button", { name: "Promote" }).first().click();
@@ -49,11 +35,10 @@ test.describe("belts", () => {
     await page.getByRole("button", { name: "Done" }).click({ force: true });
 
     // Wait for the post-promotion refresh so the next sheet's default belt
-    // is computed from the kid's NEW rank (White → next: Yellow). The
-    // cumulative count varies with the QR check-in specs, so match loosely.
-    await expect(page.getByText(/trainings? on this course/)).toBeVisible();
+    // is computed from the kid's NEW rank (Novice → next: Advanced).
+    await expect(page.getByText(/trainings? on this discipline/)).toBeVisible();
 
-    // Kid has at most a couple of trainings since the award — Yellow needs
+    // Kid has at most a couple of trainings since the award — Advanced needs
     // 99, so the promotion is blocked until the instructor ticks Override.
     await page.getByRole("button", { name: "Promote" }).first().click();
     await page.getByRole("button", { name: "Record promotion" }).click();
@@ -65,7 +50,7 @@ test.describe("belts", () => {
     await page.getByRole("button", { name: "Done" }).click({ force: true });
 
     await expect(
-      page.getByText("Yellow", { exact: true }).first(),
+      page.getByText("Advanced", { exact: true }).first(),
     ).toBeVisible();
 
     // History is visible on the student record
@@ -73,6 +58,6 @@ test.describe("belts", () => {
     await page.getByText("E2E Attend Kid").first().click();
     await page.waitForURL("**/students/*");
     await expect(page.getByText("Belt progression")).toBeVisible();
-    await expect(page.getByText("Yellow").first()).toBeVisible();
+    await expect(page.getByText("Advanced").first()).toBeVisible();
   });
 });

@@ -282,8 +282,9 @@ export default async function StudentDetailPage({
                   />
                   <span className="text-sm font-medium">{record.beltName}</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {record.beltLevel?.course.name ?? "Course removed"} ·{" "}
-                    {formatDate(record.awardedAt)}
+                    {record.beltRangeEntry?.discipline.name ??
+                      "Discipline removed"}{" "}
+                    · {formatDate(record.awardedAt)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

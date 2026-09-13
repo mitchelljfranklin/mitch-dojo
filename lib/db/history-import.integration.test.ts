@@ -4,7 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { createCourse } from "@/lib/db/courses";
 import { createLocation, deleteLocation } from "@/lib/db/locations";
 import { createStudent, deleteStudent } from "@/lib/db/students";
-import { createBeltLevel } from "@/lib/db/belts";
+import {
+  createDiscipline,
+  deleteDiscipline,
+  createBeltRangeEntry,
+} from "@/lib/db/belts";
 import { ensureHistoricalSession } from "@/lib/db/sessions";
 import { recordBackfillAttendance } from "@/lib/db/attendance";
 import { findStudentForImport } from "@/lib/db/students";
@@ -15,14 +19,11 @@ const hasTestDatabase = Boolean(process.env.TEST_DATABASE_URL);
 const suffix = Date.now().toString(36);
 
 let locationId: string;
+let disciplineId: string;
 let courseId: string;
 let studentId: string;
 let studentBId: string;
 let noviceBeltId: string;
-
-function localDate(dateUtc: Date): Date {
-  return dateUtc;
-}
 
 beforeAll(async () => {
   const location = await createLocation({
@@ -34,6 +35,9 @@ beforeAll(async () => {
     sortOrder: 0,
   });
   locationId = location.id;
+
+  const discipline = await createDiscipline(`Import Disc ${suffix}`);
+  disciplineId = discipline.id;
 
   studentId = await createStudent({
     firstName: "Mia",
@@ -72,13 +76,13 @@ beforeAll(async () => {
     name: `Import Course ${suffix}`,
     description: null,
     locationId,
+    disciplineId,
     trainerId: null,
     isActive: true,
-    // Wednesday slot so weekday-aware session creation can be exercised.
     trainingTimes: [{ weekday: 3, startTime: "17:30", endTime: "18:30" }],
   });
 
-  const novice = await createBeltLevel(courseId!, {
+  const novice = await createBeltRangeEntry(disciplineId, {
     name: "Novice",
     colorHex: "#FFFFFF",
     order: 0,
@@ -93,12 +97,13 @@ afterAll(async () => {
   });
   await prisma.classSession.deleteMany({ where: { courseId } });
   await prisma.studentBelt.deleteMany({
-    where: { beltLevel: { courseId } },
+    where: { beltRangeEntry: { disciplineId } },
   });
-  await prisma.beltLevel.deleteMany({ where: { courseId } });
+  await prisma.beltRangeEntry.deleteMany({ where: { disciplineId } });
   if (studentId) await deleteStudent(studentId).catch(() => undefined);
   if (studentBId) await deleteStudent(studentBId).catch(() => undefined);
   await prisma.course.deleteMany({ where: { id: courseId } });
+  await deleteDiscipline(disciplineId).catch(() => undefined);
   await deleteLocation(locationId).catch(() => undefined);
   await prisma.$disconnect();
 });
@@ -250,16 +255,18 @@ describe.skipIf(!hasTestDatabase)("findStudentForImport", () => {
       locationId!,
     );
     expect(missing.status).toBe("not_found");
+
+    await prisma.student.deleteMany({
+      where: { lastName: `Twin${suffix}` },
+    });
   });
 });
 
 describe.skipIf(!hasTestDatabase)("recordHistoricalPromotion", () => {
   it("creates a backdated row and skips same-day duplicates", async () => {
-    // Constructed the way the import action does it: local midnight from a
-    // YYYY-MM-DD string.
     const created = await recordHistoricalPromotion({
       studentId: studentId!,
-      beltLevelId: noviceBeltId!,
+      beltRangeEntryId: noviceBeltId!,
       awardedAt: new Date(2026, 5, 15),
       notes: "Imported",
     });
@@ -267,14 +274,14 @@ describe.skipIf(!hasTestDatabase)("recordHistoricalPromotion", () => {
 
     const skipped = await recordHistoricalPromotion({
       studentId: studentId!,
-      beltLevelId: noviceBeltId!,
+      beltRangeEntryId: noviceBeltId!,
       awardedAt: new Date(2026, 5, 15),
       notes: null,
     });
     expect(skipped).toBe("skipped");
 
     const rows = await prisma.studentBelt.findMany({
-      where: { studentId: studentId!, beltLevelId: noviceBeltId! },
+      where: { studentId: studentId!, beltRangeEntryId: noviceBeltId! },
     });
     expect(rows).toHaveLength(1);
   });
@@ -282,14 +289,14 @@ describe.skipIf(!hasTestDatabase)("recordHistoricalPromotion", () => {
   it("allows the same belt awarded on a different date", async () => {
     const created = await recordHistoricalPromotion({
       studentId: studentId!,
-      beltLevelId: noviceBeltId!,
+      beltRangeEntryId: noviceBeltId!,
       awardedAt: new Date(2026, 7, 20),
       notes: null,
     });
     expect(created).toBe("created");
 
     await prisma.studentBelt.deleteMany({
-      where: { studentId: studentId!, beltLevelId: noviceBeltId! },
+      where: { studentId: studentId!, beltRangeEntryId: noviceBeltId! },
     });
   });
 });

@@ -215,82 +215,84 @@ model Trainer {
 }
 
 model Course {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  locationId  String
-  location    Location @relation(fields: [locationId], references: [id])
-  trainerId   String?
-  trainer     Trainer? @relation(fields: [trainerId], references: [id], onDelete: SetNull)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  locationId   String
+  location     Location   @relation(fields: [locationId], references: [id])
+  disciplineId String
+  discipline   Discipline @relation(fields: [disciplineId], references: [id])
+  trainerId    String?
+  trainer      Trainer?   @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   trainingTimes TrainingTime[]
   sessions      ClassSession[]
-  beltLevels    BeltLevel[]
 
   @@index([locationId])
+  @@index([disciplineId])
   @@index([trainerId])
   @@map("courses")
 }
 
-// Belt rank within one course. order 0 is the entry rank; requiredTrainings
-// is the CUMULATIVE total of trained sessions (Present/Late) on the course a
-// student needs to be awarded THIS belt — 0 for the entry belt.
-model BeltLevel {
-  id                String   @id @default(cuid())
-  courseId          String
-  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+model Discipline {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  beltRangeEntries BeltRangeEntry[]
+  courses          Course[]
+
+  @@map("disciplines")
+}
+
+// Belt rank within a discipline's ladder. order 0 is the entry rank;
+// requiredTrainings is the CUMULATIVE total of trained sessions (Present/Late)
+// across ALL courses of that discipline a student needs to be awarded THIS
+// belt — 0 for the entry belt.
+model BeltRangeEntry {
+  id                String     @id @default(cuid())
+  disciplineId      String
+  discipline        Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
   name              String
   colorHex          String
   order             Int
-  requiredTrainings Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  requiredTrainings Int        @default(0)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   studentBelts StudentBelt[]
 
-  @@unique([courseId, name])
-  @@index([courseId, order])
-  @@map("belt_levels")
+  @@unique([disciplineId, name])
+  @@index([disciplineId, order])
+  @@map("belt_range_entries")
 }
 
 // One row per awarded rank — the immutable promotion history. Belt name and
-// colour are denormalised so history stays readable if belt levels are later
-// reorganised (beltLevelId keeps the link when it still exists).
+// colour are denormalised so history stays readable if the ladder is later
+// reorganised (beltRangeEntryId keeps the link when it still exists). The
+// rank is per discipline, global across all locations teaching it.
 model StudentBelt {
-  id          String     @id @default(cuid())
-  studentId   String
-  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  beltLevelId String?
-  beltLevel   BeltLevel? @relation(fields: [beltLevelId], references: [id], onDelete: SetNull)
-  beltName    String
-  colorHex    String
-  awardedAt   DateTime
-  notes       String?
-  awardedById String?
-  awardedBy   User?      @relation("BeltAwardedBy", fields: [awardedById], references: [id], onDelete: SetNull)
-  createdAt   DateTime   @default(now())
+  id               String          @id @default(cuid())
+  studentId        String
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  beltRangeEntryId String?
+  beltRangeEntry   BeltRangeEntry? @relation(fields: [beltRangeEntryId], references: [id], onDelete: SetNull)
+  beltName         String
+  colorHex         String
+  awardedAt        DateTime
+  notes            String?
+  awardedById      String?
+  awardedBy        User?           @relation("BeltAwardedBy", fields: [awardedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime        @default(now())
 
   @@index([studentId])
-  @@index([beltLevelId])
+  @@index([beltRangeEntryId])
   @@map("student_belts")
-}
-
-// The school's standard belt ladder, maintained in Settings → Belts. Courses
-// can load it as a starting point and customise from there.
-model BeltRangeEntry {
-  id                String   @id @default(cuid())
-  name              String   @unique
-  colorHex          String
-  order             Int
-  requiredTrainings Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([order])
-  @@map("belt_range_entries")
 }
 
 // Recurring weekly slot for a course. Weekday follows JS getDay convention

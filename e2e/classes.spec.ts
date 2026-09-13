@@ -24,6 +24,8 @@ test.describe("classes", () => {
     await page.getByLabel("Name").fill("E2E Course");
     await page.getByLabel("Location").click();
     await page.getByRole("option", { name: "Main Dojo" }).click();
+    await page.getByLabel("Discipline").click();
+    await page.getByRole("option", { name: "E2E Karate" }).click();
     await page.getByLabel("Slot 1 start time").fill("18:00");
     await page.getByLabel("Slot 1 end time").fill("19:00");
     await page.getByRole("button", { name: "Create course" }).click();

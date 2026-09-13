@@ -14,6 +14,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getCourse } from "@/lib/db/courses";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { listDisciplines } from "@/lib/db/belts";
 import { listTrainers } from "@/lib/db/trainers";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +28,10 @@ type EditCoursePageProps = {
 export default async function EditCoursePage({ params }: EditCoursePageProps) {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
   const { courseId } = await params;
-  const [course, locations, trainers] = await Promise.all([
+  const [course, locations, disciplines, trainers] = await Promise.all([
     getCourse(courseId),
     listAssignableLocations(),
+    listDisciplines(),
     listTrainers(),
   ]);
   if (!course) {
@@ -58,6 +60,11 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
             action={updateCourseAction}
             courseId={course.id}
             locations={locations}
+            disciplines={disciplines.map((d) => ({
+              id: d.id,
+              name: d.name,
+              isActive: d.isActive,
+            }))}
             trainers={trainers.map((trainer) => ({
               id: trainer.id,
               name: trainer.name,
@@ -67,6 +74,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
               name: course.name,
               description: course.description,
               locationId: course.locationId,
+              disciplineId: course.disciplineId,
               trainerId: course.trainerId,
               isActive: course.isActive,
               trainingTimes: course.trainingTimes.map((slot) => ({

@@ -1,40 +1,40 @@
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { FlashToast } from "@/components/flash-toast";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { requirePermission } from "@/lib/auth";
-import { PERMISSIONS, hasPermission } from "@/lib/permissions";
-import { getCourseProgress } from "@/lib/db/belts";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { BeltLevelsManager } from "./belt-levels-manager";
+import { Badge } from "@/components/ui/badge";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { FlashToast } from "@/components/flash-toast";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
+import { getDisciplineProgress } from "@/lib/db/belts";
+import { getDisciplineWithBelts } from "@/lib/db/belts";
+
+import { BeltLadderManager } from "./belt-ladder-manager";
 import { ProgressTable } from "./progress-table";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Belt progression" };
 
-type BeltsCoursePageProps = {
-  params: Promise<{ courseId: string }>;
+type DisciplineProgressPageProps = {
+  params: Promise<{ disciplineId: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 };
 
-export default async function BeltsCoursePage({
+export default async function DisciplineProgressPage({
   params,
   searchParams,
-}: BeltsCoursePageProps) {
+}: DisciplineProgressPageProps) {
   const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
 
-  const { courseId } = await params;
+  const { disciplineId } = await params;
   const sp = await searchParams;
-  const { course, belts, rows } = await getCourseProgress(courseId);
-  if (!course) {
+  const [progress, withBelts] = await Promise.all([
+    getDisciplineProgress(disciplineId),
+    getDisciplineWithBelts(disciplineId),
+  ]);
+  if (!progress.discipline || !withBelts) {
     notFound();
   }
 
@@ -43,34 +43,31 @@ export default async function BeltsCoursePage({
       <Breadcrumbs
         segments={[
           { label: "Belts & gradings", href: "/belts" },
-          { label: course.name },
+          { label: progress.discipline.name },
         ]}
       />
       {sp.beltError ? (
         <FlashToast variant="error" message={sp.beltError} />
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {course.name}
-          </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-muted-foreground text-xs">
-              {course.locationName}
-            </span>
-            {course.trainerName ? (
-              <span className="text-muted-foreground text-xs">
-                Trainer: {course.trainerName}
-              </span>
-            ) : null}
-          </div>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {progress.discipline.name}
+        </h1>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <Badge variant="outline">
+            {progress.belts.length} belt
+            {progress.belts.length === 1 ? "" : "s"}
+          </Badge>
+          {progress.discipline.isActive ? null : (
+            <Badge variant="outline">Inactive</Badge>
+          )}
         </div>
       </div>
 
-      <BeltLevelsManager
-        courseId={course.id}
-        belts={belts.map((belt) => ({
+      <BeltLadderManager
+        disciplineId={disciplineId}
+        belts={progress.belts.map((belt) => ({
           id: belt.id,
           name: belt.name,
           colorHex: belt.colorHex,
@@ -81,15 +78,15 @@ export default async function BeltsCoursePage({
       />
 
       <ProgressTable
-        courseId={course.id}
-        belts={belts.map((belt) => ({
+        disciplineId={disciplineId}
+        belts={progress.belts.map((belt) => ({
           id: belt.id,
           name: belt.name,
           colorHex: belt.colorHex,
           order: belt.order,
           requiredTrainings: belt.requiredTrainings,
         }))}
-        rows={rows}
+        rows={progress.rows}
         canEdit={canEdit}
       />
     </div>

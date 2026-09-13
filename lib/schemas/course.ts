@@ -44,6 +44,7 @@ export const courseFormSchema = z
       .max(80, "Course name must be 80 characters or fewer"),
     description: optionalString,
     locationId: z.string().min(1, "Choose a location for this course"),
+    disciplineId: z.string().min(1, "Choose a discipline for this course"),
     trainerId: z
       .string()
       .trim()

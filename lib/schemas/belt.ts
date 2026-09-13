@@ -35,20 +35,16 @@ export const beltLevelSchema = z.object({
 export type BeltLevelInput = z.infer<typeof beltLevelSchema>;
 
 export const promotionSchema = z.object({
-  beltLevelId: z.string().min(1, "Choose the belt being awarded"),
-  awardedAt: z
-    .string()
-    .min(1, "Award date is required")
-    .refine((value) => !Number.isNaN(new Date(value).getTime()), {
-      message: "Enter a valid date",
-    }),
+  beltRangeEntryId: z.string().min(1, "Choose the belt being awarded"),
+  awardedAt: isoBeltDate,
   notes: optionalString,
 });
 
 export type PromotionInput = z.infer<typeof promotionSchema>;
 
-// CSV row for the belt-history import. The course is chosen on the import
-// page (not per row); belts must already exist in that course's ladder.
+// CSV row for the belt-history import. The discipline is chosen on the
+// import page (not per row); belts must already exist in that discipline's
+// ladder.
 export const beltHistoryCsvRowSchema = z.object({
   email: z
     .string()

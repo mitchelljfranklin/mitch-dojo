@@ -74,6 +74,7 @@ export default async function CourseDetailPage({
             {course.name}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2">
+            <Badge variant="outline">{course.discipline.name}</Badge>
             <Badge variant="outline">{course.location.name}</Badge>
             {course.trainer ? (
               <Badge variant="secondary">{course.trainer.name}</Badge>

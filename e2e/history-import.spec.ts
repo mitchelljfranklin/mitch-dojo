@@ -79,9 +79,7 @@ test.describe("history import", () => {
     await writeFile(csvPath, csv, "utf8");
 
     await page.goto("/belts/import");
-    await page
-      .getByLabel("Course")
-      .selectOption({ label: "E2E History Course (E2E Dojo)" });
+    await page.getByLabel("Discipline").selectOption({ label: "E2E Karate" });
     await page.getByLabel("CSV file").setInputFiles(csvPath);
     await page.getByRole("button", { name: "Import" }).click();
     await expect(page.getByText(/Imported 1 promotion/).first()).toBeVisible();

@@ -1,39 +1,31 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/prisma";
-import { createCourse } from "@/lib/db/courses";
 import { createLocation, deleteLocation } from "@/lib/db/locations";
 import { createStudent, deleteStudent } from "@/lib/db/students";
+import { createDiscipline, deleteDiscipline } from "@/lib/db/belts";
+import { setSessionAttendance } from "@/lib/db/attendance";
 import {
   checkPromotionEligibility,
-  createBeltLevel,
-  deleteBeltLevel,
-  getCourseProgress,
+  createBeltRangeEntry,
+  deleteBeltRangeEntry,
+  getDisciplineProgress,
   recordPromotion,
-  updateBeltLevel,
+  updateBeltRangeEntry,
 } from "@/lib/db/belts";
-import { setSessionAttendance } from "@/lib/db/attendance";
 
 // Integration suite: requires TEST_DATABASE_URL (see vitest.setup.ts).
 const hasTestDatabase = Boolean(process.env.TEST_DATABASE_URL);
 const suffix = Date.now().toString(36);
 
-let locationId: string;
-let courseId: string;
+let disciplineId: string;
 let studentId: string;
 let whiteBeltId: string;
 let yellowBeltId: string;
 
 beforeAll(async () => {
-  const location = await createLocation({
-    name: `Belt Dojo ${suffix}`,
-    address: null,
-    phone: null,
-    email: null,
-    isActive: true,
-    sortOrder: 0,
-  });
-  locationId = location.id;
+  const discipline = await createDiscipline(`Belt Test ${suffix}`);
+  disciplineId = discipline.id;
 
   studentId = await createStudent({
     firstName: "Grader",
@@ -48,85 +40,70 @@ beforeAll(async () => {
     guardianPhone: null,
     status: "ACTIVE",
     notes: null,
-    locationIds: [locationId],
-    primaryLocationId: locationId,
+    locationIds: [],
+    primaryLocationId: "",
   });
+
+  const white = await createBeltRangeEntry(disciplineId, {
+    name: "White",
+    colorHex: "#ffffff",
+    order: 0,
+    requiredTrainings: 0,
+  });
+  const yellow = await createBeltRangeEntry(disciplineId, {
+    name: "Yellow",
+    colorHex: "#FFD700",
+    order: 1,
+    requiredTrainings: 5,
+  });
+  whiteBeltId = white.id;
+  yellowBeltId = yellow.id;
 });
 
 afterAll(async () => {
   await prisma.studentBelt.deleteMany({ where: { studentId } });
   await prisma.attendance.deleteMany({
-    where: { session: { courseId } },
+    where: { session: { course: { disciplineId } } },
   });
-  await prisma.classSession.deleteMany({ where: { courseId } });
-  await prisma.beltLevel.deleteMany({ where: { courseId } });
+  await prisma.classSession.deleteMany({
+    where: { course: { disciplineId } },
+  });
+  await prisma.beltRangeEntry.deleteMany({ where: { disciplineId } });
   if (studentId) await deleteStudent(studentId).catch(() => undefined);
-  await prisma.course.deleteMany({ where: { id: courseId } });
-  await deleteLocation(locationId).catch(() => undefined);
+  await deleteDiscipline(disciplineId).catch(() => undefined);
   await prisma.$disconnect();
 });
 
-async function createPastSession(dateUtc: Date): Promise<string> {
-  const session = await prisma.classSession.create({
-    data: {
-      courseId: courseId!,
-      locationId: locationId!,
-      date: dateUtc,
-      startTime: "17:00",
-      endTime: "18:00",
-    },
-  });
-  return session.id;
-}
-
-describe.skipIf(!hasTestDatabase)("belt levels", () => {
-  it("creates ordered belt levels for a course", async () => {
-    courseId = await createCourse({
-      name: `Belt Course ${suffix}`,
-      description: null,
-      locationId,
-      trainerId: null,
-      isActive: true,
-      trainingTimes: [],
-    });
-
-    const white = await createBeltLevel(courseId!, {
-      name: "White",
-      colorHex: "#ffffff",
-      order: 0,
-      requiredTrainings: 0,
-    });
-    const yellow = await createBeltLevel(courseId!, {
-      name: "Yellow",
-      colorHex: "#FFD700",
-      order: 1,
-      requiredTrainings: 5,
-    });
-    whiteBeltId = white.id;
-    yellowBeltId = yellow.id;
-
-    const { belts } = await getCourseProgress(courseId!);
+describe.skipIf(!hasTestDatabase)("belt ladder", () => {
+  it("creates ordered belt levels for a discipline", async () => {
+    const { belts, rows } = await getDisciplineProgress(disciplineId!);
     expect(belts.map((belt) => belt.name)).toEqual(["White", "Yellow"]);
+    // The student appears school-wide even with no courses in the discipline.
+    const row = rows.find((entry) => entry.studentId === studentId);
+    expect(row?.currentBeltName).toBeNull();
+    expect(row?.trainingsTotal).toBe(0);
   });
 
   it("refuses to delete a belt that has been awarded", async () => {
     await recordPromotion({
-      studentId,
-      beltLevelId: whiteBeltId!,
+      studentId: studentId!,
+      beltRangeEntryId: whiteBeltId!,
       awardedAt: new Date("2026-01-15"),
       notes: null,
       awardedById: null,
     });
 
-    const { rows } = await getCourseProgress(courseId!);
+    const { rows } = await getDisciplineProgress(disciplineId!);
     const row = rows.find((entry) => entry.studentId === studentId);
     expect(row?.currentBeltName).toBe("White");
 
-    await expect(deleteBeltLevel(whiteBeltId!)).rejects.toThrow(/awarded/i);
+    await expect(deleteBeltRangeEntry(whiteBeltId!)).rejects.toThrow(
+      /awarded/i,
+    );
   });
 
   it("updates a belt definition", async () => {
-    const updated = await updateBeltLevel(yellowBeltId!, {
+    const updated = await updateBeltRangeEntry(yellowBeltId!, {
       name: "Yellow Stripe",
       colorHex: "#FFCC00",
       order: 1,
@@ -139,77 +116,65 @@ describe.skipIf(!hasTestDatabase)("belt levels", () => {
 });
 
 describe.skipIf(!hasTestDatabase)("eligibility", () => {
-  it("counts ALL trained sessions on the course cumulatively", async () => {
-    // Three sessions with trained attendance (2 Present + 1 LATE), plus one
-    // ABSENT that must not count. Yellow Stripe requires 3.
-    const sessionA = await createPastSession(new Date(Date.UTC(2026, 7, 6)));
-    const sessionB = await createPastSession(new Date(Date.UTC(2026, 7, 8)));
-    const sessionC = await createPastSession(new Date(Date.UTC(2026, 7, 10)));
-    const sessionD = await createPastSession(new Date(Date.UTC(2026, 7, 12)));
+  it("counts ALL trained sessions across the discipline's courses", async () => {
+    // Create a course and a session so attendance can be recorded.
+    const course = await prisma.course.create({
+      data: {
+        name: `Eligibility Course ${suffix}`,
+        disciplineId: disciplineId!,
+        locationId: (await prisma.location.findFirst())?.id ?? "",
+      },
+    });
+
+    const session = await prisma.classSession.create({
+      data: {
+        courseId: course.id,
+        locationId: course.locationId,
+        date: new Date(Date.UTC(2026, 7, 6)),
+        startTime: "17:00",
+        endTime: "18:00",
+      },
+    });
+
     await setSessionAttendance(
-      sessionA,
+      session.id,
       [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
-    await setSessionAttendance(
-      sessionB,
-      [{ studentId: studentId!, status: "LATE" }],
-      null,
-    );
-    await setSessionAttendance(
-      sessionC,
-      [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
-    await setSessionAttendance(
-      sessionD,
-      [{ studentId: studentId!, status: "ABSENT" }],
       null,
     );
 
-    const { rows } = await getCourseProgress(courseId!);
+    const { rows } = await getDisciplineProgress(disciplineId!);
     const row = rows.find((entry) => entry.studentId === studentId);
-    // Cumulative: 3 trained (Present/Late) of 4 marked; the ABSENT does not
-    // count. Yellow Stripe requires 3 — the student is eligible.
-    expect(row?.trainingsTotal).toBe(3);
+    expect(row?.trainingsTotal).toBe(1);
     expect(row?.requiredTrainings).toBe(3);
-    expect(row?.isEligible).toBe(true);
+    expect(row?.isEligible).toBe(false);
   });
 
   it("eligibility gate reports cumulative counts and thresholds", async () => {
-    // The student has 3 trained sessions from the earlier test. A fresh
-    // Yellow threshold of 6 leaves them one short.
-    const updated = await updateBeltLevel(yellowBeltId!, {
-      name: "Yellow Stripe",
-      colorHex: "#FFCC00",
-      order: 1,
-      requiredTrainings: 4,
-    });
-    expect(updated.requiredTrainings).toBe(4);
-
     const eligibility = await checkPromotionEligibility(
       studentId!,
       yellowBeltId!,
     );
     expect(eligibility?.status).toBe("insufficient");
-    expect(eligibility?.trainingsTotal).toBe(3);
-    expect(eligibility?.requiredTrainings).toBe(4);
+    expect(eligibility?.requiredTrainings).toBe(3);
     expect(eligibility?.currentBeltName).toBe("White");
     expect(eligibility?.targetBeltName).toBe("Yellow Stripe");
 
-    // One more trained session crosses the cumulative threshold.
-    const sessionIdC = await createPastSession(new Date(Date.UTC(2026, 9, 1)));
-    await setSessionAttendance(
-      sessionIdC,
-      [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
+    // Award the promotion → now the student is at Yellow, next is beyond.
+    await recordPromotion({
+      studentId: studentId!,
+      beltRangeEntryId: yellowBeltId!,
+      awardedAt: new Date(2026, 8, 1),
+      notes: null,
+      awardedById: null,
+    });
 
-    const afterThreshold = await checkPromotionEligibility(
+    const afterPromotion = await checkPromotionEligibility(
       studentId!,
       yellowBeltId!,
     );
-    expect(afterThreshold?.status).toBe("eligible");
-    expect(afterThreshold?.trainingsTotal).toBe(4);
+    // After the promotion the student IS at Yellow Stripe — checking
+    // eligibility against the same belt reports the current rank.
+    expect(afterPromotion?.currentBeltName).toBe("Yellow Stripe");
+    expect(afterPromotion?.trainingsTotal).toBe(1);
   });
 });

@@ -6,16 +6,15 @@ import { redirect } from "next/navigation";
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
-  applyBeltRangeToCourse,
   checkPromotionEligibility,
-  createBeltLevel,
   createBeltRangeEntry,
-  deleteBeltLevel,
+  createDiscipline,
   deleteBeltRangeEntry,
+  deleteDiscipline,
   deletePromotion,
+  getDisciplineWithBelts,
   recordHistoricalPromotion,
   recordPromotion,
-  updateBeltLevel,
   updateBeltRangeEntry,
 } from "@/lib/db/belts";
 import { findStudentForImport } from "@/lib/db/students";
@@ -32,6 +31,75 @@ import {
 export type BeltActionState =
   { error: string } | { ok: true; message: string } | undefined;
 
+// --------------- disciplines ---------------
+
+function isUniqueNameError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("Unique constraint");
+}
+
+// Feeds useActionState — must not revalidatePath (see AGENTS.md).
+export async function createDisciplineAction(
+  previousState: BeltActionState,
+  formData: FormData,
+): Promise<BeltActionState> {
+  await requirePermission(PERMISSIONS.BELTS_EDIT);
+
+  const name = getField(formData, "name")?.trim();
+  if (!name || name.length === 0 || name.length > 80) {
+    return { error: "Discipline name is required (max 80 characters)." };
+  }
+
+  try {
+    await createDiscipline(name);
+  } catch (error: unknown) {
+    if (isUniqueNameError(error)) {
+      return { error: "A discipline with that name already exists." };
+    }
+    throw error;
+  }
+
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.CREATE_BELT_LEVEL,
+      "Discipline",
+      name,
+    );
+  }
+  return { ok: true, message: "Discipline created." };
+}
+
+export async function deleteDisciplineAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const disciplineId = getField(formData, "disciplineId");
+
+  try {
+    await deleteDiscipline(disciplineId);
+  } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      error.message.startsWith("This discipline has courses")
+    ) {
+      redirect(`/belts?disciplineError=${encodeURIComponent(error.message)}`);
+    }
+    throw error;
+  }
+
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.DELETE_BELT_LEVEL,
+      "Discipline",
+      disciplineId,
+    );
+  }
+  revalidatePath("/belts");
+}
+
+// --------------- discipline belt ladder ---------------
+
 function parseBeltInput(formData: FormData) {
   return beltLevelSchema.safeParse({
     name: getField(formData, "name"),
@@ -47,7 +115,7 @@ export async function createBeltLevelAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const courseId = getField(formData, "courseId");
+  const disciplineId = getField(formData, "disciplineId");
 
   const parsed = parseBeltInput(formData);
   if (!parsed.success) {
@@ -55,11 +123,11 @@ export async function createBeltLevelAction(
   }
 
   try {
-    await createBeltLevel(courseId, parsed.data);
+    await createBeltRangeEntry(disciplineId, parsed.data);
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
+    if (isUniqueNameError(error)) {
       return {
-        error: "A belt with that name already exists in this course.",
+        error: "A belt with that name already exists in this discipline.",
       };
     }
     throw error;
@@ -70,9 +138,9 @@ export async function createBeltLevelAction(
     await logAudit(
       user.id,
       AUDIT_ACTIONS.CREATE_BELT_LEVEL,
-      "BeltLevel",
-      `${parsed.data.name}`,
-      { courseId },
+      "BeltRangeEntry",
+      parsed.data.name,
+      { disciplineId },
     );
   }
   return { ok: true, message: "Belt level added." };
@@ -92,11 +160,11 @@ export async function updateBeltLevelAction(
   }
 
   try {
-    await updateBeltLevel(beltLevelId, parsed.data);
+    await updateBeltRangeEntry(beltLevelId, parsed.data);
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
+    if (isUniqueNameError(error)) {
       return {
-        error: "A belt with that name already exists in this course.",
+        error: "A belt with that name already exists in this discipline.",
       };
     }
     throw error;
@@ -107,7 +175,7 @@ export async function updateBeltLevelAction(
     await logAudit(
       user.id,
       AUDIT_ACTIONS.UPDATE_BELT_LEVEL,
-      "BeltLevel",
+      "BeltRangeEntry",
       beltLevelId,
     );
   }
@@ -117,17 +185,17 @@ export async function updateBeltLevelAction(
 export async function deleteBeltLevelAction(formData: FormData) {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
   const beltLevelId = getField(formData, "beltLevelId");
-  const courseId = getField(formData, "courseId");
+  const disciplineId = getField(formData, "disciplineId");
 
   try {
-    await deleteBeltLevel(beltLevelId);
+    await deleteBeltRangeEntry(beltLevelId);
   } catch (error: unknown) {
     if (
       error instanceof Error &&
       error.message.startsWith("This belt has been awarded")
     ) {
       redirect(
-        `/belts/${courseId}?beltError=${encodeURIComponent(error.message)}`,
+        `/belts/${disciplineId}?beltError=${encodeURIComponent(error.message)}`,
       );
     }
     throw error;
@@ -138,12 +206,14 @@ export async function deleteBeltLevelAction(formData: FormData) {
     await logAudit(
       user.id,
       AUDIT_ACTIONS.DELETE_BELT_LEVEL,
-      "BeltLevel",
+      "BeltRangeEntry",
       beltLevelId,
     );
   }
-  revalidatePath(`/belts/${courseId}`);
+  revalidatePath(`/belts/${disciplineId}`);
 }
+
+// --------------- promotion ---------------
 
 // Feeds useActionState — must not revalidatePath (see AGENTS.md).
 export async function recordPromotionAction(
@@ -154,7 +224,7 @@ export async function recordPromotionAction(
   const studentId = getField(formData, "studentId");
 
   const parsed = promotionSchema.safeParse({
-    beltLevelId: getField(formData, "beltLevelId"),
+    beltRangeEntryId: getField(formData, "beltRangeEntryId"),
     awardedAt: getField(formData, "awardedAt"),
     notes: getField(formData, "notes"),
   });
@@ -166,10 +236,10 @@ export async function recordPromotionAction(
   // overrides (make-up gradings, exceptional progression, …).
   const eligibility = await checkPromotionEligibility(
     studentId,
-    parsed.data.beltLevelId,
+    parsed.data.beltRangeEntryId,
   );
   if (eligibility === null) {
-    return { error: "That belt level no longer exists." };
+    return { error: "That belt no longer exists." };
   }
   if (eligibility.status === "insufficient") {
     const overrideConfirmed =
@@ -184,14 +254,14 @@ export async function recordPromotionAction(
   try {
     await recordPromotion({
       studentId,
-      beltLevelId: parsed.data.beltLevelId,
+      beltRangeEntryId: parsed.data.beltRangeEntryId,
       awardedAt: new Date(parsed.data.awardedAt),
       notes: parsed.data.notes,
       awardedById: user.id,
     });
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes("not found")) {
-      return { error: "That belt level no longer exists." };
+      return { error: "That belt no longer exists." };
     }
     throw error;
   }
@@ -200,29 +270,10 @@ export async function recordPromotionAction(
     user.id,
     AUDIT_ACTIONS.RECORD_PROMOTION,
     "StudentBelt",
-    parsed.data.beltLevelId,
+    parsed.data.beltRangeEntryId,
     { studentId },
   );
   return { ok: true, message: "Promotion recorded." };
-}
-
-export async function applyBeltRangeAction(formData: FormData) {
-  await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const courseId = getField(formData, "courseId");
-
-  await applyBeltRangeToCourse(courseId);
-
-  const user = await getCurrentUser();
-  if (user) {
-    await logAudit(
-      user.id,
-      AUDIT_ACTIONS.UPDATE_BELT_LEVEL,
-      "Course",
-      courseId,
-      { action: "applied-standard-belt-range" },
-    );
-  }
-  revalidatePath(`/belts/${courseId}`);
 }
 
 export async function deletePromotionAction(formData: FormData) {
@@ -244,101 +295,7 @@ export async function deletePromotionAction(formData: FormData) {
   revalidatePath("/belts");
 }
 
-// --------------- standard belt range (Settings -> Belts) ---------------
-
-function parseRangeInput(formData: FormData) {
-  return beltLevelSchema.safeParse({
-    name: getField(formData, "name"),
-    colorHex: getField(formData, "colorHex"),
-    order: getField(formData, "order"),
-    requiredTrainings: getField(formData, "requiredTrainings") || "0",
-  });
-}
-
-// Feeds useActionState — must not revalidatePath (see AGENTS.md).
-export async function createBeltRangeEntryAction(
-  previousState: BeltActionState,
-  formData: FormData,
-): Promise<BeltActionState> {
-  await requirePermission(PERMISSIONS.BELTS_EDIT);
-
-  const parsed = parseRangeInput(formData);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
-  }
-
-  try {
-    await createBeltRangeEntry(parsed.data);
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return { error: "A belt with that name already exists in the range." };
-    }
-    throw error;
-  }
-
-  const user = await getCurrentUser();
-  if (user) {
-    await logAudit(
-      user.id,
-      AUDIT_ACTIONS.CREATE_BELT_LEVEL,
-      "BeltRangeEntry",
-      parsed.data.name,
-    );
-  }
-  return { ok: true, message: "Belt added to the standard range." };
-}
-
-// Feeds useActionState — must not revalidatePath (see AGENTS.md).
-export async function updateBeltRangeEntryAction(
-  previousState: BeltActionState,
-  formData: FormData,
-): Promise<BeltActionState> {
-  await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const entryId = getField(formData, "entryId");
-
-  const parsed = parseRangeInput(formData);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
-  }
-
-  try {
-    await updateBeltRangeEntry(entryId, parsed.data);
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return { error: "A belt with that name already exists in the range." };
-    }
-    throw error;
-  }
-
-  const user = await getCurrentUser();
-  if (user) {
-    await logAudit(
-      user.id,
-      AUDIT_ACTIONS.UPDATE_BELT_LEVEL,
-      "BeltRangeEntry",
-      entryId,
-    );
-  }
-  return { ok: true, message: "Belt range updated." };
-}
-
-export async function deleteBeltRangeEntryAction(formData: FormData) {
-  await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const entryId = getField(formData, "entryId");
-
-  await deleteBeltRangeEntry(entryId);
-
-  const user = await getCurrentUser();
-  if (user) {
-    await logAudit(
-      user.id,
-      AUDIT_ACTIONS.DELETE_BELT_LEVEL,
-      "BeltRangeEntry",
-      entryId,
-    );
-  }
-  revalidatePath("/settings");
-}
+// --------------- belt history import ---------------
 
 export type BeltImportState =
   | { ok: true; message: string; created: number; skipped: number }
@@ -346,20 +303,20 @@ export type BeltImportState =
   | undefined;
 
 // Feeds useActionState — must not revalidatePath (see AGENTS.md). Belts must
-// already exist in the selected course's ladder (per design: no auto-creation).
+// already exist in the selected discipline's ladder (per design).
 export async function importBeltHistoryAction(
   previousState: BeltImportState,
   formData: FormData,
 ): Promise<BeltImportState> {
   const actor = await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const courseId = getField(formData, "courseId");
+  const disciplineId = getField(formData, "disciplineId");
 
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    select: { id: true, locationId: true },
+  const discipline = await prisma.discipline.findUnique({
+    where: { id: disciplineId },
+    select: { id: true },
   });
-  if (!course) {
-    return { ok: false, error: "Choose a course." };
+  if (!discipline) {
+    return { ok: false, error: "Choose a discipline." };
   }
 
   const file = formData.get("file");
@@ -379,8 +336,8 @@ export async function importBeltHistoryAction(
     };
   }
 
-  const belts = await prisma.beltLevel.findMany({
-    where: { courseId },
+  const belts = await prisma.beltRangeEntry.findMany({
+    where: { disciplineId },
     select: { id: true, name: true },
   });
   const beltByName = new Map(
@@ -393,7 +350,7 @@ export async function importBeltHistoryAction(
   const rowErrors: string[] = [];
   const validRows: {
     studentId: string;
-    beltLevelId: string;
+    beltRangeEntryId: string;
     awardedAt: Date;
     notes: string | null;
   }[] = [];
@@ -419,7 +376,7 @@ export async function importBeltHistoryAction(
     const belt = beltByName.get(row.belt.toLowerCase());
     if (!belt) {
       rowErrors.push(
-        `Row ${i + 2}: unknown belt "${row.belt}" — add it to the course's ladder first.`,
+        `Row ${i + 2}: unknown belt "${row.belt}" — add it to the discipline's ladder first.`,
       );
       continue;
     }
@@ -432,24 +389,25 @@ export async function importBeltHistoryAction(
       continue;
     }
 
-    const match = await findStudentForImport(
-      { email: row.email, firstName: row.firstName, lastName: row.lastName },
-      course.locationId,
-    );
+    const match = await findStudentForImport({
+      email: row.email,
+      firstName: row.firstName,
+      lastName: row.lastName,
+    });
     if (match.status !== "found") {
       const reason =
         match.status === "not_found"
           ? "student not found"
           : match.status === "ambiguous"
             ? "student name matches several students"
-            : "student is not at this course's location";
+            : "student is not at this location";
       rowErrors.push(`Row ${i + 2}: ${reason}.`);
       continue;
     }
 
     validRows.push({
       studentId: match.studentId,
-      beltLevelId: belt.id,
+      beltRangeEntryId: belt.id,
       awardedAt,
       notes: row.notes.length > 0 ? row.notes : null,
     });
@@ -466,8 +424,8 @@ export async function importBeltHistoryAction(
   await logAudit(
     actor.id,
     AUDIT_ACTIONS.IMPORT_BELT_HISTORY,
-    "Course",
-    courseId,
+    "Discipline",
+    disciplineId,
     { created, skipped },
   );
 

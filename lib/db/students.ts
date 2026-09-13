@@ -256,13 +256,13 @@ export type ImportStudentMatch =
   | { status: "ambiguous" }
   | { status: "not_at_location" };
 
-// Resolves a CSV import row's student: by email (verified against the
-// location) or by first+last name within the course's location roster.
-// Names that match several students are ambiguous — the row is rejected so
-// attendance is never attributed to the wrong person.
+// Resolves a CSV import row's student: by email (school-wide) or by
+// first+last name. When a locationId is provided (attendance import),
+// matching is scoped to that location's roster. Belt history import omits
+// locationId since rank is discipline-wide, not location-scoped.
 export async function findStudentForImport(
   input: { email?: string; firstName?: string; lastName?: string },
-  locationId: string,
+  locationId?: string,
 ): Promise<ImportStudentMatch> {
   if (input.email) {
     const student = await prisma.student.findUnique({
@@ -275,10 +275,12 @@ export async function findStudentForImport(
       },
     });
     if (!student) return { status: "not_found" };
-    const atLocation = student.locations.some(
-      (link) => link.locationId === locationId,
-    );
-    if (!atLocation) return { status: "not_at_location" };
+    if (locationId) {
+      const atLocation = student.locations.some(
+        (link) => link.locationId === locationId,
+      );
+      if (!atLocation) return { status: "not_at_location" };
+    }
     return {
       status: "found",
       studentId: student.id,
@@ -290,7 +292,7 @@ export async function findStudentForImport(
     const matches = await prisma.student.findMany({
       where: {
         status: { in: ["ACTIVE", "TRIAL"] },
-        locations: { some: { locationId } },
+        ...(locationId ? { locations: { some: { locationId } } } : {}),
         firstName: { equals: input.firstName.trim(), mode: "insensitive" },
         lastName: { equals: input.lastName.trim(), mode: "insensitive" },
       },

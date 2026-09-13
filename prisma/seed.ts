@@ -130,24 +130,56 @@ async function run(): Promise<void> {
       create: { name: "Main Dojo", isActive: true, sortOrder: 0 },
     });
 
-    console.log("Seeding standard belt range...");
-    // Cumulative totals: a student is awarded each belt once their ALL-TIME
-    // trained sessions on a course reach the belt's threshold (~2 sessions
-    // per week, Black around the 3-year mark by default — edit in Settings).
-    const standardRange = [
+    console.log("Seeding disciplines with belt ladders...");
+    // Karate: 9-belt kyu ladder (cumulative totals, Black ~ 3 years at
+    // 2 sessions/week — edit thresholds in the belts page).
+    const karate = await prisma.discipline.upsert({
+      where: { name: "Karate" },
+      update: {},
+      create: { name: "Karate" },
+    });
+    const karateLadder = [
       { name: "White", colorHex: "#FFFFFF", order: 0, requiredTrainings: 0 },
       { name: "Yellow", colorHex: "#FFD700", order: 1, requiredTrainings: 25 },
       { name: "Orange", colorHex: "#FF8C00", order: 2, requiredTrainings: 50 },
       { name: "Green", colorHex: "#228B22", order: 3, requiredTrainings: 100 },
       { name: "Blue", colorHex: "#0057B8", order: 4, requiredTrainings: 150 },
-      { name: "Brown", colorHex: "#8B4513", order: 5, requiredTrainings: 210 },
-      { name: "Black", colorHex: "#000000", order: 6, requiredTrainings: 300 },
+      { name: "Purple", colorHex: "#7B2D8E", order: 5, requiredTrainings: 200 },
+      { name: "Brown", colorHex: "#8B4513", order: 6, requiredTrainings: 250 },
+      { name: "Red", colorHex: "#DC2626", order: 7, requiredTrainings: 280 },
+      { name: "Black", colorHex: "#000000", order: 8, requiredTrainings: 300 },
     ];
-    for (const entry of standardRange) {
+    for (const entry of karateLadder) {
       await prisma.beltRangeEntry.upsert({
-        where: { name: entry.name },
+        where: {
+          disciplineId_name: { disciplineId: karate.id, name: entry.name },
+        },
         update: {},
-        create: entry,
+        create: { ...entry, disciplineId: karate.id },
+      });
+    }
+
+    // Jujitsu: 6-belt ladder to demonstrate multi-discipline support.
+    const jujitsu = await prisma.discipline.upsert({
+      where: { name: "Jujitsu" },
+      update: {},
+      create: { name: "Jujitsu" },
+    });
+    const jujitsuLadder = [
+      { name: "White", colorHex: "#FFFFFF", order: 0, requiredTrainings: 0 },
+      { name: "Yellow", colorHex: "#FFD700", order: 1, requiredTrainings: 30 },
+      { name: "Green", colorHex: "#228B22", order: 2, requiredTrainings: 70 },
+      { name: "Blue", colorHex: "#0057B8", order: 3, requiredTrainings: 120 },
+      { name: "Brown", colorHex: "#8B4513", order: 4, requiredTrainings: 180 },
+      { name: "Black", colorHex: "#000000", order: 5, requiredTrainings: 260 },
+    ];
+    for (const entry of jujitsuLadder) {
+      await prisma.beltRangeEntry.upsert({
+        where: {
+          disciplineId_name: { disciplineId: jujitsu.id, name: entry.name },
+        },
+        update: {},
+        create: { ...entry, disciplineId: jujitsu.id },
       });
     }
 

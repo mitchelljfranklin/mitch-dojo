@@ -12,9 +12,9 @@ import {
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 export function BeltImportForm({
-  courses,
+  disciplines,
 }: {
-  courses: { id: string; name: string }[];
+  disciplines: { id: string; name: string }[];
 }) {
   const [state, formAction, isPending] = useActionState<
     BeltImportState,
@@ -25,17 +25,17 @@ export function BeltImportForm({
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="grid gap-2">
-        <Label htmlFor="belt-import-course">Course</Label>
+        <Label htmlFor="belt-import-discipline">Discipline</Label>
         <select
-          id="belt-import-course"
-          name="courseId"
+          id="belt-import-discipline"
+          name="disciplineId"
           required
-          defaultValue={courses[0]?.id ?? ""}
+          defaultValue={disciplines[0]?.id ?? ""}
           className="border-input bg-background h-9 rounded-md border px-3 text-sm"
         >
-          {courses.map((course) => (
-            <option key={course.id} value={course.id}>
-              {course.name}
+          {disciplines.map((discipline) => (
+            <option key={discipline.id} value={discipline.id}>
+              {discipline.name}
             </option>
           ))}
         </select>
