@@ -47,9 +47,13 @@ test.describe("attendance", () => {
     await expect(page.getByText("Check in at E2E Dojo")).toBeVisible();
     await expect(page.getByText("E2E Attend Course")).toBeVisible();
 
+    // The chip may already be checked-in (green, disabled) if a previous
+    // step of this run checked the kid in — assert the outcome either way.
     const chip = page.getByRole("button", { name: "E2E Attend Kid" });
     await expect(chip).toBeVisible();
-    await chip.click();
+    if (await chip.isEnabled()) {
+      await chip.click();
+    }
     await expect(
       page.getByRole("button", { name: "✓ E2E Attend Kid" }),
     ).toBeVisible();

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
-import { PERMISSIONS, hasPermission } from "@/lib/permissions";
+import { PERMISSIONS } from "@/lib/permissions";
 import { getWeeklySchedule } from "@/lib/db/sessions";
 import { WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/lib/schemas/course";
 

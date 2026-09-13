@@ -57,4 +57,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   UPDATE_COURSE: "Updated course",
   DELETE_COURSE: "Deleted course",
   UPDATE_ATTENDANCE: "Updated attendance",
+  CREATE_BELT_LEVEL: "Added belt level",
+  UPDATE_BELT_LEVEL: "Updated belt level",
+  DELETE_BELT_LEVEL: "Removed belt level",
+  RECORD_PROMOTION: "Recorded promotion",
+  DELETE_PROMOTION: "Deleted promotion record",
 };

@@ -186,6 +186,33 @@ async function resolveEntityNames(
             select: { id: true, name: true },
           });
           for (const course of courses) map.set(course.id, course.name);
+        } else if (type === "BeltLevel") {
+          const levels = await prisma.beltLevel.findMany({
+            where: { id: { in: uniqueIds } },
+            select: {
+              id: true,
+              name: true,
+              course: { select: { name: true } },
+            },
+          });
+          for (const level of levels) {
+            map.set(level.id, `${level.name} (${level.course.name})`);
+          }
+        } else if (type === "StudentBelt") {
+          const records = await prisma.studentBelt.findMany({
+            where: { id: { in: uniqueIds } },
+            select: {
+              id: true,
+              beltName: true,
+              student: { select: { firstName: true, lastName: true } },
+            },
+          });
+          for (const record of records) {
+            map.set(
+              record.id,
+              `${record.student.firstName} ${record.student.lastName} — ${record.beltName}`,
+            );
+          }
         } else if (type === "Setting") {
           // Settings saves log the tab key as entityId (e.g. "general",
           // "operations") — the key itself is the readable name.
@@ -237,6 +264,11 @@ export const AUDIT_ACTIONS = {
   UPDATE_COURSE: "UPDATE_COURSE",
   DELETE_COURSE: "DELETE_COURSE",
   UPDATE_ATTENDANCE: "UPDATE_ATTENDANCE",
+  CREATE_BELT_LEVEL: "CREATE_BELT_LEVEL",
+  UPDATE_BELT_LEVEL: "UPDATE_BELT_LEVEL",
+  DELETE_BELT_LEVEL: "DELETE_BELT_LEVEL",
+  RECORD_PROMOTION: "RECORD_PROMOTION",
+  DELETE_PROMOTION: "DELETE_PROMOTION",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

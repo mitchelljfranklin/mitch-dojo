@@ -37,6 +37,7 @@ model User {
   sentNotificationLogs NotificationLog[]    @relation("NotificationSentBy")
   trainerProfile       Trainer?
   markedAttendance     Attendance[]         @relation("AttendanceMarkedBy")
+  awardedBelts         StudentBelt[]        @relation("BeltAwardedBy")
 
   @@index([roleId])
   @@map("users")
@@ -121,16 +122,16 @@ enum AttendanceStatus {
 }
 
 model Location {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  address       String?
-  phone         String?
-  email         String?
-  isActive      Boolean  @default(true)
-  sortOrder     Int      @default(0)
-  checkinToken  String?  @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String   @unique
+  address      String?
+  phone        String?
+  email        String?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  checkinToken String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   studentLocations StudentLocation[]
   courses          Course[]
@@ -160,6 +161,7 @@ model Student {
 
   locations  StudentLocation[]
   attendance Attendance[]
+  belts      StudentBelt[]
 
   @@index([lastName, firstName])
   @@index([status])
@@ -226,10 +228,54 @@ model Course {
 
   trainingTimes TrainingTime[]
   sessions      ClassSession[]
+  beltLevels    BeltLevel[]
 
   @@index([locationId])
   @@index([trainerId])
   @@map("courses")
+}
+
+// Belt rank within one course. order 0 is the entry rank; requiredTrainings
+// is how many trainings (Present/Late) a student needs to be eligible for
+// THIS belt — 0 for the entry belt.
+model BeltLevel {
+  id                String   @id @default(cuid())
+  courseId          String
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  name              String
+  colorHex          String
+  order             Int
+  requiredTrainings Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  studentBelts StudentBelt[]
+
+  @@unique([courseId, name])
+  @@index([courseId, order])
+  @@map("belt_levels")
+}
+
+// One row per awarded rank — the immutable promotion history. Belt name and
+// colour are denormalised so history stays readable if belt levels are later
+// reorganised (beltLevelId keeps the link when it still exists).
+model StudentBelt {
+  id          String     @id @default(cuid())
+  studentId   String
+  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  beltLevelId String?
+  beltLevel   BeltLevel? @relation(fields: [beltLevelId], references: [id], onDelete: SetNull)
+  beltName    String
+  colorHex    String
+  awardedAt   DateTime
+  notes       String?
+  awardedById String?
+  awardedBy   User?      @relation("BeltAwardedBy", fields: [awardedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+
+  @@index([studentId])
+  @@index([beltLevelId])
+  @@map("student_belts")
 }
 
 // Recurring weekly slot for a course. Weekday follows JS getDay convention

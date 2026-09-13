@@ -19,6 +19,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
 import { getStudentRecentAttendance } from "@/lib/db/attendance";
+import { getStudentBeltHistory } from "@/lib/db/belts";
 import { prisma } from "@/lib/prisma";
 import {
   ATTENDANCE_STATUS_LABELS,
@@ -60,14 +61,16 @@ export default async function StudentDetailPage({
 
   const { studentId } = await params;
   const sp = await searchParams;
-  const [student, attachments, recentAttendance] = await Promise.all([
-    getStudent(studentId),
-    prisma.attachment.findMany({
-      where: { entityType: "Student", entityId: studentId },
-      orderBy: { createdAt: "desc" },
-    }),
-    getStudentRecentAttendance(studentId),
-  ]);
+  const [student, attachments, recentAttendance, beltHistory] =
+    await Promise.all([
+      getStudent(studentId),
+      prisma.attachment.findMany({
+        where: { entityType: "Student", entityId: studentId },
+        orderBy: { createdAt: "desc" },
+      }),
+      getStudentRecentAttendance(studentId),
+      getStudentBeltHistory(studentId),
+    ]);
   if (!student) {
     notFound();
   }
@@ -239,6 +242,42 @@ export default async function StudentDetailPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm whitespace-pre-wrap">{student.notes}</p>
+          </CardContent>
+        </Card>
+      ) : null}
+      {beltHistory.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Belt progression</CardTitle>
+            <CardDescription>
+              Grading history across all courses.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {beltHistory.map((record) => (
+              <div
+                key={record.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="h-3 w-6 shrink-0 rounded-full border border-black/20"
+                    style={{ backgroundColor: record.colorHex }}
+                  />
+                  <span className="text-sm font-medium">{record.beltName}</span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    {record.beltLevel?.course.name ?? "Course removed"} ·{" "}
+                    {formatDate(record.awardedAt)}
+                  </span>
+                </div>
+                {record.notes ? (
+                  <span className="text-muted-foreground truncate text-xs">
+                    {record.notes}
+                  </span>
+                ) : null}
+              </div>
+            ))}
           </CardContent>
         </Card>
       ) : null}
