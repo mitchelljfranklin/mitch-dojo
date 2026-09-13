@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import {
+  applyBeltRangeAction,
   createBeltLevelAction,
   deleteBeltLevelAction,
   updateBeltLevelAction,
@@ -43,6 +44,18 @@ type EditorTarget = BeltLevelView | "new";
 
 const initialState: BeltActionState = undefined;
 
+// Maps any valid hex (#RGB or #RRGGBB) to a #RRGGBB string the colour
+// picker accepts; falls back to white for non-hex input while typing.
+function normalizeHexForPicker(value: string): string {
+  const trimmed = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toUpperCase();
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    const [r, g, b] = trimmed.slice(1);
+    return `#${r}${r}${g}${g}${b}${b}`.toUpperCase();
+  }
+  return "#FFFFFF";
+}
+
 function BeltFields({
   belt,
   defaultOrder,
@@ -50,8 +63,13 @@ function BeltFields({
   belt?: BeltLevelView;
   defaultOrder: number;
 }) {
+  // Single source of truth for the colour so typing a hex code updates the
+  // picker and picking from the palette updates the hex field.
+  const [color, setColor] = useState(belt?.colorHex ?? "#FFFFFF");
+
   return (
     <>
+      <input type="hidden" name="colorHex" value={color} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <label htmlFor="belt-name" className="text-sm font-medium">
@@ -73,26 +91,29 @@ function BeltFields({
           <div className="flex items-center gap-2">
             <input
               id="belt-color"
-              name="colorHex"
-              defaultValue={belt?.colorHex ?? "#FFFFFF"}
-              pattern="^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
-              className="h-9 w-14 cursor-pointer rounded border p-1"
               type="color"
-              onChange={(event) => {
-                const hexInput = document.getElementById(
-                  "belt-color-hex",
-                ) as HTMLInputElement | null;
-                if (hexInput) hexInput.value = event.target.value;
-              }}
+              value={normalizeHexForPicker(color)}
+              onChange={(event) => setColor(event.target.value.toUpperCase())}
+              className="h-9 w-14 cursor-pointer rounded border p-1"
+              aria-label="Colour palette"
             />
             <input
               id="belt-color-hex"
-              name="colorHex"
-              defaultValue={belt?.colorHex ?? "#FFFFFF"}
+              type="text"
+              value={color}
+              onChange={(event) => setColor(event.target.value)}
+              onBlur={(event) =>
+                setColor(normalizeHexForPicker(event.target.value))
+              }
               className="border-input bg-background h-9 w-28 rounded-md border px-3 font-mono text-sm"
               aria-label="Colour hex value"
+              pattern="^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+              required
             />
           </div>
+          <p className="text-muted-foreground text-xs">
+            Pick a colour or type a hex code (e.g. #FFD700) — both stay in sync.
+          </p>
         </div>
         <div className="grid gap-2">
           <label htmlFor="belt-order" className="text-sm font-medium">
@@ -266,7 +287,7 @@ export function BeltLevelsManager({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
         <div>
           <CardTitle>Belt levels</CardTitle>
           <CardDescription>
@@ -274,13 +295,17 @@ export function BeltLevelsManager({
           </CardDescription>
         </div>
         {canEdit ? (
-          <button
-            type="button"
-            onClick={() => setEditing("new")}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-8 items-center rounded-md px-3 text-xs font-medium"
-          >
-            Add belt
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <form action={applyBeltRangeAction}>
+              <input type="hidden" name="courseId" value={courseId} />
+              <Button type="submit" variant="secondary" size="sm">
+                Load standard range
+              </Button>
+            </form>
+            <Button size="sm" onClick={() => setEditing("new")}>
+              Add belt
+            </Button>
+          </div>
         ) : null}
       </CardHeader>
       <CardContent>

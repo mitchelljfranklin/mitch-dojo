@@ -251,6 +251,157 @@ export async function deletePromotion(promotionId: string): Promise<void> {
   await prisma.studentBelt.delete({ where: { id: promotionId } });
 }
 
+export type PromotionEligibility = {
+  eligible: boolean;
+  trainingsSince: number;
+  requiredTrainings: number | null;
+  currentBeltName: string | null;
+  targetBeltName: string;
+};
+
+// Server-side eligibility gate for a promotion: counts Present/Late
+// attendance on the target belt's course after the student's current belt
+// award date. Reused by the record-promotion action and integration tests.
+export async function checkPromotionEligibility(
+  studentId: string,
+  beltLevelId: string,
+): Promise<{
+  status: "eligible" | "insufficient" | "no_belt" | "already_current";
+  trainingsSince: number;
+  requiredTrainings: number | null;
+  currentBeltName: string | null;
+  targetBeltName: string;
+} | null> {
+  const target = await prisma.beltLevel.findUnique({
+    where: { id: beltLevelId },
+    select: { name: true, requiredTrainings: true, courseId: true },
+  });
+  if (!target) return null;
+
+  const currentRecord = await prisma.studentBelt.findFirst({
+    where: { studentId, beltLevel: { courseId: target.courseId } },
+    orderBy: { awardedAt: "desc" },
+    select: { beltName: true, awardedAt: true, beltLevelId: true },
+  });
+
+  const currentBelt = currentRecord
+    ? await prisma.beltLevel.findUnique({
+        where: { id: currentRecord.beltLevelId ?? "" },
+        select: { order: true },
+      })
+    : null;
+
+  const trainingsSince = await prisma.attendance.count({
+    where: {
+      studentId,
+      status: { in: TRAINED_STATUSES as unknown as AttendanceStatusValue[] },
+      session: {
+        courseId: target.courseId,
+        date: { gte: sinceDateOf(currentRecord?.awardedAt ?? null) },
+      },
+    },
+  });
+
+  return {
+    status:
+      trainingsSince >= target.requiredTrainings ? "eligible" : "insufficient",
+    trainingsSince,
+    requiredTrainings: target.requiredTrainings,
+    currentBeltName: currentRecord?.beltName ?? null,
+    targetBeltName: target.name,
+  };
+}
+
+function sinceDateOf(awardedAt: Date | null): Date {
+  if (!awardedAt) return new Date(0);
+  return new Date(
+    Date.UTC(
+      awardedAt.getFullYear(),
+      awardedAt.getMonth(),
+      awardedAt.getDate(),
+    ),
+  );
+}
+
+// --------------- standard belt range (Settings) ---------------
+
+export function listBeltRange() {
+  return prisma.beltRangeEntry.findMany({ orderBy: { order: "asc" } });
+}
+
+export async function createBeltRangeEntry(
+  input: BeltLevelInput,
+): Promise<void> {
+  await prisma.beltRangeEntry.create({ data: input });
+}
+
+export async function updateBeltRangeEntry(
+  id: string,
+  input: BeltLevelInput,
+): Promise<void> {
+  await prisma.beltRangeEntry.update({ where: { id }, data: input });
+}
+
+export async function deleteBeltRangeEntry(id: string): Promise<void> {
+  await prisma.beltRangeEntry.delete({ where: { id } });
+}
+
+// Loads the school's standard ladder into a course: entries matching by name
+// are updated, missing ones are created, and unawarded course belts that are
+// not part of the standard range are removed. Awarded belts are always kept.
+export async function applyBeltRangeToCourse(
+  courseId: string,
+): Promise<number> {
+  const [range, courseBelts] = await Promise.all([
+    prisma.beltRangeEntry.findMany({ orderBy: { order: "asc" } }),
+    prisma.beltLevel.findMany({
+      where: { courseId },
+      include: { _count: { select: { studentBelts: true } } },
+    }),
+  ]);
+
+  const rangeByName = new Map(range.map((entry) => [entry.name, entry]));
+  let changes = 0;
+
+  await prisma.$transaction(async (tx) => {
+    for (const belt of courseBelts) {
+      const standard = rangeByName.get(belt.name);
+      if (standard) {
+        await tx.beltLevel.update({
+          where: { id: belt.id },
+          data: {
+            colorHex: standard.colorHex,
+            order: standard.order,
+            requiredTrainings: standard.requiredTrainings,
+          },
+        });
+        changes++;
+      } else if (belt._count.studentBelts === 0) {
+        await tx.beltLevel.delete({ where: { id: belt.id } });
+        changes++;
+      }
+    }
+
+    const existingNames = new Set(courseBelts.map((belt) => belt.name));
+    for (const entry of range) {
+      if (!existingNames.has(entry.name)) {
+        await tx.beltLevel.create({
+          data: {
+            courseId,
+            name: entry.name,
+            colorHex: entry.colorHex,
+            order: entry.order,
+            requiredTrainings: entry.requiredTrainings,
+          },
+        });
+        changes++;
+      }
+    }
+  });
+
+  return changes;
+}
+
 export type BeltHistoryRow = Awaited<
   ReturnType<typeof getStudentBeltHistory>
 >[number];

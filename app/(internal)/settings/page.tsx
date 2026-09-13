@@ -13,6 +13,7 @@ import { listAuditLogs, listAuditActions } from "@/lib/db/audit";
 import { listStaffAccounts } from "@/lib/db/users";
 import { listRoles } from "@/lib/db/roles";
 import { listLocationsWithCounts } from "@/lib/db/locations";
+import { listBeltRange } from "@/lib/db/belts";
 import { prisma } from "@/lib/prisma";
 import {
   getOrganizationSettings,
@@ -27,6 +28,7 @@ import {
 import { UsersManager } from "./users-manager";
 import { RolesManager } from "./roles-manager";
 import { LocationsManager } from "./locations-manager";
+import { BeltRangeManager } from "./belt-range-manager";
 import { FlashToast } from "@/components/flash-toast";
 
 import { OrganizationForm } from "./organization-form";
@@ -53,6 +55,7 @@ export default async function SettingsPage({
     PERMISSIONS.USERS_MANAGE,
     PERMISSIONS.ROLES_MANAGE,
     PERMISSIONS.LOCATIONS_EDIT,
+    PERMISSIONS.BELTS_EDIT,
     PERMISSIONS.AUDIT_VIEW,
   ]);
   const permissions = currentUser.permissions;
@@ -66,6 +69,7 @@ export default async function SettingsPage({
     permissions,
     PERMISSIONS.LOCATIONS_EDIT,
   );
+  const canManageBelts = hasPermission(permissions, PERMISSIONS.BELTS_EDIT);
   const canViewAudit = hasPermission(permissions, PERMISSIONS.AUDIT_VIEW);
 
   const sp = await searchParams;
@@ -76,6 +80,7 @@ export default async function SettingsPage({
     staffAccounts,
     roles,
     locations,
+    beltRange,
     storageSettings,
     email,
     auditRetention,
@@ -87,6 +92,7 @@ export default async function SettingsPage({
     listStaffAccounts(),
     listRoles(),
     listLocationsWithCounts(),
+    listBeltRange(),
     getStorageSettingsView(),
     getEmailSettings(),
     getAuditRetention(),
@@ -149,6 +155,7 @@ export default async function SettingsPage({
       ? ["general", "operations", "storage", "email", "health"]
       : []),
     ...(canManageLocations ? ["locations"] : []),
+    ...(canManageBelts ? ["belts"] : []),
     ...(canManageUsers ? ["users"] : []),
     ...(canManageRoles ? ["roles"] : []),
     ...(canViewAudit ? ["audit"] : []),
@@ -180,6 +187,9 @@ export default async function SettingsPage({
             ) : null}
             {canManageLocations ? (
               <TabsTrigger value="locations">Locations</TabsTrigger>
+            ) : null}
+            {canManageBelts ? (
+              <TabsTrigger value="belts">Belts</TabsTrigger>
             ) : null}
             {canManageUsers ? (
               <TabsTrigger value="users">Users</TabsTrigger>
@@ -317,6 +327,29 @@ export default async function SettingsPage({
             </CardHeader>
             <CardContent>
               <LocationsManager locations={locationViews} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="belts" className="mt-4 flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Standard belt range</CardTitle>
+              <CardDescription>
+                The school&apos;s belt ladder. Courses copy it via &quot;Load
+                standard range&quot; on the belt progression page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BeltRangeManager
+                entries={beltRange.map((entry) => ({
+                  id: entry.id,
+                  name: entry.name,
+                  colorHex: entry.colorHex,
+                  order: entry.order,
+                  requiredTrainings: entry.requiredTrainings,
+                }))}
+              />
             </CardContent>
           </Card>
         </TabsContent>

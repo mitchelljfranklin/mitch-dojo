@@ -5,6 +5,7 @@ import { createCourse } from "@/lib/db/courses";
 import { createLocation, deleteLocation } from "@/lib/db/locations";
 import { createStudent, deleteStudent } from "@/lib/db/students";
 import {
+  checkPromotionEligibility,
   createBeltLevel,
   deleteBeltLevel,
   getCourseProgress,
@@ -138,43 +139,7 @@ describe.skipIf(!hasTestDatabase)("belt levels", () => {
 });
 
 describe.skipIf(!hasTestDatabase)("eligibility", () => {
-  it("counts only trained attendance after the promotion date", async () => {
-    const prePromotionSessionId = await createPastSession(
-      new Date(Date.UTC(2025, 11, 20)),
-    );
-    const augustSessionId = await createPastSession(
-      new Date(Date.UTC(2026, 7, 25)),
-    );
-    const septemberSessionId = await createPastSession(
-      new Date(Date.UTC(2026, 8, 2)),
-    );
-
-    // Promoted 2026-01-15 — the December 2025 training predates the promotion.
-    await setSessionAttendance(
-      prePromotionSessionId,
-      [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
-    await setSessionAttendance(
-      augustSessionId,
-      [{ studentId: studentId!, status: "PRESENT" }],
-      null,
-    );
-    await setSessionAttendance(
-      septemberSessionId,
-      [{ studentId: studentId!, status: "LATE" }],
-      null,
-    );
-
-    const { rows } = await getCourseProgress(courseId!);
-    const row = rows.find((entry) => entry.studentId === studentId);
-    expect(row?.trainingsSince).toBe(2);
-    expect(row?.nextBeltName).toBe("Yellow Stripe");
-    expect(row?.requiredTrainings).toBe(3);
-    expect(row?.isEligible).toBe(false);
-  });
-
-  it("becomes eligible once trainings meet the requirement", async () => {
+  it("counts trainings towards the next belt", async () => {
     const extraSessionId = await createPastSession(
       new Date(Date.UTC(2026, 8, 6)),
     );
@@ -194,7 +159,67 @@ describe.skipIf(!hasTestDatabase)("eligibility", () => {
 
     const { rows } = await getCourseProgress(courseId!);
     const row = rows.find((entry) => entry.studentId === studentId);
-    expect(row?.trainingsSince).toBe(4);
-    expect(row?.isEligible).toBe(true);
+    expect(row?.trainingsSince).toBe(2);
+    expect(row?.requiredTrainings).toBe(3);
+    expect(row?.isEligible).toBe(false);
+  });
+
+  it("eligibility gate reports insufficient trainings then eligibility", async () => {
+    // A second White record awarded Sep 12 resets the since-date, so none of
+    // the earlier trained sessions count towards Yellow (needs 3).
+    const awardedAt = new Date(Date.UTC(2026, 8, 12, 12));
+    await prisma.studentBelt.create({
+      data: {
+        studentId: studentId!,
+        beltLevelId: whiteBeltId!,
+        beltName: "White",
+        colorHex: "#FFFFFF",
+        awardedAt,
+      },
+    });
+
+    const eligibility = await checkPromotionEligibility(
+      studentId!,
+      yellowBeltId!,
+    );
+    expect(eligibility?.status).toBe("insufficient");
+    expect(eligibility?.trainingsSince).toBe(0);
+    expect(eligibility?.requiredTrainings).toBe(3);
+    expect(eligibility?.currentBeltName).toBe("White");
+    expect(eligibility?.targetBeltName).toBe("Yellow Stripe");
+
+    // Two trained sessions after the award still leave the threshold unmet.
+    const sessionIdA = await createPastSession(new Date(Date.UTC(2026, 8, 12)));
+    const sessionIdB = await createPastSession(new Date(Date.UTC(2026, 8, 13)));
+    await setSessionAttendance(
+      sessionIdA,
+      [{ studentId: studentId!, status: "PRESENT" }],
+      null,
+    );
+    await setSessionAttendance(
+      sessionIdB,
+      [{ studentId: studentId!, status: "PRESENT" }],
+      null,
+    );
+    const stillInsufficient = await checkPromotionEligibility(
+      studentId!,
+      yellowBeltId!,
+    );
+    expect(stillInsufficient?.status).toBe("insufficient");
+    expect(stillInsufficient?.trainingsSince).toBe(2);
+
+    // …and the third crosses it.
+    const sessionIdC = await createPastSession(new Date(Date.UTC(2026, 9, 1)));
+    await setSessionAttendance(
+      sessionIdC,
+      [{ studentId: studentId!, status: "PRESENT" }],
+      null,
+    );
+
+    const afterThreshold = await checkPromotionEligibility(
+      studentId!,
+      yellowBeltId!,
+    );
+    expect(afterThreshold?.status).toBe("eligible");
   });
 });

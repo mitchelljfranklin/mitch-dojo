@@ -6,8 +6,10 @@ import { useActionState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
   SheetContent,
@@ -54,28 +56,26 @@ function BeltChip({
   );
 }
 
+// Defaults the sheet's belt picker to the student's next belt in the ladder
+// (the rank they are working towards), falling back to the first belt.
+function defaultBeltIdFor(
+  student: ProgressRow,
+  belts: BeltLevelView[],
+): string {
+  const next = belts.find((belt) => belt.name === student.nextBeltName);
+  return next?.id ?? belts[0]?.id ?? "";
+}
+
 export function ProgressTable({
   courseId,
   belts,
   rows,
   canEdit,
-}: {
-  courseId: string;
-  belts: BeltLevelView[];
-  rows: ProgressRow[];
-  canEdit: boolean;
-}) {
+}: ProgressTableProps) {
   const [promoting, setPromoting] = useState<ProgressRow | null>(null);
-  const [state, formAction, isPending] = useActionState<
-    BeltActionState,
-    FormData
-  >(recordPromotionAction, undefined);
-  useActionFeedback(state);
-
-  // The sheet stays open after a successful save and shows the success
-  // message; closing is an explicit user action (event handler, not a
-  // setState-in-effect, which the lint rules forbid).
-  const promotionSaved = state !== undefined && "ok" in state && state.ok;
+  // Mount-time default for the sheet's belt picker: the next belt in the
+  // ladder for the promoted student (falls back to the first belt).
+  const [defaultBeltId, setDefaultBeltId] = useState("");
 
   return (
     <Card>
@@ -136,7 +136,10 @@ export function ProgressTable({
                       type="button"
                       size="sm"
                       variant="outline"
-                      onClick={() => setPromoting(row)}
+                      onClick={() => {
+                        setPromoting(row);
+                        setDefaultBeltId(defaultBeltIdFor(row, belts));
+                      }}
                     >
                       Promote
                     </Button>
@@ -155,95 +158,146 @@ export function ProgressTable({
         }}
       >
         {promoting ? (
-          <SheetContent className="w-full overflow-y-auto sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle>Record promotion</SheetTitle>
-              <SheetDescription>
-                {promoting.name}
-                {promoting.isEligible
-                  ? " has met the training requirement."
-                  : " has not yet met the next belt's training requirement — record anyway if the instructor decides so."}
-              </SheetDescription>
-            </SheetHeader>
-            <form
-              action={formAction}
-              className="flex flex-1 flex-col gap-4 px-4"
-            >
-              <input
-                type="hidden"
-                name="studentId"
-                value={promoting.studentId}
-              />
-              <input type="hidden" name="courseId" value={courseId} />
-              <div className="grid gap-2">
-                <Label htmlFor="promotion-belt">Belt</Label>
-                <select
-                  id="promotion-belt"
-                  name="beltLevelId"
-                  defaultValue={belts[0]?.id ?? ""}
-                  className="border-input bg-background h-9 rounded-md border px-3 text-sm"
-                  required
-                >
-                  {belts.map((belt) => (
-                    <option key={belt.id} value={belt.id}>
-                      {belt.name}
-                      {promoting.currentBeltName === belt.name
-                        ? " (current)"
-                        : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="promotion-date">Award date</Label>
-                <Input
-                  id="promotion-date"
-                  name="awardedAt"
-                  type="date"
-                  defaultValue={new Date().toISOString().slice(0, 10)}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="promotion-notes">Notes</Label>
-                <Input
-                  id="promotion-notes"
-                  name="notes"
-                  placeholder="Optional — grading day, examiner, etc."
-                />
-              </div>
-              {state && "error" in state ? (
-                <p className="text-destructive text-sm" role="alert">
-                  {state.error}
-                </p>
-              ) : null}
-              {promotionSaved && state && "message" in state ? (
-                <p className="text-success text-sm" role="status">
-                  {state.message} The table below refreshes automatically.
-                </p>
-              ) : null}
-              <SheetFooter className="px-0">
-                {promotionSaved ? (
-                  <Button type="button" onClick={() => setPromoting(null)}>
-                    Done
-                  </Button>
-                ) : (
-                  <Button type="submit" disabled={isPending}>
-                    {isPending ? "Recording..." : "Record promotion"}
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setPromoting(null)}
-                >
-                  Cancel
-                </Button>
-              </SheetFooter>
-            </form>
-          </SheetContent>
+          // Keyed per opening so each promotion starts with fresh action
+          // state and the belt picker re-initialises from the mount-time
+          // default.
+          <PromotionSheet
+            key={`${promoting.studentId}-${defaultBeltId}`}
+            courseId={courseId}
+            belts={belts}
+            student={promoting}
+            defaultBeltId={defaultBeltId}
+            onClose={() => setPromoting(null)}
+          />
         ) : null}
       </Sheet>
     </Card>
+  );
+}
+
+function PromotionSheet({
+  courseId,
+  belts,
+  student,
+  defaultBeltId,
+  onClose,
+}: {
+  courseId: string;
+  belts: BeltLevelView[];
+  student: ProgressRow;
+  defaultBeltId: string;
+  onClose: () => void;
+}) {
+  const [state, formAction, isPending] = useActionState<
+    BeltActionState,
+    FormData
+  >(recordPromotionAction, initialState);
+  useActionFeedback(state);
+
+  // The sheet stays open after a successful save and shows the success
+  // message; closing is an explicit user action (event handler, not a
+  // setState-in-effect, which the lint rules forbid).
+  const promotionSaved = state !== undefined && "ok" in state && state.ok;
+
+  return (
+    <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+      <SheetHeader>
+        <SheetTitle>Record promotion</SheetTitle>
+        <SheetDescription>
+          {student.name}
+          {student.isEligible
+            ? " has met the training requirement."
+            : " has not yet met the next belt's training requirement — record anyway if the instructor decides so."}
+        </SheetDescription>
+      </SheetHeader>
+      <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
+        <input type="hidden" name="studentId" value={student.studentId} />
+        <input type="hidden" name="courseId" value={courseId} />
+        <div className="grid gap-2">
+          <Label htmlFor="promotion-belt">Belt</Label>
+          {/* Uncontrolled with a mount-time default: React 19 resets forms
+              after every action, which would revert a controlled select to
+              the browser default between attempts (the AGENTS.md uncontrolled
+              gotcha). The sheet remounts per attempt, so the default is
+              always fresh. */}
+          <select
+            id="promotion-belt"
+            name="beltLevelId"
+            defaultValue={defaultBeltId}
+            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+            required
+          >
+            {belts.map((belt) => (
+              <option key={belt.id} value={belt.id}>
+                {belt.name}
+                {student.currentBeltName === belt.name ? " (current)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="promotion-date">Award date</Label>
+          <Input
+            id="promotion-date"
+            name="awardedAt"
+            type="date"
+            defaultValue={new Date().toISOString().slice(0, 10)}
+            required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="promotion-notes">Notes</Label>
+          <Textarea
+            id="promotion-notes"
+            name="notes"
+            rows={4}
+            placeholder="Optional — grading day, examiner, techniques assessed, etc."
+          />
+        </div>
+        {!student.isEligible ? (
+          <label className="border-warning/40 bg-warning/10 flex items-start gap-2 rounded-md border p-3 text-sm">
+            <Checkbox
+              name="overrideEligibility"
+              defaultChecked={false}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium">
+                Override eligibility requirement
+              </span>
+              <span className="text-muted-foreground block text-xs">
+                The student has not met the next belt&apos;s training
+                requirement. Tick this to record the promotion anyway (e.g.
+                exceptional progression or a make-up grading).
+              </span>
+            </span>
+          </label>
+        ) : null}
+        {state && "error" in state ? (
+          <p className="text-destructive text-sm" role="alert">
+            {state.error}
+          </p>
+        ) : null}
+        {promotionSaved && state && "message" in state ? (
+          <p className="text-success text-sm" role="status">
+            {state.message} The table refreshes automatically.
+          </p>
+        ) : null}
+        <SheetFooter className="px-0">
+          {promotionSaved ? (
+            <Button type="button" onClick={onClose}>
+              Done
+            </Button>
+          ) : (
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Recording..." : "Record promotion"}
+            </Button>
+          )}
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+        </SheetFooter>
+      </form>
+    </SheetContent>
   );
 }

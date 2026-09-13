@@ -278,6 +278,21 @@ model StudentBelt {
   @@map("student_belts")
 }
 
+// The school's standard belt ladder, maintained in Settings → Belts. Courses
+// can load it as a starting point and customise from there.
+model BeltRangeEntry {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  colorHex          String
+  order             Int
+  requiredTrainings Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([order])
+  @@map("belt_range_entries")
+}
+
 // Recurring weekly slot for a course. Weekday follows JS getDay convention
 // (0 = Sunday … 6 = Saturday); times are wall-clock "HH:MM" strings so the
 // dojo's local timetable stays unambiguous across DST boundaries.

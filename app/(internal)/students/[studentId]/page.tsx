@@ -15,6 +15,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { FlashToast } from "@/components/flash-toast";
 import { StudentAttachments } from "@/components/student-attachments";
 import { deleteStudentAction } from "@/lib/actions/students";
+import { deletePromotionAction } from "@/lib/actions/belts";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
@@ -57,6 +58,10 @@ export default async function StudentDetailPage({
   const canDelete = hasPermission(
     user.permissions,
     PERMISSIONS.STUDENTS_DELETE,
+  );
+  const canDeleteBelts = hasPermission(
+    user.permissions,
+    PERMISSIONS.BELTS_EDIT,
   );
 
   const { studentId } = await params;
@@ -250,7 +255,8 @@ export default async function StudentDetailPage({
           <CardHeader>
             <CardTitle>Belt progression</CardTitle>
             <CardDescription>
-              Grading history across all courses.
+              Grading history across all courses. Records can be deleted to
+              correct inaccuracies.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
@@ -271,11 +277,40 @@ export default async function StudentDetailPage({
                     {formatDate(record.awardedAt)}
                   </span>
                 </div>
-                {record.notes ? (
-                  <span className="text-muted-foreground truncate text-xs">
-                    {record.notes}
-                  </span>
-                ) : null}
+                <div className="flex items-center gap-2">
+                  {record.notes ? (
+                    <span className="text-muted-foreground max-w-[16rem] truncate text-xs">
+                      {record.notes}
+                    </span>
+                  ) : null}
+                  {canDeleteBelts ? (
+                    <form
+                      id={`delete-promotion-${record.id}`}
+                      action={deletePromotionAction}
+                    >
+                      <input
+                        type="hidden"
+                        name="promotionId"
+                        value={record.id}
+                      />
+                      <ConfirmDialog
+                        title="Delete promotion record?"
+                        description={`${record.beltName} (${formatDate(record.awardedAt)}) will be permanently removed from ${fullName}'s history.`}
+                        confirmLabel="Delete"
+                        formId={`delete-promotion-${record.id}`}
+                      >
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                        >
+                          Delete
+                        </Button>
+                      </ConfirmDialog>
+                    </form>
+                  ) : null}
+                </div>
               </div>
             ))}
           </CardContent>

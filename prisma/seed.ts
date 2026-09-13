@@ -130,6 +130,24 @@ async function run(): Promise<void> {
       create: { name: "Main Dojo", isActive: true, sortOrder: 0 },
     });
 
+    console.log("Seeding standard belt range...");
+    const standardRange = [
+      { name: "White", colorHex: "#FFFFFF", order: 0, requiredTrainings: 0 },
+      { name: "Yellow", colorHex: "#FFD700", order: 1, requiredTrainings: 12 },
+      { name: "Orange", colorHex: "#FF8C00", order: 2, requiredTrainings: 24 },
+      { name: "Green", colorHex: "#228B22", order: 3, requiredTrainings: 36 },
+      { name: "Blue", colorHex: "#0057B8", order: 4, requiredTrainings: 48 },
+      { name: "Brown", colorHex: "#8B4513", order: 5, requiredTrainings: 60 },
+      { name: "Black", colorHex: "#000000", order: 6, requiredTrainings: 80 },
+    ];
+    for (const entry of standardRange) {
+      await prisma.beltRangeEntry.upsert({
+        where: { name: entry.name },
+        update: {},
+        create: entry,
+      });
+    }
+
     const adminCount = await prisma.user.count();
     if (adminCount === 0) {
       console.log(
