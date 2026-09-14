@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { saveMembershipsSettings } from "./actions";
+import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 type MembershipsFormProps = {
   currency: string;
@@ -27,6 +28,7 @@ export function MembershipsForm({
     SettingsActionState,
     FormData
   >(saveMembershipsSettings, undefined);
+  useActionFeedback(state);
 
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
