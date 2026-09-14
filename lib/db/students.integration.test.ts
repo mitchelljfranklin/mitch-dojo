@@ -10,6 +10,7 @@ import {
   updateStudent,
 } from "@/lib/db/students";
 import { createLocation, deleteLocation } from "@/lib/db/locations";
+import { getDisciplineProgress } from "@/lib/db/belts";
 import { prisma as db } from "@/lib/prisma";
 
 // Integration suite: requires TEST_DATABASE_URL (see vitest.setup.ts);
@@ -30,6 +31,8 @@ async function makeLocation(name: string) {
 
 let mainDojoId: string;
 let northDojoId: string;
+let karateId: string;
+let jujitsuId: string;
 
 beforeAll(async () => {
   await db.attachment.deleteMany({ where: { entityType: "Student" } });
@@ -39,12 +42,28 @@ beforeAll(async () => {
   const north = await makeLocation("North Dojo");
   mainDojoId = main.id;
   northDojoId = north.id;
+
+  const karate = await db.discipline.upsert({
+    where: { name: `Karate ${suffix}` },
+    update: {},
+    create: { name: `Karate ${suffix}` },
+  });
+  const jujitsu = await db.discipline.upsert({
+    where: { name: `Jujitsu ${suffix}` },
+    update: {},
+    create: { name: `Jujitsu ${suffix}` },
+  });
+  karateId = karate.id;
+  jujitsuId = jujitsu.id;
 });
 
 afterAll(async () => {
   await db.attachment.deleteMany({ where: { entityType: "Student" } });
   await db.studentLocation.deleteMany({});
   await db.student.deleteMany({});
+  await db.discipline
+    .deleteMany({ where: { id: { in: [karateId, jujitsuId] } } })
+    .catch(() => undefined);
   await deleteLocation(mainDojoId).catch(() => undefined);
   await deleteLocation(northDojoId).catch(() => undefined);
   await db.$disconnect();
@@ -67,6 +86,7 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       notes: null,
       locationIds: [mainDojoId, northDojoId],
       primaryLocationId: mainDojoId,
+      disciplineIds: [],
     });
 
     const student = await getStudent(studentId);
@@ -99,6 +119,7 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       notes: null,
       locationIds: [mainDojoId],
       primaryLocationId: mainDojoId,
+      disciplineIds: [],
     });
 
     await updateStudent(studentId, {
@@ -116,6 +137,7 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       notes: null,
       locationIds: [mainDojoId, northDojoId],
       primaryLocationId: northDojoId,
+      disciplineIds: [],
     });
 
     const student = await getStudent(studentId);
@@ -140,6 +162,7 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       notes: null,
       locationIds: [mainDojoId],
       primaryLocationId: mainDojoId,
+      disciplineIds: [],
     });
     const onlyNorth = await createStudent({
       firstName: "Mei",
@@ -156,6 +179,7 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       notes: null,
       locationIds: [northDojoId],
       primaryLocationId: northDojoId,
+      disciplineIds: [],
     });
 
     const byLocation = await listStudents({ locationId: northDojoId });
@@ -190,6 +214,7 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       notes: null,
       locationIds: [mainDojoId],
       primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
     });
 
     await deleteStudent(studentId);
@@ -198,5 +223,109 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       where: { studentId },
     });
     expect(links).toHaveLength(0);
+    const disciplineLinks = await db.studentDiscipline.findMany({
+      where: { studentId },
+    });
+    expect(disciplineLinks).toHaveLength(0);
+  });
+
+  it("stores discipline links on create and replaces them on update", async () => {
+    const studentId = await createStudent({
+      firstName: "Multi",
+      lastName: "Artist",
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId, jujitsuId],
+    });
+
+    const created = await getStudent(studentId);
+    expect(
+      created!.disciplines.map((link) => link.disciplineId).sort(),
+    ).toEqual([karateId, jujitsuId].sort());
+
+    // Update drops Jujitsu — replace-set semantics, same as locations.
+    await updateStudent(studentId, {
+      firstName: "Multi",
+      lastName: "Artist",
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+
+    const updated = await getStudent(studentId);
+    expect(updated!.disciplines).toHaveLength(1);
+    expect(updated!.disciplines[0]!.disciplineId).toBe(karateId);
+
+    await deleteStudent(studentId);
+  });
+
+  it("progression lists only students linked to the discipline", async () => {
+    const linked = await createStudent({
+      firstName: "Linked",
+      lastName: "Karateka",
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+    const unlinked = await createStudent({
+      firstName: "Only",
+      lastName: "Jitsuka",
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [jujitsuId],
+    });
+
+    const karateProgress = await getDisciplineProgress(karateId);
+    const karateIds = karateProgress.rows.map((row) => row.studentId);
+    expect(karateIds).toContain(linked);
+    expect(karateIds).not.toContain(unlinked);
+
+    const jujitsuProgress = await getDisciplineProgress(jujitsuId);
+    const jujitsuIds = jujitsuProgress.rows.map((row) => row.studentId);
+    expect(jujitsuIds).toContain(unlinked);
+    expect(jujitsuIds).not.toContain(linked);
+
+    await deleteStudent(linked);
+    await deleteStudent(unlinked);
   });
 });

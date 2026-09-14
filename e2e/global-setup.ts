@@ -24,6 +24,10 @@ export const E2E_VIEWER_PASSWORD = "viewer-password-12345";
 const E2E_LOCATION_NAME = "E2E Dojo";
 const E2E_STUDENT_QUERY = { firstName: "E2E", lastName: "Student" };
 const ATTENDANCE_KID_QUERY = { firstName: "E2E", lastName: "Attend Kid" };
+const NO_DISCIPLINE_KID_QUERY = {
+  firstName: "E2E",
+  lastName: "NoDiscipline Kid",
+};
 const ATTENDANCE_COURSE_NAME = "E2E Attend Course";
 const HISTORY_COURSE_NAME = "E2E History Course";
 
@@ -76,11 +80,15 @@ export default async function globalSetup() {
   await prisma.location.deleteMany({ where: { name: "E2E Dojo Two" } });
   await prisma.studentLocation.deleteMany({
     where: {
-      student: { OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY] },
+      student: {
+        OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY, NO_DISCIPLINE_KID_QUERY],
+      },
     },
   });
   await prisma.student.deleteMany({
-    where: { OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY] },
+    where: {
+      OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY, NO_DISCIPLINE_KID_QUERY],
+    },
   });
 
   // The memberships spec's plan — safe to delete now that student deletion
@@ -90,7 +98,7 @@ export default async function globalSetup() {
   });
 
   // A student at the e2e location for the attendance + public check-in specs.
-  await prisma.student.create({
+  const attendanceKid = await prisma.student.create({
     data: {
       firstName: ATTENDANCE_KID_QUERY.firstName,
       lastName: ATTENDANCE_KID_QUERY.lastName,
@@ -142,6 +150,25 @@ export default async function globalSetup() {
             endTime: "07:00",
           },
         ],
+      },
+    },
+  });
+
+  // The attendance kid trains Karate — required for the progression table
+  // to list them (students are linked to disciplines, not courses).
+  await prisma.studentDiscipline.create({
+    data: { studentId: attendanceKid.id, disciplineId: karateDiscipline.id },
+  });
+
+  // A student with NO discipline assignment: the belts spec asserts they are
+  // absent from the Karate progression table.
+  await prisma.student.create({
+    data: {
+      firstName: "E2E",
+      lastName: "NoDiscipline Kid",
+      status: "ACTIVE",
+      locations: {
+        create: { locationId: e2eDojo.id, isPrimary: true },
       },
     },
   });

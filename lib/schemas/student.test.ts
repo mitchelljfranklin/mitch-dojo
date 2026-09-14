@@ -28,14 +28,29 @@ describe("studentSchema", () => {
       ...baseInput,
       locationIds: [],
       primaryLocationId: "",
+      disciplineIds: ["disc-1"],
     });
     expect(result.success).toBe(false);
+  });
+
+  it("requires at least one discipline", () => {
+    const result = studentSchema.safeParse({
+      ...baseInput,
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-1",
+      disciplineIds: [],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain("discipline");
+    }
   });
 
   it("rejects a primary location outside the assigned set", () => {
     const result = studentSchema.safeParse({
       ...baseInput,
       locationIds: ["loc-1"],
+      disciplineIds: ["disc-1"],
       primaryLocationId: "loc-2",
     });
     expect(result.success).toBe(false);
@@ -47,6 +62,7 @@ describe("studentSchema", () => {
       email: "",
       phone: " ",
       locationIds: ["loc-1", "loc-2"],
+      disciplineIds: ["disc-1", "disc-2"],
       primaryLocationId: "loc-1",
     });
     expect(result.success).toBe(true);
@@ -62,6 +78,7 @@ describe("studentSchema", () => {
       ...baseInput,
       dateOfBirth: "2012-05-14",
       locationIds: ["loc-1"],
+      disciplineIds: ["disc-1"],
       primaryLocationId: "loc-1",
     });
     expect(valid.success).toBe(true);
@@ -75,6 +92,7 @@ describe("studentSchema", () => {
       ...baseInput,
       dateOfBirth: "not-a-date",
       locationIds: ["loc-1"],
+      disciplineIds: ["disc-1"],
       primaryLocationId: "loc-1",
     });
     expect(invalid.success).toBe(true);

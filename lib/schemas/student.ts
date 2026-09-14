@@ -64,6 +64,9 @@ export const studentSchema = z
       .array(z.string())
       .min(1, "Assign the student to at least one location"),
     primaryLocationId: z.string().min(1, "Choose a primary (home) dojo"),
+    disciplineIds: z
+      .array(z.string())
+      .min(1, "Assign the student to at least one discipline"),
   })
   .refine((data) => data.locationIds.includes(data.primaryLocationId), {
     message: "The primary dojo must be one of the assigned locations",

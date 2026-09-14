@@ -63,6 +63,10 @@ function parseStudentInput(formData: FormData) {
       .map((value) => String(value))
       .filter(Boolean),
     primaryLocationId: getField(formData, "primaryLocationId"),
+    disciplineIds: formData
+      .getAll("disciplineIds")
+      .map((value) => String(value))
+      .filter(Boolean),
   });
 }
 
@@ -404,6 +408,9 @@ export async function importStudentsAction(
       notes: csvRow.notes,
       locationIds,
       primaryLocationId,
+      // CSV import has no discipline column; the link comes from the
+      // attendance/belt backfill or manual assignment after import.
+      disciplineIds: [],
     });
     if (!input.success) {
       rowErrors.push(

@@ -12,6 +12,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +28,13 @@ export default async function EditStudentPage({
 }: EditStudentPageProps) {
   await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const { studentId } = await params;
-  const [student, locations] = await Promise.all([
+  const [student, locations, disciplines] = await Promise.all([
     getStudent(studentId),
     listAssignableLocations(),
+    prisma.discipline.findMany({
+      select: { id: true, name: true, isActive: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
   if (!student) {
     notFound();
@@ -58,6 +63,7 @@ export default async function EditStudentPage({
             action={updateStudentAction}
             studentId={student.id}
             locations={locations}
+            disciplines={disciplines}
             submitLabel="Save changes"
             values={{
               firstName: student.firstName,
@@ -80,6 +86,9 @@ export default async function EditStudentPage({
                 student.locations.find((link) => link.isPrimary)?.locationId ??
                 student.locations[0]?.locationId ??
                 null,
+              disciplineIds: student.disciplines.map(
+                (link) => link.disciplineId,
+              ),
             }}
           />
         </CardContent>

@@ -54,6 +54,7 @@ beforeAll(async () => {
     notes: null,
     locationIds: [locationId],
     primaryLocationId: locationId,
+    disciplineIds: [],
   });
   studentBId = await createStudent({
     firstName: "Mia",
@@ -70,6 +71,7 @@ beforeAll(async () => {
     notes: null,
     locationIds: [locationId],
     primaryLocationId: locationId,
+    disciplineIds: [],
   });
 
   courseId = await createCourse({

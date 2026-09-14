@@ -131,7 +131,10 @@ export type StudentDetail = Awaited<ReturnType<typeof getStudent>>;
 export async function getStudent(id: string) {
   const student = await prisma.student.findUnique({
     where: { id },
-    include: { locations: { include: { location: true } } },
+    include: {
+      locations: { include: { location: true } },
+      disciplines: { include: { discipline: true } },
+    },
   });
   return student;
 }
@@ -182,6 +185,11 @@ export async function createStudent(input: StudentInput): Promise<string> {
           isPrimary: locationId === input.primaryLocationId,
         })),
       },
+      disciplines: {
+        create: input.disciplineIds.map((disciplineId) => ({
+          disciplineId,
+        })),
+      },
     },
     select: { id: true },
   });
@@ -192,7 +200,7 @@ export async function updateStudent(
   studentId: string,
   input: StudentInput,
 ): Promise<void> {
-  const { locationIds, primaryLocationId, ...fields } = input;
+  const { locationIds, primaryLocationId, disciplineIds, ...fields } = input;
 
   await prisma.$transaction(async (tx) => {
     await tx.student.update({ where: { id: studentId }, data: fields });
@@ -202,6 +210,13 @@ export async function updateStudent(
         studentId,
         locationId,
         isPrimary: locationId === primaryLocationId,
+      })),
+    });
+    await tx.studentDiscipline.deleteMany({ where: { studentId } });
+    await tx.studentDiscipline.createMany({
+      data: disciplineIds.map((disciplineId) => ({
+        studentId,
+        disciplineId,
       })),
     });
   });

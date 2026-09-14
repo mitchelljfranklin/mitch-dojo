@@ -11,6 +11,7 @@ import { createStudentAction } from "@/lib/actions/students";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,14 @@ export const metadata = { title: "New student" };
 
 export default async function NewStudentPage() {
   await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const locations = await listAssignableLocations();
+  const [locations, disciplines] = await Promise.all([
+    listAssignableLocations(),
+    prisma.discipline.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, isActive: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -37,6 +45,7 @@ export default async function NewStudentPage() {
           <StudentForm
             action={createStudentAction}
             locations={locations}
+            disciplines={disciplines}
             submitLabel="Create student"
           />
         </CardContent>

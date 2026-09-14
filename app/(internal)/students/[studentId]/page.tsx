@@ -180,6 +180,11 @@ export default async function StudentDetailPage({
                   No location assigned
                 </span>
               )}
+              {student.disciplines.map((link) => (
+                <Badge key={link.disciplineId} variant="outline">
+                  {link.discipline.name}
+                </Badge>
+              ))}
               <span className="text-muted-foreground text-xs">
                 Joined {formatDate(student.joinedAt)}
               </span>

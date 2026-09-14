@@ -133,7 +133,12 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
   const belts = discipline.beltRangeEntries;
 
   const students = await prisma.student.findMany({
-    where: { status: { in: ["ACTIVE", "TRIAL"] } },
+    where: {
+      status: { in: ["ACTIVE", "TRIAL"] },
+      // Only students assigned to this discipline appear in its progression
+      // table (StudentDiscipline link, required on the student form).
+      disciplines: { some: { disciplineId } },
+    },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: {
       id: true,

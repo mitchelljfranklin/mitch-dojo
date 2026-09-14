@@ -42,6 +42,7 @@ beforeAll(async () => {
     notes: null,
     locationIds: [],
     primaryLocationId: "",
+    disciplineIds: [discipline.id],
   });
 
   const white = await createBeltRangeEntry(disciplineId, {
@@ -78,7 +79,7 @@ describe.skipIf(!hasTestDatabase)("belt ladder", () => {
   it("creates ordered belt levels for a discipline", async () => {
     const { belts, rows } = await getDisciplineProgress(disciplineId!);
     expect(belts.map((belt) => belt.name)).toEqual(["White", "Yellow"]);
-    // The student appears school-wide even with no courses in the discipline.
+    // The student appears because they are assigned to this discipline.
     const row = rows.find((entry) => entry.studentId === studentId);
     expect(row?.currentBeltName).toBeNull();
     expect(row?.trainingsTotal).toBe(0);

@@ -18,6 +18,11 @@ test.describe("belts", () => {
     await page.getByText("E2E Karate", { exact: true }).first().click();
     await page.waitForURL("**/belts/*");
 
+    // The progression table lists only students assigned to the discipline:
+    // the attendance kid is linked to E2E Karate; the NoDiscipline kid is not.
+    await expect(page.getByText("E2E Attend Kid")).toBeVisible();
+    await expect(page.getByText("E2E NoDiscipline Kid")).toHaveCount(0);
+
     // The ladder from global-setup is visible
     await expect(
       page.getByText("Novice", { exact: true }).first(),

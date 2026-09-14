@@ -191,15 +191,30 @@ model Student {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  locations  StudentLocation[]
-  attendance Attendance[]
-  belts      StudentBelt[]
+  locations   StudentLocation[]
+  disciplines StudentDiscipline[]
+  attendance  Attendance[]
+  belts       StudentBelt[]
   enrollments Enrollment[]
-  invoices   Invoice[]
+  invoices    Invoice[]
 
   @@index([lastName, firstName])
   @@index([status])
   @@map("students")
+}
+
+// Which disciplines a student trains. One or more per student (a school may
+// teach Karate and Jujitsu); drives which progression tables the student
+// appears in. Rank itself is per discipline (StudentBelt).
+model StudentDiscipline {
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  disciplineId String
+  discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, disciplineId])
+  @@index([disciplineId])
+  @@map("student_disciplines")
 }
 
 model StudentLocation {
@@ -280,6 +295,7 @@ model Discipline {
 
   beltRangeEntries BeltRangeEntry[]
   courses          Course[]
+  students         StudentDiscipline[]
 
   @@map("disciplines")
 }

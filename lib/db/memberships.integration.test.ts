@@ -50,6 +50,7 @@ beforeAll(async () => {
     notes: null,
     locationIds: [],
     primaryLocationId: "",
+    disciplineIds: [],
   });
 
   const recurringPlan = await createMembershipPlan({

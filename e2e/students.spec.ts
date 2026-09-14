@@ -21,11 +21,13 @@ test.describe("students", () => {
     await page.getByRole("button", { name: "Create location" }).click();
     await expect(page.getByText("Location created.")).toBeVisible();
 
-    // Create a student assigned to the new location
+    // Create a student assigned to the new location and the E2E Karate
+    // discipline (disciplines are required, at least one)
     await page.goto("/students/new");
     await page.getByLabel("First name").fill("E2E");
     await page.getByLabel("Last name").fill("Student");
     await page.getByRole("checkbox", { name: "E2E Dojo Two" }).click();
+    await page.getByRole("checkbox", { name: "E2E Karate" }).click();
     await page.getByLabel("Primary (home) dojo").selectOption({
       label: "E2E Dojo Two",
     });

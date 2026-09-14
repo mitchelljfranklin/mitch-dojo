@@ -20,6 +20,12 @@ export type StudentFormLocation = {
   isActive: boolean;
 };
 
+export type StudentFormDiscipline = {
+  id: string;
+  name: string;
+  isActive: boolean;
+};
+
 export type StudentFormValues = {
   id?: string;
   firstName: string;
@@ -37,6 +43,7 @@ export type StudentFormValues = {
   photoKey: string | null;
   locationIds: string[];
   primaryLocationId: string | null;
+  disciplineIds: string[];
 };
 
 export type StudentFormState =
@@ -51,6 +58,7 @@ type StudentFormProps = {
   action: StudentFormAction;
   values?: StudentFormValues;
   locations: StudentFormLocation[];
+  disciplines: StudentFormDiscipline[];
   submitLabel: string;
   studentId?: string;
 };
@@ -59,6 +67,7 @@ export function StudentForm({
   action,
   values,
   locations,
+  disciplines,
   submitLabel,
   studentId,
 }: StudentFormProps) {
@@ -74,12 +83,23 @@ export function StudentForm({
   const [primaryLocationId, setPrimaryLocationId] = useState<string>(
     values?.primaryLocationId ?? values?.locationIds[0] ?? "",
   );
+  const [selectedDisciplineIds, setSelectedDisciplineIds] = useState<string[]>(
+    values?.disciplineIds ?? [],
+  );
 
   const toggleLocation = (locationId: string, checked: boolean) => {
     setSelectedLocationIds((previous) =>
       checked
         ? [...previous, locationId]
         : previous.filter((id) => id !== locationId),
+    );
+  };
+
+  const toggleDiscipline = (disciplineId: string, checked: boolean) => {
+    setSelectedDisciplineIds((previous) =>
+      checked
+        ? [...previous, disciplineId]
+        : previous.filter((id) => id !== disciplineId),
     );
   };
 
@@ -263,6 +283,46 @@ export function StudentForm({
               ))}
           </select>
         </div>
+      </div>
+
+      <div className="border-t pt-4">
+        <h3 className="text-sm font-medium">Disciplines</h3>
+        <p className="text-muted-foreground mb-2 text-xs">
+          Which arts the student trains — they appear in those progression
+          tables and hold a separate rank in each.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {disciplines.map((discipline) => {
+            const checked = selectedDisciplineIds.includes(discipline.id);
+            return (
+              <label
+                key={discipline.id}
+                className="flex items-center gap-2 rounded-md border p-2 text-sm"
+              >
+                <Checkbox
+                  name="disciplineIds"
+                  value={discipline.id}
+                  defaultChecked={checked}
+                  onCheckedChange={(next: boolean | "indeterminate") =>
+                    toggleDiscipline(discipline.id, next === true)
+                  }
+                />
+                <span className="min-w-0 flex-1">
+                  {discipline.name}
+                  {discipline.isActive ? null : (
+                    <span className="text-muted-foreground"> (inactive)</span>
+                  )}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        {disciplines.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            No disciplines exist yet — create one under Belts &amp; gradings
+            first.
+          </p>
+        ) : null}
       </div>
 
       <div className="border-t pt-4">

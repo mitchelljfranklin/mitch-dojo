@@ -52,6 +52,10 @@ its **dojo sites**. Semantics locked in at Phase 1:
 - **Students train at one or more locations** (`StudentLocation` M:N), with a
   designated **primary (home) dojo** (`isPrimary` — exactly one per student,
   enforced in the data layer) used for reporting and eligibility.
+- **Students train one or more disciplines** (`StudentDiscipline` M:N,
+  required — at least one). Only discipline-assigned students appear in that
+  discipline's progression table; the migration backfilled links from belt
+  history and attendance.
 - **Every class belongs to exactly one location** (required `locationId` on
   `Course`/`TrainingTime`).
 - Deletion safety: a location with assigned students cannot be deleted —
