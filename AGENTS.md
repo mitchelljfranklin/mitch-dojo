@@ -115,6 +115,12 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 ### PGlite-mode gotchas
 
+- **PGlite is single-process.** Before any command that opens the data
+  directory (`npm run db:deploy:lite`, `db:seed`, or a manual PGlite script),
+  verify no dev server is running on :3000 — a second process opening the
+  same `DATABASE_DIR` aborts the running instance (WASM `Aborted()` → every
+  DB-touching page 500s) and can corrupt the directory on disk. Recovery:
+  move the corrupted dir aside, then `db:deploy:lite` + `db:seed` fresh.
 - `prisma migrate dev/deploy` cannot drive PGlite. **Author migrations
   against Postgres** (docker), consume them in lite mode via
   `scripts/migrate-pglite.mjs` (`npm run db:deploy:lite`).
