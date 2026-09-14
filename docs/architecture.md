@@ -44,21 +44,32 @@ enforced server-side and hidden client-side when absent.
 
 **Locations & students (1)** → Classes & schedule (2) → Attendance & QR
 check-in (3) → Belts & gradings (4) → **Historical attendance & belt-history
-import (5)** → Memberships & manual payments (6) → Communication (7) →
-Analytics (8) → Trials (9) → Member portal (10) → Gateways & extras (11+).
+import (5)** → **Disciplines & global belt ranks (5b)** → Memberships &
+manual payments (6) → Communication (7) → Analytics (8) → Trials (9) →
+Member portal (10) → Gateways & extras (11+).
 
 ## Multi-location
 
 The tenant is the **school**; `Location` rows are its dojo sites. Students
 train at one or more locations with exactly one primary (home) dojo; every
-class belongs to exactly one location (Phase 2). Locations are organisational
+class belongs to exactly one location. Locations are organisational
 only — all staff see all locations, and views filter by them.
+
+## Disciplines & belt ranks (Phases 4–5b)
+
+Each **discipline** (Karate, Jujitsu, …) owns its belt ladder. Courses are
+linked to a discipline, and a student's rank is **per discipline, global
+across all locations** teaching it — promote from any course page, the rank
+updates everywhere. Eligibility counts cumulative attendance across **all
+courses of that discipline combined** (so a student training at two
+locations accumulates toward one rank). A student in two disciplines has
+separate, independent ranks.
 
 ## Importing history (Phase 5)
 
 Migrating schools bring their history in three ways: a per-student **past
-attendance** sheet (creates missing past sessions automatically), a
+attendance** sheet (creates missing past sessions automatically), an
 **attendance CSV** import (long format, idempotent — already-recorded rows
 are skipped), and a **belt history** CSV import (belts must exist in the
-course's ladder first). Unknown courses/students/belts are reported as row
-errors, never auto-created.
+discipline's ladder first). Unknown courses/students/belts are reported as
+row errors, never auto-created.

@@ -1,6 +1,6 @@
 # Mitch‑Dojo — Architecture Solution Design Document
 
-> **Version:** 0.1.0 (Phase 0)
+> **Version:** 0.1.0 (Phase 5b)
 > **Last Updated:** September 2026
 > **Audience:** Engineering, Security, Operations
 > **Status:** Approved
@@ -28,8 +28,9 @@ principles:
 | 1 | **Students & locations**: Location CRUD + student↔location assignment (multi-location, primary/home dojo), student CRUD, search, CSV import/export, photo + attachments | Done |
 | 2 | **Classes & schedule**: Trainer roster (optional User account link), courses (required locationId — one location per class), recurring weekly training times, generated sessions, weekly timetable view | Done |
 | 3 | **Attendance & QR check-in**: session attendance sheets (Present/Late/Excused/Absent), bulk mark-all, public per-location QR check-in pages (no-login, revocable token), student attendance history | Done |
-| 4 | **Belts & gradings**: per-course belt levels (colour + order + required trainings), student promotion history (denormalised), cumulative attendance-based eligibility with instructor override, standard belt range in Settings | Done |
-| 5 | **Historical attendance & belt-history import**: per-student backfill sheet, attendance CSV import (creates missing past sessions, idempotent), belt-history CSV import (belts must exist first) | **Current** |
+| 4 | **Belts & gradings**: per-discipline belt ladders, student promotion history (denormalised), cumulative attendance-based eligibility with instructor override | Done |
+| 5 | **Historical attendance & belt-history import**: per-student backfill sheet, attendance CSV import (creates missing past sessions, idempotent), belt-history CSV import (belts must exist first) | Done |
+| 5b | **Disciplines & global belt ranks**: Discipline entity, belt ladders per discipline (not per course), student rank global across all locations teaching that discipline, cumulative eligibility counts all courses of the discipline combined | Done |
 | 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Planned |
 | 7 | Communication: templates, reminders (class/payment/birthday) via scheduler | Planned |
 | 8 | Analytics: active members, attendance trends, retention signals, revenue summary — per-location breakdowns | Planned |
@@ -40,7 +41,7 @@ principles:
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
 builders, POS storefront, project management, kiosk apps, native mobile apps.
 
-## Multi-location model
+## 2.1 Multi-location model
 
 The tenant is the **school** (e.g. "Hino Tori Karate"); `Location` rows are
 its **dojo sites**. Semantics locked in at Phase 1:
@@ -50,11 +51,37 @@ its **dojo sites**. Semantics locked in at Phase 1:
   access isolation is explicitly out of scope.
 - **Students train at one or more locations** (`StudentLocation` M:N), with a
   designated **primary (home) dojo** (`isPrimary` — exactly one per student,
-  enforced in the data layer) used for reporting and, later, eligibility.
-- **Every class belongs to exactly one location** (Phase 2: required
-  `locationId` on `Course`/`TrainingTime`).
+  enforced in the data layer) used for reporting and eligibility.
+- **Every class belongs to exactly one location** (required `locationId` on
+  `Course`/`TrainingTime`).
 - Deletion safety: a location with assigned students cannot be deleted —
   deactivate it instead; hard delete only when unreferenced.
+
+## 2.2 Disciplines & belt ranks (Phase 5b)
+
+A school may teach **multiple disciplines** (e.g. Karate, Jujitsu), each with
+its own belt ladder and grading criteria.
+
+- **`Discipline`** entity: name, active flag. Each discipline owns its belt
+  ladder (`BeltRangeEntry.disciplineId`).
+- **`Course.disciplineId`** (required): every course teaches one discipline.
+  A discipline taught at multiple locations = one course per location, each
+  with its own schedule/attendance.
+- **Student rank is per discipline, global across all locations.** A student
+  promoted to Yellow (Karate) at location A is Yellow at every location
+  teaching Karate. Promote from any course's progression page — the rank
+  updates globally for that discipline.
+- **Eligibility is cumulative across all courses of the discipline.** A
+  student training Karate at location A (Tuesdays) and location B (Thursdays)
+  counts ALL trained sessions on both courses toward their Karate rank.
+- A student in **two disciplines** has separate Karate and Jujitsu ranks.
+  Karate attendance does not count toward the Jujitsu ladder, and vice versa.
+- **Belt ladders are managed on the belts page** (`/belts/[disciplineId]`),
+  not in Settings. "Load standard range" was removed — courses use their
+  discipline's ladder directly.
+- Belt entries that have been awarded cannot be deleted; history rows
+  denormalise name/colour so they stay readable through reorganisations.
+- Disciplines with courses cannot be deleted (reassign courses first).
 
 ## 3. Technology Stack
 
@@ -100,37 +127,51 @@ single environment variable. Constraints and mitigations:
 | No TCP access to the DB in lite mode | pgAdmin/BI tools unavailable; backups are stop-copy-start of `DATABASE_DIR` |
 | Community adapter maturity | Pin versions; CI runs the lite path twice to prove idempotency |
 | WASM asset resolution in the standalone build | `serverExternalPackages` externalises PGlite in `next.config.ts` |
+| PGlite does not create missing directories | `lib/prisma.ts` and seed call `mkdirSync(recursive)` before opening |
 
-## 5. Data Model (Phases 0–1)
+## 5. Data Model (Phases 0–5b)
 
 ```
 Role ──< User ──< AuditLog
               ├─< PasswordResetToken
-              └─< NotificationLog (sentBy, SetNull)
-              └── Trainer (0..1 link) ──< Course ──< TrainingTime
-                                            └──< ClassSession >── Location
+              ├─< NotificationLog (sentBy, SetNull)
+              ├─< Attendance (markedBy, SetNull)
+              └─< StudentBelt (awardedBy, SetNull)
 
-AppSetting (category/key/value Json/isSecret)  — all runtime config
+Trainer (0..1 User link) ──< Course
 
+Discipline ──< BeltRangeEntry (ladder per discipline)
+Discipline ──< Course (required disciplineId)
+Course ──< TrainingTime (weekly recurring slot)
+Course ──< ClassSession (generated, location denormalised at generation time)
+Location ──< Course ──< ClassSession ──< Attendance >── Student
 Location ──< StudentLocation >── Student
-Location ──< Course ──< TrainingTime (weekly recurring slot)
-Location ──< ClassSession ──< Attendance >── Student
-Course ──< BeltLevel ──< StudentBelt >── Student (history; belt name/colour denormalised)
+
+Discipline ──< BeltRangeEntry ──< StudentBelt >── Student
+  (beltRangeEntryId FK, beltName/colourHex denormalised;
+   rank is per discipline, global across all locations teaching it)
+
 Student (photoKey, status TRIAL/ACTIVE/INACTIVE/ALUMNI, guardian, emergency contact)
 Attachment (polymorphic entityType/entityId — "Student" documents)
 ```
 
-Belt eligibility (`getCourseProgress`, cumulative): a student's trainings on
-a course = count of ALL Present/Late attendance on that course's sessions,
-from their very first class. A belt's `requiredTrainings` is the cumulative
-total needed to be awarded that belt (0 for the entry rank) — e.g. Black at
-300 means a student training twice a week reaches it around the 3-year mark,
-and each belt's threshold is set once in Settings rather than recomputed as
-"what's left" per rank. Eligibility is surfaced as a badge; recording a
-promotion requires the threshold unless the instructor ticks Override
-(make-up gradings, exceptional progression). Belt levels that have been
-awarded cannot be deleted; history rows denormalise name/colour so they stay
-readable through reorganisations.
+### Belt eligibility (cumulative, per discipline)
+
+A student's trainings for a discipline = count of ALL Present/Late attendance
+across **every course of that discipline** (at any location), from their very
+first class. A belt's `requiredTrainings` is the cumulative total needed to
+be awarded that belt (0 for the entry rank) — e.g. Black at 300 means a
+student training twice a week across two locations reaches it around the
+3-year mark. Each belt's threshold is set once on the discipline's ladder
+page rather than recomputed as "what's left" per rank.
+
+Eligibility is surfaced as a badge; recording a promotion requires the
+threshold unless the instructor ticks Override (make-up gradings,
+exceptional progression). Belt entries that have been awarded cannot be
+deleted; history rows denormalise name/colour so they stay readable through
+reorganisations. Disciplines with courses cannot be deleted.
+
+### Class sessions & attendance
 
 `ClassSession` rows are generated by `ensureUpcomingSessions()` for the next
 14 days whenever the schedule or a course page is viewed; the
@@ -143,24 +184,37 @@ Attendance: one `Attendance` row per (session, student) with status
 `PRESENT/LATE/EXCUSED/ABSENT` and `source` `MANUAL` or `CHECKIN` (a staff
 overwrite keeps the manual source). The public check-in flow records
 `PRESENT` with source `CHECKIN`; staff saves overwrite status but the source
-becomes MANUAL. `TRAINED_STATUSES` = Present + Late — the basis for later
-retention analytics and belt eligibility.
+becomes MANUAL. `TRAINED_STATUSES` = Present + Late — the basis for belt
+eligibility and later retention analytics.
+
+### Historical import (Phase 5)
+
+Migrating schools bring history in three ways:
+
+1. **Per-student backfill** — "Add past attendance" sheet on the student
+   record: course, date, status. Creates missing past sessions automatically.
+2. **Attendance CSV import** — long format (`Date, Course, Email/Names,
+   Status`), creates missing past sessions, idempotent (already-recorded
+   rows skipped), row-level errors for unknown courses/students.
+3. **Belt history CSV import** — per-discipline (ladder must exist first),
+   creates backdated `StudentBelt` rows, same-day duplicates skipped.
 
 Key relationships follow mitch-risk conventions: user deletion preserves
 history via `SetNull` ("Deleted user"); delete cascades are explicit and
 per-model. Deleting a student removes their photo and attachments from
-storage; the orphan sweep collects `students.photoKey`, `attachments.storageKey`,
-and the brand logo as referenced keys.
+storage; the orphan sweep collects `students.photoKey`,
+`attachments.storageKey`, and the brand logo as referenced keys.
 
 ## 5.1 Identity & Access
 
 - **Auth.js v5**, JWT sessions, sliding-window expiry
   (`operations.sessionTimeoutMinutes`, default 30).
 - **Credentials provider** — bcrypt (12 rounds), rate-limited per IP.
-- **RBAC:** permission catalog in `lib/permissions.ts` (students, classes,
-  attendance, belts, memberships, communications, administration, profile),
-  three seeded system roles (**Admin** — all keys, **Trainer** — floor
-  operations, **Viewer** — read-only). Custom roles via Settings → Roles.
+- **RBAC:** permission catalog in `lib/permissions.ts` (students, locations,
+  classes, attendance, belts, memberships, communications, administration,
+  profile), three seeded system roles (**Admin** — all keys, **Trainer** —
+  floor operations, **Viewer** — read-only). Custom roles via Settings →
+  Roles.
 - Every server action/route/page enforces `requirePermission`; the UI hides
   gated controls entirely.
 
@@ -221,5 +275,11 @@ SMTP: provider-agnostic (configured in Settings)
    need accounts; trainer logins arrive via the seeded Trainer role.
 4. **Credentials-only auth in Phase 0**; SSO returns in a later phase using
    the proven mitch-risk pattern.
-5. **Manual payments first** (cash/transfer/terminal recording) — gateways
-   (Stripe/SEPA/PayPal) are Phase 10+ and shape invoices only then.
+5. **Belt ladders are per discipline, not per course.** A student's rank is
+   global across all locations teaching that discipline. Eligibility counts
+   cumulative attendance across ALL courses of the discipline combined.
+6. **Manual payments first** (cash/transfer/terminal recording) — gateways
+   (Stripe/SEPA/PayPal) are Phase 11+ and shape invoices only then.
+7. **Historical import over synthetic credits** — migrating schools import
+   dated rows (which create real past sessions) rather than a per-student
+   starting-credit offset, keeping the data model honest.
