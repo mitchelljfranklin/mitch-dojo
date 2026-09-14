@@ -28,10 +28,15 @@ const CHECKIN_PAGE_LOADS_PER_MIN = 30;
 
 type CheckinPageProps = {
   params: Promise<{ token: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 };
 
-export default async function CheckinPage({ params }: CheckinPageProps) {
+export default async function CheckinPage({
+  params,
+  searchParams,
+}: CheckinPageProps) {
   const { token } = await params;
+  const sp = await searchParams;
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -67,6 +72,19 @@ export default async function CheckinPage({ params }: CheckinPageProps) {
           Tap your name under today&apos;s class to check in.
         </p>
       </div>
+
+      {sp.error === "suspended" ? (
+        <Card className="border-destructive/40 mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-destructive text-base">
+              Membership suspended
+            </CardTitle>
+            <CardDescription>
+              Please speak to staff at the front desk before training.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
 
       {sessions.length === 0 ? (
         <Card>

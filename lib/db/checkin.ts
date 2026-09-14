@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getStudentSuspension } from "@/lib/db/memberships";
 
 // Raw check-in capability token stored per location (like mitch-risk portal
 // links): the QR/link needs to embed the token, so it must be retrievable.
@@ -122,7 +123,7 @@ export async function checkInStudent(
   locationId: string,
   sessionId: string,
   studentId: string,
-): Promise<"ok" | "not_found"> {
+): Promise<"ok" | "not_found" | "suspended"> {
   const session = await prisma.classSession.findUnique({
     where: { id: sessionId },
     select: { locationId: true, status: true, date: true },
@@ -141,6 +142,11 @@ export async function checkInStudent(
     select: { id: true },
   });
   if (!student) return "not_found";
+
+  // Overdue memberships block self-service check-in (Settings → Memberships
+  // sets the threshold; 0 disables). Staff can still mark attendance manually.
+  const suspension = await getStudentSuspension(studentId);
+  if (suspension.suspended) return "suspended";
 
   await prisma.attendance.upsert({
     where: {

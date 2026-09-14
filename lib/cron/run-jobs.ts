@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import { getAuditRetention, getEmailLogRetention } from "@/lib/settings";
+import {
+  getAuditRetention,
+  getEmailLogRetention,
+  getMembershipsSettings,
+} from "@/lib/settings";
 import { storage } from "@/lib/storage";
 import { findOrphanFileKeys } from "@/lib/storage/orphan-sweep";
+import { generateDueInvoices } from "@/lib/db/memberships";
 
 export type ScheduledJobsResult = {
   prunedAudit?: number;
@@ -9,6 +14,7 @@ export type ScheduledJobsResult = {
   prunedEmails?: number;
   prunedFiles?: number;
   prunedFileKeys?: string[];
+  generatedInvoices?: number;
 };
 
 // Runs every scheduled job once: log pruning and the orphaned-file sweep.
@@ -96,6 +102,23 @@ export async function runScheduledJobs(
     console.log(
       `[cron] orphan sweep removed ${deletedFileKeys.length} file(s): ${deletedFileKeys.join(", ")}`,
     );
+  }
+
+  // --- recurring invoice generation ---
+  // Idempotent: advancing nextInvoiceDate past "today" after generating means
+  // a repeated tick generates nothing new. The cycle date itself is the
+  // invoice's issue date. Runs outside any user session, so audit attribution
+  // is not applicable here.
+  const membershipsSettings = await getMembershipsSettings();
+  if (membershipsSettings.autoGenerateInvoices) {
+    const generated = await generateDueInvoices(
+      now,
+      membershipsSettings.invoiceDueDays,
+    );
+    if (generated > 0) {
+      result.generatedInvoices = generated;
+      console.log(`[cron] generated ${generated} recurring invoice(s)`);
+    }
   }
 
   await prisma.appSetting.upsert({

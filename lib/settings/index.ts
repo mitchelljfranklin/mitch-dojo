@@ -13,6 +13,7 @@ import {
   type AppearanceSettings,
   type StorageSettings,
   type CronSettings,
+  type MembershipsSettings,
   operationsSettingsSchema,
   emailSettingsSchema,
   emailTemplateSchema,
@@ -21,6 +22,7 @@ import {
   appearanceSettingsSchema,
   storageSettingsSchema,
   cronSettingsSchema,
+  membershipsSettingsSchema,
 } from "./schema";
 
 function makeKey(category: string, field: string): string {
@@ -280,6 +282,25 @@ export async function getCronSettings(): Promise<CronSettings> {
 
 export async function updateCronSettings(input: CronSettings): Promise<void> {
   await persistCategory("cron", input, NO_SECRETS);
+}
+
+// Not cache(): the scheduler's invoice-generation job must re-read the
+// toggle each run so disabling it takes effect without a restart.
+export async function getMembershipsSettings(): Promise<MembershipsSettings> {
+  const record = await readCategoryRecord("memberships");
+  return membershipsSettingsSchema.parse(record);
+}
+
+export async function updateMembershipsSettings(
+  input: Partial<MembershipsSettings>,
+): Promise<void> {
+  const record = await readCategoryRecord("memberships");
+  const merged = membershipsSettingsSchema.parse(record);
+  await persistCategory(
+    "memberships",
+    { ...merged, ...input } as unknown as Record<string, unknown>,
+    NO_SECRETS,
+  );
 }
 
 export async function getAuditRetention(): Promise<number> {

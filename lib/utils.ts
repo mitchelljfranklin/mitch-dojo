@@ -59,6 +59,20 @@ export function formatDateUtc(value: Date | string | number): string {
   return utcDateFormatter.format(date);
 }
 
+// Money is stored as integer cents; currency is an ISO 4217 code from
+// Settings → Memberships. Invalid codes fall back to plain formatting rather
+// than throwing in the render path.
+export function formatMoney(cents: number, currency = "USD"): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+    }).format(cents / 100);
+  } catch {
+    return `${(cents / 100).toFixed(2)} ${currency}`;
+  }
+}
+
 export function formatResponseValue(value: unknown): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "string") return value.length > 0 ? value : "—";

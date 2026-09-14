@@ -23,6 +23,13 @@ import { getStudent } from "@/lib/db/students";
 import { getStudentRecentAttendance } from "@/lib/db/attendance";
 import { getStudentBeltHistory } from "@/lib/db/belts";
 import { listCoursesForStudent } from "@/lib/db/courses";
+import { endEnrollmentAction } from "@/lib/actions/memberships";
+import {
+  getStudentSuspension,
+  listActivePlansForSelection,
+  listStudentEnrollments,
+} from "@/lib/db/memberships";
+import { getMembershipsSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 import {
   ATTENDANCE_STATUS_LABELS,
@@ -32,7 +39,9 @@ import {
   STUDENT_STATUS_LABELS,
   type StudentStatus,
 } from "@/lib/schemas/student";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatMoney } from "@/lib/utils";
+
+import { EnrollStudentSheet } from "./enroll-student-sheet";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +78,10 @@ export default async function StudentDetailPage({
     user.permissions,
     PERMISSIONS.ATTENDANCE_MARK,
   );
+  const canManageMemberships = hasPermission(
+    user.permissions,
+    PERMISSIONS.MEMBERSHIPS_EDIT,
+  );
 
   const { studentId } = await params;
   const sp = await searchParams;
@@ -88,6 +101,39 @@ export default async function StudentDetailPage({
   if (!student) {
     notFound();
   }
+
+  const membershipsEnabled = hasPermission(
+    user.permissions,
+    PERMISSIONS.MEMBERSHIPS_VIEW,
+  );
+  const enrollments = membershipsEnabled
+    ? await listStudentEnrollments(studentId)
+    : [];
+  const [studentInvoices, plans, membershipsSettings, suspension] =
+    membershipsEnabled
+      ? await Promise.all([
+          prisma.invoice.findMany({
+            where: { studentId },
+            orderBy: { issueDate: "desc" },
+            take: 5,
+            include: {
+              items: { select: { quantity: true, unitPriceCents: true } },
+              payments: { select: { amountCents: true } },
+            },
+          }),
+          canManageMemberships
+            ? listActivePlansForSelection()
+            : Promise.resolve([]),
+          getMembershipsSettings(),
+          getStudentSuspension(studentId),
+        ])
+      : [[], [], null, null];
+  const currency = membershipsSettings?.currency ?? "USD";
+  const suspensionState = suspension ?? {
+    suspended: false,
+    daysOverdue: 0,
+    suspendAfterDays: 0,
+  };
 
   const primaryLink = student.locations.find((link) => link.isPrimary);
   const otherLinks = student.locations.filter((link) => !link.isPrimary);
@@ -235,6 +281,142 @@ export default async function StudentDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {membershipsEnabled ? (
+        <Card>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+            <div>
+              <CardTitle>Memberships</CardTitle>
+              <CardDescription>
+                Plans and invoices.{" "}
+                {suspensionState.suspended ? (
+                  <span className="text-destructive font-medium">
+                    Suspended — invoice overdue {suspensionState.daysOverdue}{" "}
+                    day
+                    {suspensionState.daysOverdue === 1 ? "" : "s"} (limit{" "}
+                    {suspensionState.suspendAfterDays}).
+                  </span>
+                ) : null}
+              </CardDescription>
+            </div>
+            {canManageMemberships && plans.length > 0 ? (
+              <EnrollStudentSheet studentId={student.id} plans={plans} />
+            ) : null}
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              {enrollments.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No plan enrollments yet.
+                </p>
+              ) : (
+                enrollments.map((enrollment) => (
+                  <div
+                    key={enrollment.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {enrollment.plan.name}
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        {enrollment.status === "ACTIVE"
+                          ? `Since ${formatDate(enrollment.startDate)}${
+                              enrollment.nextInvoiceDate
+                                ? ` · next invoice ${formatDate(enrollment.nextInvoiceDate)}`
+                                : ""
+                            }`
+                          : `Ended ${enrollment.endDate ? formatDate(enrollment.endDate) : ""}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          enrollment.status === "ACTIVE"
+                            ? "secondary"
+                            : "outline"
+                        }
+                      >
+                        {enrollment.status === "ACTIVE" ? "Active" : "Ended"}
+                      </Badge>
+                      {canManageMemberships &&
+                      enrollment.status === "ACTIVE" ? (
+                        <form
+                          id={`end-enrollment-${enrollment.id}`}
+                          action={endEnrollmentAction}
+                        >
+                          <input
+                            type="hidden"
+                            name="enrollmentId"
+                            value={enrollment.id}
+                          />
+                          <ConfirmDialog
+                            title="End enrollment?"
+                            description={`${enrollment.plan.name} will stop generating invoices for this student.`}
+                            confirmLabel="End enrollment"
+                            formId={`end-enrollment-${enrollment.id}`}
+                          >
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive"
+                            >
+                              End
+                            </Button>
+                          </ConfirmDialog>
+                        </form>
+                      ) : null}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {studentInvoices.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-muted-foreground text-xs font-medium">
+                  Recent invoices
+                </p>
+                {studentInvoices.map((invoice) => {
+                  const totalCents = invoice.items.reduce(
+                    (sum, item) => sum + item.unitPriceCents * item.quantity,
+                    0,
+                  );
+                  const paidCents = invoice.payments.reduce(
+                    (sum, payment) => sum + payment.amountCents,
+                    0,
+                  );
+                  return (
+                    <Link
+                      key={invoice.id}
+                      href={`/memberships/invoices/${invoice.id}`}
+                      className="hover:bg-accent/40 flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 text-sm"
+                    >
+                      <span className="font-mono text-xs">
+                        #{invoice.number}
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        Issued {formatDate(invoice.issueDate)}
+                      </span>
+                      <Badge
+                        variant={
+                          invoice.status === "PAID" ? "secondary" : "default"
+                        }
+                      >
+                        {invoice.status === "PAID" ? "Paid" : "Open"}
+                      </Badge>
+                      <span className="text-right">
+                        {formatMoney(totalCents - paidCents, currency)}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {canEdit ? (
         <StudentAttachments

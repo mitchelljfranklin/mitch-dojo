@@ -38,6 +38,8 @@ model User {
   trainerProfile       Trainer?
   markedAttendance     Attendance[]         @relation("AttendanceMarkedBy")
   awardedBelts         StudentBelt[]        @relation("BeltAwardedBy")
+  createdInvoices      Invoice[]            @relation("InvoiceCreatedBy")
+  recordedPayments     Payment[]            @relation("PaymentRecordedBy")
 
   @@index([roleId])
   @@map("users")
@@ -121,6 +123,36 @@ enum AttendanceStatus {
   ABSENT
 }
 
+enum PlanType {
+  RECURRING
+  ITEM
+}
+
+enum BillingPeriod {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  ENDED
+}
+
+enum InvoiceStatus {
+  OPEN
+  PAID
+  VOID
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD_TERMINAL
+  OTHER
+}
+
 model Location {
   id           String   @id @default(cuid())
   name         String   @unique
@@ -162,6 +194,8 @@ model Student {
   locations  StudentLocation[]
   attendance Attendance[]
   belts      StudentBelt[]
+  enrollments Enrollment[]
+  invoices   Invoice[]
 
   @@index([lastName, firstName])
   @@index([status])
@@ -354,4 +388,109 @@ model Attendance {
   @@index([studentId])
   @@index([markedAt])
   @@map("attendance")
+}
+
+// A billable plan. RECURRING plans generate invoices on a cycle (school-wide
+// memberships — a student has one membership covering all their training);
+// ITEM plans are one-off billables (grading fees, gear) invoiced manually.
+// Money is stored as integer cents to avoid float rounding.
+model MembershipPlan {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  description   String?
+  planType      PlanType       @default(RECURRING)
+  billingPeriod BillingPeriod?
+  priceCents    Int
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  enrollments Enrollment[]
+
+  @@map("membership_plans")
+}
+
+// A student's subscription to a plan. RECURRING enrollments carry
+// nextInvoiceDate — the scheduler generates an invoice when it passes.
+// ITEM enrollments are billed manually (no cycle).
+model Enrollment {
+  id              String          @id @default(cuid())
+  studentId       String
+  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  planId          String
+  plan            MembershipPlan  @relation(fields: [planId], references: [id], onDelete: Restrict)
+  status          EnrollmentStatus @default(ACTIVE)
+  startDate       DateTime
+  endDate         DateTime?
+  nextInvoiceDate DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  invoices Invoice[]
+
+  @@index([studentId])
+  @@index([planId])
+  @@index([status, nextInvoiceDate])
+  @@map("enrollments")
+}
+
+// Invoice number is a sequential integer assigned per school. Status PAID is
+// derived in the data layer from the payment total; an OPEN invoice whose
+// dueDate has passed is surfaced as overdue without changing the stored row.
+model Invoice {
+  id           String        @id @default(cuid())
+  number       Int           @unique
+  studentId    String
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  enrollmentId String?
+  enrollment   Enrollment?   @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  status       InvoiceStatus @default(OPEN)
+  issueDate    DateTime
+  dueDate      DateTime
+  notes        String?
+  createdById  String?
+  createdBy    User?         @relation("InvoiceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@index([studentId])
+  @@index([status, dueDate])
+  @@map("invoices")
+}
+
+// Line items denormalise the plan name/price at invoice time so later plan
+// edits never rewrite issued documents.
+model InvoiceItem {
+  id             String  @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description    String
+  quantity       Int     @default(1)
+  unitPriceCents Int
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+// Manual payment records against an invoice (cash/transfer/terminal first —
+// gateways are a later phase). An invoice becomes PAID when its payments
+// cover the item total; partial payments are allowed.
+model Payment {
+  id           String        @id @default(cuid())
+  invoiceId    String
+  invoice      Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amountCents  Int
+  method       PaymentMethod @default(CASH)
+  paidAt       DateTime
+  reference    String?
+  recordedById String?
+  recordedBy   User?         @relation("PaymentRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+
+  @@index([invoiceId])
+  @@index([paidAt])
+  @@map("payments")
 }

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Settings,
   Users,
+  Wallet,
   Clock,
 } from "lucide-react";
 import Link from "next/link";
@@ -82,6 +83,12 @@ export function AppSidebar({
       href: "/belts",
       icon: GraduationCap,
       permission: PERMISSIONS.BELTS_VIEW,
+    },
+    {
+      title: "Memberships",
+      href: "/memberships",
+      icon: Wallet,
+      permission: PERMISSIONS.MEMBERSHIPS_VIEW,
     },
   ].filter((item) => hasPermission(permissions, item.permission));
 

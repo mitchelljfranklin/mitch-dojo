@@ -46,6 +46,12 @@ const ALL_ITEMS: PaletteItem[] = [
     href: "/belts",
     permission: PERMISSIONS.BELTS_VIEW,
   },
+  {
+    label: "Memberships",
+    subtitle: "Plans & invoices",
+    href: "/memberships",
+    permission: PERMISSIONS.MEMBERSHIPS_VIEW,
+  },
   { label: "Profile", subtitle: "Your account", href: "/profile" },
   {
     label: "Settings · General",

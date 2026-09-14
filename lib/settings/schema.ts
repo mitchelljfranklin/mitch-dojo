@@ -113,3 +113,19 @@ export const cronSettingsSchema = z.object({
 });
 
 export type CronSettings = z.infer<typeof cronSettingsSchema>;
+
+// Memberships & payments configuration. currency is an ISO 4217 code used
+// for display formatting; money itself is stored as integer cents.
+// suspendAfterOverdueDays = 0 disables check-in suspension entirely.
+export const membershipsSettingsSchema = z.object({
+  currency: z
+    .string()
+    .length(3, "Use a 3-letter ISO currency code")
+    .default("USD")
+    .transform((value) => value.toUpperCase()),
+  invoiceDueDays: z.coerce.number().int().min(0).max(90).default(14),
+  suspendAfterOverdueDays: z.coerce.number().int().min(0).max(365).default(30),
+  autoGenerateInvoices: z.boolean().default(true),
+});
+
+export type MembershipsSettings = z.infer<typeof membershipsSettingsSchema>;

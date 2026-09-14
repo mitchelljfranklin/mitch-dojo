@@ -16,10 +16,12 @@ import {
   updateEmailLogRetention,
   updateEmailSettings,
   updateCronSettings,
+  updateMembershipsSettings,
 } from "@/lib/settings";
 import {
   organizationSettingsSchema,
   storageSettingsSchema,
+  membershipsSettingsSchema,
 } from "@/lib/settings/schema";
 import { storage } from "@/lib/storage";
 import {
@@ -283,6 +285,37 @@ export async function sendSmtpTestAction(
   }
 
   return { ok: false, message: result.message };
+}
+
+export async function saveMembershipsSettings(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const parsed = membershipsSettingsSchema.safeParse({
+    currency: formData.get("currency") ?? "USD",
+    invoiceDueDays: formData.get("invoiceDueDays") ?? 14,
+    suspendAfterOverdueDays: formData.get("suspendAfterOverdueDays") ?? 30,
+    autoGenerateInvoices: formData.get("autoGenerateInvoices") === "on",
+  });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
+  }
+
+  await updateMembershipsSettings(parsed.data);
+  const user = await getCurrentUser();
+  if (user)
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "memberships",
+    );
+  return { ok: true, message: "Membership settings saved." };
 }
 
 export async function saveStorageSettings(

@@ -83,6 +83,12 @@ export default async function globalSetup() {
     where: { OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY] },
   });
 
+  // The memberships spec's plan — safe to delete now that student deletion
+  // cascaded its enrollments and invoices.
+  await prisma.membershipPlan.deleteMany({
+    where: { name: "E2E Monthly Membership" },
+  });
+
   // A student at the e2e location for the attendance + public check-in specs.
   await prisma.student.create({
     data: {

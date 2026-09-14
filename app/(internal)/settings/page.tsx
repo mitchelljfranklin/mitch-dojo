@@ -23,6 +23,7 @@ import {
   getStorageSettingsView,
   getCronSettings,
   getEmailSettings,
+  getMembershipsSettings,
 } from "@/lib/settings";
 import { UsersManager } from "./users-manager";
 import { RolesManager } from "./roles-manager";
@@ -35,6 +36,7 @@ import { AuditForm } from "./audit-form";
 import { OperationsForm } from "./operations-form";
 import { StorageForm } from "./storage-form";
 import { EmailForm } from "./email-form";
+import { MembershipsForm } from "./memberships-form";
 import { HealthTab } from "./health-tab";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +103,7 @@ export default async function SettingsPage({
       ? cronLastRunRow.value
       : null;
   const cronSettings = await getCronSettings();
+  const membershipsSettings = await getMembershipsSettings();
 
   const users = staffAccounts.map((account) => ({
     id: account.id,
@@ -146,7 +149,7 @@ export default async function SettingsPage({
 
   const allowedTabs = [
     ...(canManageSettings
-      ? ["general", "operations", "storage", "email", "health"]
+      ? ["general", "memberships", "operations", "storage", "email", "health"]
       : []),
     ...(canManageLocations ? ["locations"] : []),
     ...(canManageUsers ? ["users"] : []),
@@ -172,6 +175,7 @@ export default async function SettingsPage({
             {canManageSettings ? (
               <>
                 <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="memberships">Memberships</TabsTrigger>
                 <TabsTrigger value="operations">Operations</TabsTrigger>
                 <TabsTrigger value="storage">Storage</TabsTrigger>
                 <TabsTrigger value="email">Email</TabsTrigger>
@@ -209,6 +213,33 @@ export default async function SettingsPage({
                       cronSettings.internalSchedulerEnabled
                     }
                     cronLastRun={cronLastRun}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent
+              value="memberships"
+              className="mt-4 flex flex-col gap-6"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Memberships & payments</CardTitle>
+                  <CardDescription>
+                    Currency display, invoice due dates, and overdue check-in
+                    suspension. Plans are managed on the Memberships page.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <MembershipsForm
+                    currency={membershipsSettings.currency}
+                    invoiceDueDays={membershipsSettings.invoiceDueDays}
+                    suspendAfterOverdueDays={
+                      membershipsSettings.suspendAfterOverdueDays
+                    }
+                    autoGenerateInvoices={
+                      membershipsSettings.autoGenerateInvoices
+                    }
                   />
                 </CardContent>
               </Card>
