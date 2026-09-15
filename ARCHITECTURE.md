@@ -31,8 +31,8 @@ principles:
 | 4 | **Belts & gradings**: per-discipline belt ladders, student promotion history (denormalised), cumulative attendance-based eligibility with instructor override | Done |
 | 5 | **Historical attendance & belt-history import**: per-student backfill sheet, attendance CSV import (creates missing past sessions, idempotent), belt-history CSV import (belts must exist first) | Done |
 | 5b | **Disciplines & global belt ranks**: Discipline entity, belt ladders per discipline (not per course), student rank global across all locations teaching that discipline, cumulative eligibility counts all courses of the discipline combined | Done |
-| 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Planned |
-| 7 | Communication: templates, reminders (class/payment/birthday) via scheduler | Planned |
+| 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Done |
+| 7 | **Communication**: scheduler-driven reminders (class / payment / birthday) with editable templates and toggles in Settings, student→guardian recipient fallback, once-per-period dedup via NotificationLog | Done |
 | 8 | Analytics: active members, attendance trends, retention signals, revenue summary — per-location breakdowns | Planned |
 | 9 | Trials & leads: trial pipeline, conversion tracking, public booking page | Planned |
 | 10 | Member portal: self-service schedule/check-in/details | Planned |
@@ -202,6 +202,26 @@ Migrating schools bring history in three ways:
    rows skipped), row-level errors for unknown courses/students.
 3. **Belt history CSV import** — per-discipline (ladder must exist first),
    creates backdated `StudentBelt` rows, same-day duplicates skipped.
+
+### Communication (Phase 7)
+
+The scheduler sends three reminder types every tick, each individually
+toggleable in Settings → Communication (with editable subject/body templates
+and a sample-send):
+
+- **Class reminders** — to ACTIVE/TRIAL students at the session's location
+  who train the course's discipline (the check-in population), inside a
+  configurable hours-before window.
+- **Payment reminders** — once per invoice when it enters the due-soon
+  window (days before due), and once more after a configurable number of
+  days overdue.
+- **Birthday emails** — on the day (Feb 29 birthdays only in leap years).
+
+Recipients: student email, falling back to the guardian; skipped when
+neither exists. Every send writes a `NotificationLog` row whose dedup key
+(`assessmentId`) enforces once-per-period semantics — a repeated tick or a
+restart never re-sends, and the whole pass bails out early when SMTP is
+unconfigured so dedup keys are never burned by failed configuration.
 
 Key relationships follow mitch-risk conventions: user deletion preserves
 history via `SetNull` ("Deleted user"); delete cascades are explicit and

@@ -7,6 +7,7 @@ import {
 import { storage } from "@/lib/storage";
 import { findOrphanFileKeys } from "@/lib/storage/orphan-sweep";
 import { generateDueInvoices } from "@/lib/db/memberships";
+import { runReminderJobs } from "@/lib/cron/reminders";
 
 export type ScheduledJobsResult = {
   prunedAudit?: number;
@@ -15,12 +16,14 @@ export type ScheduledJobsResult = {
   prunedFiles?: number;
   prunedFileKeys?: string[];
   generatedInvoices?: number;
+  classRemindersSent?: number;
+  paymentRemindersSent?: number;
+  birthdayEmailsSent?: number;
 };
 
-// Runs every scheduled job once: log pruning and the orphaned-file sweep.
-// Phase 0 jobs are all idempotent housekeeping — calling this more often
-// than needed is always safe. Domain jobs (class reminders, payment
-// follow-ups, birthday emails) are added in their own phases.
+// Runs every scheduled job once: log pruning, the orphaned-file sweep,
+// recurring invoice generation, and reminder emails. All idempotent —
+// calling this more often than needed is always safe.
 export async function runScheduledJobs(
   clockNow: Date = new Date(),
 ): Promise<ScheduledJobsResult> {
@@ -119,6 +122,29 @@ export async function runScheduledJobs(
       result.generatedInvoices = generated;
       console.log(`[cron] generated ${generated} recurring invoice(s)`);
     }
+  }
+
+  // --- reminder emails ---
+  // Class, payment, and birthday reminders. Each send is deduplicated via a
+  // NotificationLog key so a repeated tick (or a restart) never re-sends.
+  const reminders = await runReminderJobs(now);
+  if (reminders.classRemindersSent > 0) {
+    result.classRemindersSent = reminders.classRemindersSent;
+    console.log(
+      `[cron] sent ${reminders.classRemindersSent} class reminder(s)`,
+    );
+  }
+  if (reminders.paymentRemindersSent > 0) {
+    result.paymentRemindersSent = reminders.paymentRemindersSent;
+    console.log(
+      `[cron] sent ${reminders.paymentRemindersSent} payment reminder(s)`,
+    );
+  }
+  if (reminders.birthdayEmailsSent > 0) {
+    result.birthdayEmailsSent = reminders.birthdayEmailsSent;
+    console.log(
+      `[cron] sent ${reminders.birthdayEmailsSent} birthday email(s)`,
+    );
   }
 
   await prisma.appSetting.upsert({

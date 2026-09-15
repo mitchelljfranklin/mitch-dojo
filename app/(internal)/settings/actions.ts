@@ -17,11 +17,14 @@ import {
   updateEmailSettings,
   updateCronSettings,
   updateMembershipsSettings,
+  updateCommunicationsSettings,
+  updateEmailTemplateFields,
 } from "@/lib/settings";
 import {
   organizationSettingsSchema,
   storageSettingsSchema,
   membershipsSettingsSchema,
+  communicationsSettingsSchema,
 } from "@/lib/settings/schema";
 import { storage } from "@/lib/storage";
 import {
@@ -316,6 +319,90 @@ export async function saveMembershipsSettings(
       "memberships",
     );
   return { ok: true, message: "Membership settings saved." };
+}
+
+export async function saveCommunicationsSettings(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const parsed = communicationsSettingsSchema.safeParse({
+    classRemindersEnabled: formData.get("classRemindersEnabled") === "on",
+    classReminderHoursBefore: formData.get("classReminderHoursBefore") ?? 24,
+    paymentRemindersEnabled: formData.get("paymentRemindersEnabled") === "on",
+    paymentReminderDaysBeforeDue:
+      formData.get("paymentReminderDaysBeforeDue") ?? 3,
+    paymentReminderOverdueDays: formData.get("paymentReminderOverdueDays") ?? 7,
+    birthdayEmailsEnabled: formData.get("birthdayEmailsEnabled") === "on",
+  });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
+  }
+
+  await updateCommunicationsSettings(parsed.data);
+  await updateEmailTemplateFields({
+    classReminderSubject: String(formData.get("classReminderSubject") ?? ""),
+    classReminderBody: String(formData.get("classReminderBody") ?? ""),
+    paymentReminderSubject: String(
+      formData.get("paymentReminderSubject") ?? "",
+    ),
+    paymentReminderBody: String(formData.get("paymentReminderBody") ?? ""),
+    birthdaySubject: String(formData.get("birthdaySubject") ?? ""),
+    birthdayBody: String(formData.get("birthdayBody") ?? ""),
+  });
+
+  const user = await getCurrentUser();
+  if (user)
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "communications",
+    );
+  return { ok: true, message: "Communication settings saved." };
+}
+
+// Sends one sample email through the real SMTP transport so the admin can
+// verify templates render correctly before enabling reminders.
+export async function sendCommunicationSampleAction(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const recipientRaw = String(formData.get("recipient") ?? "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientRaw)) {
+    return { ok: false, message: "Enter a valid recipient email address." };
+  }
+
+  const { sendEmail } = await import("@/lib/email/mailer");
+  const result = await sendEmail(recipientRaw, "classReminder", {
+    studentName: "Sample Student",
+    className: "Sample Class",
+    classTime: "Tomorrow at 18:00",
+    appName: String(formData.get("appName") ?? "mitch-dojo"),
+  });
+
+  if (result.ok) {
+    const user = await getCurrentUser();
+    if (user)
+      await logAudit(
+        user.id,
+        AUDIT_ACTIONS.UPDATE_SETTINGS,
+        "Setting",
+        "communications.sample",
+      );
+    return { ok: true, message: "Sample reminder sent." };
+  }
+  return {
+    ok: false,
+    message:
+      "Send failed — check the email log. Most common cause: SMTP not configured.",
+  };
 }
 
 export async function saveStorageSettings(

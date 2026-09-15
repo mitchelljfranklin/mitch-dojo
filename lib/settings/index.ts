@@ -14,6 +14,7 @@ import {
   type StorageSettings,
   type CronSettings,
   type MembershipsSettings,
+  type CommunicationsSettings,
   operationsSettingsSchema,
   emailSettingsSchema,
   emailTemplateSchema,
@@ -23,6 +24,7 @@ import {
   storageSettingsSchema,
   cronSettingsSchema,
   membershipsSettingsSchema,
+  communicationsSettingsSchema,
 } from "./schema";
 
 function makeKey(category: string, field: string): string {
@@ -298,6 +300,25 @@ export async function updateMembershipsSettings(
   const merged = membershipsSettingsSchema.parse(record);
   await persistCategory(
     "memberships",
+    { ...merged, ...input } as unknown as Record<string, unknown>,
+    NO_SECRETS,
+  );
+}
+
+// Not cache(): the scheduler's reminder jobs must re-read the toggles and
+// windows each run so changes take effect without a restart.
+export async function getCommunicationsSettings(): Promise<CommunicationsSettings> {
+  const record = await readCategoryRecord("communications");
+  return communicationsSettingsSchema.parse(record);
+}
+
+export async function updateCommunicationsSettings(
+  input: Partial<CommunicationsSettings>,
+): Promise<void> {
+  const record = await readCategoryRecord("communications");
+  const merged = communicationsSettingsSchema.parse(record);
+  await persistCategory(
+    "communications",
     { ...merged, ...input } as unknown as Record<string, unknown>,
     NO_SECRETS,
   );

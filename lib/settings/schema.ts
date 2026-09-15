@@ -129,3 +129,24 @@ export const membershipsSettingsSchema = z.object({
 });
 
 export type MembershipsSettings = z.infer<typeof membershipsSettingsSchema>;
+
+// Reminder scheduling. Each type has its own toggle and trigger window.
+// Payment reminders fire once per invoice when it enters the due-soon
+// window, and once more when it has been overdue for the given days.
+export const communicationsSettingsSchema = z.object({
+  classRemindersEnabled: z.boolean().default(true),
+  classReminderHoursBefore: z.coerce.number().int().min(1).max(48).default(24),
+  paymentRemindersEnabled: z.boolean().default(true),
+  paymentReminderDaysBeforeDue: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(30)
+    .default(3),
+  paymentReminderOverdueDays: z.coerce.number().int().min(1).max(90).default(7),
+  birthdayEmailsEnabled: z.boolean().default(true),
+});
+
+export type CommunicationsSettings = z.infer<
+  typeof communicationsSettingsSchema
+>;

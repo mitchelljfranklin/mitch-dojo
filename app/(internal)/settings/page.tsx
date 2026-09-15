@@ -24,6 +24,8 @@ import {
   getCronSettings,
   getEmailSettings,
   getMembershipsSettings,
+  getCommunicationsSettings,
+  getEmailTemplateSettings,
 } from "@/lib/settings";
 import { UsersManager } from "./users-manager";
 import { RolesManager } from "./roles-manager";
@@ -37,6 +39,7 @@ import { OperationsForm } from "./operations-form";
 import { StorageForm } from "./storage-form";
 import { EmailForm } from "./email-form";
 import { MembershipsForm } from "./memberships-form";
+import { CommunicationsForm } from "./communications-form";
 import { HealthTab } from "./health-tab";
 
 export const dynamic = "force-dynamic";
@@ -104,6 +107,8 @@ export default async function SettingsPage({
       : null;
   const cronSettings = await getCronSettings();
   const membershipsSettings = await getMembershipsSettings();
+  const communicationsSettings = await getCommunicationsSettings();
+  const emailTemplates = await getEmailTemplateSettings();
 
   const users = staffAccounts.map((account) => ({
     id: account.id,
@@ -149,7 +154,15 @@ export default async function SettingsPage({
 
   const allowedTabs = [
     ...(canManageSettings
-      ? ["general", "memberships", "operations", "storage", "email", "health"]
+      ? [
+          "general",
+          "memberships",
+          "communications",
+          "operations",
+          "storage",
+          "email",
+          "health",
+        ]
       : []),
     ...(canManageLocations ? ["locations"] : []),
     ...(canManageUsers ? ["users"] : []),
@@ -176,6 +189,7 @@ export default async function SettingsPage({
               <>
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="memberships">Memberships</TabsTrigger>
+                <TabsTrigger value="communications">Communication</TabsTrigger>
                 <TabsTrigger value="operations">Operations</TabsTrigger>
                 <TabsTrigger value="storage">Storage</TabsTrigger>
                 <TabsTrigger value="email">Email</TabsTrigger>
@@ -240,6 +254,54 @@ export default async function SettingsPage({
                     autoGenerateInvoices={
                       membershipsSettings.autoGenerateInvoices
                     }
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent
+              value="communications"
+              className="mt-4 flex flex-col gap-6"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Communication</CardTitle>
+                  <CardDescription>
+                    Automated reminders sent by the scheduler: classes, member
+                    payments, and birthdays. Emails go to the student, falling
+                    back to their guardian; each reminder is sent at most once.
+                    Requires SMTP to be configured.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CommunicationsForm
+                    classRemindersEnabled={
+                      communicationsSettings.classRemindersEnabled
+                    }
+                    classReminderHoursBefore={
+                      communicationsSettings.classReminderHoursBefore
+                    }
+                    paymentRemindersEnabled={
+                      communicationsSettings.paymentRemindersEnabled
+                    }
+                    paymentReminderDaysBeforeDue={
+                      communicationsSettings.paymentReminderDaysBeforeDue
+                    }
+                    paymentReminderOverdueDays={
+                      communicationsSettings.paymentReminderOverdueDays
+                    }
+                    birthdayEmailsEnabled={
+                      communicationsSettings.birthdayEmailsEnabled
+                    }
+                    templates={{
+                      classReminderSubject: emailTemplates.classReminderSubject,
+                      classReminderBody: emailTemplates.classReminderBody,
+                      paymentReminderSubject:
+                        emailTemplates.paymentReminderSubject,
+                      paymentReminderBody: emailTemplates.paymentReminderBody,
+                      birthdaySubject: emailTemplates.birthdaySubject,
+                      birthdayBody: emailTemplates.birthdayBody,
+                    }}
                   />
                 </CardContent>
               </Card>
