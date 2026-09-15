@@ -72,7 +72,12 @@ function ColorField({
   );
 }
 
-export function AppearanceForm({
+export function AppearanceForm(props: AppearanceFormProps) {
+  const fingerprint = JSON.stringify(props);
+  return <AppearanceFormInner key={fingerprint} {...props} />;
+}
+
+function AppearanceFormInner({
   primaryHex,
   secondaryHex,
   hasLogo,

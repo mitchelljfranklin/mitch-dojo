@@ -63,7 +63,21 @@ type StudentFormProps = {
   studentId?: string;
 };
 
-export function StudentForm({
+// The form's uncontrolled inputs (checkboxes, selects) only read their
+// defaults at mount. Keying the inner form on a fingerprint of the server
+// data remounts it whenever a refresh delivers changed values — e.g. right
+// after a successful save — while leaving in-progress edits untouched when
+// nothing changed (a failed save never triggers a refresh).
+export function StudentForm(props: StudentFormProps) {
+  const fingerprint = JSON.stringify([
+    props.values,
+    props.locations,
+    props.disciplines,
+  ]);
+  return <StudentFormInner key={fingerprint} {...props} />;
+}
+
+function StudentFormInner({
   action,
   values,
   locations,

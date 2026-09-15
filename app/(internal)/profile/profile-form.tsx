@@ -23,11 +23,12 @@ type ProfileFormProps = {
   hasLocalPassword: boolean;
 };
 
-export function ProfileForm({
-  name,
-  email,
-  hasLocalPassword,
-}: ProfileFormProps) {
+export function ProfileForm(props: ProfileFormProps) {
+  const fingerprint = JSON.stringify(props);
+  return <ProfileFormInner key={fingerprint} {...props} />;
+}
+
+function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
   const [state, formAction, isPending] = useActionState(
     updateProfileAction,
     initialState,

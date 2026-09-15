@@ -24,7 +24,12 @@ type EmailFormProps = {
 
 const initialState: SettingsActionState = undefined;
 
-export function EmailForm({
+export function EmailForm(props: EmailFormProps) {
+  const fingerprint = JSON.stringify(props);
+  return <EmailFormInner key={fingerprint} {...props} />;
+}
+
+function EmailFormInner({
   smtpHost,
   smtpPort,
   smtpUser,

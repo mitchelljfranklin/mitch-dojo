@@ -33,7 +33,12 @@ type CommunicationsFormProps = {
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
 
-export function CommunicationsForm({
+export function CommunicationsForm(props: CommunicationsFormProps) {
+  const fingerprint = JSON.stringify(props);
+  return <CommunicationsFormInner key={fingerprint} {...props} />;
+}
+
+function CommunicationsFormInner({
   classRemindersEnabled,
   classReminderHoursBefore,
   paymentRemindersEnabled,

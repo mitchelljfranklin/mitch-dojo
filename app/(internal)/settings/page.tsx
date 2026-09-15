@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   Card,
   CardContent,
@@ -6,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageSkeleton } from "@/components/page-skeleton";
 import { requireAnyPermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { buildFilterQueryString } from "@/lib/nav";
@@ -135,15 +137,6 @@ export default async function SettingsPage({
     studentCount: location._count.studentLocations,
     checkinToken: location.checkinToken,
   }));
-
-  const auditLogs = await listAuditLogs({
-    action: sp.action,
-    userId: sp.userId,
-    fromDate: sp.fromDate,
-    toDate: sp.toDate,
-    page: sp.auditPage ? parseInt(sp.auditPage) : 1,
-    pageSize: sp.auditPageSize ? parseInt(sp.auditPageSize) : undefined,
-  });
 
   const auditFilterQuery = buildFilterQueryString({
     action: sp.action,
@@ -453,16 +446,48 @@ export default async function SettingsPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AuditForm
-                result={auditLogs}
-                actions={listAuditActions()}
-                users={users}
-                filterQuery={auditFilterQuery}
-              />
+              {/* The audit query is the slowest on this page — stream the tab
+                  so the settings shell renders immediately. */}
+              <Suspense fallback={<PageSkeleton.Content height="h-72" />}>
+                <AuditContent
+                  sp={sp}
+                  users={users}
+                  filterQuery={auditFilterQuery}
+                />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+// Streams the audit log separately so the heavy listAuditLogs query never
+// blocks the rest of the settings page.
+async function AuditContent({
+  sp,
+  users,
+  filterQuery,
+}: {
+  sp: Record<string, string | undefined>;
+  users: { id: string; name: string }[];
+  filterQuery: string;
+}) {
+  const auditLogs = await listAuditLogs({
+    action: sp.action,
+    userId: sp.userId,
+    fromDate: sp.fromDate,
+    toDate: sp.toDate,
+    page: sp.auditPage ? parseInt(sp.auditPage) : 1,
+    pageSize: sp.auditPageSize ? parseInt(sp.auditPageSize) : undefined,
+  });
+  return (
+    <AuditForm
+      result={auditLogs}
+      actions={listAuditActions()}
+      users={users}
+      filterQuery={filterQuery}
+    />
   );
 }

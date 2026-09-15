@@ -23,7 +23,12 @@ type StorageFormProps = {
 
 const initialState: { ok: boolean; message: string } | undefined = undefined;
 
-export function StorageForm({ defaults }: StorageFormProps) {
+export function StorageForm(props: StorageFormProps) {
+  const fingerprint = JSON.stringify(props.defaults);
+  return <StorageFormInner key={fingerprint} {...props} />;
+}
+
+function StorageFormInner({ defaults }: StorageFormProps) {
   const [state, formAction, isPending] = useActionState(
     saveStorageSettings,
     initialState,

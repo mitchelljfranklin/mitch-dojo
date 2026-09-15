@@ -16,10 +16,12 @@ type OrganizationFormProps = {
 
 const initialState: SettingsActionState = undefined;
 
-export function OrganizationForm({
-  name,
-  supportEmail,
-}: OrganizationFormProps) {
+export function OrganizationForm(props: OrganizationFormProps) {
+  const fingerprint = JSON.stringify([props.name, props.supportEmail]);
+  return <OrganizationFormInner key={fingerprint} {...props} />;
+}
+
+function OrganizationFormInner({ name, supportEmail }: OrganizationFormProps) {
   const [state, formAction, isPending] = useActionState(
     saveOrganizationSettings,
     initialState,

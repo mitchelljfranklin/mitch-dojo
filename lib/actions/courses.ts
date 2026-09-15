@@ -85,7 +85,8 @@ export async function createCourseAction(
   if (user) {
     await logAudit(user.id, AUDIT_ACTIONS.CREATE_COURSE, "Course", courseId);
   }
-  revalidatePath("/classes");
+  // No revalidatePath: this feeds useActionState — the redirect target is
+  // force-dynamic (see AGENTS.md).
   redirect(`/classes/${courseId}?created=1`);
 }
 
@@ -116,8 +117,8 @@ export async function updateCourseAction(
   if (user) {
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_COURSE, "Course", courseId);
   }
-  revalidatePath(`/classes/${courseId}`);
-  revalidatePath("/classes");
+  // No revalidatePath: this feeds useActionState — the client refreshes via
+  // useActionFeedback (see AGENTS.md).
   return { ok: true, message: "Course updated." };
 }
 

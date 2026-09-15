@@ -197,7 +197,8 @@ export async function updateStudentAction(
   if (user) {
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Student", studentId);
   }
-  revalidatePath(`/students/${studentId}`);
+  // No revalidatePath: this feeds useActionState — the client refreshes via
+  // useActionFeedback (see AGENTS.md).
   return { ok: true, message: "Student updated." };
 }
 
@@ -285,7 +286,8 @@ export async function addAttachmentAction(
   if (user) {
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Student", studentId);
   }
-  revalidatePath(`/students/${studentId}`);
+  // No revalidatePath: this feeds useActionState — the client refreshes via
+  // useActionFeedback (see AGENTS.md).
   return { ok: true, message: "Attachment added." };
 }
 
@@ -459,7 +461,8 @@ export async function importStudentsAction(
   }
 
   if (count > 0) {
-    revalidatePath("/students");
+    // No revalidatePath: this feeds useActionState — the client refreshes via
+    // useActionFeedback (see AGENTS.md).
     return {
       ok: true,
       message: `Imported ${count} student${count === 1 ? "" : "s"}.`,

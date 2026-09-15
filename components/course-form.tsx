@@ -54,7 +54,21 @@ const initialSlot: SlotRow = {
   endTime: "19:00",
 };
 
-export function CourseForm({
+// Keying the inner form on a fingerprint of the server data remounts it when
+// a refresh delivers changed values (e.g. right after a successful save), so
+// uncontrolled checkboxes and selects show the saved state. Failed saves
+// never trigger a refresh, keeping in-progress edits intact.
+export function CourseForm(props: CourseFormProps) {
+  const fingerprint = JSON.stringify([
+    props.values,
+    props.locations,
+    props.disciplines,
+    props.trainers,
+  ]);
+  return <CourseFormInner key={fingerprint} {...props} />;
+}
+
+function CourseFormInner({
   action,
   values,
   locations,

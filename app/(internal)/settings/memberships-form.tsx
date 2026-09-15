@@ -18,7 +18,12 @@ type MembershipsFormProps = {
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
 
-export function MembershipsForm({
+export function MembershipsForm(props: MembershipsFormProps) {
+  const fingerprint = JSON.stringify(props);
+  return <MembershipsFormInner key={fingerprint} {...props} />;
+}
+
+function MembershipsFormInner({
   currency,
   invoiceDueDays,
   suspendAfterOverdueDays,

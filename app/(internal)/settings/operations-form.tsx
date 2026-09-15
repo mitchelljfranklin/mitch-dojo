@@ -19,7 +19,12 @@ type OperationsFormProps = {
   cronLastRun: string | null;
 };
 
-export function OperationsForm({
+export function OperationsForm(props: OperationsFormProps) {
+  const fingerprint = JSON.stringify(props);
+  return <OperationsFormInner key={fingerprint} {...props} />;
+}
+
+function OperationsFormInner({
   loginRateLimitPerMin,
   sessionTimeoutMinutes,
   passwordResetPerMin,
