@@ -16,11 +16,15 @@ services:
       CRON_SECRET: "${CRON_SECRET:?Set CRON_SECRET in .env - generate with: openssl rand -hex 32}"
       DATA_STORAGE_PATH: "${DATA_STORAGE_PATH:-/app/.storage/files}"
       TRUSTED_PROXY_COUNT: "${TRUSTED_PROXY_COUNT:-0}"
+      # Pre-migration database backups (kept: last 3) land here so they
+      # survive container rebuilds. See docs/deployment for the restore steps.
+      PGLITE_BACKUP_DIR: /app/.data/backups
     ports:
       - "3000:3000"
     volumes:
       - app_data:/app/.storage
       - pglite_data:/app/.data/pglite
+      - pglite_backups:/app/.data/backups
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 15s
@@ -36,3 +40,4 @@ services:
 volumes:
   app_data:
   pglite_data:
+  pglite_backups:

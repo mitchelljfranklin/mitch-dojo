@@ -71,7 +71,9 @@ lib/                 # cross-cutting logic
                       # crypto.ts, nav.ts, utils.ts, theme-tokens.tsx
 emails/              # React Email template (dynamic.tsx)
 prisma/              # schema.prisma, migrations, seed.ts, seed-runner.cjs
-scripts/             # migrate-pglite.mjs, prepare-standalone.mjs, backup.*
+scripts/             # migrate-pglite.mjs, pglite-guard.mjs, pglite-safety.mjs
+                     # (pre-migrate backups + checksum-drift warning),
+                     # prepare-standalone.mjs
 e2e/                 # Playwright end-to-end tests
 docs/                # VitePress-powered user documentation site
 proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
@@ -99,6 +101,10 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   runs** (`npm run db:seed` or `ensureSystemRoles()`).
 - **Apply new Prisma migrations to both dev and test databases** before
   running integration tests.
+- **Never edit an applied migration — always add a new one.** Editing a
+  shipped migration file breaks the checksum ledger (Postgres demands a
+  reset; the lite runner warns). If a migration needs correcting, create a
+  follow-up migration.
 - **Never point `TEST_DATABASE_URL` at the dev/prod database.**
 - **CI runs typecheck + lint + format:check + build on every push** —
   `npm run format` before pushing; Prettier failures are the top CI rejection.

@@ -4,6 +4,7 @@ import { mkdirSync, readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { assertNoDevServer } from "./pglite-guard.mjs";
+import { backupDataDir, findModifiedMigrations } from "./pglite-safety.mjs";
 
 // Applies prisma/migrations/*.sql to an embedded PGlite database.
 // Prisma Migrate cannot drive PGlite directly (no TCP server and the
@@ -32,6 +33,16 @@ async function main() {
   await assertNoDevServer();
 
   const dataDir = resolveDataDir();
+
+  // Safety net before touching the database: snapshot the current state so a
+  // failed update is recoverable by restoring a folder. No-op on first run.
+  const backupPath = await backupDataDir(dataDir, {
+    backupDir: process.env.PGLITE_BACKUP_DIR,
+  });
+  if (backupPath) {
+    console.log(`Backed up database to ${backupPath}`);
+  }
+
   // PGlite does not create missing parent directories itself.
   mkdirSync(dataDir, { recursive: true });
   const client = new PGlite(dataDir);
@@ -49,16 +60,44 @@ async function main() {
       throw new Error(`Migrations directory not found: ${MIGRATIONS_DIR}`);
     }
 
-    const applied = new Set(
-      (
-        await client.query(`SELECT migration_name FROM ${LEDGER_TABLE};`)
-      ).rows.map((row) => row.migration_name),
+    const ledgerRows = (
+      await client.query(
+        `SELECT migration_name, checksum FROM ${LEDGER_TABLE};`,
+      )
+    ).rows;
+    const applied = new Set(ledgerRows.map((row) => row.migration_name));
+    const recordedChecksums = new Map(
+      ledgerRows.map((row) => [row.migration_name, row.checksum]),
     );
 
     const migrationDirs = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
       .sort();
+
+    // Warn when an applied migration file was edited after application.
+    // Never block the boot over it — but never do it either (AGENTS.md).
+    const currentChecksums = new Map();
+    for (const migrationName of migrationDirs) {
+      const sqlPath = join(MIGRATIONS_DIR, migrationName, "migration.sql");
+      if (existsSync(sqlPath)) {
+        const sql = readFileSync(sqlPath, "utf8");
+        currentChecksums.set(
+          migrationName,
+          createHash("sha256").update(sql).digest("hex"),
+        );
+      }
+    }
+    const modified = findModifiedMigrations(
+      recordedChecksums,
+      currentChecksums,
+    );
+    for (const migrationName of modified) {
+      console.warn(
+        `WARNING: migration ${migrationName} was modified after it was applied. ` +
+          "Never edit an applied migration — add a new one instead.",
+      );
+    }
 
     let appliedCount = 0;
     for (const migrationName of migrationDirs) {

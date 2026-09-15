@@ -36,7 +36,43 @@ docker compose -f docker-compose.lite.yml up -d --build
 ```
 
 One container with an embedded PostgreSQL (PGlite). Data lives in the
-`pglite_data` volume; backups are stop-copy-start of that volume.
+`pglite_data` volume.
+
+#### Updating a lite deployment
+
+Updates are safe: stop the container, pull/rebuild the image, start again.
+The startup sequence is strictly **migrate → seed → serve**, so the embedded
+database is never touched by two processes at once. Before every migration
+run the container snapshots the database into the `pglite_backups` volume
+(last 3 kept).
+
+If an update ever fails midway, restore the newest backup:
+
+```bash
+docker compose -f docker-compose.lite.yml down
+docker run --rm -v mitch-dojo_pglite_data:/data -v mitch-dojo_pglite_backups:/backups alpine \
+  sh -c "rm -rf /data/* && cp -a /backups/pglite-backup-<newest>/. /data/"
+docker compose -f docker-compose.lite.yml up -d
+```
+
+(Adjust the volume names to your project's prefix — check with
+`docker volume ls`.)
+
+#### Scheduled backups (recommended, especially on a Raspberry Pi)
+
+The pre-migration backups protect against a failed update, not against SD
+card wear or power loss. Snapshot the volume on a schedule too — weekly is a
+good baseline:
+
+```bash
+# /etc/cron.weekly/dojo-backup (on the host)
+docker run --rm -v mitch-dojo_pglite_data:/data -v /var/backups/dojo:/backup alpine \
+  tar czf /backup/pglite-$(date +%F).tar.gz -C /data .
+# prune: keep the last 8
+ls -1t /var/backups/dojo/pglite-*.tar.gz | tail -n +9 | xargs -r rm
+```
+
+Restore = stop the container, extract the archive into the volume, start.
 
 ## 3. First run
 

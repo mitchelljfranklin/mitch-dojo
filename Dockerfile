@@ -35,7 +35,10 @@ COPY --from=build /app/scripts ./scripts
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./package.json
 RUN npm prune --production --legacy-peer-deps
-RUN mkdir -p /app/.storage/files /app/.data/pglite && chown -R node:node /app/.storage /app/.data
+# /app/.data/backups must exist in the image (owned by node) so the named
+# volume mounted there inherits usable ownership on first run. Pre-migration
+# database backups land in this volume (see migrate-pglite.mjs).
+RUN mkdir -p /app/.storage/files /app/.data/pglite /app/.data/backups && chown -R node:node /app/.storage /app/.data
 EXPOSE 3000
 USER node
 # Postgres mode (DATABASE_PROVIDER=postgres, default): npx prisma migrate deploy.
