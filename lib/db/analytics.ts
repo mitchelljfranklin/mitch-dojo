@@ -137,6 +137,7 @@ export type RevenueTrendBucket = {
 
 export async function getRevenueTrend(
   months = 6,
+  locationId?: string,
   now: Date = new Date(),
 ): Promise<RevenueTrendBucket[]> {
   const rangeStart = new Date(
@@ -144,7 +145,14 @@ export async function getRevenueTrend(
   );
 
   const payments = await prisma.payment.findMany({
-    where: { paidAt: { gte: rangeStart } },
+    where: {
+      paidAt: { gte: rangeStart },
+      invoice: {
+        // Null-location invoices (school-wide memberships) only count
+        // towards "All locations" — a filter excludes them by design.
+        ...(locationId ? { locationId } : {}),
+      },
+    },
     select: { amountCents: true, paidAt: true },
   });
 

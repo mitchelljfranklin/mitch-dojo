@@ -33,7 +33,7 @@ principles:
 | 5b | **Disciplines & global belt ranks**: Discipline entity, belt ladders per discipline (not per course), student rank global across all locations teaching that discipline, cumulative eligibility counts all courses of the discipline combined | Done |
 | 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Done |
 | 7 | **Communication**: scheduler-driven reminders (class / payment / birthday) with editable templates and toggles in Settings, student→guardian recipient fallback, once-per-period dedup via NotificationLog | Done |
-| 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location | Done |
+| 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
 | 9 | Trials & leads: trial pipeline, conversion tracking, public booking page | Planned |
 | 10 | Member portal: self-service schedule/check-in/details | Planned |
 | 11+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |

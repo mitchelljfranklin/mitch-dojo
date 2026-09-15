@@ -22,6 +22,7 @@ import {
 } from "@/lib/db/memberships";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { getMembershipsSettings } from "@/lib/settings";
+import { prisma } from "@/lib/prisma";
 import { getField } from "@/lib/utils";
 import {
   enrollmentSchema,
@@ -268,12 +269,27 @@ export async function createInvoiceAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
+  // Optional location: "SCHOOL_WIDE" is the picker's no-location value.
+  const locationRaw = getField(formData, "locationId");
+  const locationId =
+    locationRaw && locationRaw !== "SCHOOL_WIDE" ? locationRaw : null;
+  if (locationId) {
+    const location = await prisma.location.findUnique({
+      where: { id: locationId },
+      select: { id: true },
+    });
+    if (!location) {
+      return { error: "That location no longer exists." };
+    }
+  }
+
   const invoice = await createInvoice({
     studentId: parsed.data.studentId,
     planId: parsed.data.planId,
     issueDate: startOfToday(),
     dueDate: new Date(`${parsed.data.dueDate}T00:00:00`),
     notes: parsed.data.notes.length > 0 ? parsed.data.notes : null,
+    locationId,
     createdById: user.id,
   });
 

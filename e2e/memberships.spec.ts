@@ -41,13 +41,15 @@ test.describe("memberships", () => {
     await page.getByRole("button", { name: "Done" }).click({ force: true });
     await expect(page.getByText("Since", { exact: false })).toBeVisible();
 
-    // Bill the plan manually
+    // Bill the plan manually, tagged to the E2E Dojo location
     await page.goto("/memberships/invoices");
     await page.getByRole("button", { name: "New invoice" }).click();
     await page.getByRole("combobox", { name: "Student" }).click();
     await page.getByRole("option", { name: "E2E Attend Kid" }).click();
     await page.getByRole("combobox", { name: "Plan" }).click();
     await page.getByRole("option", { name: E2E_PLAN_NAME }).click();
+    await page.getByRole("combobox", { name: "Location" }).click();
+    await page.getByRole("option", { name: "E2E Dojo", exact: true }).click();
     await page.getByRole("button", { name: "Create invoice" }).click();
     await expect(
       page.getByText(/Invoice #\d+ created\./).first(),
@@ -57,6 +59,7 @@ test.describe("memberships", () => {
     // Open the newest invoice via its number link and record the full payment
     await page.getByRole("link", { name: /#\d+/ }).first().click();
     await expect(page.getByText("Billed to")).toBeVisible();
+    await expect(page.getByText("Location: E2E Dojo")).toBeVisible();
 
     await page.getByRole("button", { name: "Record payment" }).click();
     // The sheet's submit shares its name with the page-level button — scope

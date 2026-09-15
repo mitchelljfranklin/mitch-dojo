@@ -134,6 +134,11 @@ export default async function InvoiceDetailPage({
                 {invoice.student.email}
               </span>
             ) : null}
+            {invoice.location ? (
+              <span className="text-muted-foreground text-xs">
+                Location: {invoice.location.name}
+              </span>
+            ) : null}
             {invoice.enrollment ? (
               <span className="text-muted-foreground text-xs">
                 Enrollment: {invoice.enrollment.plan.name}

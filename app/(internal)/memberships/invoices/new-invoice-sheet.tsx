@@ -41,10 +41,16 @@ type StudentOption = {
   lastName: string;
 };
 
+type LocationOption = {
+  id: string;
+  name: string;
+};
+
 type NewInvoiceSheetProps = {
   currency: string;
   students: StudentOption[];
   plans: PlanOption[];
+  locations: LocationOption[];
 };
 
 function todayIsoDate(): string {
@@ -58,6 +64,7 @@ export function NewInvoiceSheet({
   currency,
   students,
   plans,
+  locations,
 }: NewInvoiceSheetProps) {
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
@@ -130,6 +137,26 @@ export function NewInvoiceSheet({
                 required
                 defaultValue={todayIsoDate()}
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="invoice-location">Location</Label>
+              <Select name="locationId" defaultValue="SCHOOL_WIDE">
+                <SelectTrigger id="invoice-location">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SCHOOL_WIDE">School-wide</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                Optional — tag the invoice to a dojo site for per-location
+                revenue. Recurring memberships stay school-wide.
+              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="invoice-notes">Notes</Label>

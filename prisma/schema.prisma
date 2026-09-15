@@ -168,6 +168,7 @@ model Location {
   studentLocations StudentLocation[]
   courses          Course[]
   sessions         ClassSession[]
+  invoices         Invoice[]
 
   @@map("locations")
 }
@@ -460,6 +461,11 @@ model Invoice {
   student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   enrollmentId String?
   enrollment   Enrollment?   @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  // Optional: manually-billed invoices may name the dojo site they relate
+  // to (grading fees, gear). Recurring memberships are school-wide and
+  // leave this null, so those invoices only count towards "All locations".
+  locationId   String?
+  location     Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
   status       InvoiceStatus @default(OPEN)
   issueDate    DateTime
   dueDate      DateTime
@@ -474,6 +480,7 @@ model Invoice {
 
   @@index([studentId])
   @@index([status, dueDate])
+  @@index([locationId])
   @@map("invoices")
 }
 

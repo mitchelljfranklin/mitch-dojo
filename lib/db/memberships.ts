@@ -256,6 +256,7 @@ export type CreateInvoiceInput = {
   issueDate: Date;
   dueDate: Date;
   notes: string | null;
+  locationId?: string | null;
   enrollmentId?: string | null;
   createdById?: string | null;
 };
@@ -274,6 +275,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
       number,
       studentId: input.studentId,
       enrollmentId: input.enrollmentId ?? null,
+      locationId: input.locationId ?? null,
       status: "OPEN",
       issueDate: input.issueDate,
       dueDate: input.dueDate,
@@ -293,6 +295,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
 export type InvoiceListRow = Prisma.InvoiceGetPayload<{
   include: {
     student: { select: { id: true; firstName: true; lastName: true } };
+    location: { select: { id: true; name: true } };
     items: { select: { quantity: true; unitPriceCents: true } };
     payments: { select: { amountCents: true } };
   };
@@ -303,6 +306,7 @@ export type InvoiceListFilters = {
   overdueOnly?: boolean;
   studentId?: string;
   studentName?: string;
+  locationId?: string;
 };
 
 export async function listInvoices(
@@ -313,6 +317,7 @@ export async function listInvoices(
   const where: Prisma.InvoiceWhereInput = {};
   if (filters.studentId) where.studentId = filters.studentId;
   if (filters.status) where.status = filters.status;
+  if (filters.locationId) where.locationId = filters.locationId;
   if (filters.overdueOnly) {
     where.status = "OPEN";
     where.dueDate = { lt: startOfToday() };
@@ -332,6 +337,7 @@ export async function listInvoices(
       where,
       include: {
         student: { select: { id: true, firstName: true, lastName: true } },
+        location: { select: { id: true, name: true } },
         items: { select: { quantity: true, unitPriceCents: true } },
         payments: { select: { amountCents: true } },
       },
@@ -360,6 +366,7 @@ export async function getInvoiceDetail(invoiceId: string) {
       student: {
         select: { id: true, firstName: true, lastName: true, email: true },
       },
+      location: { select: { id: true, name: true } },
       enrollment: { include: { plan: true } },
       items: true,
       payments: {

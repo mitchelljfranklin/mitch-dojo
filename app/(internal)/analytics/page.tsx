@@ -71,7 +71,7 @@ export default async function AnalyticsPage({
   ] = await Promise.all([
     getAnalyticsOverview(),
     getAttendanceTrend(12, locationId),
-    getRevenueTrend(6),
+    getRevenueTrend(6, locationId),
     getAtRiskStudents(14, 10),
     getMembersPerLocation(),
     listAssignableLocations(),
@@ -131,7 +131,15 @@ export default async function AnalyticsPage({
 
       <div className="grid gap-4 xl:grid-cols-2">
         <AttendanceChart data={attendanceData} />
-        <RevenueChart data={revenueData} />
+        <div className="flex flex-col gap-2">
+          {locationId ? (
+            <p className="text-muted-foreground text-xs">
+              Location filter active — school-wide (recurring) invoices are
+              excluded from the revenue chart; they carry no location.
+            </p>
+          ) : null}
+          <RevenueChart data={revenueData} />
+        </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">

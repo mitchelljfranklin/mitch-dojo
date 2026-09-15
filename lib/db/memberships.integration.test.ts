@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/prisma";
 import { createStudent, deleteStudent } from "@/lib/db/students";
+import { createLocation, deleteLocation } from "@/lib/db/locations";
 import {
   advanceBillingDate,
   computeInvoiceFinancials,
@@ -17,6 +18,7 @@ import {
   recordPayment,
   voidInvoice,
 } from "@/lib/db/memberships";
+import { getRevenueTrend } from "@/lib/db/analytics";
 
 // Integration suite: requires TEST_DATABASE_URL (see vitest.setup.ts).
 const hasTestDatabase = Boolean(process.env.TEST_DATABASE_URL);
@@ -116,6 +118,97 @@ describe.skipIf(!hasTestDatabase)("membership plans", () => {
     await expect(deleteMembershipPlan(recurringPlanId!)).rejects.toThrow(
       "cannot be deleted",
     );
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("invoice location tagging", () => {
+  let locationId: string;
+
+  beforeAll(async () => {
+    const location = await createLocation({
+      name: `Location Test ${suffix}`,
+      address: null,
+      phone: null,
+      email: null,
+      isActive: true,
+      sortOrder: 99,
+    });
+    locationId = location.id;
+  });
+
+  afterAll(async () => {
+    if (locationId) await deleteLocation(locationId).catch(() => undefined);
+  });
+
+  it("stores an optional location and filters the list by it", async () => {
+    const tagged = await createInvoice({
+      studentId: studentId!,
+      planId: itemPlanId!,
+      issueDate: daysFromNow(0),
+      dueDate: daysFromNow(14),
+      notes: null,
+      locationId,
+      createdById: null,
+    });
+    const untagged = await createInvoice({
+      studentId: studentId!,
+      planId: itemPlanId!,
+      issueDate: daysFromNow(0),
+      dueDate: daysFromNow(14),
+      notes: null,
+      createdById: null,
+    });
+
+    const byLocation = await listInvoices({ locationId });
+    expect(byLocation.rows.some((row) => row.id === tagged.id)).toBe(true);
+    expect(byLocation.rows.some((row) => row.id === untagged.id)).toBe(false);
+
+    // The location shows on the row.
+    expect(
+      byLocation.rows.find((row) => row.id === tagged.id)?.location?.name,
+    ).toContain("Location Test");
+
+    await prisma.invoice.deleteMany({
+      where: { id: { in: [tagged.id, untagged.id] } },
+    });
+  });
+
+  it("scopes the revenue trend to a location, excluding null-location invoices", async () => {
+    const tagged = await createInvoice({
+      studentId: studentId!,
+      planId: itemPlanId!,
+      issueDate: daysFromNow(0),
+      dueDate: daysFromNow(14),
+      notes: null,
+      locationId,
+      createdById: null,
+    });
+    await recordPayment({
+      invoiceId: tagged.id,
+      amountCents: 1234,
+      method: "CASH",
+      paidAt: daysFromNow(0),
+      reference: null,
+      recordedById: null,
+    });
+
+    const filtered = await getRevenueTrend(1, locationId);
+    const unfiltered = await getRevenueTrend(1);
+    const filteredCollected = filtered.reduce(
+      (sum, bucket) => sum + bucket.collectedCents,
+      0,
+    );
+    const unfilteredCollected = unfiltered.reduce(
+      (sum, bucket) => sum + bucket.collectedCents,
+      0,
+    );
+    // The location view sees exactly the tagged payment; the all-locations
+    // view sees at least that plus any null-location revenue.
+    expect(filteredCollected).toBe(1234);
+    expect(unfilteredCollected).toBeGreaterThanOrEqual(filteredCollected);
+
+    await prisma.payment.deleteMany({ where: { invoiceId: tagged.id } });
+    await prisma.invoice.delete({ where: { id: tagged.id } });
   });
 });
 

@@ -62,6 +62,7 @@ export default async function InvoicesPage({
   const overdueOnly = sp.status === "OVERDUE";
   const studentId = sp.studentId;
   const search = sp.q?.trim() ?? "";
+  const locationFilter = sp.location;
   const page = Math.max(1, Number(sp.page ?? "1") || 1);
 
   const { rows, total } = await listInvoices(
@@ -70,11 +71,12 @@ export default async function InvoicesPage({
       overdueOnly,
       studentId,
       studentName: search,
+      locationId: locationFilter,
     },
     page,
   );
 
-  const [invoiceStudents, invoicePlans] = await Promise.all([
+  const [invoiceStudents, invoicePlans, invoiceLocations] = await Promise.all([
     canEdit
       ? prisma.student.findMany({
           where: { status: { in: ["ACTIVE", "TRIAL"] } },
@@ -83,6 +85,11 @@ export default async function InvoicesPage({
         })
       : Promise.resolve([]),
     canEdit ? listActivePlansForSelection() : Promise.resolve([]),
+    prisma.location.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   return (
@@ -109,12 +116,13 @@ export default async function InvoicesPage({
             currency={currency}
             students={invoiceStudents}
             plans={invoicePlans}
+            locations={invoiceLocations}
           />
         ) : null}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <SearchInput placeholder="Search studentâ€¦" paramName="q" />
+        <SearchInput placeholder="Search student…" paramName="q" />
         <form className="w-40">
           {search ? <input type="hidden" name="q" value={search} /> : null}
           <AutoSubmitSelect
@@ -126,6 +134,19 @@ export default async function InvoicesPage({
               { value: "OVERDUE", label: "Overdue" },
               { value: "PAID", label: "Paid" },
               { value: "VOID", label: "Void" },
+            ]}
+          />
+        </form>
+        <form className="w-44">
+          <AutoSubmitSelect
+            name="location"
+            defaultValue={locationFilter ?? "ALL"}
+            options={[
+              { value: "ALL", label: "All locations" },
+              ...invoiceLocations.map((location) => ({
+                value: location.id,
+                label: location.name,
+              })),
             ]}
           />
         </form>
@@ -170,6 +191,11 @@ export default async function InvoicesPage({
                       >
                         {invoice.student.firstName} {invoice.student.lastName}
                       </Link>
+                      {invoice.location ? (
+                        <span className="text-muted-foreground ml-2 text-xs">
+                          {invoice.location.name}
+                        </span>
+                      ) : null}
                     </TableCell>
                     <TableCell>{formatDate(invoice.issueDate)}</TableCell>
                     <TableCell>{formatDate(invoice.dueDate)}</TableCell>
