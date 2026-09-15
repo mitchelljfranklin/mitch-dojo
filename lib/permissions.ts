@@ -12,6 +12,7 @@ export const PERMISSIONS = {
   BELTS_EDIT: "belts:edit",
   MEMBERSHIPS_VIEW: "memberships:view",
   MEMBERSHIPS_EDIT: "memberships:edit",
+  ANALYTICS_VIEW: "analytics:view",
   COMMUNICATIONS_EDIT: "communications:edit",
   AUDIT_VIEW: "audit:view",
   USERS_MANAGE: "users:manage",
@@ -89,6 +90,16 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
     ],
   },
   {
+    resource: "analytics",
+    label: "Analytics",
+    permissions: [
+      {
+        key: PERMISSIONS.ANALYTICS_VIEW,
+        label: "View analytics dashboard",
+      },
+    ],
+  },
+  {
     resource: "communications",
     label: "Communications",
     permissions: [
@@ -134,6 +145,7 @@ const TRAINER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.BELTS_VIEW,
   PERMISSIONS.BELTS_EDIT,
   PERMISSIONS.MEMBERSHIPS_VIEW,
+  PERMISSIONS.ANALYTICS_VIEW,
   PERMISSIONS.PROFILE_VIEW,
 ];
 
@@ -143,6 +155,7 @@ const VIEWER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.ATTENDANCE_VIEW,
   PERMISSIONS.BELTS_VIEW,
   PERMISSIONS.MEMBERSHIPS_VIEW,
+  PERMISSIONS.ANALYTICS_VIEW,
   PERMISSIONS.PROFILE_VIEW,
 ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BarChart3,
   CalendarDays,
   GraduationCap,
   LayoutDashboard,
@@ -89,6 +90,12 @@ export function AppSidebar({
       href: "/memberships",
       icon: Wallet,
       permission: PERMISSIONS.MEMBERSHIPS_VIEW,
+    },
+    {
+      title: "Analytics",
+      href: "/analytics",
+      icon: BarChart3,
+      permission: PERMISSIONS.ANALYTICS_VIEW,
     },
   ].filter((item) => hasPermission(permissions, item.permission));
 

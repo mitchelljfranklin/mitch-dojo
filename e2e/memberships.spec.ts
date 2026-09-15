@@ -59,7 +59,12 @@ test.describe("memberships", () => {
     await expect(page.getByText("Billed to")).toBeVisible();
 
     await page.getByRole("button", { name: "Record payment" }).click();
-    await page.getByRole("button", { name: "Record payment" }).last().click();
+    // The sheet's submit shares its name with the page-level button — scope
+    // to the dialog so the click cannot race the sheet's mount.
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Record payment" })
+      .click();
     await expect(page.getByText("Payment recorded.").first()).toBeVisible();
     await page.getByRole("button", { name: "Done" }).click({ force: true });
 
