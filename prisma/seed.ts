@@ -74,6 +74,13 @@ const defaultSettings: DefaultSetting[] = [
 
 async function createClient(provider: DatabaseProvider): Promise<PrismaClient> {
   if (provider === "pglite") {
+    // PGlite is single-process — refuse when a dev server may be holding
+    // the data directory (the guard exits the process on a detected server).
+    const { assertNoDevServer } = await import(
+      new URL("../scripts/pglite-guard.mjs", import.meta.url).href
+    );
+    await assertNoDevServer();
+
     const dataDir = resolveDataDir();
     // PGlite does not create missing parent directories on first run.
     mkdirSync(dataDir, { recursive: true });

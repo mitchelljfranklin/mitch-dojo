@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { assertNoDevServer } from "./pglite-guard.mjs";
+
 // Applies prisma/migrations/*.sql to an embedded PGlite database.
 // Prisma Migrate cannot drive PGlite directly (no TCP server and the
 // community adapter does not implement migrate deploy yet), so this runner
@@ -26,6 +28,8 @@ function resolveDataDir() {
 
 async function main() {
   const { PGlite } = await import("@electric-sql/pglite");
+
+  await assertNoDevServer();
 
   const dataDir = resolveDataDir();
   // PGlite does not create missing parent directories itself.

@@ -121,6 +121,9 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   same `DATABASE_DIR` aborts the running instance (WASM `Aborted()` → every
   DB-touching page 500s) and can corrupt the directory on disk. Recovery:
   move the corrupted dir aside, then `db:deploy:lite` + `db:seed` fresh.
+  **Enforced mechanically:** `db:deploy:lite` and the lite seed probe
+  :3000 first (`scripts/pglite-guard.mjs`) and refuse to open the data
+  directory while something is serving.
 - `prisma migrate dev/deploy` cannot drive PGlite. **Author migrations
   against Postgres** (docker), consume them in lite mode via
   `scripts/migrate-pglite.mjs` (`npm run db:deploy:lite`).
