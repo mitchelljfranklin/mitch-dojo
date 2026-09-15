@@ -21,6 +21,11 @@ test.describe("authentication", () => {
       timeout: 10_000,
     });
 
+    // The General tab carries the Organization and Appearance cards
+    // (regression guard: these were once silently dropped from the tab).
+    await expect(page.getByText("Organization", { exact: true })).toBeVisible();
+    await expect(page.getByText("Appearance", { exact: true })).toBeVisible();
+
     // Sign out via the user menu
     await page
       .getByRole("button", { name: /E2E Admin/i })

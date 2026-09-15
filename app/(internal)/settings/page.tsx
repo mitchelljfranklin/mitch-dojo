@@ -210,23 +210,35 @@ export default async function SettingsPage({
             <TabsContent value="general" className="mt-4 flex flex-col gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Operations</CardTitle>
+                  <CardTitle>Organization</CardTitle>
                   <CardDescription>
-                    Sign-in throttling, session timeouts, retention, and the
-                    internal scheduler.
+                    Branding shown across the app.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <OperationsForm
-                    loginRateLimitPerMin={operations.loginRateLimitPerMin}
-                    sessionTimeoutMinutes={operations.sessionTimeoutMinutes}
-                    passwordResetPerMin={operations.passwordResetPerMin}
-                    auditRetentionDays={auditRetention}
-                    emailLogRetentionDays={emailLogRetention}
-                    internalSchedulerEnabled={
-                      cronSettings.internalSchedulerEnabled
-                    }
-                    cronLastRun={cronLastRun}
+                  <OrganizationForm
+                    name={organization.name}
+                    supportEmail={organization.supportEmail}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Appearance</CardTitle>
+                  <CardDescription>
+                    Customise the logo, primary colour (buttons), and secondary
+                    colour (tags/pills). Leave a field blank to use the default.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AppearanceForm
+                    primaryHex={appearance.primaryHex}
+                    secondaryHex={appearance.secondaryHex}
+                    hasLogo={Boolean(appearance.logoKey)}
+                    logoKey={appearance.logoKey ?? ""}
+                    borderRadius={appearance.borderRadius}
+                    pageWidth={appearance.pageWidth}
                   />
                 </CardContent>
               </Card>
@@ -302,6 +314,34 @@ export default async function SettingsPage({
                       birthdaySubject: emailTemplates.birthdaySubject,
                       birthdayBody: emailTemplates.birthdayBody,
                     }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent
+              value="operations"
+              className="mt-4 flex flex-col gap-6"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Operations</CardTitle>
+                  <CardDescription>
+                    Sign-in throttling, session timeouts, retention, and the
+                    internal scheduler.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <OperationsForm
+                    loginRateLimitPerMin={operations.loginRateLimitPerMin}
+                    sessionTimeoutMinutes={operations.sessionTimeoutMinutes}
+                    passwordResetPerMin={operations.passwordResetPerMin}
+                    auditRetentionDays={auditRetention}
+                    emailLogRetentionDays={emailLogRetention}
+                    internalSchedulerEnabled={
+                      cronSettings.internalSchedulerEnabled
+                    }
+                    cronLastRun={cronLastRun}
                   />
                 </CardContent>
               </Card>
