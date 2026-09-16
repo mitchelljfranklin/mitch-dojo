@@ -91,6 +91,10 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   `DATABASE_URL` pointing at a `*test*` database; `reuseExistingServer` off —
   kill anything on :3000 first)
 - `npm run db:migrate` / `db:deploy` / `db:deploy:lite` / `db:seed`
+- `npm run bump -- X.Y.Z` — single command updates all 4 version spots
+  (package.json, lockfile ×2, Dockerfile build-info, lib/build-info.ts
+  fallback, ARCHITECTURE.md header). Transform-then-write with per-spot
+  verification, explicit UTF-8 no-BOM writers, abort-on-mismatch.
 - `docker compose up` — app + Postgres; `docker compose -f docker-compose.lite.yml up`
 
 ### Verification gotchas (inherited from mitch-risk — still apply)

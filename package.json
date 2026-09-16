@@ -23,6 +23,7 @@
     "db:deploy:lite": "node scripts/migrate-pglite.mjs",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "bump": "node scripts/bump-version.mjs",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
