@@ -87,7 +87,15 @@ export default async function globalSetup() {
     },
   });
   await prisma.trainer.deleteMany({ where: { name: "E2E Sensei" } });
-  await prisma.location.deleteMany({ where: { name: "E2E Dojo Two" } });
+  // Courses left at the scratch location from older runs would block the
+  // delete (courses_locationId_fkey) — clear them with the location.
+  const dojoTwo = await prisma.location.findUnique({
+    where: { name: "E2E Dojo Two" },
+  });
+  if (dojoTwo) {
+    await prisma.course.deleteMany({ where: { locationId: dojoTwo.id } });
+    await prisma.location.delete({ where: { id: dojoTwo.id } });
+  }
   await prisma.studentLocation.deleteMany({
     where: {
       student: {

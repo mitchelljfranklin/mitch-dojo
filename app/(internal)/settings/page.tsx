@@ -199,6 +199,12 @@ export default async function SettingsPage({
             {canManageLocations ? (
               <TabsTrigger value="locations">Locations</TabsTrigger>
             ) : null}
+            {canManageUsers ? (
+              <TabsTrigger value="users">Users</TabsTrigger>
+            ) : null}
+            {canManageRoles ? (
+              <TabsTrigger value="roles">Roles</TabsTrigger>
+            ) : null}
             {canViewAudit ? (
               <>
                 <TabsTrigger value="audit">Audit</TabsTrigger>

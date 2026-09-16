@@ -26,6 +26,11 @@ test.describe("authentication", () => {
     await expect(page.getByText("Organization", { exact: true })).toBeVisible();
     await expect(page.getByText("Appearance", { exact: true })).toBeVisible();
 
+    // Admin sees the Users and Roles tabs (regression guard: the triggers
+    // were once lost in an edit).
+    await expect(page.getByRole("tab", { name: "Users" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Roles" })).toBeVisible();
+
     // Sign out via the user menu
     await page
       .getByRole("button", { name: /E2E Admin/i })
