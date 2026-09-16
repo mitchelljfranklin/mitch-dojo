@@ -19,7 +19,9 @@ test.describe("analytics", () => {
 
     // Overview stat cards
     await expect(page.getByText("Active members").first()).toBeVisible();
-    await expect(page.getByText("Trials", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Trials", { exact: true }).first(),
+    ).toBeVisible();
     await expect(page.getByText("Active memberships").first()).toBeVisible();
     await expect(page.getByText("Revenue this month")).toBeVisible();
 

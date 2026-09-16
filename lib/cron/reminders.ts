@@ -17,6 +17,7 @@ export type ReminderResults = {
   classRemindersSent: number;
   paymentRemindersSent: number;
   birthdayEmailsSent: number;
+  trialFollowUpsSent: number;
 };
 
 function utcMidnightOf(date: Date): Date {
@@ -256,6 +257,66 @@ export async function sendBirthdayEmails(
   return sent;
 }
 
+// --------------- trial follow-ups ---------------
+
+export async function sendTrialFollowUps(
+  now: Date = new Date(),
+): Promise<number> {
+  const settings = await getCommunicationsSettings();
+  if (!settings.trialFollowUpsEnabled) return 0;
+
+  const { name: appName } = await getOrganizationSettings();
+  const today = startOfToday(now);
+  const cutoff = new Date(today);
+  cutoff.setUTCDate(cutoff.getUTCDate() - settings.trialFollowUpDaysAfterJoin);
+
+  // Open trials that have sat in the pipeline past the follow-up window.
+  const trials = await prisma.student.findMany({
+    where: {
+      status: "TRIAL",
+      trialStage: { in: ["NEW", "CONTACTED", "FIRST_CLASS"] },
+      joinedAt: { lte: cutoff },
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      joinedAt: true,
+      email: true,
+      guardianEmail: true,
+    },
+  });
+
+  let sent = 0;
+  for (const trial of trials) {
+    const dedupKey = `trial-followup:${trial.id}`;
+    if (!(await notYetSent(dedupKey))) continue;
+
+    const recipient = resolveRecipient(trial);
+    if (!recipient) continue;
+
+    const trialDays = Math.max(
+      1,
+      Math.floor(
+        (today.getTime() - utcMidnightOf(trial.joinedAt).getTime()) /
+          86_400_000,
+      ),
+    );
+    const result = await sendEmail(
+      recipient,
+      "trialFollowUp",
+      {
+        studentName: `${trial.firstName} ${trial.lastName}`,
+        trialDays: String(trialDays),
+        appName,
+      },
+      { assessmentId: dedupKey },
+    );
+    if (result.ok) sent++;
+  }
+  return sent;
+}
+
 // --------------- scheduler entry point ---------------
 
 // SMTP not configured → skip silently (each job would otherwise create
@@ -267,6 +328,7 @@ export async function runReminderJobs(
     classRemindersSent: 0,
     paymentRemindersSent: 0,
     birthdayEmailsSent: 0,
+    trialFollowUpsSent: 0,
   };
   // Without SMTP there is nothing to do — and bailing here keeps failed-send
   // log rows (which carry the dedup keys) from being created on every tick.
@@ -276,6 +338,7 @@ export async function runReminderJobs(
     results.classRemindersSent = await sendClassReminders(now);
     results.paymentRemindersSent = await sendPaymentReminders(now);
     results.birthdayEmailsSent = await sendBirthdayEmails(now);
+    results.trialFollowUpsSent = await sendTrialFollowUps(now);
   } catch (error: unknown) {
     console.error(
       "[cron] reminder jobs failed:",

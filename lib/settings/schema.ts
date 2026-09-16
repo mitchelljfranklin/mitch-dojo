@@ -74,6 +74,14 @@ export const emailTemplateSchema = z.object({
   birthdayBody: z
     .string()
     .default("Happy birthday {{studentName}}! Have a great day."),
+  trialFollowUpSubject: z
+    .string()
+    .default("How was your trial at {{appName}}?"),
+  trialFollowUpBody: z
+    .string()
+    .default(
+      "Hi {{studentName}},\n\nIt has been {{trialDays}} days since you started your trial with us. We would love to see you back on the mats — reply to this email or drop in for your next class!\n\n— {{appName}}",
+    ),
   testSubject: z.string().default("{{appName}} — SMTP test"),
   testBody: z.string().default("Your SMTP settings are working correctly."),
 });
@@ -145,6 +153,10 @@ export const communicationsSettingsSchema = z.object({
     .default(3),
   paymentReminderOverdueDays: z.coerce.number().int().min(1).max(90).default(7),
   birthdayEmailsEnabled: z.boolean().default(true),
+  // Trial follow-up: one email per open trial once it has sat in the
+  // pipeline this many days without converting.
+  trialFollowUpsEnabled: z.boolean().default(true),
+  trialFollowUpDaysAfterJoin: z.coerce.number().int().min(1).max(60).default(3),
 });
 
 export type CommunicationsSettings = z.infer<

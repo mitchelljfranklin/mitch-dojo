@@ -27,6 +27,18 @@ export function logAudit(
   });
 }
 
+// Anonymous/system events (public booking form) — no user to attribute.
+export function logSystemAudit(
+  action: string,
+  entityType?: string,
+  entityId?: string,
+  meta?: Prisma.InputJsonValue,
+) {
+  return prisma.auditLog.create({
+    data: { userId: null, action, entityType, entityId, meta },
+  });
+}
+
 export function logAuditSafe(
   userId: string,
   action: string,
@@ -296,6 +308,8 @@ export const AUDIT_ACTIONS = {
   RECORD_PAYMENT: "RECORD_PAYMENT",
   DELETE_PAYMENT: "DELETE_PAYMENT",
   GENERATE_INVOICES: "GENERATE_INVOICES",
+  WEBSITE_BOOKING: "WEBSITE_BOOKING",
+  UPDATE_TRIAL_STAGE: "UPDATE_TRIAL_STAGE",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

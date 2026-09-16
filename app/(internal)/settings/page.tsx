@@ -298,6 +298,12 @@ export default async function SettingsPage({
                     birthdayEmailsEnabled={
                       communicationsSettings.birthdayEmailsEnabled
                     }
+                    trialFollowUpsEnabled={
+                      communicationsSettings.trialFollowUpsEnabled
+                    }
+                    trialFollowUpDaysAfterJoin={
+                      communicationsSettings.trialFollowUpDaysAfterJoin
+                    }
                     templates={{
                       classReminderSubject: emailTemplates.classReminderSubject,
                       classReminderBody: emailTemplates.classReminderBody,
@@ -306,6 +312,8 @@ export default async function SettingsPage({
                       paymentReminderBody: emailTemplates.paymentReminderBody,
                       birthdaySubject: emailTemplates.birthdaySubject,
                       birthdayBody: emailTemplates.birthdayBody,
+                      trialFollowUpSubject: emailTemplates.trialFollowUpSubject,
+                      trialFollowUpBody: emailTemplates.trialFollowUpBody,
                     }}
                   />
                 </CardContent>

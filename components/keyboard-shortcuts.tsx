@@ -23,6 +23,12 @@ const ALL_ITEMS: PaletteItem[] = [
     permission: PERMISSIONS.STUDENTS_VIEW,
   },
   {
+    label: "Trials",
+    subtitle: "Trial pipeline",
+    href: "/trials",
+    permission: PERMISSIONS.STUDENTS_VIEW,
+  },
+  {
     label: "Classes",
     subtitle: "Courses",
     href: "/classes",

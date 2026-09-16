@@ -335,6 +335,8 @@ export async function saveCommunicationsSettings(
       formData.get("paymentReminderDaysBeforeDue") ?? 3,
     paymentReminderOverdueDays: formData.get("paymentReminderOverdueDays") ?? 7,
     birthdayEmailsEnabled: formData.get("birthdayEmailsEnabled") === "on",
+    trialFollowUpsEnabled: formData.get("trialFollowUpsEnabled") === "on",
+    trialFollowUpDaysAfterJoin: formData.get("trialFollowUpDaysAfterJoin") ?? 3,
   });
   if (!parsed.success) {
     return {
@@ -353,6 +355,8 @@ export async function saveCommunicationsSettings(
     paymentReminderBody: String(formData.get("paymentReminderBody") ?? ""),
     birthdaySubject: String(formData.get("birthdaySubject") ?? ""),
     birthdayBody: String(formData.get("birthdayBody") ?? ""),
+    trialFollowUpSubject: String(formData.get("trialFollowUpSubject") ?? ""),
+    trialFollowUpBody: String(formData.get("trialFollowUpBody") ?? ""),
   });
 
   const user = await getCurrentUser();

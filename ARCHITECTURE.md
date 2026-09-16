@@ -34,7 +34,7 @@ principles:
 | 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Done |
 | 7 | **Communication**: scheduler-driven reminders (class / payment / birthday) with editable templates and toggles in Settings, student→guardian recipient fallback, once-per-period dedup via NotificationLog | Done |
 | 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
-| 9 | Trials & leads: trial pipeline, conversion tracking, public booking page | Planned |
+| 9 | **Trials & leads**: dedicated trial pipeline (New → Contacted → First class → Converted/Lost) with stage actions and conversion stats; open public `/book` page (rate-limited, honeypot) that creates a TRIAL student with a chosen class; scheduler trial follow-up emails with editable template | Done |
 | 10 | Member portal: self-service schedule/check-in/details | Planned |
 | 11+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |
 
@@ -216,6 +216,8 @@ and a sample-send):
   window (days before due), and once more after a configurable number of
   days overdue.
 - **Birthday emails** — on the day (Feb 29 birthdays only in leap years).
+- **Trial follow-ups** — one email per open trial once it has sat in the
+  pipeline past a configurable number of days without converting (Phase 9).
 
 Recipients: student email, falling back to the guardian; skipped when
 neither exists. Every send writes a `NotificationLog` row whose dedup key

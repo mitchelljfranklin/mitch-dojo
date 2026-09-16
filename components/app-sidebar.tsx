@@ -6,6 +6,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Settings,
+  UserPlus,
   Users,
   Wallet,
   Clock,
@@ -59,6 +60,12 @@ export function AppSidebar({
       title: "Students",
       href: "/students",
       icon: Users,
+      permission: PERMISSIONS.STUDENTS_VIEW,
+    },
+    {
+      title: "Trials",
+      href: "/trials",
+      icon: UserPlus,
       permission: PERMISSIONS.STUDENTS_VIEW,
     },
     {

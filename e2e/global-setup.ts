@@ -81,13 +81,23 @@ export default async function globalSetup() {
   await prisma.studentLocation.deleteMany({
     where: {
       student: {
-        OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY, NO_DISCIPLINE_KID_QUERY],
+        OR: [
+          E2E_STUDENT_QUERY,
+          ATTENDANCE_KID_QUERY,
+          NO_DISCIPLINE_KID_QUERY,
+          { firstName: "Web", lastName: "Booker" },
+        ],
       },
     },
   });
   await prisma.student.deleteMany({
     where: {
-      OR: [E2E_STUDENT_QUERY, ATTENDANCE_KID_QUERY, NO_DISCIPLINE_KID_QUERY],
+      OR: [
+        E2E_STUDENT_QUERY,
+        ATTENDANCE_KID_QUERY,
+        NO_DISCIPLINE_KID_QUERY,
+        { firstName: "Web", lastName: "Booker" },
+      ],
     },
   });
 

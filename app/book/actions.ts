@@ -1,0 +1,94 @@
+"use server";
+
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+
+import { getClientIp } from "@/lib/client-ip";
+import { rateLimit } from "@/lib/rate-limit";
+import { createTrialBooking } from "@/lib/db/trials";
+import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
+
+const BOOKINGS_PER_HOUR = 5;
+
+const bookingFormSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required").max(60),
+  lastName: z.string().trim().min(1, "Last name is required").max(60),
+  email: z
+    .union([z.literal(""), z.email()])
+    .optional()
+    .transform((value) => value ?? ""),
+  phone: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((value) => value ?? ""),
+  locationId: z.string().min(1),
+  disciplineId: z.string().min(1),
+  session: z.string().optional().default(""),
+  // Honeypot: humans never see or fill this field.
+  website: z.string().max(0).optional().default(""),
+});
+
+// Public booking submission (no auth). Plain form action: on success we
+// redirect to the same page with ?booked=1 (FlashToast pattern for
+// post-redirect feedback); failures redirect with an error code.
+export async function submitBookingAction(formData: FormData): Promise<void> {
+  const requestHeaders = await headers();
+  const clientIp = getClientIp(requestHeaders);
+  if (!rateLimit("booking", clientIp, BOOKINGS_PER_HOUR)) {
+    redirect("/book?error=rate");
+  }
+
+  const parsed = bookingFormSchema.safeParse({
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    email: formData.get("email") ?? "",
+    phone: formData.get("phone") ?? "",
+    locationId: formData.get("locationId"),
+    disciplineId: formData.get("disciplineId"),
+    session: formData.get("session") ?? "",
+    website: formData.get("website") ?? "",
+  });
+  if (!parsed.success || parsed.data.website.length > 0) {
+    redirect("/book?error=invalid");
+  }
+  if (!parsed.data.email && !parsed.data.phone) {
+    redirect("/book?error=contact");
+  }
+
+  // session is "<courseName>|<date>" chosen from the bookable list; free-text
+  // safe because both parts are re-displayed only as notes, never executed.
+  const [sessionCourseName, sessionDate] = (
+    parsed.data.session ? parsed.data.session.split("|") : ["", ""]
+  ).map((part) => part.trim().slice(0, 120));
+
+  const result = await createTrialBooking({
+    firstName: parsed.data.firstName,
+    lastName: parsed.data.lastName,
+    email: parsed.data.email || null,
+    phone: parsed.data.phone || null,
+    locationId: parsed.data.locationId,
+    disciplineId: parsed.data.disciplineId,
+    sessionDate: sessionDate || null,
+    sessionCourseName: sessionCourseName || null,
+  });
+
+  if (result.outcome === "duplicate") {
+    await logSystemAudit(AUDIT_ACTIONS.WEBSITE_BOOKING, "Student", undefined, {
+      outcome: "duplicate",
+    });
+    redirect("/book?error=exists");
+  }
+
+  await logSystemAudit(
+    AUDIT_ACTIONS.WEBSITE_BOOKING,
+    "Student",
+    result.studentId,
+    {
+      outcome: result.outcome,
+    },
+  );
+  redirect("/book?booked=1");
+}

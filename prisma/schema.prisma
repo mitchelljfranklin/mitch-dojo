@@ -111,6 +111,16 @@ enum StudentStatus {
   ALUMNI
 }
 
+// Pipeline stage for TRIAL students (Phase 9). CONVERTED/LOST close the
+// pipeline; CONVERTED students carry convertedAt and flip to ACTIVE.
+enum TrialStage {
+  NEW
+  CONTACTED
+  FIRST_CLASS
+  CONVERTED
+  LOST
+}
+
 enum SessionStatus {
   SCHEDULED
   CANCELLED
@@ -186,6 +196,10 @@ model Student {
   guardianEmail         String?
   guardianPhone         String?
   status                StudentStatus @default(TRIAL)
+  // Trial pipeline (Phase 9): stage is non-null only while the student is a
+  // managed trial lead; convertedAt records when they became a member.
+  trialStage            TrialStage?
+  convertedAt           DateTime?
   notes                 String?
   photoKey              String?
   joinedAt              DateTime      @default(now())

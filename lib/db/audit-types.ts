@@ -74,4 +74,6 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   RECORD_PAYMENT: "Recorded payment",
   DELETE_PAYMENT: "Deleted payment",
   GENERATE_INVOICES: "Generated recurring invoices",
+  WEBSITE_BOOKING: "Website trial booking",
+  UPDATE_TRIAL_STAGE: "Updated trial stage",
 };

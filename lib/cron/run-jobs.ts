@@ -19,6 +19,7 @@ export type ScheduledJobsResult = {
   classRemindersSent?: number;
   paymentRemindersSent?: number;
   birthdayEmailsSent?: number;
+  trialFollowUpsSent?: number;
 };
 
 // Runs every scheduled job once: log pruning, the orphaned-file sweep,
@@ -144,6 +145,12 @@ export async function runScheduledJobs(
     result.birthdayEmailsSent = reminders.birthdayEmailsSent;
     console.log(
       `[cron] sent ${reminders.birthdayEmailsSent} birthday email(s)`,
+    );
+  }
+  if (reminders.trialFollowUpsSent > 0) {
+    result.trialFollowUpsSent = reminders.trialFollowUpsSent;
+    console.log(
+      `[cron] sent ${reminders.trialFollowUpsSent} trial follow-up(s)`,
     );
   }
 

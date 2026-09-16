@@ -69,8 +69,8 @@ test.describe("memberships", () => {
       .getByRole("button", { name: "Record payment" })
       .click();
     await expect(page.getByText("Payment recorded.").first()).toBeVisible();
-    await page.getByRole("button", { name: "Done" }).click({ force: true });
-
+    // Recording the final payment flips the invoice to PAID — the page
+    // refresh then unmounts the sheet itself (no Done step needed).
     await expect(page.getByText("Paid", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("Payments", { exact: true })).toBeVisible();
 

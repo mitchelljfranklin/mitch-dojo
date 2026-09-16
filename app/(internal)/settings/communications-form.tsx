@@ -21,6 +21,8 @@ type CommunicationsFormProps = {
   paymentReminderDaysBeforeDue: number;
   paymentReminderOverdueDays: number;
   birthdayEmailsEnabled: boolean;
+  trialFollowUpsEnabled: boolean;
+  trialFollowUpDaysAfterJoin: number;
   templates: {
     classReminderSubject: string;
     classReminderBody: string;
@@ -28,6 +30,8 @@ type CommunicationsFormProps = {
     paymentReminderBody: string;
     birthdaySubject: string;
     birthdayBody: string;
+    trialFollowUpSubject: string;
+    trialFollowUpBody: string;
   };
 };
 
@@ -45,6 +49,8 @@ function CommunicationsFormInner({
   paymentReminderDaysBeforeDue,
   paymentReminderOverdueDays,
   birthdayEmailsEnabled,
+  trialFollowUpsEnabled,
+  trialFollowUpDaysAfterJoin,
   templates,
 }: CommunicationsFormProps) {
   const [state, formAction, isPending] = useActionState<
@@ -144,6 +150,36 @@ function CommunicationsFormInner({
 
         <Separator />
 
+        <div className="flex flex-col gap-2">
+          <Label>Trial follow-ups</Label>
+          <p className="text-muted-foreground text-xs">
+            One email per open trial once it has sat in the pipeline this many
+            days without converting.
+          </p>
+          <label className="flex w-fit items-center gap-2 text-sm">
+            <Checkbox
+              name="trialFollowUpsEnabled"
+              defaultChecked={trialFollowUpsEnabled}
+            />
+            Enable trial follow-up emails
+          </label>
+          <div className="grid max-w-xs gap-2">
+            <Label htmlFor="trialFollowUpDaysAfterJoin">
+              Days in pipeline before follow-up
+            </Label>
+            <Input
+              id="trialFollowUpDaysAfterJoin"
+              name="trialFollowUpDaysAfterJoin"
+              type="number"
+              min={1}
+              max={60}
+              defaultValue={trialFollowUpDaysAfterJoin}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="classReminderSubject">Class reminder subject</Label>
@@ -201,6 +237,27 @@ function CommunicationsFormInner({
             />
             <p className="text-muted-foreground text-xs">
               Placeholders: {"{{studentName}}"}, {"{{appName}}"}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="trialFollowUpSubject">
+              Trial follow-up subject
+            </Label>
+            <Input
+              id="trialFollowUpSubject"
+              name="trialFollowUpSubject"
+              defaultValue={templates.trialFollowUpSubject}
+            />
+            <Label htmlFor="trialFollowUpBody">Trial follow-up body</Label>
+            <Textarea
+              id="trialFollowUpBody"
+              name="trialFollowUpBody"
+              rows={4}
+              defaultValue={templates.trialFollowUpBody}
+            />
+            <p className="text-muted-foreground text-xs">
+              Placeholders: {"{{studentName}}"}, {"{{trialDays}}"},
+              {" {{appName}}"}
             </p>
           </div>
         </div>
