@@ -151,6 +151,9 @@ export default async function StudentDetailPage({
       {sp.created ? (
         <FlashToast variant="success" message="Student created." />
       ) : null}
+      {sp.updated ? (
+        <FlashToast variant="success" message="Student updated." />
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -230,6 +233,14 @@ export default async function StudentDetailPage({
           <CardContent className="flex flex-col gap-2">
             <DetailRow label="Email" value={student.email} />
             <DetailRow label="Phone" value={student.phone} />
+            <DetailRow
+              label="Address"
+              value={
+                [student.addressLine, student.city, student.postcode]
+                  .filter((part) => part && part.length > 0)
+                  .join(", ") || null
+              }
+            />
             <DetailRow
               label="Date of birth"
               value={

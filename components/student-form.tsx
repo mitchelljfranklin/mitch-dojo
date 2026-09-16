@@ -38,6 +38,9 @@ export type StudentFormValues = {
   guardianName: string | null;
   guardianEmail: string | null;
   guardianPhone: string | null;
+  addressLine: string | null;
+  city: string | null;
+  postcode: string | null;
   status: string;
   notes: string | null;
   photoKey: string | null;
@@ -182,6 +185,39 @@ function StudentFormInner({
               </option>
             ))}
           </select>
+        </div>
+      </div>
+
+      <div className="border-t pt-4">
+        <h3 className="mb-2 text-sm font-medium">Address</h3>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2 sm:col-span-3 sm:grid-cols-1">
+            <Label htmlFor="addressLine">Street address</Label>
+            <Input
+              id="addressLine"
+              name="addressLine"
+              defaultValue={values?.addressLine ?? ""}
+              maxLength={200}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              defaultValue={values?.city ?? ""}
+              maxLength={80}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="postcode">Postcode</Label>
+            <Input
+              id="postcode"
+              name="postcode"
+              defaultValue={values?.postcode ?? ""}
+              maxLength={20}
+            />
+          </div>
         </div>
       </div>
 

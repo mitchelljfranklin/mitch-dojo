@@ -217,6 +217,11 @@ model Student {
   // managed trial lead; convertedAt records when they became a member.
   trialStage            TrialStage?
   convertedAt           DateTime?
+  // Postal address (optional, Phase 11 follow-up) — structured for CSV
+  // round-trips and labels.
+  addressLine           String?
+  city                  String?
+  postcode              String?
   notes                 String?
   photoKey              String?
   joinedAt              DateTime      @default(now())

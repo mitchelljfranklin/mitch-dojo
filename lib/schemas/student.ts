@@ -54,6 +54,9 @@ export const studentSchema = z
     guardianName: optionalString,
     guardianEmail: optionalEmail,
     guardianPhone: optionalString,
+    addressLine: optionalString,
+    city: optionalString,
+    postcode: optionalString,
     status: z.enum(STUDENT_STATUSES).default("TRIAL"),
     notes: z
       .string()
@@ -93,6 +96,9 @@ export const studentCsvRowSchema = z.object({
   guardianName: z.string().optional().default(""),
   guardianEmail: z.string().optional().default(""),
   guardianPhone: z.string().optional().default(""),
+  addressLine: z.string().optional().default(""),
+  city: z.string().optional().default(""),
+  postcode: z.string().optional().default(""),
   status: z
     .string()
     .optional()

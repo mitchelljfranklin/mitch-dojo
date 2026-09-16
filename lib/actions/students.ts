@@ -56,6 +56,9 @@ function parseStudentInput(formData: FormData) {
     guardianName: getField(formData, "guardianName"),
     guardianEmail: getField(formData, "guardianEmail"),
     guardianPhone: getField(formData, "guardianPhone"),
+    addressLine: getField(formData, "addressLine"),
+    city: getField(formData, "city"),
+    postcode: getField(formData, "postcode"),
     status: getField(formData, "status") || "TRIAL",
     notes: getField(formData, "notes"),
     locationIds: formData
@@ -197,9 +200,9 @@ export async function updateStudentAction(
   if (user) {
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Student", studentId);
   }
-  // No revalidatePath: this feeds useActionState — the client refreshes via
-  // useActionFeedback (see AGENTS.md).
-  return { ok: true, message: "Student updated." };
+  // Post/redirect/get: land back on the student's display page with a flash
+  // toast (redirect() supersedes the useActionState return value).
+  redirect(`/students/${studentId}?updated=1`);
 }
 
 export async function deleteStudentAction(formData: FormData) {
@@ -406,6 +409,9 @@ export async function importStudentsAction(
       guardianName: csvRow.guardianName,
       guardianEmail: csvRow.guardianEmail,
       guardianPhone: csvRow.guardianPhone,
+      addressLine: csvRow.addressLine,
+      city: csvRow.city,
+      postcode: csvRow.postcode,
       status: csvRow.status,
       notes: csvRow.notes,
       locationIds,

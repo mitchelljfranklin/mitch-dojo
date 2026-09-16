@@ -57,7 +57,7 @@ test.describe("students", () => {
     ).toBeVisible();
   });
 
-  test("edit form shows the saved discipline change after save", async ({
+  test("edit form saves and returns to the student record with the change", async ({
     page,
   }) => {
     await page.goto("/login");
@@ -66,26 +66,26 @@ test.describe("students", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    // The attendance kid trains E2E Karate only (global-setup). Add Jujitsu.
+    // The attendance kid trains E2E Karate only (global-setup). Add Jujitsu
+    // and an address, save, and land back on the record.
     await page.goto("/students");
     await page.getByText("E2E Attend Kid").first().click();
     await page.waitForURL("**/students/*");
     await page.getByRole("link", { name: "Edit" }).click();
     await page.waitForURL("**/students/*/edit");
 
-    const jujitsuCheckbox = page.getByRole("checkbox", { name: "Jujitsu" });
-    await jujitsuCheckbox.check();
+    await page.getByRole("checkbox", { name: "Jujitsu" }).check();
+    await page.getByLabel("Street address").fill("12 Dojo Lane");
+    await page.getByLabel("City", { exact: true }).fill("Testville");
+    await page.getByLabel("Postcode").fill("TE5 7ER");
     await page.getByRole("button", { name: "Save changes" }).click();
 
-    // Successful save returns the action state (a revalidatePath here used
-    // to abort the response on Node >= 23: no toast, no refresh, stale form).
+    // Successful save redirects straight to the display page.
+    await page.waitForURL("**/students/*");
     await expect(page.getByText("Student updated.")).toBeVisible();
-
-    // The remount-on-refresh shows the saved state...
-    await expect(jujitsuCheckbox).toBeChecked();
-
-    // ...and the saved discipline is visible on the student record.
-    await page.goto(page.url().replace(/\/edit$/, ""));
     await expect(page.getByText("Jujitsu", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("12 Dojo Lane, Testville, TE5 7ER"),
+    ).toBeVisible();
   });
 });

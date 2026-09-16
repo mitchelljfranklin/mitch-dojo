@@ -81,6 +81,9 @@ export default async function EditStudentPage({
               status: student.status,
               notes: student.notes ?? "",
               photoKey: student.photoKey,
+              addressLine: student.addressLine ?? "",
+              city: student.city ?? "",
+              postcode: student.postcode ?? "",
               locationIds: student.locations.map((link) => link.locationId),
               primaryLocationId:
                 student.locations.find((link) => link.isPrimary)?.locationId ??

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   createStudent,
   deleteStudent,
+  exportAllStudents,
   getStudent,
   listStudents,
   setStudentLocations,
@@ -82,6 +83,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId, northDojoId],
@@ -115,6 +119,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "TRIAL",
       notes: null,
       locationIds: [mainDojoId],
@@ -133,6 +140,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId, northDojoId],
@@ -158,6 +168,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -175,6 +188,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [northDojoId],
@@ -210,6 +226,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "TRIAL",
       notes: null,
       locationIds: [mainDojoId],
@@ -241,6 +260,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -265,6 +287,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -275,6 +300,66 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
     const updated = await getStudent(studentId);
     expect(updated!.disciplines).toHaveLength(1);
     expect(updated!.disciplines[0]!.disciplineId).toBe(karateId);
+
+    await deleteStudent(studentId);
+  });
+
+  it("stores address details and includes them in the export", async () => {
+    const studentId = await createStudent({
+      firstName: "Addressed",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      addressLine: "12 Dojo Lane",
+      city: "Testville",
+      postcode: "TE5 7ER",
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+
+    const stored = await getStudent(studentId);
+    expect(stored?.addressLine).toBe("12 Dojo Lane");
+    expect(stored?.city).toBe("Testville");
+    expect(stored?.postcode).toBe("TE5 7ER");
+
+    const exports = await exportAllStudents();
+    const exported = exports.find((row) => row.id === studentId);
+    expect(exported?.addressLine).toBe("12 Dojo Lane");
+    expect(exported?.city).toBe("Testville");
+    expect(exported?.postcode).toBe("TE5 7ER");
+
+    // Update clears the address (empty strings normalise to null).
+    await updateStudent(studentId, {
+      firstName: "Addressed",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+    const cleared = await getStudent(studentId);
+    expect(cleared?.addressLine).toBeNull();
 
     await deleteStudent(studentId);
   });
@@ -291,6 +376,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -308,6 +396,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianName: null,
       guardianEmail: null,
       guardianPhone: null,
+      addressLine: null,
+      city: null,
+      postcode: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],

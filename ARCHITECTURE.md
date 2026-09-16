@@ -36,7 +36,8 @@ principles:
 | 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
 | 9 | **Trials & leads**: dedicated trial pipeline (New → Contacted → First class → Converted/Lost) with stage actions and conversion stats; open public `/book` page (rate-limited, honeypot) that creates a TRIAL student with a chosen class; scheduler trial follow-up emails with editable template | Done |
 | 10 | **Member portal**: staff-emailed magic links (hashed tokens, 30-day expiry, student → guardian fallback); read-only `/portal` — progress + belts, upcoming classes, recent attendance, invoices/balance; expired-token cron pruning | Done |
-| 11 | **White-label**: org name on all public/member surfaces (booking, portal, check-in), editable booking-page headline + description in Settings → Appearance, org-branded email identities | Done |
+| 11 | **White-label**: org name on all public/member surfaces (booking, portal, check-in), dojo logo on those pages and in every email, editable booking-page headline + description in Settings → Appearance, org-branded email identities | Done |
+| 11b | **Student address details**: structured address (line/city/postcode) on the student record, form, detail view, and CSV import/export; saving an edit returns to the student's display page with a flash toast | Done |
 | 12 | Stripe/SEPA/PayPal gateways, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page

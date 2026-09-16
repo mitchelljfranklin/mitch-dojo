@@ -11,6 +11,8 @@ import { regenerateCheckinToken } from "@/lib/db/checkin";
 import {
   getOperationsSettings,
   updateOperationsSettings,
+  getAppearanceSettings,
+  updateAppearanceSettings,
 } from "@/lib/settings";
 
 const RATE_LIMIT_FILE = "e2e/.ratelimit-original";
@@ -42,6 +44,14 @@ export default async function globalSetup() {
     "utf8",
   );
   await updateOperationsSettings({ loginRateLimitPerMin: 1000 });
+
+  // The white-label spec may fail mid-run and leave a custom headline —
+  // restore the default so the booking-page assertions stay deterministic.
+  const appearance = await getAppearanceSettings();
+  await updateAppearanceSettings({
+    ...appearance,
+    bookingHeadline: "Book a free trial class",
+  });
 
   await ensureSystemRoles();
 
