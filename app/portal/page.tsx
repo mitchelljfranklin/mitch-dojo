@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 
+import { BrandMark } from "@/components/brand-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +19,7 @@ import {
   getPortalUpcomingSessions,
   verifyPortalToken,
 } from "@/lib/db/portal";
-import {
-  getMembershipsSettings,
-  getOrganizationSettings,
-} from "@/lib/settings";
+import { getMembershipsSettings } from "@/lib/settings";
 import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 import { portalSignOutAction } from "./sign-out";
 
@@ -86,19 +84,19 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     );
   }
 
-  const [student, upcoming, attendance, invoices, { currency }, organization] =
+  const [student, upcoming, attendance, invoices, { currency }] =
     await Promise.all([
       getPortalStudent(studentId),
       getPortalUpcomingSessions(studentId),
       getPortalAttendance(studentId),
       getPortalInvoices(studentId),
       getMembershipsSettings(),
-      getOrganizationSettings(),
     ]);
 
   if (!student) {
     return (
       <PortalShell>
+        <BrandMark />
         <Card>
           <CardHeader>
             <CardTitle>Member not found</CardTitle>
@@ -116,8 +114,9 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
   return (
     <PortalShell>
+      <BrandMark />
       <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-        {organization.name} · member portal
+        Member portal
       </p>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>

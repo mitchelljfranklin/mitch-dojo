@@ -8,8 +8,10 @@ import {
   getEmailSecret,
   getEmailSettings,
   getEmailTemplateSettings,
+  getAppearanceSettings,
   getOrganizationSettings,
 } from "@/lib/settings";
+import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 async function getTransporter(): Promise<nodemailer.Transporter | null> {
@@ -103,10 +105,17 @@ export async function sendEmail(
   tokens: Record<string, string>,
   options?: SendEmailOptions,
 ): Promise<SendEmailResult> {
-  const [emailSettings, templates] = await Promise.all([
+  const [emailSettings, templates, appearance] = await Promise.all([
     getEmailSettings(),
     getEmailTemplateSettings(),
+    getAppearanceSettings(),
   ]);
+
+  // Absolute logo URL — email clients have no base URL, so the logo must be
+  // publicly reachable at the deployed app origin.
+  const logoUrl = appearance.logoKey
+    ? `${env.APP_URL}/api/brand/logo?v=${encodeURIComponent(appearance.logoKey)}`
+    : undefined;
 
   const subjectByType: Record<TemplateType, string> = {
     invite: templates.inviteSubject,
@@ -171,6 +180,7 @@ export async function sendEmail(
         heading: resolvedSubject,
         body: resolvedBody,
         htmlBody,
+        logoUrl,
       }),
     );
     await transport.sendMail({

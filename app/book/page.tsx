@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 
+import { BrandMark } from "@/components/brand-mark";
 import {
   Card,
   CardContent,
@@ -10,7 +11,7 @@ import {
 import { getClientIp } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
 import { listBookableOptions, listBookableSessions } from "@/lib/db/trials";
-import { getAppearanceSettings, getOrganizationSettings } from "@/lib/settings";
+import { getAppearanceSettings } from "@/lib/settings";
 
 import { BookingForm } from "./booking-form";
 
@@ -54,21 +55,17 @@ export default async function BookPage({ searchParams }: BookPageProps) {
     );
   }
 
-  const [{ locations, disciplines }, sessions, appearance, organization] =
-    await Promise.all([
-      listBookableOptions(),
-      listBookableSessions(),
-      getAppearanceSettings(),
-      getOrganizationSettings(),
-    ]);
+  const [{ locations, disciplines }, sessions, appearance] = await Promise.all([
+    listBookableOptions(),
+    listBookableSessions(),
+    getAppearanceSettings(),
+  ]);
 
   return (
     <div className="mx-auto max-w-lg p-6">
+      <BrandMark />
       <div className="mb-6 text-center">
-        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          {organization.name}
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {appearance.bookingHeadline}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">

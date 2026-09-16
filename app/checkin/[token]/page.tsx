@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { BrandMark } from "@/components/brand-mark";
 import {
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   getCheckinPageData,
   getLocationIdByCheckinToken,
 } from "@/lib/db/checkin";
-import { getOrganizationSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
 
 import { checkInAction } from "./actions";
@@ -61,18 +61,13 @@ export default async function CheckinPage({
     notFound();
   }
 
-  const [{ locationName, sessions }, organization] = await Promise.all([
-    getCheckinPageData(locationId),
-    getOrganizationSettings(),
-  ]);
+  const { locationName, sessions } = await getCheckinPageData(locationId);
 
   return (
     <div className="mx-auto max-w-md p-6">
+      <BrandMark />
       <div className="mb-6 text-center">
-        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          {organization.name}
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           Check in at {locationName}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
