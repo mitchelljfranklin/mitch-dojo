@@ -211,6 +211,28 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   location that has students — deactivate it.
 - **Audit-log discipline.** Every state-changing admin action logs via
   `logAudit`/`logAuditSafe` with an action from `AUDIT_ACTIONS`.
+- **Form UX conventions.** Forms use uncontrolled inputs (they only read
+  defaults at mount), so every write path must have a story for how the UI
+  reflects the saved state:
+  - **State-fed actions** (`useActionState`, `previousState` param) must NOT
+    call `revalidatePath` (Node >= 23 aborts the response — the DB write
+    persists but the client gets no toast, no refresh, stale inputs). The
+    client refreshes via `useActionFeedback` (Sonner toast +
+    `router.refresh()`).
+  - **Page-level forms** (student, course, profile, settings forms): wrap in
+    a thin wrapper that keys the inner form on a JSON fingerprint of the
+    data props (`<Inner key={JSON.stringify([values, ...])} {...props} />`).
+    A refresh with changed data remounts and shows saved/normalized values;
+    a failed save never triggers a refresh, so in-progress edits survive.
+    Never key on the action state — the remount would race the refresh.
+  - **Sheets** (stay-open + Done pattern): key the form on the open state
+    (`key={open ? "open" : "closed"}`) so reopening picks up fresh data.
+  - **Plain form actions** (delete, toggle, void — no `previousState`):
+    `revalidatePath` is allowed and expected.
+  - **Create flows that navigate** (e.g. create student/course): end the
+    action with `redirect(...)`; the target page shows a `FlashToast` from a
+    search param (`?created=1`). FlashToast is for post-redirect feedback;
+    Sonner toasts are for stay-on-page saves.
 - Keep file text UTF-8; never introduce cp1252 mojibake.
 
 ## Security & deployment invariants
