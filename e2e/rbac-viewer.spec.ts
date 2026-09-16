@@ -15,7 +15,11 @@ test.describe("rbac viewer", () => {
     await expect(page.getByRole("link", { name: "Students" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Schedule" })).toBeVisible();
 
-    // Direct navigation to settings bounces back to the dashboard.
+    // Direct navigation to the admin area bounces back to the dashboard.
+    await page.goto("/admin");
+    await page.waitForURL("**/dashboard");
+
+    // The legacy settings shim bounces too (no admin permissions).
     await page.goto("/settings");
     await page.waitForURL("**/dashboard");
   });

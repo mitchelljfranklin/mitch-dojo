@@ -12,10 +12,11 @@ test.describe("students", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    // Create a dedicated e2e location via Settings → Locations
+    // Create a dedicated e2e location via Admin → Locations
     await page.getByRole("link", { name: "Settings" }).click();
-    await page.waitForURL("**/settings**");
-    await page.getByRole("tab", { name: "Locations" }).click();
+    await page.waitForURL("**/admin**");
+    await page.getByRole("link", { name: "Locations" }).click();
+    await page.waitForURL("**/admin/locations**");
     await page.getByRole("button", { name: "New location" }).click();
     await page.getByLabel("Name", { exact: true }).fill("E2E Dojo Two");
     await page.getByRole("button", { name: "Create location" }).click();

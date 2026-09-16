@@ -18,7 +18,7 @@ test.describe("communication settings", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    await page.goto("/settings?tab=communications");
+    await page.goto("/admin/communications");
     await waitSettingsInteractive(page);
     await expect(
       page.getByText("Communication", { exact: true }).first(),
@@ -56,14 +56,14 @@ test.describe("communication settings", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    await page.goto("/settings?tab=communications");
+    await page.goto("/admin/communications");
     await waitSettingsInteractive(page);
     await page.getByLabel("Recipient").fill("probe@example.com");
     await page.getByRole("button", { name: "Send sample" }).click();
 
     // The test database has no SMTP, so the send must fail — the durable
     // record is a FAILED row in the email log (client toasts are transient).
-    await page.goto("/settings?tab=emailLog");
+    await page.goto("/admin/email-log");
     await expect(
       page.getByText("Email log", { exact: true }).first(),
     ).toBeVisible();
@@ -81,12 +81,12 @@ test.describe("communication settings", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    await page.goto("/settings?tab=communications");
+    await page.goto("/admin/communications");
     await waitSettingsInteractive(page);
     await page.getByLabel("Recipient").fill("probe@example.com");
     await page.getByRole("button", { name: "Send sample" }).click();
 
-    await page.goto("/settings?tab=emailLog");
+    await page.goto("/admin/email-log");
     await waitSettingsInteractive(page);
     const failedRow = page
       .getByRole("row", { name: /Class reminder: Sample Class/ })
