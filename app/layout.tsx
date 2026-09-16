@@ -25,10 +25,10 @@ export async function generateMetadata(): Promise<Metadata> {
       "Failed to load settings for metadata:",
       err instanceof Error ? err.message : String(err),
     );
-    return [{ name: "mitch-dojo" }, { logoKey: "" }] as const;
+    return [{ name: "My Dojo" }, { logoKey: "" }] as const;
   });
 
-  const orgName = org.name || "mitch-dojo";
+  const orgName = org.name || "My Dojo";
   const icons = appearance.logoKey
     ? [{ url: `/api/brand/logo?v=${appearance.logoKey}` }]
     : [{ url: "/favicon.ico" }];

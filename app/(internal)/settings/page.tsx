@@ -232,6 +232,8 @@ export default async function SettingsPage({
                     logoKey={appearance.logoKey ?? ""}
                     borderRadius={appearance.borderRadius}
                     pageWidth={appearance.pageWidth}
+                    bookingHeadline={appearance.bookingHeadline}
+                    bookingDescription={appearance.bookingDescription}
                   />
                 </CardContent>
               </Card>

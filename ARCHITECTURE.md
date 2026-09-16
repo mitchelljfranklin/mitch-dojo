@@ -36,7 +36,8 @@ principles:
 | 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
 | 9 | **Trials & leads**: dedicated trial pipeline (New → Contacted → First class → Converted/Lost) with stage actions and conversion stats; open public `/book` page (rate-limited, honeypot) that creates a TRIAL student with a chosen class; scheduler trial follow-up emails with editable template | Done |
 | 10 | **Member portal**: staff-emailed magic links (hashed tokens, 30-day expiry, student → guardian fallback); read-only `/portal` — progress + belts, upcoming classes, recent attendance, invoices/balance; expired-token cron pruning | Done |
-| 11+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |
+| 11 | **White-label**: org name on all public/member surfaces (booking, portal, check-in), editable booking-page headline + description in Settings → Appearance, org-branded email identities | Done |
+| 12 | Stripe/SEPA/PayPal gateways, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
 builders, POS storefront, project management, kiosk apps, native mobile apps.
@@ -305,7 +306,7 @@ SMTP: provider-agnostic (configured in Settings)
    global across all locations teaching that discipline. Eligibility counts
    cumulative attendance across ALL courses of the discipline combined.
 6. **Manual payments first** (cash/transfer/terminal recording) — gateways
-   (Stripe/SEPA/PayPal) are Phase 11+ and shape invoices only then.
+   (Stripe/SEPA/PayPal) are Phase 12+ and shape invoices only then.
 7. **Historical import over synthetic credits** — migrating schools import
    dated rows (which create real past sessions) rather than a per-student
    starting-credit offset, keeping the data model honest.

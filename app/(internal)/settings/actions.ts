@@ -133,6 +133,11 @@ export async function saveAppearanceSettings(
     logoKey = fileName;
   }
 
+  const bookingHeadline = String(formData.get("bookingHeadline") ?? "").trim();
+  const bookingDescription = String(
+    formData.get("bookingDescription") ?? "",
+  ).trim();
+
   await updateAppearanceSettings({
     primaryHex: primaryHex || "",
     secondaryHex: secondaryHex || "",
@@ -145,6 +150,11 @@ export async function saveAppearanceSettings(
       pageWidth === "constrained" || pageWidth === "full"
         ? pageWidth
         : "constrained",
+    bookingHeadline:
+      bookingHeadline.length > 0
+        ? bookingHeadline.slice(0, 120)
+        : "Book a free trial class",
+    bookingDescription: bookingDescription.slice(0, 300),
   });
 
   if (previousLogoKey && previousLogoKey !== logoKey) {

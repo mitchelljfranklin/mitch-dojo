@@ -11,6 +11,8 @@ test.describe("trials", () => {
     await expect(
       page.getByRole("heading", { name: "Book a free trial class" }),
     ).toBeVisible();
+    // White-label: the org name brands the page (eyebrow above the headline).
+    await expect(page.getByText("My Dojo", { exact: true })).toBeVisible();
 
     await page.getByLabel("First name").fill("Web");
     await page.getByLabel("Last name").fill("Booker");

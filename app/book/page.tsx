@@ -10,6 +10,7 @@ import {
 import { getClientIp } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
 import { listBookableOptions, listBookableSessions } from "@/lib/db/trials";
+import { getAppearanceSettings, getOrganizationSettings } from "@/lib/settings";
 
 import { BookingForm } from "./booking-form";
 
@@ -53,19 +54,25 @@ export default async function BookPage({ searchParams }: BookPageProps) {
     );
   }
 
-  const [{ locations, disciplines }, sessions] = await Promise.all([
-    listBookableOptions(),
-    listBookableSessions(),
-  ]);
+  const [{ locations, disciplines }, sessions, appearance, organization] =
+    await Promise.all([
+      listBookableOptions(),
+      listBookableSessions(),
+      getAppearanceSettings(),
+      getOrganizationSettings(),
+    ]);
 
   return (
     <div className="mx-auto max-w-lg p-6">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Book a free trial class
+        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+          {organization.name}
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+          {appearance.bookingHeadline}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Try a class — no experience needed, all ages welcome.
+          {appearance.bookingDescription}
         </p>
       </div>
 

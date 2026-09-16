@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 import {
   Select,
@@ -23,6 +24,8 @@ type AppearanceFormProps = {
   logoKey: string;
   borderRadius: number;
   pageWidth: string;
+  bookingHeadline: string;
+  bookingDescription: string;
 };
 
 function ColorField({
@@ -84,6 +87,8 @@ function AppearanceFormInner({
   logoKey,
   borderRadius,
   pageWidth,
+  bookingHeadline,
+  bookingDescription,
 }: AppearanceFormProps) {
   const [state, action, isPending] = useActionState(
     saveAppearanceSettings,
@@ -206,6 +211,35 @@ function AppearanceFormInner({
               <SelectItem value="full">Full width</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 border-t pt-4">
+        <div className="grid gap-2">
+          <Label htmlFor="bookingHeadline">Booking page headline</Label>
+          <Input
+            id="bookingHeadline"
+            name="bookingHeadline"
+            maxLength={120}
+            defaultValue={bookingHeadline}
+          />
+          <p className="text-muted-foreground text-xs">
+            Shown at the top of your public booking page ({`/book`}).
+          </p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="bookingDescription">Booking page description</Label>
+          <Textarea
+            id="bookingDescription"
+            name="bookingDescription"
+            rows={2}
+            maxLength={300}
+            defaultValue={bookingDescription}
+          />
+          <p className="text-muted-foreground text-xs">
+            Short pitch under the headline. The dojo name is shown above it
+            automatically.
+          </p>
         </div>
       </div>
 

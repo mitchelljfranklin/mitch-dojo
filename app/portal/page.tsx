@@ -18,7 +18,10 @@ import {
   getPortalUpcomingSessions,
   verifyPortalToken,
 } from "@/lib/db/portal";
-import { getMembershipsSettings } from "@/lib/settings";
+import {
+  getMembershipsSettings,
+  getOrganizationSettings,
+} from "@/lib/settings";
 import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 import { portalSignOutAction } from "./sign-out";
 
@@ -83,13 +86,14 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     );
   }
 
-  const [student, upcoming, attendance, invoices, { currency }] =
+  const [student, upcoming, attendance, invoices, { currency }, organization] =
     await Promise.all([
       getPortalStudent(studentId),
       getPortalUpcomingSessions(studentId),
       getPortalAttendance(studentId),
       getPortalInvoices(studentId),
       getMembershipsSettings(),
+      getOrganizationSettings(),
     ]);
 
   if (!student) {
@@ -112,6 +116,9 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
   return (
     <PortalShell>
+      <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+        {organization.name} · member portal
+      </p>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{fullName}</h1>

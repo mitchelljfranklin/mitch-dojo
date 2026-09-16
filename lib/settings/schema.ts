@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 export const organizationSettingsSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Organization name is required")
-    .default("mitch-dojo"),
+  name: z.string().min(1, "Organization name is required").default("My Dojo"),
   supportEmail: z
     .union([z.literal(""), z.email("Enter a valid email address")])
     .default(""),
@@ -19,7 +16,7 @@ export const emailSettingsSchema = z.object({
   fromAddress: z
     .union([z.literal(""), z.email("Enter a valid email address")])
     .default(""),
-  fromName: z.string().default("mitch-dojo"),
+  fromName: z.string().default("My Dojo"),
   smtpPassword: z.string().default(""),
 });
 
@@ -106,6 +103,15 @@ export const appearanceSettingsSchema = z.object({
     .transform((value) => value.replace(/^"+|"+$/g, "")),
   borderRadius: z.coerce.number().min(0).max(16).default(10),
   pageWidth: z.enum(["constrained", "full"]).default("constrained"),
+  // White-label copy for the public booking page (Phase 11).
+  bookingHeadline: z
+    .string()
+    .max(120, "Keep the headline under 120 characters")
+    .default("Book a free trial class"),
+  bookingDescription: z
+    .string()
+    .max(300, "Keep the description under 300 characters")
+    .default("Try a class — no experience needed, all ages welcome."),
 });
 
 export type AppearanceSettings = z.infer<typeof appearanceSettingsSchema>;

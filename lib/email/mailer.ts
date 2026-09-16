@@ -8,6 +8,7 @@ import {
   getEmailSecret,
   getEmailSettings,
   getEmailTemplateSettings,
+  getOrganizationSettings,
 } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 
@@ -199,7 +200,10 @@ export async function sendTestEmail(
   sentById?: string,
   updateLogId?: string,
 ): Promise<{ ok: boolean; message: string }> {
-  const settings = await getEmailSettings();
+  const [settings, { name: orgName }] = await Promise.all([
+    getEmailSettings(),
+    getOrganizationSettings(),
+  ]);
   if (!settings.smtpHost) {
     return { ok: false, message: "SMTP is not configured." };
   }
@@ -209,7 +213,7 @@ export async function sendTestEmail(
     return { ok: false, message: "Failed to create transporter." };
   }
 
-  const subject = "mitch-dojo — SMTP test";
+  const subject = `${orgName} — SMTP test`;
 
   const notificationLogId = updateLogId
     ? updateLogId
