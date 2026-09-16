@@ -138,9 +138,6 @@ export async function saveAppearanceSettings(
   const bookingDescription = String(
     formData.get("bookingDescription") ?? "",
   ).trim();
-  console.log(
-    `[DEBUG saveAppearance] headline="${bookingHeadline}" desc="${bookingDescription}" hasFile=${(formData.get("logoFile") as File | null)?.size ?? 0}`,
-  );
 
   await updateAppearanceSettings({
     primaryHex: primaryHex || "",
@@ -180,7 +177,11 @@ export async function saveAppearanceSettings(
   return { ok: true, message: "Appearance settings saved." };
 }
 
-export async function saveOperationsSettings(
+// The former grab-bag saveOperationsSettings action, split four ways so each
+// admin page owns exactly one save. All four write the same operations /
+// cron settings keys as before — no schema change, only focused edits.
+
+export async function saveSignInSecuritySettings(
   previousState: SettingsActionState,
   formData: FormData,
 ): Promise<SettingsActionState> {
@@ -206,24 +207,78 @@ export async function saveOperationsSettings(
     formData.get("passwordResetPerMin"),
     1,
   );
-  const auditRetentionDays = parsePositiveInt(
-    formData.get("auditRetention"),
-    0,
-  );
-  const emailLogRetentionDays = parsePositiveInt(
-    formData.get("emailLogRetention"),
-    14,
-  );
-  const internalSchedulerEnabled =
-    formData.get("internalSchedulerEnabled") === "on";
 
   await updateOperationsSettings({
     loginRateLimitPerMin: Math.max(1, loginRateLimitPerMin),
     sessionTimeoutMinutes,
     passwordResetPerMin: Math.max(1, passwordResetPerMin),
   });
+
+  const user = await getCurrentUser();
+  if (user)
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "sign-in",
+    );
+  return { ok: true, message: "Sign-in security saved." };
+}
+
+export async function saveAuditRetentionSettings(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const parsed = parseInt(String(formData.get("auditRetention") ?? ""), 10);
+  const auditRetentionDays = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+
   await updateAuditRetention(auditRetentionDays);
+
+  const user = await getCurrentUser();
+  if (user)
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "audit-retention",
+    );
+  return { ok: true, message: "Audit retention saved." };
+}
+
+export async function saveEmailLogRetentionSettings(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const parsed = parseInt(String(formData.get("emailLogRetention") ?? ""), 10);
+  const emailLogRetentionDays =
+    Number.isNaN(parsed) || parsed < 0 ? 14 : parsed;
+
   await updateEmailLogRetention(emailLogRetentionDays);
+
+  const user = await getCurrentUser();
+  if (user)
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "email-log-retention",
+    );
+  return { ok: true, message: "Email log retention saved." };
+}
+
+export async function saveSchedulingSettings(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const internalSchedulerEnabled =
+    formData.get("internalSchedulerEnabled") === "on";
+
   await updateCronSettings({ internalSchedulerEnabled });
 
   const user = await getCurrentUser();
@@ -232,9 +287,9 @@ export async function saveOperationsSettings(
       user.id,
       AUDIT_ACTIONS.UPDATE_SETTINGS,
       "Setting",
-      "operations",
+      "scheduling",
     );
-  return { ok: true, message: "Operations settings saved." };
+  return { ok: true, message: "Scheduling settings saved." };
 }
 
 export async function saveEmailSettings(
