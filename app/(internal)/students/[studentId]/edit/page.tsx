@@ -13,6 +13,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { prisma } from "@/lib/prisma";
+import { getOrganizationSettings } from "@/lib/settings";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -28,13 +29,14 @@ export default async function EditStudentPage({
 }: EditStudentPageProps) {
   await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const { studentId } = await params;
-  const [student, locations, disciplines] = await Promise.all([
+  const [student, locations, disciplines, organization] = await Promise.all([
     getStudent(studentId),
     listAssignableLocations(),
     prisma.discipline.findMany({
       select: { id: true, name: true, isActive: true },
       orderBy: { name: "asc" },
     }),
+    getOrganizationSettings(),
   ]);
   if (!student) {
     notFound();
@@ -64,6 +66,7 @@ export default async function EditStudentPage({
             studentId={student.id}
             locations={locations}
             disciplines={disciplines}
+            defaultCountry={organization.defaultCountry}
             submitLabel="Save changes"
             values={{
               firstName: student.firstName,
@@ -83,7 +86,9 @@ export default async function EditStudentPage({
               photoKey: student.photoKey,
               addressLine: student.addressLine ?? "",
               city: student.city ?? "",
+              state: student.state ?? "",
               postcode: student.postcode ?? "",
+              country: student.country ?? "",
               locationIds: student.locations.map((link) => link.locationId),
               primaryLocationId:
                 student.locations.find((link) => link.isPrimary)?.locationId ??

@@ -218,10 +218,13 @@ model Student {
   trialStage            TrialStage?
   convertedAt           DateTime?
   // Postal address (optional, Phase 11 follow-up) — structured for CSV
-  // round-trips and labels.
+  // round-trips and labels. state is a catch-all (state/region/province);
+  // country is an ISO 3166-1 alpha-2 code.
   addressLine           String?
   city                  String?
+  state                 String?
   postcode              String?
+  country               String?
   notes                 String?
   photoKey              String?
   joinedAt              DateTime      @default(now())

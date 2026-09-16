@@ -77,7 +77,9 @@ test.describe("students", () => {
     await page.getByRole("checkbox", { name: "Jujitsu" }).check();
     await page.getByLabel("Street address").fill("12 Dojo Lane");
     await page.getByLabel("City", { exact: true }).fill("Testville");
+    await page.getByLabel("State / Region / Province").fill("Test Region");
     await page.getByLabel("Postcode").fill("TE5 7ER");
+    await page.getByLabel("Country").selectOption({ label: "Australia" });
     await page.getByRole("button", { name: "Save changes" }).click();
 
     // Successful save redirects straight to the display page.
@@ -85,7 +87,9 @@ test.describe("students", () => {
     await expect(page.getByText("Student updated.")).toBeVisible();
     await expect(page.getByText("Jujitsu", { exact: true })).toBeVisible();
     await expect(
-      page.getByText("12 Dojo Lane, Testville, TE5 7ER"),
+      page.getByText(
+        "12 Dojo Lane, Testville, Test Region, TE5 7ER, Australia",
+      ),
     ).toBeVisible();
   });
 });

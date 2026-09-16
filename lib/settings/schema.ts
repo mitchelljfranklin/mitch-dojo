@@ -1,9 +1,20 @@
 import { z } from "zod";
 
+import { isValidCountryCode } from "../countries";
+
 export const organizationSettingsSchema = z.object({
   name: z.string().min(1, "Organization name is required").default("My Dojo"),
   supportEmail: z
     .union([z.literal(""), z.email("Enter a valid email address")])
+    .default(""),
+  // Default country (ISO 3166-1 alpha-2) preselected on the student form's
+  // address section. Empty = no preselection.
+  defaultCountry: z
+    .string()
+    .refine(
+      (value) => value.length === 0 || isValidCountryCode(value),
+      "Use a valid ISO country code",
+    )
     .default(""),
 });
 

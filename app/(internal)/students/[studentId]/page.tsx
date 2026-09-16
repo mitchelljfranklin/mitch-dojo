@@ -23,6 +23,7 @@ import { getStudent } from "@/lib/db/students";
 import { getStudentRecentAttendance } from "@/lib/db/attendance";
 import { getStudentBeltHistory } from "@/lib/db/belts";
 import { listCoursesForStudent } from "@/lib/db/courses";
+import { countryName } from "@/lib/countries";
 import { endEnrollmentAction } from "@/lib/actions/memberships";
 import {
   getStudentSuspension,
@@ -236,7 +237,13 @@ export default async function StudentDetailPage({
             <DetailRow
               label="Address"
               value={
-                [student.addressLine, student.city, student.postcode]
+                [
+                  student.addressLine,
+                  student.city,
+                  student.state,
+                  student.postcode,
+                  student.country ? countryName(student.country) : "",
+                ]
                   .filter((part) => part && part.length > 0)
                   .join(", ") || null
               }

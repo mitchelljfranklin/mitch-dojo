@@ -212,6 +212,7 @@ export default async function SettingsPage({
                   <OrganizationForm
                     name={organization.name}
                     supportEmail={organization.supportEmail}
+                    defaultCountry={organization.defaultCountry}
                   />
                 </CardContent>
               </Card>

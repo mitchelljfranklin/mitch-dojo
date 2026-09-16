@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isValidCountryCode } from "../countries";
+
 export const STUDENT_STATUSES = [
   "TRIAL",
   "ACTIVE",
@@ -56,7 +58,17 @@ export const studentSchema = z
     guardianPhone: optionalString,
     addressLine: optionalString,
     city: optionalString,
+    state: optionalString,
     postcode: optionalString,
+    // Stored as an ISO 3166-1 alpha-2 code (validated); empty → null.
+    country: z
+      .string()
+      .optional()
+      .default("")
+      .transform((value) => {
+        const upper = value.trim().toUpperCase();
+        return isValidCountryCode(upper) ? upper : null;
+      }),
     status: z.enum(STUDENT_STATUSES).default("TRIAL"),
     notes: z
       .string()
@@ -98,7 +110,10 @@ export const studentCsvRowSchema = z.object({
   guardianPhone: z.string().optional().default(""),
   addressLine: z.string().optional().default(""),
   city: z.string().optional().default(""),
+  state: z.string().optional().default(""),
   postcode: z.string().optional().default(""),
+  // Accepts the country name or alpha-2 code, case-insensitive.
+  country: z.string().optional().default(""),
   status: z
     .string()
     .optional()

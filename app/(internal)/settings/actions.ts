@@ -45,6 +45,7 @@ export async function saveOrganizationSettings(
   const parsed = organizationSettingsSchema.safeParse({
     name: formData.get("name"),
     supportEmail: formData.get("supportEmail") ?? "",
+    defaultCountry: String(formData.get("defaultCountry") ?? "").toUpperCase(),
   });
   if (!parsed.success) {
     return {
@@ -137,6 +138,9 @@ export async function saveAppearanceSettings(
   const bookingDescription = String(
     formData.get("bookingDescription") ?? "",
   ).trim();
+  console.log(
+    `[DEBUG saveAppearance] headline="${bookingHeadline}" desc="${bookingDescription}" hasFile=${(formData.get("logoFile") as File | null)?.size ?? 0}`,
+  );
 
   await updateAppearanceSettings({
     primaryHex: primaryHex || "",

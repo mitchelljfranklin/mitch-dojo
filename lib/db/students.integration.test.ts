@@ -85,7 +85,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId, northDojoId],
@@ -121,7 +123,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "TRIAL",
       notes: null,
       locationIds: [mainDojoId],
@@ -142,7 +146,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId, northDojoId],
@@ -170,7 +176,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -190,7 +198,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [northDojoId],
@@ -228,7 +238,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "TRIAL",
       notes: null,
       locationIds: [mainDojoId],
@@ -262,7 +274,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -289,7 +303,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -318,7 +334,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: "12 Dojo Lane",
       city: "Testville",
+      state: "Test Region",
       postcode: "TE5 7ER",
+      country: "AU",
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -329,13 +347,17 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
     const stored = await getStudent(studentId);
     expect(stored?.addressLine).toBe("12 Dojo Lane");
     expect(stored?.city).toBe("Testville");
+    expect(stored?.state).toBe("Test Region");
     expect(stored?.postcode).toBe("TE5 7ER");
+    expect(stored?.country).toBe("AU");
 
     const exports = await exportAllStudents();
     const exported = exports.find((row) => row.id === studentId);
     expect(exported?.addressLine).toBe("12 Dojo Lane");
     expect(exported?.city).toBe("Testville");
+    expect(exported?.state).toBe("Test Region");
     expect(exported?.postcode).toBe("TE5 7ER");
+    expect(exported?.country).toBe("AU");
 
     // Update clears the address (empty strings normalise to null).
     await updateStudent(studentId, {
@@ -351,7 +373,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -378,7 +402,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],
@@ -398,7 +424,9 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
       guardianPhone: null,
       addressLine: null,
       city: null,
+      state: null,
       postcode: null,
+      country: null,
       status: "ACTIVE",
       notes: null,
       locationIds: [mainDojoId],

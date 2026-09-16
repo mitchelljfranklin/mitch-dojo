@@ -19,6 +19,7 @@ import {
 } from "@/lib/db/students";
 import { listLocations } from "@/lib/db/locations";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
+import { resolveCountryCode } from "@/lib/countries";
 import { getField } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
@@ -58,7 +59,9 @@ function parseStudentInput(formData: FormData) {
     guardianPhone: getField(formData, "guardianPhone"),
     addressLine: getField(formData, "addressLine"),
     city: getField(formData, "city"),
+    state: getField(formData, "state"),
     postcode: getField(formData, "postcode"),
+    country: getField(formData, "country"),
     status: getField(formData, "status") || "TRIAL",
     notes: getField(formData, "notes"),
     locationIds: formData
@@ -411,7 +414,9 @@ export async function importStudentsAction(
       guardianPhone: csvRow.guardianPhone,
       addressLine: csvRow.addressLine,
       city: csvRow.city,
+      state: csvRow.state,
       postcode: csvRow.postcode,
+      country: resolveCountryCode(csvRow.country) ?? "",
       status: csvRow.status,
       notes: csvRow.notes,
       locationIds,

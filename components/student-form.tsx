@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
+import { COUNTRIES, countryName } from "@/lib/countries";
 import {
   STUDENT_STATUSES,
   STUDENT_STATUS_LABELS,
@@ -40,7 +41,9 @@ export type StudentFormValues = {
   guardianPhone: string | null;
   addressLine: string | null;
   city: string | null;
+  state: string | null;
   postcode: string | null;
+  country: string | null;
   status: string;
   notes: string | null;
   photoKey: string | null;
@@ -62,6 +65,7 @@ type StudentFormProps = {
   values?: StudentFormValues;
   locations: StudentFormLocation[];
   disciplines: StudentFormDiscipline[];
+  defaultCountry: string;
   submitLabel: string;
   studentId?: string;
 };
@@ -76,6 +80,7 @@ export function StudentForm(props: StudentFormProps) {
     props.values,
     props.locations,
     props.disciplines,
+    props.defaultCountry,
   ]);
   return <StudentFormInner key={fingerprint} {...props} />;
 }
@@ -85,6 +90,7 @@ function StudentFormInner({
   values,
   locations,
   disciplines,
+  defaultCountry,
   submitLabel,
   studentId,
 }: StudentFormProps) {
@@ -210,6 +216,15 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
+            <Label htmlFor="state">State / Region / Province</Label>
+            <Input
+              id="state"
+              name="state"
+              defaultValue={values?.state ?? ""}
+              maxLength={80}
+            />
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="postcode">Postcode</Label>
             <Input
               id="postcode"
@@ -217,6 +232,22 @@ function StudentFormInner({
               defaultValue={values?.postcode ?? ""}
               maxLength={20}
             />
+          </div>
+          <div className="grid gap-2 sm:col-span-3">
+            <Label htmlFor="country">Country</Label>
+            <select
+              id="country"
+              name="country"
+              defaultValue={values?.country ?? defaultCountry}
+              className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+            >
+              <option value="">None</option>
+              {COUNTRIES.map((code) => (
+                <option key={code} value={code}>
+                  {countryName(code)}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

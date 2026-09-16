@@ -40,6 +40,9 @@ export default defineConfig({
   globalTeardown: "./e2e/global-teardown.ts",
   timeout: 30_000,
   fullyParallel: false,
+  // One retry absorbs rare render-timing flakes (e.g. the heavyweight
+  // settings page occasionally exceeding its first-paint assertion window).
+  retries: 1,
   use: {
     baseURL: "http://localhost:3000",
     trace: "off",

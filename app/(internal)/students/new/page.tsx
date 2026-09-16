@@ -12,6 +12,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { prisma } from "@/lib/prisma";
+import { getOrganizationSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +20,14 @@ export const metadata = { title: "New student" };
 
 export default async function NewStudentPage() {
   await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const [locations, disciplines] = await Promise.all([
+  const [locations, disciplines, organization] = await Promise.all([
     listAssignableLocations(),
     prisma.discipline.findMany({
       where: { isActive: true },
       select: { id: true, name: true, isActive: true },
       orderBy: { name: "asc" },
     }),
+    getOrganizationSettings(),
   ]);
 
   return (
@@ -46,6 +48,7 @@ export default async function NewStudentPage() {
             action={createStudentAction}
             locations={locations}
             disciplines={disciplines}
+            defaultCountry={organization.defaultCountry}
             submitLabel="Create student"
           />
         </CardContent>

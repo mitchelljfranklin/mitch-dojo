@@ -1,6 +1,7 @@
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { exportAllStudents } from "@/lib/db/students";
+import { countryName } from "@/lib/countries";
 import {
   STUDENT_STATUS_LABELS,
   type StudentStatus,
@@ -17,7 +18,9 @@ const COLUMNS = [
   "Status",
   "AddressLine",
   "City",
+  "State",
   "Postcode",
+  "Country",
   "GuardianName",
   "GuardianEmail",
   "GuardianPhone",
@@ -54,7 +57,9 @@ export async function GET() {
           student.status,
         student.addressLine ?? "",
         student.city ?? "",
+        student.state ?? "",
         student.postcode ?? "",
+        student.country ? countryName(student.country) : "",
         student.guardianName ?? "",
         student.guardianEmail ?? "",
         student.guardianPhone ?? "",

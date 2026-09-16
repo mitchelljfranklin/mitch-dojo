@@ -174,7 +174,9 @@ export async function createStudent(input: StudentInput): Promise<string> {
       dateOfBirth: input.dateOfBirth,
       addressLine: input.addressLine,
       city: input.city,
+      state: input.state,
       postcode: input.postcode,
+      country: input.country,
       emergencyContactName: input.emergencyContactName,
       emergencyContactPhone: input.emergencyContactPhone,
       guardianName: input.guardianName,
@@ -339,7 +341,9 @@ export type StudentExportRow = {
   status: StudentStatus;
   addressLine: string | null;
   city: string | null;
+  state: string | null;
   postcode: string | null;
+  country: string | null;
   emergencyContactName: string | null;
   emergencyContactPhone: string | null;
   guardianName: string | null;
@@ -365,7 +369,9 @@ export async function exportAllStudents(): Promise<StudentExportRow[]> {
     status: student.status,
     addressLine: student.addressLine,
     city: student.city,
+    state: student.state,
     postcode: student.postcode,
+    country: student.country,
     emergencyContactName: student.emergencyContactName,
     emergencyContactPhone: student.emergencyContactPhone,
     guardianName: student.guardianName,

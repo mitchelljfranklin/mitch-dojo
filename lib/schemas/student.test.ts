@@ -46,6 +46,32 @@ describe("studentSchema", () => {
     }
   });
 
+  it("stores a valid country code and nulls an invalid one", () => {
+    const valid = studentSchema.safeParse({
+      ...baseInput,
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-1",
+      disciplineIds: ["disc-1"],
+      country: "au",
+    });
+    expect(valid.success).toBe(true);
+    if (valid.success) {
+      expect(valid.data.country).toBe("AU");
+    }
+
+    const invalid = studentSchema.safeParse({
+      ...baseInput,
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-1",
+      disciplineIds: ["disc-1"],
+      country: "Atlantis",
+    });
+    expect(invalid.success).toBe(true);
+    if (invalid.success) {
+      expect(invalid.data.country).toBeNull();
+    }
+  });
+
   it("rejects a primary location outside the assigned set", () => {
     const result = studentSchema.safeParse({
       ...baseInput,
