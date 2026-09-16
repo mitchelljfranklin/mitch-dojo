@@ -13,7 +13,7 @@ test.describe("students", () => {
     await page.waitForURL("**/dashboard");
 
     // Create a dedicated e2e location via Admin → Locations
-    await page.getByRole("link", { name: "Settings" }).click();
+    await page.getByRole("link", { name: "Admin" }).first().click();
     await page.waitForURL("**/admin**");
     await page.getByRole("link", { name: "Locations" }).click();
     await page.waitForURL("**/admin/locations**");

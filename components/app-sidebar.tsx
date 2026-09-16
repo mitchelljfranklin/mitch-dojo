@@ -19,6 +19,7 @@ import {
   Scroll,
   Settings,
   ShieldCheck,
+  UserCheck,
   UserPlus,
   Users,
   Wallet,
@@ -123,59 +124,112 @@ type NavProps = {
   pathname: string;
 };
 
-function WorkspaceNav({ permissions, pathname }: NavProps) {
-  const dojoItems = [
-    {
-      title: "Students",
-      href: "/students",
-      icon: Users,
-      permission: PERMISSIONS.STUDENTS_VIEW,
-    },
-    {
-      title: "Trials",
-      href: "/trials",
-      icon: UserPlus,
-      permission: PERMISSIONS.STUDENTS_VIEW,
-    },
-    {
-      title: "Classes",
-      href: "/classes",
-      icon: CalendarDays,
-      permission: PERMISSIONS.CLASSES_VIEW,
-    },
-    {
-      title: "Schedule",
-      href: "/classes/schedule",
-      icon: Clock,
-      permission: PERMISSIONS.CLASSES_VIEW,
-    },
-    {
-      title: "Trainers",
-      href: "/trainers",
-      icon: Users,
-      permission: PERMISSIONS.CLASSES_VIEW,
-    },
-    {
-      title: "Belts & gradings",
-      href: "/belts",
-      icon: GraduationCap,
-      permission: PERMISSIONS.BELTS_VIEW,
-    },
-    {
-      title: "Memberships",
-      href: "/memberships",
-      icon: Wallet,
-      permission: PERMISSIONS.MEMBERSHIPS_VIEW,
-    },
-    {
-      title: "Analytics",
-      href: "/analytics",
-      icon: BarChart3,
-      permission: PERMISSIONS.ANALYTICS_VIEW,
-    },
-  ].filter((item) => hasPermission(permissions, item.permission));
+type NavItem = {
+  title: string;
+  href: string;
+  icon: ComponentType;
+  visible: boolean;
+};
 
+type NavGroup = {
+  label: string | null;
+  items: NavItem[];
+};
+
+function WorkspaceNav({ permissions, pathname }: NavProps) {
   const canManage = hasAnyPermission(permissions, MANAGE_PERMISSIONS);
+  const canStudents = hasPermission(permissions, PERMISSIONS.STUDENTS_VIEW);
+  const canClasses = hasPermission(permissions, PERMISSIONS.CLASSES_VIEW);
+  const canBelts = hasPermission(permissions, PERMISSIONS.BELTS_VIEW);
+  const canMemberships = hasPermission(
+    permissions,
+    PERMISSIONS.MEMBERSHIPS_VIEW,
+  );
+  const canAnalytics = hasPermission(permissions, PERMISSIONS.ANALYTICS_VIEW);
+
+  // Task-oriented groups: Overview (business pulse), Operations (daily
+  // training), People (who trains and teaches), Management (billing and
+  // configuration). Empty groups are skipped — visibility stays
+  // permission-driven, never greyed out.
+  const groups: NavGroup[] = [
+    {
+      label: "Overview",
+      items: [
+        {
+          title: "Analytics",
+          href: "/analytics",
+          icon: BarChart3,
+          visible: canAnalytics,
+        },
+      ],
+    },
+    {
+      label: "Operations",
+      items: [
+        {
+          title: "Schedule",
+          href: "/classes/schedule",
+          icon: Clock,
+          visible: canClasses,
+        },
+        {
+          title: "Classes",
+          href: "/classes",
+          icon: CalendarDays,
+          visible: canClasses,
+        },
+        {
+          title: "Belts & Gradings",
+          href: "/belts",
+          icon: GraduationCap,
+          visible: canBelts,
+        },
+      ],
+    },
+    {
+      label: "People",
+      items: [
+        {
+          title: "Students",
+          href: "/students",
+          icon: Users,
+          visible: canStudents,
+        },
+        {
+          title: "Trials",
+          href: "/trials",
+          icon: UserPlus,
+          visible: canStudents,
+        },
+        {
+          title: "Trainers",
+          href: "/trainers",
+          icon: UserCheck,
+          visible: canClasses,
+        },
+      ],
+    },
+    {
+      label: "Management",
+      items: [
+        {
+          title: "Memberships",
+          href: "/memberships",
+          icon: Wallet,
+          visible: canMemberships,
+        },
+        {
+          title: "Admin",
+          href: "/admin",
+          icon: Settings,
+          visible: canManage,
+        },
+      ],
+    },
+  ];
+
+  const dashboardActive =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   return (
     <>
@@ -183,13 +237,7 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={
-                  pathname === "/dashboard" ||
-                  pathname.startsWith("/dashboard/")
-                }
-              >
+              <SidebarMenuButton asChild isActive={dashboardActive}>
                 <Link href="/dashboard">
                   <LayoutDashboard />
                   <span>Dashboard</span>
@@ -200,54 +248,37 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
         </SidebarGroupContent>
       </SidebarGroup>
 
-      {dojoItems.length > 0 ? (
-        <SidebarGroup>
-          <SidebarGroupLabel>Dojo</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {dojoItems.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      ) : null}
+      {groups.map((group) => {
+        const items = group.items.filter((item) => item.visible);
+        if (items.length === 0) return null;
 
-      {canManage ? (
-        <SidebarGroup>
-          <SidebarGroupLabel>Manage</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={
-                    pathname === "/settings" ||
-                    pathname.startsWith("/settings/")
-                  }
-                >
-                  <Link href="/admin">
-                    <Settings />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      ) : null}
+        return (
+          <SidebarGroup key={group.label}>
+            {group.label ? (
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            ) : null}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => {
+                  const isActive =
+                    pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link href={item.href}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        );
+      })}
     </>
   );
 }

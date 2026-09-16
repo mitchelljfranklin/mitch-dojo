@@ -13,7 +13,9 @@ test.describe("authentication", () => {
     await expect(page.getByText("Welcome, E2E Admin")).toBeVisible();
 
     // Admin nav button in the header + sidebar Settings entry
-    await expect(page.getByRole("link", { name: "Admin" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Admin" }).first(),
+    ).toBeVisible();
 
     // Navigate to the admin area; the settings page runs many queries
     // (including the audit log) so allow a slower first render.

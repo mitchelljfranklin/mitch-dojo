@@ -17,6 +17,30 @@ type PaletteItem = {
 const ALL_ITEMS: PaletteItem[] = [
   { label: "Dashboard", subtitle: "Dojo overview", href: "/dashboard" },
   {
+    label: "Analytics",
+    subtitle: "Trends & retention",
+    href: "/analytics",
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    label: "Weekly schedule",
+    subtitle: "Timetable",
+    href: "/classes/schedule",
+    permission: PERMISSIONS.CLASSES_VIEW,
+  },
+  {
+    label: "Classes",
+    subtitle: "Courses",
+    href: "/classes",
+    permission: PERMISSIONS.CLASSES_VIEW,
+  },
+  {
+    label: "Belts & Gradings",
+    subtitle: "Progression",
+    href: "/belts",
+    permission: PERMISSIONS.BELTS_VIEW,
+  },
+  {
     label: "Students",
     subtitle: "Manage students",
     href: "/students",
@@ -29,40 +53,16 @@ const ALL_ITEMS: PaletteItem[] = [
     permission: PERMISSIONS.STUDENTS_VIEW,
   },
   {
-    label: "Classes",
-    subtitle: "Courses",
-    href: "/classes",
-    permission: PERMISSIONS.CLASSES_VIEW,
-  },
-  {
-    label: "Weekly schedule",
-    subtitle: "Timetable",
-    href: "/classes/schedule",
-    permission: PERMISSIONS.CLASSES_VIEW,
-  },
-  {
     label: "Trainers",
     subtitle: "Instructor roster",
     href: "/trainers",
     permission: PERMISSIONS.CLASSES_VIEW,
   },
   {
-    label: "Belts & gradings",
-    subtitle: "Progression",
-    href: "/belts",
-    permission: PERMISSIONS.BELTS_VIEW,
-  },
-  {
     label: "Memberships",
     subtitle: "Plans & invoices",
     href: "/memberships",
     permission: PERMISSIONS.MEMBERSHIPS_VIEW,
-  },
-  {
-    label: "Analytics",
-    subtitle: "Trends & retention",
-    href: "/analytics",
-    permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   { label: "Profile", subtitle: "Your account", href: "/profile" },
   {
