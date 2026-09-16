@@ -52,7 +52,7 @@ export default async function DashboardPage() {
 
       {canViewAudit && failedEmails > 0 ? (
         <Link
-          href="/settings?tab=emailLog&emailStatus=FAILED"
+          href="/admin/email-log?emailStatus=FAILED"
           className="bg-destructive/10 border-destructive/30 hover:bg-destructive/15 flex items-center justify-between gap-4 rounded-md border p-4 transition-colors"
         >
           <div>

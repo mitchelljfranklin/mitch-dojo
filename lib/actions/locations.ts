@@ -113,7 +113,7 @@ export async function deleteLocationAction(formData: FormData) {
   } catch (error: unknown) {
     if (error instanceof Error && error.message.startsWith("This location")) {
       redirect(
-        `/settings?tab=locations&locationError=${encodeURIComponent(error.message)}`,
+        `/admin/locations?locationError=${encodeURIComponent(error.message)}`,
       );
     }
     throw error;
@@ -128,7 +128,7 @@ export async function deleteLocationAction(formData: FormData) {
       locationId,
     );
   }
-  revalidatePath("/settings");
+  revalidatePath("/admin/locations");
 }
 
 export async function regenerateCheckinTokenAction(formData: FormData) {
@@ -147,5 +147,5 @@ export async function regenerateCheckinTokenAction(formData: FormData) {
       { action: "checkin-token-regenerated" },
     );
   }
-  revalidatePath("/settings");
+  revalidatePath("/admin/locations");
 }

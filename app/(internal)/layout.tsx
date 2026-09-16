@@ -1,4 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { AdminNavButton } from "@/components/admin-nav-button";
+import { ADMIN_AREA_PERMISSIONS } from "@/lib/admin-nav";
+import { hasAnyPermission } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -24,6 +27,12 @@ export default async function InternalLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await requireUser();
+  // Sync permission helper from lib/permissions (not the async auth.ts
+  // hasPermission — different signature, and the layout needs any-of logic).
+  const canAccessAdmin = hasAnyPermission(
+    user.permissions,
+    ADMIN_AREA_PERMISSIONS,
+  );
   const [organization, appearance, operations] = await Promise.all([
     getOrganizationSettings(),
     getAppearanceSettings(),
@@ -47,6 +56,7 @@ export default async function InternalLayout({
             <SidebarTrigger />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <div className="flex-1" />
+            {canAccessAdmin ? <AdminNavButton /> : null}
             <ThemeToggle />
             <UserMenu
               name={user.name ?? user.email ?? "Account"}

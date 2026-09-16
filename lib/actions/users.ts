@@ -119,7 +119,7 @@ export async function toggleUserAction(formData: FormData) {
       userId,
     );
   }
-  revalidatePath("/settings");
+  revalidatePath("/admin/users");
 }
 
 export async function changeRoleAction(formData: FormData) {
@@ -147,7 +147,7 @@ export async function changeRoleAction(formData: FormData) {
       newRole: role.name,
     });
   }
-  revalidatePath("/settings");
+  revalidatePath("/admin/users");
 }
 
 export async function deleteUserAction(formData: FormData) {
@@ -186,7 +186,7 @@ export async function deleteUserAction(formData: FormData) {
     });
   }
   await deleteUser(userId);
-  revalidatePath("/settings");
+  revalidatePath("/admin/users");
 }
 
 export async function resetPasswordAction(formData: FormData) {
@@ -201,5 +201,5 @@ export async function resetPasswordAction(formData: FormData) {
   if (actor) {
     await logAudit(actor.id, AUDIT_ACTIONS.RESET_PASSWORD, "User", userId);
   }
-  revalidatePath("/settings");
+  revalidatePath("/admin/users");
 }
