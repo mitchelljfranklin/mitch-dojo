@@ -35,7 +35,7 @@ principles:
 | 7 | **Communication**: scheduler-driven reminders (class / payment / birthday) with editable templates and toggles in Settings, student→guardian recipient fallback, once-per-period dedup via NotificationLog | Done |
 | 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
 | 9 | **Trials & leads**: dedicated trial pipeline (New → Contacted → First class → Converted/Lost) with stage actions and conversion stats; open public `/book` page (rate-limited, honeypot) that creates a TRIAL student with a chosen class; scheduler trial follow-up emails with editable template | Done |
-| 10 | Member portal: self-service schedule/check-in/details | Planned |
+| 10 | **Member portal**: staff-emailed magic links (hashed tokens, 30-day expiry, student → guardian fallback); read-only `/portal` — progress + belts, upcoming classes, recent attendance, invoices/balance; expired-token cron pruning | Done |
 | 11+ | Stripe/SEPA/PayPal, white-label, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page

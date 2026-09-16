@@ -86,6 +86,23 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+// Member portal access (Phase 10): staff email a magic link containing a
+// one-time raw token; the hash is stored here and exchanged for a cookie on
+// first visit. Regenerating a link does not revoke previously issued ones
+// that are still unexpired.
+model PortalToken {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([studentId])
+  @@index([expiresAt])
+  @@map("portal_tokens")
+}
+
 model NotificationLog {
   id           String   @id @default(cuid())
   assessmentId String?
@@ -212,6 +229,7 @@ model Student {
   belts       StudentBelt[]
   enrollments Enrollment[]
   invoices    Invoice[]
+  portalTokens PortalToken[]
 
   @@index([lastName, firstName])
   @@index([status])

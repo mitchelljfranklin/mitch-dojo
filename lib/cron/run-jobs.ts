@@ -20,6 +20,7 @@ export type ScheduledJobsResult = {
   paymentRemindersSent?: number;
   birthdayEmailsSent?: number;
   trialFollowUpsSent?: number;
+  prunedPortalTokens?: number;
 };
 
 // Runs every scheduled job once: log pruning, the orphaned-file sweep,
@@ -53,6 +54,14 @@ export async function runScheduledJobs(
     });
   if (prunedResetTokens > 0) {
     result.prunedResetTokens = prunedResetTokens;
+  }
+
+  // --- expired portal token pruning ---
+  const { count: prunedPortalTokens } = await prisma.portalToken.deleteMany({
+    where: { expiresAt: { lt: now } },
+  });
+  if (prunedPortalTokens > 0) {
+    result.prunedPortalTokens = prunedPortalTokens;
   }
 
   // --- email log pruning ---

@@ -45,6 +45,7 @@ type TemplateType =
   | "paymentReminder"
   | "birthday"
   | "trialFollowUp"
+  | "portalLink"
   | "reset";
 
 export type SendEmailResult = {
@@ -113,6 +114,7 @@ export async function sendEmail(
     paymentReminder: templates.paymentReminderSubject,
     birthday: templates.birthdaySubject,
     trialFollowUp: templates.trialFollowUpSubject,
+    portalLink: templates.portalLinkSubject,
     reset: templates.resetSubject,
   };
   const bodyByType: Record<TemplateType, string> = {
@@ -122,6 +124,7 @@ export async function sendEmail(
     paymentReminder: templates.paymentReminderBody,
     birthday: templates.birthdayBody,
     trialFollowUp: templates.trialFollowUpBody,
+    portalLink: templates.portalLinkBody,
     reset: templates.resetBody,
   };
 

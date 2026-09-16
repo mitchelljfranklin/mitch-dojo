@@ -82,6 +82,12 @@ export const emailTemplateSchema = z.object({
     .default(
       "Hi {{studentName}},\n\nIt has been {{trialDays}} days since you started your trial with us. We would love to see you back on the mats — reply to this email or drop in for your next class!\n\n— {{appName}}",
     ),
+  portalLinkSubject: z.string().default("Your {{appName}} member portal link"),
+  portalLinkBody: z
+    .string()
+    .default(
+      "Hi {{studentName}},\n\nHere is your personal member portal link — view your classes, attendance, progress, and balance any time:\n\n{{portalUrl}}\n\nThe link works for {{expiryDays}} days. Ask us for a new one any time.\n\n— {{appName}}",
+    ),
   testSubject: z.string().default("{{appName}} — SMTP test"),
   testBody: z.string().default("Your SMTP settings are working correctly."),
 });

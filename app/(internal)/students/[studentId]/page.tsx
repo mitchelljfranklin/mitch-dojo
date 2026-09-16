@@ -42,6 +42,7 @@ import {
 import { formatDate, formatMoney } from "@/lib/utils";
 
 import { EnrollStudentSheet } from "./enroll-student-sheet";
+import { PortalLinkButton } from "./portal-link-button";
 
 export const dynamic = "force-dynamic";
 
@@ -192,6 +193,9 @@ export default async function StudentDetailPage({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {canEdit ? (
+            <PortalLinkButton studentId={student.id} studentName={fullName} />
+          ) : null}
           {canEdit ? (
             <Button asChild variant="outline">
               <Link href={`/students/${student.id}/edit`}>Edit</Link>
