@@ -1,7 +1,7 @@
 # Deployment
 
 Mitch-Dojo deploys with Docker Compose. All runtime configuration happens
-in-app under **Settings** after first launch; only secrets and database
+in-app under **Admin** after first launch; only secrets and database
 connectivity belong in the environment.
 
 ## 1. Prepare the environment
@@ -78,7 +78,7 @@ Restore = stop the container, extract the archive into the volume, start.
 
 Open `http://localhost:3000` — the app redirects to first-run setup where you
 create the initial administrator account. Afterwards, configure the dojo
-under **Settings**.
+under **Admin**.
 
 ## Reverse proxy (TLS)
 

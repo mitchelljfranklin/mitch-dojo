@@ -52,7 +52,7 @@
 
 - [ ] **Live smoke-test S3 and Azure** — both providers are implemented
       (`lib/storage/s3.ts`, `lib/storage/azure.ts`) and selectable in
-      Settings → Storage, but only local disk is covered by automated
+      Admin → Storage, but only local disk is covered by automated
       tests. Run once against real buckets/containers before pointing a
       production deployment at cloud storage.
 - [ ] **"Test connection" button** on the Storage settings tab — saves

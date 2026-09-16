@@ -38,7 +38,7 @@ plan without asking.
   authenticated routes
 - **Built-in scheduler (default) → `lib/scheduler.ts` via `instrumentation.ts`**
   — every 5 minutes: audit/email-log pruning, reset-token pruning, orphaned-file
-  sweep. Toggle in Settings → Operations; external trigger via secured
+  sweep. Toggle in Admin → Scheduling; external trigger via secured
   `/api/cron/run`
 - **Docker Compose** (app + Postgres = `docker-compose.yml`; single container
   embedded = `docker-compose.lite.yml`), reverse proxy (Caddy/nginx) for TLS
