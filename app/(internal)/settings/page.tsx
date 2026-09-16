@@ -12,6 +12,7 @@ import { requireAnyPermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { buildFilterQueryString } from "@/lib/nav";
 import { listAuditLogs, listAuditActions } from "@/lib/db/audit";
+import { listEmailLogs } from "@/lib/db/email-log";
 import { listStaffAccounts } from "@/lib/db/users";
 import { listRoles } from "@/lib/db/roles";
 import { listLocationsWithCounts } from "@/lib/db/locations";
@@ -32,6 +33,7 @@ import {
 import { UsersManager } from "./users-manager";
 import { RolesManager } from "./roles-manager";
 import { LocationsManager } from "./locations-manager";
+import { EmailLogForm } from "./email-log-form";
 import { FlashToast } from "@/components/flash-toast";
 
 import { OrganizationForm } from "./organization-form";
@@ -74,6 +76,11 @@ export default async function SettingsPage({
     PERMISSIONS.LOCATIONS_EDIT,
   );
   const canViewAudit = hasPermission(permissions, PERMISSIONS.AUDIT_VIEW);
+  // Viewing the email log is audit-level; retrying is an operation.
+  const canRetryEmails = hasPermission(
+    permissions,
+    PERMISSIONS.SETTINGS_MANAGE,
+  );
 
   const sp = await searchParams;
   const [
@@ -160,7 +167,7 @@ export default async function SettingsPage({
     ...(canManageLocations ? ["locations"] : []),
     ...(canManageUsers ? ["users"] : []),
     ...(canManageRoles ? ["roles"] : []),
-    ...(canViewAudit ? ["audit"] : []),
+    ...(canViewAudit ? ["audit", "emailLog"] : []),
   ];
   const defaultTab =
     sp.tab && allowedTabs.includes(sp.tab) ? sp.tab : allowedTabs[0];
@@ -193,7 +200,10 @@ export default async function SettingsPage({
               <TabsTrigger value="locations">Locations</TabsTrigger>
             ) : null}
             {canViewAudit ? (
-              <TabsTrigger value="audit">Audit</TabsTrigger>
+              <>
+                <TabsTrigger value="audit">Audit</TabsTrigger>
+                <TabsTrigger value="emailLog">Email log</TabsTrigger>
+              </>
             ) : null}
           </TabsList>
         </div>
@@ -469,6 +479,23 @@ export default async function SettingsPage({
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="emailLog" className="mt-4 flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Email log</CardTitle>
+              <CardDescription>
+                Every email the platform sent, with delivery status. Failed
+                emails can be retried with the current templates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Suspense fallback={<PageSkeleton.Content height="h-72" />}>
+                <EmailLogContent sp={sp} canRetry={canRetryEmails} />
+              </Suspense>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -499,6 +526,46 @@ async function AuditContent({
       actions={listAuditActions()}
       users={users}
       filterQuery={filterQuery}
+    />
+  );
+}
+
+// Streams the email log the same way.
+async function EmailLogContent({
+  sp,
+  canRetry,
+}: {
+  sp: Record<string, string | undefined>;
+  canRetry: boolean;
+}) {
+  const page = sp.emailLogPage ? parseInt(sp.emailLogPage) : 1;
+  const pageSize = sp.emailLogPageSize ? parseInt(sp.emailLogPageSize) : 10;
+  const result = await listEmailLogs(
+    {
+      status: sp.emailStatus,
+      type: sp.emailType,
+      recipient: sp.emailRecipient,
+      fromDate: sp.emailFrom,
+      toDate: sp.emailTo,
+    },
+    Number.isNaN(page) ? 1 : page,
+    Number.isNaN(pageSize) ? 10 : pageSize,
+  );
+
+  return (
+    <EmailLogForm
+      result={result}
+      filters={{
+        status: sp.emailStatus ?? "",
+        type: sp.emailType ?? "",
+        recipient: sp.emailRecipient ?? "",
+        fromDate: sp.emailFrom ?? "",
+        toDate: sp.emailTo ?? "",
+      }}
+      filterQuery=""
+      page={Number.isNaN(page) ? 1 : page}
+      pageSize={Number.isNaN(pageSize) ? 10 : pageSize}
+      canRetry={canRetry}
     />
   );
 }

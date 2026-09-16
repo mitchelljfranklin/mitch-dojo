@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
+import { getFailedEmailCount } from "@/lib/db/email-log";
 import { listOverdueStudents } from "@/lib/db/memberships";
 import {
   getMembershipsSettings,
@@ -31,10 +32,12 @@ export default async function DashboardPage() {
     user.permissions,
     PERMISSIONS.MEMBERSHIPS_VIEW,
   );
+  const canViewAudit = hasPermission(user.permissions, PERMISSIONS.AUDIT_VIEW);
   const overdue = canViewMemberships ? await listOverdueStudents(5) : [];
   const { currency } = canViewMemberships
     ? await getMembershipsSettings()
     : { currency: "USD" };
+  const failedEmails = canViewAudit ? await getFailedEmailCount() : 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,6 +49,23 @@ export default async function DashboardPage() {
           {organization.name} — dojo management overview.
         </p>
       </div>
+
+      {canViewAudit && failedEmails > 0 ? (
+        <Link
+          href="/settings?tab=emailLog&emailStatus=FAILED"
+          className="bg-destructive/10 border-destructive/30 hover:bg-destructive/15 flex items-center justify-between gap-4 rounded-md border p-4 transition-colors"
+        >
+          <div>
+            <p className="text-sm font-medium">
+              {failedEmails} failed email{failedEmails === 1 ? "" : "s"} (24h)
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Review and retry them from the email log.
+            </p>
+          </div>
+          <Badge variant="destructive">Action needed</Badge>
+        </Link>
+      ) : null}
 
       {canViewMemberships ? (
         <Card>

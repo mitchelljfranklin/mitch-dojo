@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 
 import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from "./global-setup";
 
+// Hydration of the heavy settings page finishes after network idle —
+// clicking earlier hits a pre-hydration native submit that loses the
+// client-side action entirely.
+async function waitSettingsInteractive(page: import("@playwright/test").Page) {
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1_500);
+}
+
 test.describe("communication settings", () => {
   test("saves reminder toggles and templates", async ({ page }) => {
     await page.goto("/login");
@@ -11,6 +19,7 @@ test.describe("communication settings", () => {
     await page.waitForURL("**/dashboard");
 
     await page.goto("/settings?tab=communications");
+    await waitSettingsInteractive(page);
     await expect(
       page.getByText("Communication", { exact: true }).first(),
     ).toBeVisible();
@@ -38,18 +47,61 @@ test.describe("communication settings", () => {
     ).toBeVisible();
   });
 
-  test("reports a failed sample send without SMTP", async ({ page }) => {
+  test("sample send without SMTP lands a FAILED row in the email log", async ({
+    page,
+  }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
     await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL("**/dashboard", { timeout: 15_000 });
+    await page.waitForURL("**/dashboard");
 
     await page.goto("/settings?tab=communications");
-    await page.getByLabel("Recipient").fill("sample@example.com");
+    await waitSettingsInteractive(page);
+    await page.getByLabel("Recipient").fill("probe@example.com");
     await page.getByRole("button", { name: "Send sample" }).click();
-    // The test database has no SMTP configured, so the send must fail
-    // gracefully with guidance rather than throwing.
-    await expect(page.getByText(/Send failed/).first()).toBeVisible();
+
+    // The test database has no SMTP, so the send must fail — the durable
+    // record is a FAILED row in the email log (client toasts are transient).
+    await page.goto("/settings?tab=emailLog");
+    await expect(
+      page.getByText("Email log", { exact: true }).first(),
+    ).toBeVisible();
+    const failedRow = page
+      .getByRole("row", { name: /Class reminder: Sample Class/ })
+      .filter({ hasText: "FAILED" })
+      .first();
+    await expect(failedRow).toBeVisible();
+  });
+
+  test("email log retry re-runs the failed send", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/settings?tab=communications");
+    await waitSettingsInteractive(page);
+    await page.getByLabel("Recipient").fill("probe@example.com");
+    await page.getByRole("button", { name: "Send sample" }).click();
+
+    await page.goto("/settings?tab=emailLog");
+    await waitSettingsInteractive(page);
+    const failedRow = page
+      .getByRole("row", { name: /Class reminder: Sample Class/ })
+      .filter({ hasText: "FAILED" })
+      .first();
+    await expect(failedRow).toBeVisible();
+
+    // Retry: still fails without SMTP, but the action runs, the log row is
+    // reused (status flips in place), and the retry is audit-logged.
+    await failedRow.getByRole("button", { name: "Retry" }).click();
+    await expect(
+      page
+        .getByRole("row", { name: /Class reminder: Sample Class/ })
+        .filter({ hasText: "FAILED" })
+        .first(),
+    ).toBeVisible();
   });
 });

@@ -58,6 +58,22 @@ export function logAuditSafe(
 
 const DEFAULT_AUDIT_PAGE_SIZE = 10;
 
+// Parses a "YYYY-MM-DD" date-input value as a LOCAL calendar date — the
+// browser date input means the user's local day, and parsing it as UTC
+// midnight shifts the boundary for anyone ahead of UTC.
+function parseDateInput(
+  value: string | undefined,
+  endOfDay: boolean,
+): Date | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const [, y, m, d] = match;
+  return endOfDay
+    ? new Date(Number(y), Number(m) - 1, Number(d), 23, 59, 59, 999)
+    : new Date(Number(y), Number(m) - 1, Number(d), 0, 0, 0, 0);
+}
+
 export async function listAuditLogs(
   filters?: AuditLogFilters,
 ): Promise<AuditLogResult> {
@@ -72,19 +88,23 @@ export async function listAuditLogs(
   }
 
   if (filters?.fromDate) {
-    where.createdAt = {
-      ...((where.createdAt as Prisma.DateTimeFilter) ?? {}),
-      gte: new Date(filters.fromDate),
-    };
+    const fromDate = parseDateInput(filters.fromDate, false);
+    if (fromDate) {
+      where.createdAt = {
+        ...((where.createdAt as Prisma.DateTimeFilter) ?? {}),
+        gte: fromDate,
+      };
+    }
   }
 
   if (filters?.toDate) {
-    const toDate = new Date(filters.toDate);
-    toDate.setHours(23, 59, 59, 999);
-    if (!where.createdAt) {
-      where.createdAt = { lte: toDate };
-    } else {
-      (where.createdAt as Prisma.DateTimeFilter).lte = toDate;
+    const toDate = parseDateInput(filters.toDate, true);
+    if (toDate) {
+      if (!where.createdAt) {
+        where.createdAt = { lte: toDate };
+      } else {
+        (where.createdAt as Prisma.DateTimeFilter).lte = toDate;
+      }
     }
   }
 
@@ -311,6 +331,7 @@ export const AUDIT_ACTIONS = {
   WEBSITE_BOOKING: "WEBSITE_BOOKING",
   UPDATE_TRIAL_STAGE: "UPDATE_TRIAL_STAGE",
   SEND_PORTAL_LINK: "SEND_PORTAL_LINK",
+  RETRY_EMAIL_SEND: "RETRY_EMAIL_SEND",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

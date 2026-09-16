@@ -77,4 +77,5 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   WEBSITE_BOOKING: "Website trial booking",
   UPDATE_TRIAL_STAGE: "Updated trial stage",
   SEND_PORTAL_LINK: "Sent portal link",
+  RETRY_EMAIL_SEND: "Retried email send",
 };
