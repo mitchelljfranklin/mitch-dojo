@@ -29,6 +29,16 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
+        label: "Appearance",
+        href: "/admin/appearance",
+        permission: PERMISSIONS.SETTINGS_MANAGE,
+      },
+    ],
+  },
+  {
+    label: "Storage",
+    sections: [
+      {
         label: "Storage",
         href: "/admin/storage",
         permission: PERMISSIONS.SETTINGS_MANAGE,
@@ -56,6 +66,11 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
       {
         label: "Email",
         href: "/admin/email",
+        permission: PERMISSIONS.SETTINGS_MANAGE,
+      },
+      {
+        label: "Templates",
+        href: "/admin/templates",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
@@ -89,7 +104,7 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
         permission: PERMISSIONS.ROLES_MANAGE,
       },
       {
-        label: "Sign-in",
+        label: "Rate Limits",
         href: "/admin/sign-in",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },

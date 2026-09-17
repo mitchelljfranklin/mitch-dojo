@@ -67,8 +67,14 @@ const ALL_ITEMS: PaletteItem[] = [
   { label: "Profile", subtitle: "Your account", href: "/profile" },
   {
     label: "Admin · General",
-    subtitle: "Organization & appearance",
+    subtitle: "Organization identity",
     href: "/admin/general",
+    permission: PERMISSIONS.SETTINGS_MANAGE,
+  },
+  {
+    label: "Admin · Appearance",
+    subtitle: "Logo, colours & booking copy",
+    href: "/admin/appearance",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
   {
@@ -87,6 +93,12 @@ const ALL_ITEMS: PaletteItem[] = [
     label: "Admin · Sign-in",
     subtitle: "Sessions & rate limits",
     href: "/admin/sign-in",
+    permission: PERMISSIONS.SETTINGS_MANAGE,
+  },
+  {
+    label: "Admin · Templates",
+    subtitle: "Email template copy",
+    href: "/admin/templates",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
   {

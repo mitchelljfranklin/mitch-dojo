@@ -2,16 +2,16 @@ import { expect, test } from "@playwright/test";
 
 import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from "./global-setup";
 
-// Hydration of the heavy settings page finishes after network idle —
+// Hydration of the heavy admin pages finishes after network idle —
 // clicking earlier hits a pre-hydration native submit that loses the
 // client-side action entirely.
-async function waitSettingsInteractive(page: import("@playwright/test").Page) {
+async function waitAdminInteractive(page: import("@playwright/test").Page) {
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1_500);
 }
 
 test.describe("communication settings", () => {
-  test("saves reminder toggles and templates", async ({ page }) => {
+  test("saves reminder toggles on the Communication page", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
     await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
@@ -19,7 +19,7 @@ test.describe("communication settings", () => {
     await page.waitForURL("**/dashboard");
 
     await page.goto("/admin/communications");
-    await waitSettingsInteractive(page);
+    await waitAdminInteractive(page);
     await expect(
       page.getByText("Communication", { exact: true }).first(),
     ).toBeVisible();
@@ -47,6 +47,34 @@ test.describe("communication settings", () => {
     ).toBeVisible();
   });
 
+  test("saves email templates on the Templates page", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/admin/templates");
+    await waitAdminInteractive(page);
+    await expect(page.getByText("Email templates").first()).toBeVisible();
+
+    const customSubject = "E2E Class Reminder Subject";
+    await page.getByLabel("Class reminder subject").fill(customSubject);
+    await page.getByRole("button", { name: "Save email templates" }).click();
+    await expect(
+      page.getByText("Email templates saved.").first(),
+    ).toBeVisible();
+
+    // Restore the default so other runs start from the template default
+    await page
+      .getByLabel("Class reminder subject")
+      .fill("Class reminder: {{className}}");
+    await page.getByRole("button", { name: "Save email templates" }).click();
+    await expect(
+      page.getByText("Email templates saved.").first(),
+    ).toBeVisible();
+  });
+
   test("sample send without SMTP lands a FAILED row in the email log", async ({
     page,
   }) => {
@@ -56,9 +84,9 @@ test.describe("communication settings", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    await page.goto("/admin/communications");
-    await waitSettingsInteractive(page);
-    await page.getByLabel("Recipient").fill("probe@example.com");
+    await page.goto("/admin/templates");
+    await waitAdminInteractive(page);
+    await page.getByLabel("Recipient").fill("[EMAIL]");
     await page.getByRole("button", { name: "Send sample" }).click();
 
     // The test database has no SMTP, so the send must fail — the durable
@@ -81,13 +109,13 @@ test.describe("communication settings", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/dashboard");
 
-    await page.goto("/admin/communications");
-    await waitSettingsInteractive(page);
-    await page.getByLabel("Recipient").fill("probe@example.com");
+    await page.goto("/admin/templates");
+    await waitAdminInteractive(page);
+    await page.getByLabel("Recipient").fill("[EMAIL]");
     await page.getByRole("button", { name: "Send sample" }).click();
 
     await page.goto("/admin/email-log");
-    await waitSettingsInteractive(page);
+    await waitAdminInteractive(page);
     const failedRow = page
       .getByRole("row", { name: /Class reminder: Sample Class/ })
       .filter({ hasText: "FAILED" })

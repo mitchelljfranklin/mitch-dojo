@@ -8,6 +8,8 @@ import {
   CalendarDays,
   CalendarClock,
   Clock,
+  FileText,
+  Gauge,
   GraduationCap,
   HardDrive,
   HeartPulse,
@@ -24,6 +26,7 @@ import {
   Users,
   Wallet,
   MailOpen,
+  Palette,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,15 +54,17 @@ import {
 // section registry (lib/admin-nav.ts is the permission source of truth).
 const SECTION_ICONS: Record<string, ComponentType> = {
   "/admin/general": Building2,
+  "/admin/appearance": Palette,
   "/admin/storage": HardDrive,
   "/admin/memberships": Wallet,
   "/admin/communications": Mail,
   "/admin/email": MailOpen,
+  "/admin/templates": FileText,
   "/admin/email-log": Inbox,
   "/admin/locations": CalendarDays,
   "/admin/users": Users,
   "/admin/roles": ShieldCheck,
-  "/admin/sign-in": KeyRound,
+  "/admin/sign-in": Gauge,
   "/admin/audit": ScrollText,
   "/admin/scheduling": CalendarClock,
   "/admin/health": HeartPulse,

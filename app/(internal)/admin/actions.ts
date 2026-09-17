@@ -415,6 +415,24 @@ export async function saveCommunicationsSettings(
   }
 
   await updateCommunicationsSettings(parsed.data);
+
+  const user = await getCurrentUser();
+  if (user)
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "communications",
+    );
+  return { ok: true, message: "Communication settings saved." };
+}
+
+export async function saveEmailTemplatesAction(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
   await updateEmailTemplateFields({
     classReminderSubject: String(formData.get("classReminderSubject") ?? ""),
     classReminderBody: String(formData.get("classReminderBody") ?? ""),
@@ -434,9 +452,9 @@ export async function saveCommunicationsSettings(
       user.id,
       AUDIT_ACTIONS.UPDATE_SETTINGS,
       "Setting",
-      "communications",
+      "email-templates",
     );
-  return { ok: true, message: "Communication settings saved." };
+  return { ok: true, message: "Email templates saved." };
 }
 
 // Sends one sample email through the real SMTP transport so the admin can

@@ -7,10 +7,7 @@ import {
 } from "@/components/ui/card";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
-import {
-  getCommunicationsSettings,
-  getEmailTemplateSettings,
-} from "@/lib/settings";
+import { getCommunicationsSettings } from "@/lib/settings";
 
 import { CommunicationsForm } from "../communications-form";
 
@@ -20,26 +17,24 @@ export const metadata = { title: "Admin — Communication" };
 
 export default async function AdminCommunicationsPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
-  const [communicationsSettings, emailTemplates] = await Promise.all([
-    getCommunicationsSettings(),
-    getEmailTemplateSettings(),
-  ]);
+  const communicationsSettings = await getCommunicationsSettings();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Communication</h1>
         <p className="text-muted-foreground text-sm">
-          Automated reminders and their email templates.
+          Automated reminder timing and toggles.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Communication</CardTitle>
+          <CardTitle>Reminders</CardTitle>
           <CardDescription>
             Emails go to the student, falling back to their guardian; each
-            reminder is sent at most once. Requires SMTP to be configured.
+            reminder is sent at most once. Template copy lives under the
+            Templates section; requires SMTP to be configured.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,16 +57,6 @@ export default async function AdminCommunicationsPage() {
             trialFollowUpDaysAfterJoin={
               communicationsSettings.trialFollowUpDaysAfterJoin
             }
-            templates={{
-              classReminderSubject: emailTemplates.classReminderSubject,
-              classReminderBody: emailTemplates.classReminderBody,
-              paymentReminderSubject: emailTemplates.paymentReminderSubject,
-              paymentReminderBody: emailTemplates.paymentReminderBody,
-              birthdaySubject: emailTemplates.birthdaySubject,
-              birthdayBody: emailTemplates.birthdayBody,
-              trialFollowUpSubject: emailTemplates.trialFollowUpSubject,
-              trialFollowUpBody: emailTemplates.trialFollowUpBody,
-            }}
           />
         </CardContent>
       </Card>

@@ -15,8 +15,10 @@ test.describe("students", () => {
     // Create a dedicated e2e location via Admin → Locations
     await page.getByRole("link", { name: "Admin" }).first().click();
     await page.waitForURL("**/admin**");
+    await page.waitForLoadState("networkidle");
     await page.getByRole("link", { name: "Locations" }).click();
     await page.waitForURL("**/admin/locations**");
+    await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: "New location" }).click();
     await page.getByLabel("Name", { exact: true }).fill("E2E Dojo Two");
     await page.getByRole("button", { name: "Create location" }).click();

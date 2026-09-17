@@ -16,10 +16,12 @@ describe("admin nav definition", () => {
     const hrefs = ALL_ADMIN_SECTIONS.map((section) => section.href);
     expect(hrefs).toEqual([
       "/admin/general",
+      "/admin/appearance",
       "/admin/storage",
       "/admin/memberships",
       "/admin/communications",
       "/admin/email",
+      "/admin/templates",
       "/admin/email-log",
       "/admin/locations",
       "/admin/users",

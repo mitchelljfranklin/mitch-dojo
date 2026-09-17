@@ -8,8 +8,8 @@ export const SETTINGS_TAB_REDIRECTS: Readonly<Record<string, string>> = {
   memberships: "/admin/memberships",
   communications: "/admin/communications",
   // The old grab-bag "operations" tab: session/login limits are its
-  // largest, most targeted group and now live on Sign-in. The audit and
-  // email-log retention knobs moved to their feature pages, and the
+  // largest, most targeted group and now live on Rate Limits. The audit
+  // and email-log retention knobs moved to their feature pages, and the
   // scheduler toggle to Scheduling.
   operations: "/admin/sign-in",
   storage: "/admin/storage",
