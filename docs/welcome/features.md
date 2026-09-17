@@ -62,7 +62,7 @@
 
 ## Platform
 
-- **White-label** — your org name and logo on the booking page, member portal, check-in screens, and every email; editable booking-page copy
+- **White-label** — your org name and logo on the booking page, member portal, check-in screens, and every email; editable booking-page copy. Logos render on a white plate so single-colour badges stay visible in dark mode and in emails
 - **Single sign-on** — Microsoft Entra ID, Google, or any OpenID Connect provider; first sign-ins auto-provision passwordless accounts; SSO-only mode with a single-use break-glass URL for emergencies
 - **RBAC** — three seeded system roles (Admin, Trainer, Viewer) plus custom roles over 20 fine-grained permissions; gated controls are hidden, never greyed out
 - **Audit log** — every state-changing admin action logged, with retention pruning

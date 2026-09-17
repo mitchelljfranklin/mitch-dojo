@@ -12,12 +12,20 @@ export async function BrandMark() {
   return (
     <div className="mb-4 flex flex-col items-center gap-2 text-center">
       {appearance.logoKey ? (
-        // Cache-busted by the logo key so re-uploads appear immediately.
-        <img
-          src={`/api/brand/logo?v=${appearance.logoKey}`}
-          alt={`${organization.name} logo`}
-          className="max-h-16 w-auto max-w-[180px] object-contain"
-        />
+        // The plate is deliberately white in both themes (see --logo-plate in
+        // globals.css): single-colour badges keep their contrast on the dark
+        // theme and in emails. Cache-busted by the logo key so re-uploads
+        // appear immediately.
+        <div
+          data-logo-plate
+          className="inline-flex rounded-lg border bg-(--logo-plate) p-2"
+        >
+          <img
+            src={`/api/brand/logo?v=${appearance.logoKey}`}
+            alt={`${organization.name} logo`}
+            className="max-h-16 w-auto max-w-[180px] object-contain"
+          />
+        </div>
       ) : null}
       <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {organization.name}

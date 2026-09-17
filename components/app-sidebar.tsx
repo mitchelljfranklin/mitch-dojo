@@ -99,14 +99,21 @@ export function AppSidebar({
       <SidebarHeader className="from-primary/10 via-primary/5 bg-gradient-to-b to-transparent pb-2">
         <div className="flex items-center gap-2 px-2 py-1.5">
           {hasLogo ? (
-            <img
-              src={`/api/brand/logo?v=${logoKey}`}
-              alt={orgName}
-              width={120}
-              height={32}
-              loading="lazy"
-              className="h-8 w-auto max-w-[120px] rounded object-contain"
-            />
+            // White plate in both themes (--logo-plate): single-colour
+            // badges keep their contrast when staff flip to dark mode.
+            <span
+              data-logo-plate
+              className="inline-flex rounded-md border bg-(--logo-plate) p-1"
+            >
+              <img
+                src={`/api/brand/logo?v=${logoKey}`}
+                alt={orgName}
+                width={120}
+                height={32}
+                loading="lazy"
+                className="h-7 w-auto max-w-[112px] object-contain"
+              />
+            </span>
           ) : null}
           <span className="truncate font-semibold" title={orgName}>
             {orgName}

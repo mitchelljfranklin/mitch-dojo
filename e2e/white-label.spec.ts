@@ -35,6 +35,13 @@ test.describe("white-label", () => {
       page.getByRole("heading", { name: "Book a free trial class" }),
     ).toBeVisible();
     await expect(page.locator('img[src*="/api/brand/logo"]')).toBeVisible();
+    // The logo renders on the white plate so single-colour badges keep
+    // their contrast on dark surfaces.
+    await expect(
+      page.locator("[data-logo-plate]").filter({
+        has: page.locator('img[src*="/api/brand/logo"]'),
+      }),
+    ).toBeVisible();
 
     // The member portal carries the same brand mark
     await page.goto("/portal");

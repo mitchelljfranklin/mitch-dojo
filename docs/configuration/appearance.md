@@ -25,4 +25,13 @@ White-label branding: make the platform yours on every surface your students see
 
 Upload a PNG or SVG; it's stored via the [storage backend](./storage) and served through an authenticated route with caching. Deleting the organization's logo reference cleans the file up — a scheduled orphan sweep is the backstop.
 
+### The logo plate
+
+Every logo renders on a small **white plate** (a rounded square with a hairline border) — in the app, on public pages, and in emails:
+
+- A **white or light badge** stays visible in dark mode and against email clients' white background (the hairline border does the work).
+- A **black or dark badge** always sits on guaranteed white, so it keeps its contrast when staff flip the app to dark mode.
+
+Because the plate is white in both themes, a single-colour badge works everywhere with **one upload** — no need to produce a separate dark-mode asset. Upload a badge with a **transparent background** for the cleanest result; opaque backgrounds also work but show their rectangle on the plate.
+
 Requires `settings:manage`. Changes are audited.

@@ -121,13 +121,22 @@ function AppearanceFormInner({
         ) : null}
         {hasLogo ? (
           <div className="flex flex-col gap-2">
-            <img
-              src={`/api/brand/logo?v=${logoKey}`}
-              alt="Current logo"
-              width={48}
-              height={48}
-              className="h-12 w-auto rounded-md border object-contain"
-            />
+            <span
+              data-logo-plate
+              className="inline-flex w-fit rounded-lg border bg-(--logo-plate) p-1.5"
+            >
+              <img
+                src={`/api/brand/logo?v=${logoKey}`}
+                alt="Current logo"
+                width={48}
+                height={48}
+                className="h-10 w-auto object-contain"
+              />
+            </span>
+            <p className="text-muted-foreground text-xs">
+              Rendered on a white plate so single-colour badges stay visible in
+              dark mode and in emails.
+            </p>
             <ConfirmDialog
               title="Remove logo?"
               description="The current logo will be removed from all pages. You can upload a new logo at any time."

@@ -31,16 +31,31 @@ export function DynamicEmail({
       <Body style={{ fontFamily: "sans-serif", padding: "32px" }}>
         <Container>
           {logoUrl ? (
-            <Img
-              src={logoUrl}
-              alt="Dojo logo"
+            // The plate mirrors the app's --logo-plate token (white backing,
+            // hairline border): a white knockout badge stays visible against
+            // the email client's white background, and dark badges keep
+            // their contrast. Inline styles — email clients ignore CSS vars.
+            <div
               style={{
-                maxHeight: "64px",
-                maxWidth: "200px",
-                objectFit: "contain",
+                display: "inline-block",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e4e4e7",
+                borderRadius: "12px",
+                padding: "8px",
                 marginBottom: "16px",
               }}
-            />
+            >
+              <Img
+                src={logoUrl}
+                alt="Dojo logo"
+                style={{
+                  maxHeight: "48px",
+                  maxWidth: "180px",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+            </div>
           ) : null}
           <Heading as="h2">{heading}</Heading>
           {htmlBody ? (

@@ -61,11 +61,22 @@ test.describe("communication settings", () => {
     const customSubject = "E2E Class Reminder Subject";
     await page.getByLabel("Class reminder subject").fill(customSubject);
     await page.getByRole("button", { name: "Save email templates" }).click();
+    // The toast appears only after the action resolves — the DB row is
+    // written by then. Reload to verify durably (and to drop any pending
+    // client remount from the refresh).
     await expect(
       page.getByText("Email templates saved.").first(),
     ).toBeVisible();
+    await page.goto("/admin/templates");
+    await waitAdminInteractive(page);
+    await expect(page.getByLabel("Class reminder subject")).toHaveValue(
+      customSubject,
+    );
 
-    // Restore the default so other runs start from the template default
+    // Restore the default so later tests see the default template. A fresh
+    // navigation between saves avoids the post-save remount wiping the fill.
+    await page.goto("/admin/templates");
+    await waitAdminInteractive(page);
     await page
       .getByLabel("Class reminder subject")
       .fill("Class reminder: {{className}}");
@@ -73,6 +84,11 @@ test.describe("communication settings", () => {
     await expect(
       page.getByText("Email templates saved.").first(),
     ).toBeVisible();
+    await page.goto("/admin/templates");
+    await waitAdminInteractive(page);
+    await expect(page.getByLabel("Class reminder subject")).toHaveValue(
+      "Class reminder: {{className}}",
+    );
   });
 
   test("sample send without SMTP lands a FAILED row in the email log", async ({
