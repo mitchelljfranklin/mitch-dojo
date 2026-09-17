@@ -41,6 +41,9 @@ export default async function AdminAppearancePage() {
             secondaryHex={appearance.secondaryHex}
             hasLogo={Boolean(appearance.logoKey)}
             logoKey={appearance.logoKey ?? ""}
+            hasLogoDark={Boolean(appearance.logoDarkKey)}
+            logoDarkKey={appearance.logoDarkKey ?? ""}
+            emailLogoVariant={appearance.emailLogoVariant}
             borderRadius={appearance.borderRadius}
             pageWidth={appearance.pageWidth}
             bookingHeadline={appearance.bookingHeadline}

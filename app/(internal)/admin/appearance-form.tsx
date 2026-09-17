@@ -22,6 +22,9 @@ type AppearanceFormProps = {
   secondaryHex: string;
   hasLogo: boolean;
   logoKey: string;
+  hasLogoDark: boolean;
+  logoDarkKey: string;
+  emailLogoVariant: string;
   borderRadius: number;
   pageWidth: string;
   bookingHeadline: string;
@@ -85,6 +88,9 @@ function AppearanceFormInner({
   secondaryHex,
   hasLogo,
   logoKey,
+  hasLogoDark,
+  logoDarkKey,
+  emailLogoVariant,
   borderRadius,
   pageWidth,
   bookingHeadline,
@@ -105,8 +111,14 @@ function AppearanceFormInner({
         type="hidden"
         value="false"
       />
+      <input
+        id="removeLogoDarkInput"
+        name="removeLogoDark"
+        type="hidden"
+        value="false"
+      />
       <div className="grid gap-2">
-        <Label htmlFor="logoFile">Logo</Label>
+        <Label htmlFor="logoFile">Logo (light backgrounds)</Label>
         <Input
           id="logoFile"
           name="logoFile"
@@ -164,6 +176,85 @@ function AppearanceFormInner({
             No logo uploaded. Upload a PNG or JPG (max 2 MB).
           </p>
         )}
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="logoDarkFile">
+          Logo for dark backgrounds (optional)
+        </Label>
+        <Input
+          id="logoDarkFile"
+          name="logoDarkFile"
+          type="file"
+          accept="image/*"
+          className="cursor-pointer"
+        />
+        <p className="text-muted-foreground text-xs">
+          A light or white knockout version of your badge, shown on dark-mode
+          surfaces and optionally in emails. Without one, the primary logo on
+          its white plate is used everywhere.
+        </p>
+        {hasLogoDark ? (
+          <div className="flex flex-col gap-2">
+            <span
+              className="inline-flex w-fit rounded-lg border p-1.5"
+              style={{ backgroundColor: "#18181b", borderColor: "#3f3f46" }}
+            >
+              <img
+                src={`/api/brand/logo?variant=dark&v=${logoDarkKey}`}
+                alt="Current dark-background logo"
+                width={48}
+                height={48}
+                className="h-10 w-auto object-contain"
+              />
+            </span>
+            <ConfirmDialog
+              title="Remove dark-background logo?"
+              description="Dark-mode surfaces will fall back to the primary logo on its white plate."
+              confirmLabel="Remove"
+              formId="appearance-form"
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-destructive w-fit"
+                onClick={() => {
+                  const input = document.getElementById(
+                    "removeLogoDarkInput",
+                  ) as HTMLInputElement | null;
+                  if (input) input.value = "true";
+                }}
+              >
+                Remove dark logo
+              </Button>
+            </ConfirmDialog>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="emailLogoVariant">Email logo</Label>
+        <p className="text-muted-foreground text-xs">
+          Which logo appears in the header of outgoing emails. Emails always
+          render on a white background, so the dark logo is shown on a dark
+          plate to keep it visible.
+        </p>
+        <Select
+          name="emailLogoVariant"
+          defaultValue={emailLogoVariant}
+          key={emailLogoVariant}
+        >
+          <SelectTrigger id="emailLogoVariant" className="w-64">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="primary">Primary logo (white plate)</SelectItem>
+            <SelectItem value="dark" disabled={!hasLogoDark}>
+              Dark logo (dark plate)
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <ColorField

@@ -112,10 +112,17 @@ export async function sendEmail(
   ]);
 
   // Absolute logo URL — email clients have no base URL, so the logo must be
-  // publicly reachable at the deployed app origin.
+  // publicly reachable at the deployed app origin. The email variant chooses
+  // which logo to use; "dark" falls back to the primary pair when no dark
+  // logo is uploaded.
+  const useDarkLogo =
+    appearance.emailLogoVariant === "dark" && Boolean(appearance.logoDarkKey);
   const logoUrl = appearance.logoKey
-    ? `${env.APP_URL}/api/brand/logo?v=${encodeURIComponent(appearance.logoKey)}`
+    ? useDarkLogo
+      ? `${env.APP_URL}/api/brand/logo?variant=dark&v=${encodeURIComponent(appearance.logoDarkKey)}`
+      : `${env.APP_URL}/api/brand/logo?v=${encodeURIComponent(appearance.logoKey)}`
     : undefined;
+  const logoVariant: "primary" | "dark" = useDarkLogo ? "dark" : "primary";
 
   const subjectByType: Record<TemplateType, string> = {
     invite: templates.inviteSubject,
@@ -181,6 +188,7 @@ export async function sendEmail(
         body: resolvedBody,
         htmlBody,
         logoUrl,
+        logoVariant,
       }),
     );
     await transport.sendMail({

@@ -41,6 +41,33 @@ import {
 
 const ALLOWED_LOGO_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 
+// Shared logo-upload gate: size limit, image MIME, extension allowlist,
+// magic bytes. Returns the storage key, or an error message for the form.
+async function storeLogoUpload(
+  file: File,
+): Promise<{ key: string } | { error: string }> {
+  if (file.size > 2 * 1024 * 1024) {
+    return { error: "Logo must be under 2 MB." };
+  }
+  if (!file.type.startsWith("image/") || isDangerousUploadMime(file.type)) {
+    return { error: "Logo must be an image file." };
+  }
+  // The declared MIME type is client-controlled, so the extension
+  // allowlist and magic bytes are the real gate. SVG is excluded outright:
+  // it is scriptable and is served inline from this origin.
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!ALLOWED_LOGO_EXTENSIONS.has(ext)) {
+    return { error: "Logo must be a PNG, JPG, GIF, or WEBP image." };
+  }
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!validateMagicBytes(ext, buffer)) {
+    return { error: "Logo file content does not match its extension." };
+  }
+  const fileName = `logo-${randomBytes(8).toString("hex")}.${ext}`;
+  await storage.save(fileName, buffer);
+  return { key: fileName };
+}
+
 export type SettingsActionState = { ok: boolean; message: string } | undefined;
 
 export async function saveOrganizationSettings(
@@ -100,46 +127,41 @@ export async function saveAppearanceSettings(
     };
   }
 
-  const previousLogoKey = (await getAppearanceSettings()).logoKey;
+  const appearance = await getAppearanceSettings();
+  const previousLogoKey = appearance.logoKey;
+  const previousLogoDarkKey = appearance.logoDarkKey;
   let logoKey = previousLogoKey;
+  let logoDarkKey = previousLogoDarkKey;
   const logoFile = formData.get("logoFile") as File | null;
+  const logoDarkFile = formData.get("logoDarkFile") as File | null;
   const removeLogo = formData.get("removeLogo") === "true";
+  const removeLogoDark = formData.get("removeLogoDark") === "true";
 
   if (removeLogo) {
     logoKey = "";
   } else if (logoFile && logoFile.size > 0) {
-    if (logoFile.size > 2 * 1024 * 1024) {
-      return { ok: false, message: "Logo must be under 2 MB." };
+    const stored = await storeLogoUpload(logoFile);
+    if ("error" in stored) {
+      return { ok: false, message: stored.error };
     }
-    if (
-      !logoFile.type.startsWith("image/") ||
-      isDangerousUploadMime(logoFile.type)
-    ) {
-      return { ok: false, message: "Logo must be an image file." };
-    }
-
-    // The declared MIME type is client-controlled, so the extension
-    // allowlist and magic bytes are the real gate. SVG is excluded outright:
-    // it is scriptable and is served inline from this origin.
-    const ext = logoFile.name.split(".").pop()?.toLowerCase() ?? "";
-    if (!ALLOWED_LOGO_EXTENSIONS.has(ext)) {
-      return {
-        ok: false,
-        message: "Logo must be a PNG, JPG, GIF, or WEBP image.",
-      };
-    }
-    const buffer = Buffer.from(await logoFile.arrayBuffer());
-    if (!validateMagicBytes(ext, buffer)) {
-      return {
-        ok: false,
-        message: "Logo file content does not match its extension.",
-      };
-    }
-
-    const fileName = `logo-${randomBytes(8).toString("hex")}.${ext}`;
-    await storage.save(fileName, buffer);
-    logoKey = fileName;
+    logoKey = stored.key;
   }
+
+  if (removeLogoDark) {
+    logoDarkKey = "";
+  } else if (logoDarkFile && logoDarkFile.size > 0) {
+    const stored = await storeLogoUpload(logoDarkFile);
+    if ("error" in stored) {
+      return { ok: false, message: stored.error };
+    }
+    logoDarkKey = stored.key;
+  }
+
+  const emailLogoVariantRaw = String(formData.get("emailLogoVariant") ?? "");
+  // "dark" only sticks when a dark logo exists (upload or already stored) —
+  // otherwise the mailer would fall back to the primary pair anyway.
+  const emailLogoVariant =
+    emailLogoVariantRaw === "dark" && logoDarkKey ? "dark" : "primary";
 
   const bookingHeadline = String(formData.get("bookingHeadline") ?? "").trim();
   const bookingDescription = String(
@@ -150,6 +172,8 @@ export async function saveAppearanceSettings(
     primaryHex: primaryHex || "",
     secondaryHex: secondaryHex || "",
     logoKey,
+    logoDarkKey,
+    emailLogoVariant,
     borderRadius:
       isNaN(borderRadius) || borderRadius < 0 || borderRadius > 16
         ? 10
@@ -165,11 +189,19 @@ export async function saveAppearanceSettings(
     bookingDescription: bookingDescription.slice(0, 300),
   });
 
-  if (previousLogoKey && previousLogoKey !== logoKey) {
-    try {
-      await storage.delete(previousLogoKey);
-    } catch {
-      // Best-effort; orphan-sweep cron cleans any leftovers.
+  // Old files are removed only after the settings write succeeds, so a
+  // failure mid-save never orphans the still-referenced logos (the sweep is
+  // the backstop either way).
+  for (const [previous, current] of [
+    [previousLogoKey, logoKey],
+    [previousLogoDarkKey, logoDarkKey],
+  ] as const) {
+    if (previous && previous !== current) {
+      try {
+        await storage.delete(previous);
+      } catch {
+        // Best-effort; orphan-sweep cron cleans any leftovers.
+      }
     }
   }
 

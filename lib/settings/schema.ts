@@ -113,6 +113,17 @@ export const appearanceSettingsSchema = z.object({
     .string()
     .default("")
     .transform((value) => value.replace(/^"+|"+$/g, "")),
+  // Alternate logo for dark backgrounds (e.g. a white knockout badge).
+  // Optional: when absent, the primary logo on its white plate is used
+  // everywhere. Same quote-normalisation as logoKey.
+  logoDarkKey: z
+    .string()
+    .default("")
+    .transform((value) => value.replace(/^"+|"+$/g, "")),
+  // Which logo emails use. "primary" = primary logo on the white plate;
+  // "dark" = dark logo on a dark plate (falls back to the primary pair when
+  // no dark logo is uploaded).
+  emailLogoVariant: z.enum(["primary", "dark"]).default("primary"),
   borderRadius: z.coerce.number().min(0).max(16).default(10),
   pageWidth: z.enum(["constrained", "full"]).default("constrained"),
   // White-label copy for the public booking page (Phase 11).

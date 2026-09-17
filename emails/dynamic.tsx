@@ -15,6 +15,10 @@ type DynamicEmailProps = {
   // Absolute URL to the dojo logo (public route) — rendered when the dojo
   // has uploaded one. Must be absolute: email clients have no base URL.
   logoUrl?: string;
+  // Which logo variant the URL points at: "primary" renders on the white
+  // plate, "dark" (a white knockout badge) renders on a dark plate so it
+  // stays visible against email clients' white background.
+  logoVariant?: "primary" | "dark";
 };
 
 export function DynamicEmail({
@@ -22,8 +26,13 @@ export function DynamicEmail({
   body,
   htmlBody,
   logoUrl,
+  logoVariant = "primary",
 }: DynamicEmailProps) {
   const paragraphs = body.split("\n").filter((line) => line.length > 0);
+  const plateStyle =
+    logoVariant === "dark"
+      ? { backgroundColor: "#18181b", borderColor: "#3f3f46" }
+      : { backgroundColor: "#ffffff", borderColor: "#e4e4e7" };
 
   return (
     <Html>
@@ -31,15 +40,14 @@ export function DynamicEmail({
       <Body style={{ fontFamily: "sans-serif", padding: "32px" }}>
         <Container>
           {logoUrl ? (
-            // The plate mirrors the app's --logo-plate token (white backing,
-            // hairline border): a white knockout badge stays visible against
-            // the email client's white background, and dark badges keep
-            // their contrast. Inline styles — email clients ignore CSS vars.
+            // The plate mirrors the app's --logo-plate token (primary) or a
+            // dark plate (dark variant) so either badge keeps its contrast.
+            // Inline styles — email clients ignore CSS vars.
             <div
               style={{
                 display: "inline-block",
-                backgroundColor: "#ffffff",
-                border: "1px solid #e4e4e7",
+                ...plateStyle,
+                border: `1px solid ${plateStyle.borderColor}`,
                 borderRadius: "12px",
                 padding: "8px",
                 marginBottom: "16px",
@@ -89,4 +97,5 @@ DynamicEmail.PreviewProps = {
   heading: "Annual review",
   body: "Welcome to My Dojo.",
   logoUrl: "http://localhost:3000/api/brand/logo?v=demo.png",
+  logoVariant: "primary",
 } satisfies DynamicEmailProps;

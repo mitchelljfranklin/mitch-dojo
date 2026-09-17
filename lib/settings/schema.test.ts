@@ -28,4 +28,33 @@ describe("appearanceSettingsSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("defaults the dark logo to absent and email variant to primary", () => {
+    const settings = appearanceSettingsSchema.parse({});
+    expect(settings.logoDarkKey).toBe("");
+    expect(settings.emailLogoVariant).toBe("primary");
+  });
+
+  it("normalises quote-wrapped logo keys", () => {
+    const settings = appearanceSettingsSchema.parse({
+      logoKey: '"logo-abc.png"',
+      logoDarkKey: '"logo-dark-abc.png"',
+    });
+    expect(settings.logoKey).toBe("logo-abc.png");
+    expect(settings.logoDarkKey).toBe("logo-dark-abc.png");
+  });
+
+  it("rejects unknown email logo variants", () => {
+    const result = appearanceSettingsSchema.safeParse({
+      emailLogoVariant: "rainbow",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts the dark email variant", () => {
+    const settings = appearanceSettingsSchema.parse({
+      emailLogoVariant: "dark",
+    });
+    expect(settings.emailLogoVariant).toBe("dark");
+  });
 });

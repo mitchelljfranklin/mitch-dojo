@@ -10,6 +10,7 @@ const TINY_PNG = Buffer.from(
   "base64",
 );
 const LOGO_KEY = `e2e-logo-${Date.now()}.png`;
+const LOGO_DARK_KEY = `e2e-logo-dark-${Date.now()}.png`;
 
 test.describe("white-label", () => {
   test("booking page renders org name, custom headline, and the logo", async ({
@@ -43,6 +44,30 @@ test.describe("white-label", () => {
       }),
     ).toBeVisible();
 
+    // Seed the dark-background logo too: /book should carry both variants
+    // (CSS picks the visible one per theme) and the dark route must serve.
+    await storage.save(LOGO_DARK_KEY, TINY_PNG);
+    await prisma.appSetting.upsert({
+      where: { key: "appearance.logoDarkKey" },
+      update: { value: LOGO_DARK_KEY },
+      create: {
+        key: "appearance.logoDarkKey",
+        category: "appearance",
+        value: LOGO_DARK_KEY,
+      },
+    });
+    await page.goto("/book");
+    await expect(
+      page.locator('img[src*="/api/brand/logo?variant=dark"]'),
+    ).toHaveCount(1);
+    await expect(
+      page.locator('img[src*="/api/brand/logo?variant=dark"]'),
+    ).toBeHidden();
+    await expect(page.locator("[data-logo-plate]")).toHaveCount(1);
+    const darkResponse = await page.request.get("/api/brand/logo?variant=dark");
+    expect(darkResponse.status()).toBe(200);
+    expect(darkResponse.headers()["content-type"]).toBe("image/png");
+
     // The member portal carries the same brand mark
     await page.goto("/portal");
     await expect(page.getByText("Portal access needed")).toBeVisible();
@@ -50,8 +75,13 @@ test.describe("white-label", () => {
 
   test.afterAll(async () => {
     await storage.delete(LOGO_KEY).catch(() => undefined);
+    await storage.delete(LOGO_DARK_KEY).catch(() => undefined);
     await prisma.appSetting
-      .deleteMany({ where: { key: "appearance.logoKey" } })
+      .deleteMany({
+        where: {
+          key: { in: ["appearance.logoKey", "appearance.logoDarkKey"] },
+        },
+      })
       .catch(() => undefined);
     await prisma.$disconnect();
   });

@@ -75,6 +75,7 @@ type AppSidebarProps = {
   permissions: string[];
   hasLogo: boolean;
   logoKey: string;
+  logoDarkKey?: string;
 };
 
 const MANAGE_PERMISSIONS: Permission[] = [
@@ -90,6 +91,7 @@ export function AppSidebar({
   permissions,
   hasLogo,
   logoKey,
+  logoDarkKey = "",
 }: AppSidebarProps) {
   const pathname = usePathname();
   const inAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -98,7 +100,33 @@ export function AppSidebar({
     <Sidebar>
       <SidebarHeader className="from-primary/10 via-primary/5 bg-gradient-to-b to-transparent pb-2">
         <div className="flex items-center gap-2 px-2 py-1.5">
-          {hasLogo ? (
+          {hasLogo && logoDarkKey ? (
+            <>
+              {/* Primary on the white plate in light mode... */}
+              <span
+                data-logo-plate
+                className="inline-flex rounded-md border bg-(--logo-plate) p-1 dark:hidden"
+              >
+                <img
+                  src={`/api/brand/logo?v=${logoKey}`}
+                  alt={orgName}
+                  width={120}
+                  height={32}
+                  loading="lazy"
+                  className="h-7 w-auto max-w-[112px] object-contain"
+                />
+              </span>
+              {/* ...dark logo bare in dark mode (built for dark surfaces). */}
+              <img
+                src={`/api/brand/logo?variant=dark&v=${logoDarkKey}`}
+                alt={orgName}
+                width={120}
+                height={32}
+                loading="lazy"
+                className="hidden h-7 w-auto max-w-[112px] object-contain dark:block"
+              />
+            </>
+          ) : hasLogo ? (
             // White plate in both themes (--logo-plate): single-colour
             // badges keep their contrast when staff flip to dark mode.
             <span

@@ -9,23 +9,38 @@ export async function BrandMark() {
     getOrganizationSettings(),
   ]);
 
+  const hasDarkLogo = Boolean(appearance.logoDarkKey);
+
   return (
     <div className="mb-4 flex flex-col items-center gap-2 text-center">
       {appearance.logoKey ? (
-        // The plate is deliberately white in both themes (see --logo-plate in
-        // globals.css): single-colour badges keep their contrast on the dark
-        // theme and in emails. Cache-busted by the logo key so re-uploads
-        // appear immediately.
-        <div
-          data-logo-plate
-          className="inline-flex rounded-lg border bg-(--logo-plate) p-2"
-        >
-          <img
-            src={`/api/brand/logo?v=${appearance.logoKey}`}
-            alt={`${organization.name} logo`}
-            className="max-h-16 w-auto max-w-[180px] object-contain"
-          />
-        </div>
+        <>
+          {/* Primary logo on the white plate. When a dark logo exists it is
+              shown only in light mode; otherwise always. The plate is white
+              in both themes (--logo-plate) so single-colour badges keep
+              their contrast where the primary logo is used. Cache-busted by
+              the logo keys so re-uploads appear immediately. */}
+          <div
+            data-logo-plate
+            className={`inline-flex rounded-lg border bg-(--logo-plate) p-2 ${
+              hasDarkLogo ? "dark:hidden" : ""
+            }`}
+          >
+            <img
+              src={`/api/brand/logo?v=${appearance.logoKey}`}
+              alt={`${organization.name} logo`}
+              className="max-h-16 w-auto max-w-[180px] object-contain"
+            />
+          </div>
+          {hasDarkLogo ? (
+            /* Dark logo: made for dark backgrounds, so no plate. */
+            <img
+              src={`/api/brand/logo?variant=dark&v=${appearance.logoDarkKey}`}
+              alt={`${organization.name} logo`}
+              className="hidden max-h-16 w-auto max-w-[180px] object-contain dark:block"
+            />
+          ) : null}
+        </>
       ) : null}
       <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {organization.name}

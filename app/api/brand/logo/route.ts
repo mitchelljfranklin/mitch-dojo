@@ -11,19 +11,28 @@ const MIME_TYPES: Record<string, string> = {
   webp: "image/webp",
 };
 
-export async function GET() {
+// `?variant=dark` serves the dark-background logo (falls back to the primary
+// logo when none is uploaded, so a stale dark-variant URL keeps working).
+export async function GET(request: Request) {
+  const variant = new URL(request.url).searchParams.get("variant");
   const appearance = await getAppearanceSettings();
-  if (!appearance.logoKey) {
+
+  const logoKey =
+    variant === "dark" && appearance.logoDarkKey
+      ? appearance.logoDarkKey
+      : appearance.logoKey;
+
+  if (!logoKey) {
     return new Response("No logo configured", { status: 404 });
   }
 
   try {
-    const file = await storage.read(appearance.logoKey);
+    const file = await storage.read(logoKey);
     if (!file) {
       return new Response("Logo not found", { status: 404 });
     }
 
-    const ext = appearance.logoKey.split(".").pop()?.toLowerCase() ?? "";
+    const ext = logoKey.split(".").pop()?.toLowerCase() ?? "";
     // Unmapped extensions (e.g. legacy svg uploads) are refused rather than
     // served with a guessed content type.
     const contentType = MIME_TYPES[ext];
