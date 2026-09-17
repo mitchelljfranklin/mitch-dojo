@@ -86,7 +86,7 @@ test.describe("communication settings", () => {
 
     await page.goto("/admin/templates");
     await waitAdminInteractive(page);
-    await page.getByLabel("Recipient").fill("[EMAIL]");
+    await page.getByLabel("Recipient").fill("sample@dojo.test");
     await page.getByRole("button", { name: "Send sample" }).click();
 
     // The test database has no SMTP, so the send must fail — the durable
@@ -111,7 +111,7 @@ test.describe("communication settings", () => {
 
     await page.goto("/admin/templates");
     await waitAdminInteractive(page);
-    await page.getByLabel("Recipient").fill("[EMAIL]");
+    await page.getByLabel("Recipient").fill("sample@dojo.test");
     await page.getByRole("button", { name: "Send sample" }).click();
 
     await page.goto("/admin/email-log");
@@ -131,5 +131,26 @@ test.describe("communication settings", () => {
         .filter({ hasText: "FAILED" })
         .first(),
     ).toBeVisible();
+  });
+
+  test("email log filters update the URL and apply", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/admin/email-log");
+    await waitAdminInteractive(page);
+
+    // Pick "Failed" in the status select — the form auto-submits and the
+    // URL must carry the canonical emailStatus param.
+    await page.getByLabel("Status").click();
+    await page.getByRole("option", { name: "Failed" }).click();
+    await page.waitForURL(/emailStatus=FAILED/);
+    expect(new URL(page.url()).searchParams.get("emailStatus")).toBe("FAILED");
+
+    // The filtered view shows only FAILED rows; a SENT row would be a bug.
+    await expect(page.getByText("SENT", { exact: true })).toHaveCount(0);
   });
 });

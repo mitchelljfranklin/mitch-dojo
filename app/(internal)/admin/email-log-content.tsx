@@ -32,13 +32,12 @@ export async function EmailLogContent({
     <EmailLogForm
       result={result}
       filters={{
-        status: sp.emailStatus ?? "",
-        type: sp.emailType ?? "",
-        recipient: sp.emailRecipient ?? "",
-        fromDate: sp.emailFrom ?? "",
-        toDate: sp.emailTo ?? "",
+        emailStatus: sp.emailStatus ?? "",
+        emailType: sp.emailType ?? "",
+        emailRecipient: sp.emailRecipient ?? "",
+        emailFrom: sp.emailFrom ?? "",
+        emailTo: sp.emailTo ?? "",
       }}
-      filterQuery=""
       page={safePage}
       pageSize={safePageSize}
       canRetry={canRetry}

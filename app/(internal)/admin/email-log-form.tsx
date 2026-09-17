@@ -62,13 +62,12 @@ function timeLabel(date: Date): string {
 type EmailLogFormProps = {
   result: { rows: EmailLogEntry[]; total: number };
   filters: {
-    status: string;
-    type: string;
-    recipient: string;
-    fromDate: string;
-    toDate: string;
+    emailStatus: string;
+    emailType: string;
+    emailRecipient: string;
+    emailFrom: string;
+    emailTo: string;
   };
-  filterQuery: string;
   page: number;
   pageSize: number;
   canRetry: boolean;
@@ -79,7 +78,6 @@ type RetryState = EmailRetryState | undefined;
 export function EmailLogForm({
   result,
   filters,
-  filterQuery,
   page,
   pageSize,
   canRetry,
@@ -91,25 +89,23 @@ export function EmailLogForm({
 
   function pageHref(target: number): string {
     const params = new URLSearchParams();
-    params.set("tab", "email");
     for (const [key, value] of filterEntries) {
       params.set(key, value);
     }
     params.set("emailLogPage", String(target));
     params.set("emailLogPageSize", String(pageSize));
-    return `/settings?${params.toString()}`;
+    return `/admin/email-log?${params.toString()}`;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <form className="flex flex-wrap items-end gap-3">
-        <input type="hidden" name="tab" value="email" />
         <div className="grid w-36 gap-2">
           <Label htmlFor="email-status">Status</Label>
           <AutoSubmitSelect
-            name="status"
+            name="emailStatus"
             id="email-status"
-            defaultValue={filters.status || "ALL"}
+            defaultValue={filters.emailStatus || "ALL"}
             options={[
               { value: "ALL", label: "All statuses" },
               ...EMAIL_LOG_STATUSES.map((status) => ({
@@ -122,9 +118,9 @@ export function EmailLogForm({
         <div className="grid w-44 gap-2">
           <Label htmlFor="email-type">Type</Label>
           <AutoSubmitSelect
-            name="type"
+            name="emailType"
             id="email-type"
-            defaultValue={filters.type || "ALL"}
+            defaultValue={filters.emailType || "ALL"}
             options={[
               { value: "ALL", label: "All types" },
               ...EMAIL_LOG_TYPES.map((type) => ({
@@ -138,8 +134,8 @@ export function EmailLogForm({
           <Label htmlFor="email-recipient">Recipient</Label>
           <Input
             id="email-recipient"
-            name="recipient"
-            defaultValue={filters.recipient}
+            name="emailRecipient"
+            defaultValue={filters.emailRecipient}
             placeholder="Search recipient"
             className="w-44"
           />
@@ -148,9 +144,9 @@ export function EmailLogForm({
           <Label htmlFor="email-from">From</Label>
           <Input
             id="email-from"
-            name="fromDate"
+            name="emailFrom"
             type="date"
-            defaultValue={filters.fromDate}
+            defaultValue={filters.emailFrom}
             className="w-36"
           />
         </div>
@@ -158,9 +154,9 @@ export function EmailLogForm({
           <Label htmlFor="email-to">To</Label>
           <Input
             id="email-to"
-            name="toDate"
+            name="emailTo"
             type="date"
-            defaultValue={filters.toDate}
+            defaultValue={filters.emailTo}
             className="w-36"
           />
         </div>
@@ -168,7 +164,7 @@ export function EmailLogForm({
           Filter
         </Button>
         <Link
-          href="/settings?tab=email"
+          href="/admin/email-log"
           className="text-muted-foreground pb-2 text-sm hover:underline"
         >
           Clear
