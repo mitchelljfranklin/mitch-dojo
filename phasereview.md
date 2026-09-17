@@ -1,6 +1,6 @@
 # Phase Review — Remaining & Potential Work
 
-> **Last updated:** September 2026 (after the admin area restructure)
+> **Last updated:** September 2026 (after SSO + break glass port; cleanup parity with mitch-risk confirmed)
 > **Purpose:** a living checklist of everything left or worth considering,
 > so nothing lives only in conversation. Tick items off or strike them out
 > as decisions land.
@@ -27,6 +27,7 @@
 | — | Student address details (street/city/state/postcode/country with org default) |
 | — | Email log + retry (ported from mitch-risk; dashboard failed-email chip) |
 | — | Admin area restructure (sidebar regrouping; settings tabs → 15 sections in 7 groups at /admin/* with a /settings shim) |
+| — | SSO + break glass (Entra ID / Google / OIDC, JIT provisioning, SSO-only mode with anti-lock-out, single-use break-glass URLs) |
 
 ---
 
@@ -48,6 +49,15 @@
 ---
 
 ## Known gaps & hardening candidates (potential items)
+
+### Data hygiene (cleanup cron jobs)
+
+- [x] **Parity with mitch-risk confirmed** (September 2026) — mitch-risk's
+      cleanup surface is {audit-log pruning, email-log pruning, orphan-file
+      sweep, notification dedupe, cron.lastRun stamp}; mitch-dojo already
+      implements all of it **plus** reset-token and portal-token pruning.
+      No port needed. Record-level retention (e.g. anonymising old
+      inactive students) remains a candidate future feature below.
 
 ### Storage
 

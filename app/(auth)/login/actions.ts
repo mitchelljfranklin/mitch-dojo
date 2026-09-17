@@ -6,7 +6,7 @@ import { AuthError } from "next-auth";
 import { signIn } from "@/lib/auth";
 import { getClientIp } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
-import { getOperationsSettings } from "@/lib/settings";
+import { getOperationsSettings, getSsoSettings } from "@/lib/settings";
 
 export type LoginState = { error: string } | undefined;
 
@@ -37,4 +37,32 @@ export async function authenticate(
     }
     throw error;
   }
+}
+
+const SSO_ACTION_PROVIDER_IDS = ["microsoft-entra-id", "google", "oidc"];
+
+// Starts an SSO sign-in. The provider is re-validated against the current
+// settings so a forged form can't target an arbitrary provider id.
+export async function ssoSignInAction(formData: FormData): Promise<void> {
+  const providerId = String(formData.get("provider") ?? "");
+  if (!SSO_ACTION_PROVIDER_IDS.includes(providerId)) {
+    return;
+  }
+
+  const settings = await getSsoSettings();
+  const enabled = [
+    settings.entraIdEnabled && settings.entraIdClientId
+      ? "microsoft-entra-id"
+      : null,
+    settings.googleEnabled && settings.googleClientId ? "google" : null,
+    settings.oidcEnabled && settings.oidcIssuer && settings.oidcClientId
+      ? "oidc"
+      : null,
+  ].filter((id): id is string => id !== null);
+
+  if (!enabled.includes(providerId)) {
+    return;
+  }
+
+  await signIn(providerId, { redirectTo: "/dashboard" });
 }

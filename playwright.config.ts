@@ -47,7 +47,23 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "off",
   },
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  // Two projects: the main suite runs in parallel, then the sso project
+  // runs afterwards. The SSO specs seed global sign-in settings (including
+  // SSO-only mode, which hides the local login form) — running them after
+  // the main suite avoids breaking concurrent logins in other specs.
+  projects: [
+    {
+      name: "chromium",
+      use: { browserName: "chromium" },
+      testIgnore: /sso\.spec\.ts/,
+    },
+    {
+      name: "sso-serial",
+      use: { browserName: "chromium" },
+      testMatch: /sso\.spec\.ts/,
+      dependencies: ["chromium"],
+    },
+  ],
   webServer: {
     command: "node .next/standalone/server.js",
     url: "http://localhost:3000",

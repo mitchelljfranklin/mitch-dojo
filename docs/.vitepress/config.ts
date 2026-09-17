@@ -43,6 +43,7 @@ const sidebar = [
       { text: "Templates", link: "/configuration/templates" },
       { text: "Email Log", link: "/configuration/email-log" },
       { text: "Users & Roles", link: "/configuration/users-roles" },
+      { text: "Sign-in & SSO", link: "/configuration/sso" },
       { text: "Rate Limits", link: "/configuration/rate-limits" },
       { text: "Audit Log", link: "/configuration/audit" },
       { text: "Scheduling", link: "/configuration/scheduling" },

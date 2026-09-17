@@ -15,6 +15,7 @@ import {
   type CronSettings,
   type MembershipsSettings,
   type CommunicationsSettings,
+  type SsoSettings,
   operationsSettingsSchema,
   emailSettingsSchema,
   emailTemplateSchema,
@@ -25,6 +26,7 @@ import {
   cronSettingsSchema,
   membershipsSettingsSchema,
   communicationsSettingsSchema,
+  ssoSettingsSchema,
 } from "./schema";
 
 function makeKey(category: string, field: string): string {
@@ -355,5 +357,130 @@ export async function updateEmailLogRetention(days: number): Promise<void> {
       category: "operations",
       value: days,
     },
+  });
+}
+
+const SSO_SECRET_FIELDS: ReadonlySet<string> = new Set([
+  "entraIdClientSecret",
+  "googleClientSecret",
+  "oidcClientSecret",
+]);
+
+const SSO_SECRET_KEYS: Record<string, string> = {
+  entraId: "sso.entraIdClientSecret",
+  google: "sso.googleClientSecret",
+  oidc: "sso.oidcClientSecret",
+};
+
+export type SsoSettingsView = SsoSettings & {
+  entraIdSecretConfigured: boolean;
+  googleSecretConfigured: boolean;
+  oidcSecretConfigured: boolean;
+};
+
+// Safe-for-client view mirroring getEmailSettings(): decrypted secrets never
+// leave the server; only presence booleans do.
+export async function getSsoSettings(): Promise<SsoSettingsView> {
+  const record = await readCategoryRecord("sso");
+  const parsed = ssoSettingsSchema.parse(record);
+  const configured = (field: string): boolean => {
+    const raw = record[field];
+    return typeof raw === "string" && raw.length > 0;
+  };
+
+  return {
+    ...parsed,
+    entraIdSecretConfigured: configured("entraIdClientSecret"),
+    googleSecretConfigured: configured("googleClientSecret"),
+    oidcSecretConfigured: configured("oidcClientSecret"),
+  };
+}
+
+// Accepts a partial update: stored values are merged over so untouched
+// fields (including provider toggles for other providers) survive, and blank
+// secret inputs keep the stored secret (persistCategory skips empty secrets).
+export async function updateSsoSettings(
+  input: Partial<SsoSettings> & {
+    entraIdClientSecret?: string;
+    googleClientSecret?: string;
+    oidcClientSecret?: string;
+  },
+): Promise<void> {
+  const record = await readCategoryRecord("sso");
+  const merged = ssoSettingsSchema.parse(record);
+  await persistCategory(
+    "sso",
+    { ...merged, ...input } as unknown as Record<string, unknown>,
+    SSO_SECRET_FIELDS,
+  );
+}
+
+// Decrypts a provider's stored client secret on demand (auth provider build
+// time). Returns null when unset or undecryptable — the provider then stays
+// disabled rather than failing the whole auth config.
+export async function getSsoSecret(
+  provider: "entraId" | "google" | "oidc",
+): Promise<string | null> {
+  const key = SSO_SECRET_KEYS[provider];
+  const row = await prisma.appSetting.findUnique({ where: { key } });
+  if (!row || typeof row.value !== "string" || row.value.length === 0) {
+    return null;
+  }
+  return safeDecryptSecret(row.value, key);
+}
+
+const BREAK_GLASS_KEY = "sso.breakGlassHash";
+const BREAK_GLASS_TTL_MS = 24 * 60 * 60 * 1000;
+
+type BreakGlassRecord = {
+  hash: string;
+  expiresAt: string;
+  consumed: boolean;
+};
+
+export async function setBreakGlassHash(hash: string): Promise<void> {
+  const record: BreakGlassRecord = {
+    hash,
+    expiresAt: new Date(Date.now() + BREAK_GLASS_TTL_MS).toISOString(),
+    consumed: false,
+  };
+  await prisma.appSetting.upsert({
+    where: { key: BREAK_GLASS_KEY },
+    update: { value: record, category: "sso" },
+    create: { key: BREAK_GLASS_KEY, category: "sso", value: record },
+  });
+}
+
+// Returns the stored record only while it is unconsumed and unexpired —
+// expired/consumed tokens read exactly like "no break glass configured".
+export async function getBreakGlassHash(): Promise<string | null> {
+  const row = await prisma.appSetting.findUnique({
+    where: { key: BREAK_GLASS_KEY },
+  });
+  if (!row || typeof row.value !== "object" || row.value === null) {
+    return null;
+  }
+  const record = row.value as Partial<BreakGlassRecord>;
+  if (record.consumed || typeof record.hash !== "string") {
+    return null;
+  }
+  const expiresAt = Date.parse(record.expiresAt ?? "");
+  if (Number.isNaN(expiresAt) || expiresAt < Date.now()) {
+    return null;
+  }
+  return record.hash;
+}
+
+export async function consumeBreakGlassHash(): Promise<void> {
+  const row = await prisma.appSetting.findUnique({
+    where: { key: BREAK_GLASS_KEY },
+  });
+  if (!row || typeof row.value !== "object" || row.value === null) {
+    return;
+  }
+  const record = row.value as BreakGlassRecord;
+  await prisma.appSetting.update({
+    where: { key: BREAK_GLASS_KEY },
+    data: { value: { ...record, consumed: true } },
   });
 }

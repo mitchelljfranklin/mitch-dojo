@@ -14,6 +14,7 @@ import {
   toggleUserDisabled,
 } from "@/lib/db/users";
 import { getRole } from "@/lib/db/roles";
+import { getUserAuthInfo } from "@/lib/db/users";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { getField } from "@/lib/utils";
 import { userCreateSchema } from "@/lib/schemas/auth";
@@ -194,6 +195,12 @@ export async function resetPasswordAction(formData: FormData) {
   const userId = getField(formData, "userId");
   const password = getField(formData, "password");
   if (!password || password.length < 12) {
+    return;
+  }
+  // SSO-only accounts have no local password to reset — their sign-in is
+  // the IdP's responsibility. Refuse rather than silently creating one.
+  const target = await getUserAuthInfo(userId);
+  if (target && !target.hasLocalPassword) {
     return;
   }
   await resetUserPassword(userId, password);

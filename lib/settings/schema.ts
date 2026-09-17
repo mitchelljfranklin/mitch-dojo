@@ -47,6 +47,7 @@ export const operationsSettingsSchema = z.object({
   emailLogRetentionDays: z.coerce.number().int().min(0).default(14),
   sessionTimeoutMinutes: z.coerce.number().int().min(0).default(30),
   passwordResetPerMin: z.coerce.number().int().min(1).default(1),
+  breakGlassPerMin: z.coerce.number().int().min(1).default(10),
 });
 
 export type OperationsSettings = z.infer<typeof operationsSettingsSchema>;
@@ -185,3 +186,32 @@ export const communicationsSettingsSchema = z.object({
 export type CommunicationsSettings = z.infer<
   typeof communicationsSettingsSchema
 >;
+
+// SSO provider configuration. Client secrets are never part of this schema —
+// they live in their own AppSetting rows (sso.<provider>ClientSecret),
+// encrypted at rest, surfaced to the UI only as "configured" booleans.
+export const ssoSettingsSchema = z.object({
+  entraIdEnabled: z.boolean().default(false),
+  entraIdClientId: z.string().default(""),
+  googleEnabled: z.boolean().default(false),
+  googleClientId: z.string().default(""),
+  oidcEnabled: z.boolean().default(false),
+  oidcName: z.string().default(""),
+  oidcIssuer: z.string().default(""),
+  oidcClientId: z.string().default(""),
+  // Role assigned to users created by just-in-time provisioning. Empty means
+  // "not chosen" — provisioning fails closed until an admin picks one.
+  autoProvisionRoleId: z.string().default(""),
+  // When set, only email addresses at this domain may sign in via SSO.
+  // Normalised (trim, no leading @, lowercase) so matching is consistent.
+  allowedDomain: z
+    .string()
+    .default("")
+    .transform((value) => value.trim().replace(/^@/, "").toLowerCase()),
+  // Hide the local email/password form on the login page. Anti-lock-out
+  // applies: ignored while zero SSO providers are enabled, and a valid
+  // break-glass token always restores the form (see lib/break-glass.ts).
+  disableLocalAuth: z.boolean().default(false),
+});
+
+export type SsoSettings = z.infer<typeof ssoSettingsSchema>;

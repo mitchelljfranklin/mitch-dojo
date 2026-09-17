@@ -1,12 +1,15 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
+import Google from "next-auth/providers/google";
+import type { Provider } from "next-auth/providers";
 import { redirect } from "next/navigation";
-import { cache } from "react";
 
 import "@/lib/env";
 import { getClientIp } from "@/lib/client-ip";
 import { logAudit } from "@/lib/db/audit";
 import { verifyUserCredentials } from "@/lib/db/users";
+import { resolveSsoUser, toSsoProviderKey } from "@/lib/db/sso";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { credentialsSchema } from "@/lib/schemas/auth";
@@ -14,7 +17,11 @@ import {
   type Permission,
   hasPermission as permissionInList,
 } from "@/lib/permissions";
-import { getOperationsSettings } from "@/lib/settings";
+import {
+  getOperationsSettings,
+  getSsoSecret,
+  getSsoSettings,
+} from "@/lib/settings";
 import { computeSessionExpiry } from "@/lib/session";
 
 export async function getRolePermissions(
@@ -28,6 +35,74 @@ export async function getRolePermissions(
     name: role?.name ?? "",
     permissions: role?.permissions ?? [],
   };
+}
+
+// SSO profiles must satisfy the app's augmented User shape (roleId required);
+// the real role is resolved server-side in the jwt callback, never trusted
+// from the IdP.
+function mapSsoProfile(roleId = "") {
+  return (profile: {
+    sub?: string;
+    name?: string;
+    email?: string;
+    preferred_username?: string;
+  }) => ({
+    id: profile.sub ?? "",
+    name: profile.name ?? profile.preferred_username ?? "",
+    email: profile.email ?? "",
+    roleId,
+  });
+}
+
+// Builds the OAuth/OIDC provider list from DB-backed settings. A provider
+// joins the list only when enabled AND fully configured (client id + stored
+// secret); disabled providers expose no callback route.
+export async function buildSsoProviders(): Promise<Provider[]> {
+  const settings = await getSsoSettings();
+  const providers: Provider[] = [];
+
+  if (settings.entraIdEnabled && settings.entraIdClientId) {
+    const clientSecret = await getSsoSecret("entraId");
+    if (clientSecret) {
+      providers.push(
+        MicrosoftEntraID({
+          clientId: settings.entraIdClientId,
+          clientSecret,
+          profile: mapSsoProfile(),
+        }),
+      );
+    }
+  }
+
+  if (settings.googleEnabled && settings.googleClientId) {
+    const clientSecret = await getSsoSecret("google");
+    if (clientSecret) {
+      providers.push(
+        Google({
+          clientId: settings.googleClientId,
+          clientSecret,
+          profile: mapSsoProfile(),
+        }),
+      );
+    }
+  }
+
+  if (settings.oidcEnabled && settings.oidcIssuer && settings.oidcClientId) {
+    const clientSecret = await getSsoSecret("oidc");
+    if (clientSecret) {
+      providers.push({
+        id: "oidc",
+        name: settings.oidcName || "SSO",
+        type: "oidc",
+        issuer: settings.oidcIssuer,
+        clientId: settings.oidcClientId,
+        clientSecret,
+        profile: mapSsoProfile(),
+      });
+    }
+  }
+
+  return providers;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
@@ -75,13 +150,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
           };
         },
       }),
+      ...(await buildSsoProviders()),
     ],
     callbacks: {
-      jwt: async ({ token, user }) => {
+      // Domain restriction runs before any account linking happens.
+      signIn: async ({ user, account }) => {
+        if (!account || account.provider === "credentials") {
+          return true;
+        }
+        const { allowedDomain } = await getSsoSettings();
+        if (!allowedDomain) {
+          return true;
+        }
+        const email = user.email ?? "";
+        return email.toLowerCase().endsWith(`@${allowedDomain.toLowerCase()}`);
+      },
+
+      jwt: async ({ token, user, account }) => {
         const settings = await getOperationsSettings();
         const exp = computeSessionExpiry(settings.sessionTimeoutMinutes);
         if (exp !== undefined) {
           token.exp = exp;
+        }
+
+        if (account && account.provider !== "credentials") {
+          const providerKey = toSsoProviderKey(account.provider);
+          if (!providerKey || !account.providerAccountId) {
+            return null;
+          }
+          const ssoUser = await resolveSsoUser({
+            provider: providerKey,
+            providerId: account.providerAccountId,
+            email: user?.email,
+            name: user?.name,
+          });
+          if (!ssoUser) {
+            return null;
+          }
+          token.id = ssoUser.id;
+          token.roleId = ssoUser.roleId;
+          await logAudit(ssoUser.id, "LOGIN");
+          return token;
         }
 
         if (user?.id) {

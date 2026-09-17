@@ -40,9 +40,26 @@ model User {
   awardedBelts         StudentBelt[]        @relation("BeltAwardedBy")
   createdInvoices      Invoice[]            @relation("InvoiceCreatedBy")
   recordedPayments     Payment[]            @relation("PaymentRecordedBy")
+  ssoIdentities        SsoIdentity[]
 
   @@index([roleId])
   @@map("users")
+}
+
+// One row per external identity linked to a local user. A user may hold
+// several (e.g. Entra ID + Google); the (provider, providerId) pair is the
+// IdP's stable subject and never changes.
+model SsoIdentity {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   String
+  providerId String
+  createdAt  DateTime @default(now())
+
+  @@unique([provider, providerId])
+  @@index([userId])
+  @@map("sso_identities")
 }
 
 model AppSetting {

@@ -1,6 +1,6 @@
 # Rate Limits
 
-Sign-in security: login throttling, session lifetime, and password-reset throttling. (Named "Rate Limits" — SSO arrives in a later phase.)
+Sign-in security: login throttling, session lifetime, password-reset and break-glass throttling. SSO configuration lives on the neighbouring [Sign-in & SSO](./sso) page.
 
 ## Settings
 
@@ -8,6 +8,7 @@ Sign-in security: login throttling, session lifetime, and password-reset throttl
 |---|---|---|
 | **Login attempts per minute (per IP)** | 10 | In-memory, per process — sized for the single-container deployment |
 | **Password resets per minute (per IP)** | 1 | Aggressive by design; reset links are single-use and expire |
+| **Break-glass attempts per minute (per IP)** | 10 | Token verifications on the login page for [break-glass URLs](./sso#sso-only-mode-and-break-glass) |
 | **Session timeout** | 30 min | Sliding window — activity extends the session; 0 means never expire |
 
 ## How limiting works

@@ -90,8 +90,8 @@ const ALL_ITEMS: PaletteItem[] = [
     permission: PERMISSIONS.ROLES_MANAGE,
   },
   {
-    label: "Admin · Sign-in",
-    subtitle: "Sessions & rate limits",
+    label: "Admin · Sign-in & SSO",
+    subtitle: "Identity providers, break glass & rate limits",
     href: "/admin/sign-in",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },

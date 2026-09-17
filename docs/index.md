@@ -31,8 +31,8 @@ features:
     details: Scheduler-driven class, payment, birthday, and trial follow-up emails with editable templates, an email log, and one-click retry.
   - title: Trials & Member Portal
     details: A public trial-booking page with a full lead pipeline, plus a read-only member portal your students access via magic links.
-  - title: White-label & RBAC
-    details: Your logo and colours on every public surface and email. Three system roles plus custom roles with fine-grained permissions.
+  - title: White-label, SSO & RBAC
+    details: Your logo and colours on every public surface and email. Sign in via Entra ID, Google, or OIDC with auto-provisioning. Three system roles plus custom roles with fine-grained permissions.
   - title: Self-Hosted
     details: Docker Compose with PostgreSQL, or a single container with an embedded database. Local disk or S3/Azure storage. Runs anywhere.
 ---

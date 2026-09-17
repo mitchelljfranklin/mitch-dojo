@@ -24,6 +24,8 @@ The platform is feature-complete through the white-label phase:
 - Analytics dashboard, trial pipeline with a public booking page, and a
   read-only member portal
 - White-label branding (org name + logo on public/member surfaces and emails)
+- Single sign-on (Entra ID, Google, or any OIDC provider) with
+  auto-provisioning and a single-use break-glass URL for emergencies
 - DB-backed runtime settings — everything configurable in-app, no file edits
 - Audit log with retention pruning; built-in scheduler; email over SMTP
 - **Two deployment modes** with one schema and one migration set:

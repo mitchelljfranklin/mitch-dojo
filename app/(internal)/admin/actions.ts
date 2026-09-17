@@ -2,7 +2,12 @@
 
 import { randomBytes } from "node:crypto";
 
+import { env } from "@/lib/env";
 import { requirePermission, getCurrentUser } from "@/lib/auth";
+import {
+  generateBreakGlassToken,
+  hashBreakGlassToken,
+} from "@/lib/break-glass";
 import { PERMISSIONS } from "@/lib/permissions";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import {
@@ -19,6 +24,8 @@ import {
   updateMembershipsSettings,
   updateCommunicationsSettings,
   updateEmailTemplateFields,
+  updateSsoSettings,
+  setBreakGlassHash,
 } from "@/lib/settings";
 import {
   organizationSettingsSchema,
@@ -207,11 +214,16 @@ export async function saveSignInSecuritySettings(
     formData.get("passwordResetPerMin"),
     1,
   );
+  const breakGlassPerMin = parsePositiveInt(
+    formData.get("breakGlassPerMin"),
+    10,
+  );
 
   await updateOperationsSettings({
     loginRateLimitPerMin: Math.max(1, loginRateLimitPerMin),
     sessionTimeoutMinutes,
     passwordResetPerMin: Math.max(1, passwordResetPerMin),
+    breakGlassPerMin: Math.max(1, breakGlassPerMin),
   });
 
   const user = await getCurrentUser();
@@ -544,4 +556,83 @@ export async function saveStorageSettings(
   }
 
   return { ok: true, message: "Storage settings saved." };
+}
+
+export async function saveSsoSettings(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const roleIdRaw = String(formData.get("autoProvisionRoleId") ?? "").trim();
+  const update = {
+    entraIdEnabled: formData.get("entraIdEnabled") === "on",
+    entraIdClientId: String(formData.get("entraIdClientId") ?? "").trim(),
+    entraIdClientSecret: String(formData.get("entraIdClientSecret") ?? ""),
+    googleEnabled: formData.get("googleEnabled") === "on",
+    googleClientId: String(formData.get("googleClientId") ?? "").trim(),
+    googleClientSecret: String(formData.get("googleClientSecret") ?? ""),
+    oidcEnabled: formData.get("oidcEnabled") === "on",
+    oidcName: String(formData.get("oidcName") ?? "").trim(),
+    oidcIssuer: String(formData.get("oidcIssuer") ?? "").trim(),
+    oidcClientId: String(formData.get("oidcClientId") ?? "").trim(),
+    oidcClientSecret: String(formData.get("oidcClientSecret") ?? ""),
+    autoProvisionRoleId: roleIdRaw,
+    allowedDomain: String(formData.get("allowedDomain") ?? "")
+      .trim()
+      .replace(/^@/, "")
+      .toLowerCase(),
+    disableLocalAuth: formData.get("disableLocalAuth") === "on",
+  };
+
+  // Anti-lock-out guard: refusing to save SSO-only mode with zero fully
+  // configured providers (the login page would ignore the flag, but the
+  // setting should never silently diverge from reality).
+  const anyProviderReady =
+    (update.entraIdEnabled && update.entraIdClientId) ||
+    (update.googleEnabled && update.googleClientId) ||
+    (update.oidcEnabled && update.oidcIssuer && update.oidcClientId);
+  if (update.disableLocalAuth && !anyProviderReady) {
+    return {
+      ok: false,
+      message:
+        "Enable at least one SSO provider (with client ID and secret) before disabling local sign-in.",
+    };
+  }
+
+  await updateSsoSettings(update);
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(user.id, AUDIT_ACTIONS.UPDATE_SETTINGS, "Setting", "sso");
+  }
+
+  return { ok: true, message: "SSO settings saved." };
+}
+
+export type BreakGlassUrlState =
+  { ok: true; url: string } | { ok: false; message: string } | undefined;
+
+// Generates a fresh break-glass sign-in URL. Regenerating revokes the
+// previous token (single stored hash); the URL is returned exactly once —
+// only its bcrypt hash is persisted.
+export async function generateBreakGlassUrlAction(
+  _previousState: BreakGlassUrlState,
+  _formData: FormData,
+): Promise<BreakGlassUrlState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const token = generateBreakGlassToken();
+  await setBreakGlassHash(await hashBreakGlassToken(token));
+
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      "sso.breakGlass",
+    );
+  }
+
+  return { ok: true, url: `${env.APP_URL}/login?breakGlass=${token}` };
 }

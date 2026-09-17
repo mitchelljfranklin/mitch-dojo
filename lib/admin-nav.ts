@@ -104,7 +104,7 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
         permission: PERMISSIONS.ROLES_MANAGE,
       },
       {
-        label: "Rate Limits",
+        label: "Sign-in & SSO",
         href: "/admin/sign-in",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },

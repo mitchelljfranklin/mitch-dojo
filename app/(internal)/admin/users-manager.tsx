@@ -183,34 +183,45 @@ function EditUserForm({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor={`password-${user.id}`}>Password</Label>
-        <form
-          id={`reset-password-${user.id}`}
-          action={resetPasswordAction}
-          className="flex items-center gap-2"
-        >
-          <input type="hidden" name="userId" value={user.id} />
-          <Input
-            id={`password-${user.id}`}
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="New password"
-            minLength={12}
-            className="flex-1"
-          />
-          <ConfirmDialog
-            title="Reset password?"
-            description={`This overwrites ${user.name}'s current password. They must use the new password to sign in.`}
-            confirmLabel="Reset"
-            variant="default"
-            formId={`reset-password-${user.id}`}
-          >
-            <Button type="button" size="sm" variant="secondary">
-              Reset
-            </Button>
-          </ConfirmDialog>
-        </form>
+        <Label htmlFor={`password-${user.id}`}>Sign-in method</Label>
+        <div className="flex items-center gap-2">
+          <Badge variant={user.hasLocalPassword ? "secondary" : "outline"}>
+            {user.hasLocalPassword ? "Local" : "SSO"}
+          </Badge>
+          {user.hasLocalPassword ? (
+            <form
+              id={`reset-password-${user.id}`}
+              action={resetPasswordAction}
+              className="flex items-center gap-2"
+            >
+              <input type="hidden" name="userId" value={user.id} />
+              <Input
+                id={`password-${user.id}`}
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="New password"
+                minLength={12}
+                className="flex-1"
+              />
+              <ConfirmDialog
+                title="Reset password?"
+                description={`This overwrites ${user.name}'s current password. They must use the new password to sign in.`}
+                confirmLabel="Reset"
+                variant="default"
+                formId={`reset-password-${user.id}`}
+              >
+                <Button type="button" size="sm" variant="secondary">
+                  Reset
+                </Button>
+              </ConfirmDialog>
+            </form>
+          ) : (
+            <p className="text-muted-foreground text-xs">
+              Signs in through single sign-on — no local password.
+            </p>
+          )}
+        </div>
       </div>
 
       {!isSelf ? (

@@ -11,7 +11,7 @@ Everything runtime-configurable lives in the **Admin area**, reached via the gea
 | **Programs** | [Memberships](./memberships) · [Communication](./communication) |
 | **Email** | [Email](./email) · [Templates](./templates) · [Email log](./email-log) |
 | **Locations** | Locations (see [User guide](../user-guides/locations)) |
-| **Access & security** | [Users & Roles](./users-roles) · [Rate Limits](./rate-limits) |
+| **Access & security** | [Users & Roles](./users-roles) · [Sign-in & SSO](./sso) · [Rate Limits](./rate-limits) |
 | **Platform** | [Audit log](./audit) · [Scheduling](./scheduling) · Health |
 
 ## Principles

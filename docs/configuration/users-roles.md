@@ -8,7 +8,8 @@ Under **Admin → Users** (`users:manage`):
 
 - Create users with email + password (bcrypt, 12 rounds).
 - Assign any role — a system role or a custom one.
-- **Disable** a user instead of deleting: disabled users can't log in but keep audit history readable.
+- **SSO vs local** — every account shows an **SSO** or **Local** badge. SSO-only accounts (created by [single sign-on](./sso)) have no local password; password reset is only offered for local accounts.
+- **Disable** a user instead of deleting: disabled users can't log in (SSO included) but keep audit history readable.
 - **Deleting** a user preserves the audit trail — their past actions are attributed to "Deleted user" rather than cascade-deleted. History is never lost.
 - Password resets: users self-serve from the login page (rate-limited; template editable under [Templates](./templates)).
 

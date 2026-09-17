@@ -39,6 +39,7 @@ principles:
 | 11 | **White-label**: org name on all public/member surfaces (booking, portal, check-in), dojo logo on those pages and in every email, editable booking-page headline + description in Admin → Appearance, org-branded email identities | Done |
 | 11b | **Student address details**: structured address (line/city/postcode) on the student record, form, detail view, and CSV import/export; saving an edit returns to the student's display page with a flash toast | Done |
 | — | **Admin area**: sidebar regrouping (Overview/Operations/People/Management) and the settings area restructured into 15 sections across 7 groups (Workspace, Storage, Programs, Email, Locations, Access & security, Platform) at `/admin/*` with a `/settings` compatibility shim | Done |
+| 11c | **SSO + break glass** (ported from mitch-risk): Microsoft Entra ID / Google / generic OIDC sign-in with DB-backed encrypted client secrets, email-match linking, JIT provisioning with a default role, allowed-domain restriction, SSO-only mode with anti-lock-out, and single-use break-glass URLs (24h, bcrypt-hashed, rate-limited) | Done |
 | 12 | Stripe/SEPA/PayPal gateways, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
@@ -141,6 +142,8 @@ single environment variable. Constraints and mitigations:
 ```
 Role ──< User ──< AuditLog
               ├─< PasswordResetToken
+              ├─< SsoIdentity (provider + providerId unique; JIT-provisioned
+              │    users carry an empty passwordHash)
               ├─< NotificationLog (sentBy, SetNull)
               ├─< Attendance (markedBy, SetNull)
               └─< StudentBelt (awardedBy, SetNull)
@@ -245,10 +248,16 @@ storage; the orphan sweep collects `students.photoKey`,
 - **Auth.js v5**, JWT sessions, sliding-window expiry
   (`operations.sessionTimeoutMinutes`, default 30).
 - **Credentials provider** — bcrypt (12 rounds), rate-limited per IP.
+- **SSO providers** (Entra ID / Google / generic OIDC), configured in
+  DB-backed settings with AES-256-GCM client secrets: identity → email-match
+  linking → just-in-time provisioning (passwordless user, default role from
+  `sso.autoProvisionRoleId`, Viewer fallback), allowed-domain restriction
+  enforced server-side, single-use break-glass URLs restore local sign-in in
+  SSO-only mode (see `lib/break-glass.ts` for the anti-lock-out rules).
 - **RBAC:** permission catalog in `lib/permissions.ts` (students, locations,
   classes, attendance, belts, memberships, communications, administration,
   profile), three seeded system roles (**Admin** — all keys, **Trainer** —
-  floor operations, **Viewer** — read-only). Custom roles via Admin →
+  floor operations, **Viewer** - read-only). Custom roles via Admin →
   Roles.
 - Every server action/route/page enforces `requirePermission`; the UI hides
   gated controls entirely.
@@ -260,7 +269,8 @@ organization (incl. default country), appearance (logo/colours/radius/page
 width, booking-page copy), operations (login throttle, session timeout,
 retention, scheduler toggle), files, storage (local/S3/Azure), email (SMTP;
 password AES-256-GCM encrypted at rest), email templates, memberships,
-communications. Managed across the 15-section Admin area. Only deployment
+communications, sso (provider toggles/client IDs; secrets encrypted). Managed
+across the 15-section Admin area. Only deployment
 bootstrap belongs in env (`DATABASE_URL`/`DIR`, `AUTH_SECRET`,
 `APP_ENCRYPTION_KEY`, `APP_URL`, `CRON_SECRET`, `DATA_STORAGE_PATH`,
 `TRUSTED_PROXY_COUNT`).

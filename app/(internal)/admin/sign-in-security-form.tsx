@@ -12,12 +12,14 @@ type SignInSecurityFormProps = {
   loginRateLimitPerMin: number;
   sessionTimeoutMinutes: number;
   passwordResetPerMin: number;
+  breakGlassPerMin: number;
 };
 
 export function SignInSecurityForm({
   loginRateLimitPerMin,
   sessionTimeoutMinutes,
   passwordResetPerMin,
+  breakGlassPerMin,
 }: SignInSecurityFormProps) {
   const [state, action, isPending] = useActionState(
     saveSignInSecuritySettings,
@@ -72,6 +74,24 @@ export function SignInSecurityForm({
           type="number"
           min={1}
           defaultValue={passwordResetPerMin}
+          className="w-32"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="breakGlassPerMin">
+          Break-glass attempts (per minute)
+        </Label>
+        <p className="text-muted-foreground text-xs">
+          Maximum break-glass token verifications per IP address per minute on
+          the login page.
+        </p>
+        <Input
+          id="breakGlassPerMin"
+          name="breakGlassPerMin"
+          type="number"
+          min={1}
+          defaultValue={breakGlassPerMin}
           className="w-32"
         />
       </div>
