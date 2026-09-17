@@ -162,6 +162,9 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 - **Migrations clean.** Migrations apply on a fresh database in **both**
   modes (Postgres + PGlite runner); seeds are idempotent.
 - **Dual-mode safe.** Schema changes must not break either connection mode.
+- **Documentation current.** Every user-visible change updates the affected
+  docs in the same change (see "Documentation" under Conventions). Stale
+  docs are treated as bugs — same bar as failing tests.
 
 ## Reusability & DRY
 
@@ -194,6 +197,24 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 - TypeScript `strict`; zod-validate all external input (shared client/server
   schemas in `lib/schemas/`).
+- **Documentation.** All `.md` files and the VitePress site (`docs/`) are
+  part of the product and must never go stale. In the same change that
+  alters behaviour, update every affected doc:
+  - **VitePress site (`docs/`)** — user/operator-facing. Feature changes
+    touch the relevant User Guide; settings/label changes touch the
+    matching Configuration page; deployment/infra changes touch
+    Deployment/Advanced. New pages must be added to the sidebar in
+    `docs/.vitepress/config.ts`. Verify with `npm run docs:build`
+    (dead-link checked) before committing.
+  - **Repo-level docs** — `README.md` (feature/status claims, commands),
+    `ARCHITECTURE.md` (roadmap table, data model, design decisions,
+    `> **Version:**` header via `npm run bump`), `phasereview.md`
+    (remaining-work checklist — tick items off when done).
+  - **`AGENTS.md` itself** — keep accurate as reality changes (this file's
+    own rule, under Working in batches).
+  - Scan for staleness when touching a domain: grep the docs for old
+    feature/section/route names and fix every hit, not just the nearest
+    page. Screenshots: `docs/welcome/screenshots.md` lists what to capture.
 - **Runtime configuration** (branding, SMTP, rate limits, retention, storage,
   users, roles) is managed in-app via DB-backed Settings — never by editing
   files once deployed. Only deployment bootstrap/infra belongs in env.
