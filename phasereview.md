@@ -1,6 +1,6 @@
 # Phase Review — Remaining & Potential Work
 
-> **Last updated:** September 2026 (after Phase 11 + email tracking port)
+> **Last updated:** September 2026 (after the admin area restructure)
 > **Purpose:** a living checklist of everything left or worth considering,
 > so nothing lives only in conversation. Tick items off or strike them out
 > as decisions land.
@@ -26,6 +26,7 @@
 | 11 | White-label (org branding + logo on public/member surfaces and emails, editable booking copy) |
 | — | Student address details (street/city/state/postcode/country with org default) |
 | — | Email log + retry (ported from mitch-risk; dashboard failed-email chip) |
+| — | Admin area restructure (sidebar regrouping; settings tabs → 15 sections in 7 groups at /admin/* with a /settings shim) |
 
 ---
 
@@ -55,7 +56,7 @@
       Admin → Storage, but only local disk is covered by automated
       tests. Run once against real buckets/containers before pointing a
       production deployment at cloud storage.
-- [ ] **"Test connection" button** on the Storage settings tab — saves
+- [ ] **"Test connection" button** on the Admin → Storage page — saves
       admins discovering a bad connection string only when the first
       upload fails. Small: initialise the client, do a HEAD/ping, report.
 - [ ] **Provider migration note/tooling** — switching providers does not
@@ -115,7 +116,7 @@
 - [ ] **Docker image build test** — deferred by decision to the
       end-of-phases milestone (covers both compose files, the entrypoint
       sequence, and the backups volume).
-- [ ] **Communication e2e hydration waits** — the settings page is heavy;
+- [ ] **Admin e2e hydration waits** — the admin pages are heavy;
       the specs use `networkidle` + a short settle. If flakes reappear,
-      consider making the settings page lighter (stream more tabs) rather
+      consider making the pages lighter (stream sooner) rather
       than lengthening waits.

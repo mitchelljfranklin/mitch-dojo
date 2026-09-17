@@ -1,6 +1,6 @@
 # Mitch‑Dojo — Architecture Solution Design Document
 
-> **Version:** 0.1.0 (Phase 5b)
+> **Version:** 0.1.0 (Phase 11b)
 > **Last Updated:** September 2026
 > **Audience:** Engineering, Security, Operations
 > **Status:** Approved
@@ -32,12 +32,13 @@ principles:
 | 5 | **Historical attendance & belt-history import**: per-student backfill sheet, attendance CSV import (creates missing past sessions, idempotent), belt-history CSV import (belts must exist first) | Done |
 | 5b | **Disciplines & global belt ranks**: Discipline entity, belt ladders per discipline (not per course), student rank global across all locations teaching that discipline, cumulative eligibility counts all courses of the discipline combined | Done |
 | 6 | Memberships & payments: plan builder, enrollments, invoices + manual payments, overdue tracking | Done |
-| 7 | **Communication**: scheduler-driven reminders (class / payment / birthday) with editable templates and toggles in Settings, student→guardian recipient fallback, once-per-period dedup via NotificationLog | Done |
+| 7 | **Communication**: scheduler-driven reminders (class / payment / birthday) with editable templates and toggles in Admin, student→guardian recipient fallback, once-per-period dedup via NotificationLog | Done |
 | 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
 | 9 | **Trials & leads**: dedicated trial pipeline (New → Contacted → First class → Converted/Lost) with stage actions and conversion stats; open public `/book` page (rate-limited, honeypot) that creates a TRIAL student with a chosen class; scheduler trial follow-up emails with editable template | Done |
 | 10 | **Member portal**: staff-emailed magic links (hashed tokens, 30-day expiry, student → guardian fallback); read-only `/portal` — progress + belts, upcoming classes, recent attendance, invoices/balance; expired-token cron pruning | Done |
 | 11 | **White-label**: org name on all public/member surfaces (booking, portal, check-in), dojo logo on those pages and in every email, editable booking-page headline + description in Admin → Appearance, org-branded email identities | Done |
 | 11b | **Student address details**: structured address (line/city/postcode) on the student record, form, detail view, and CSV import/export; saving an edit returns to the student's display page with a flash toast | Done |
+| — | **Admin area**: sidebar regrouping (Overview/Operations/People/Management) and the settings area restructured into 15 sections across 7 groups (Workspace, Storage, Programs, Email, Locations, Access & security, Platform) at `/admin/*` with a `/settings` compatibility shim | Done |
 | 12 | Stripe/SEPA/PayPal gateways, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
@@ -135,7 +136,7 @@ single environment variable. Constraints and mitigations:
 | WASM asset resolution in the standalone build | `serverExternalPackages` externalises PGlite in `next.config.ts` |
 | PGlite does not create missing directories | `lib/prisma.ts` and seed call `mkdirSync(recursive)` before opening |
 
-## 5. Data Model (Phases 0–5b)
+## 5. Data Model
 
 ```
 Role ──< User ──< AuditLog
@@ -157,8 +158,14 @@ Discipline ──< BeltRangeEntry ──< StudentBelt >── Student
   (beltRangeEntryId FK, beltName/colourHex denormalised;
    rank is per discipline, global across all locations teaching it)
 
-Student (photoKey, status TRIAL/ACTIVE/INACTIVE/ALUMNI, guardian, emergency contact)
+Student (photoKey, structured address, status TRIAL/ACTIVE/INACTIVE/ALUMNI,
+         trialStage, guardian, emergency contact)
 Attachment (polymorphic entityType/entityId — "Student" documents)
+
+MembershipPlan ──< MembershipEnrollment >── Student
+MembershipEnrollment ──< Invoice (optional locationId for per-location revenue)
+Invoice ──< Payment (manual recording)
+PortalToken >── Student (hashed magic-link tokens, 30-day expiry)
 ```
 
 ### Belt eligibility (cumulative, per discipline)
@@ -208,8 +215,8 @@ Migrating schools bring history in three ways:
 ### Communication (Phase 7)
 
 The scheduler sends three reminder types every tick, each individually
-toggleable in Admin → Communication (with editable subject/body templates
-and a sample-send):
+toggleable in Admin → Communication; subject/body templates and the
+sample-send live on Admin → Templates:
 
 - **Class reminders** — to ACTIVE/TRIAL students at the session's location
   who train the course's discipline (the check-in population), inside a
@@ -241,7 +248,7 @@ storage; the orphan sweep collects `students.photoKey`,
 - **RBAC:** permission catalog in `lib/permissions.ts` (students, locations,
   classes, attendance, belts, memberships, communications, administration,
   profile), three seeded system roles (**Admin** — all keys, **Trainer** —
-  floor operations, **Viewer** — read-only). Custom roles via Settings →
+  floor operations, **Viewer** — read-only). Custom roles via Admin →
   Roles.
 - Every server action/route/page enforces `requirePermission`; the UI hides
   gated controls entirely.
@@ -249,12 +256,14 @@ storage; the orphan sweep collects `students.photoKey`,
 ## 6. Settings & Configuration
 
 DB-backed (`AppSetting`, zod-validated per category in `lib/settings/`):
-organization, appearance (logo/colours/radius/page width), operations (login
-throttle, session timeout, retention, scheduler toggle), files, storage
-(local/S3/Azure), email (SMTP; password AES-256-GCM encrypted at rest), email
-templates. Only deployment bootstrap belongs in env (`DATABASE_URL`/`DIR`,
-`AUTH_SECRET`, `APP_ENCRYPTION_KEY`, `APP_URL`, `CRON_SECRET`,
-`DATA_STORAGE_PATH`, `TRUSTED_PROXY_COUNT`).
+organization (incl. default country), appearance (logo/colours/radius/page
+width, booking-page copy), operations (login throttle, session timeout,
+retention, scheduler toggle), files, storage (local/S3/Azure), email (SMTP;
+password AES-256-GCM encrypted at rest), email templates, memberships,
+communications. Managed across the 15-section Admin area. Only deployment
+bootstrap belongs in env (`DATABASE_URL`/`DIR`, `AUTH_SECRET`,
+`APP_ENCRYPTION_KEY`, `APP_URL`, `CRON_SECRET`, `DATA_STORAGE_PATH`,
+`TRUSTED_PROXY_COUNT`).
 
 ## 7. Background Jobs
 

@@ -8,27 +8,32 @@ Mitch-Dojo is fully open source under the **AGPL-3.0** and is built on the same
 proven stack as [Mitch-Risk](https://github.com/) (its sibling project): Next.js
 + TypeScript + PostgreSQL/Prisma, deployed with Docker Compose.
 
-## Status: Phase 0 (scaffold)
+## Status: Phases 0–11b complete
 
-The platform scaffold is complete:
+The platform is feature-complete through the white-label phase:
 
 - Authentication (credentials + first-run admin setup) with Auth.js (NextAuth v5)
 - Role-based access control with three system roles (**Admin**, **Trainer**,
   **Viewer**) and a dojo-flavoured permission catalog
-- DB-backed runtime settings (organization, branding, operations, storage,
-  email) — everything configurable in-app, no file edits
-- Audit log with retention pruning
-- Built-in scheduler (reminders, pruning, orphan-file sweep in later phases)
-- Email delivery over SMTP (React Email templates)
+- Students & locations (multi-location, CSV import/export, photos + attachments)
+- Classes & schedule, attendance & public QR check-in
+- Belts & gradings with per-discipline ladders and historical import
+- Memberships & payments (plans, invoices, manual payments, overdue tracking)
+- Communication reminders (class / payment / birthday / trial follow-up) with
+  editable templates and an email log with retry
+- Analytics dashboard, trial pipeline with a public booking page, and a
+  read-only member portal
+- White-label branding (org name + logo on public/member surfaces and emails)
+- DB-backed runtime settings — everything configurable in-app, no file edits
+- Audit log with retention pruning; built-in scheduler; email over SMTP
 - **Two deployment modes** with one schema and one migration set:
   - **Postgres mode** (`DATABASE_PROVIDER=postgres`) — app + PostgreSQL 17
     containers, recommended for production
   - **Lite mode** (`DATABASE_PROVIDER=pglite`) — a single container with an
     embedded PostgreSQL (PGlite), zero external database services
 
- dojo management modules (students, classes, attendance, belts & gradings,
-memberships) land in phases 1–5; see [ARCHITECTURE.md](ARCHITECTURE.md) for the
-roadmap.
+Payment gateways and a REST API (Phase 12) are the remaining roadmap items —
+see [ARCHITECTURE.md](ARCHITECTURE.md) and [phasereview.md](phasereview.md).
 
 ## Quick start (Docker Compose)
 
@@ -69,6 +74,7 @@ npm run dev
 | `npm run db:deploy` | Apply migrations in production (Postgres mode) |
 | `npm run db:deploy:lite` | Apply migrations to an embedded PGlite database |
 | `npm run db:seed` | Seed system roles + default settings (idempotent) |
+| `npm run bump -- X.Y.Z` | Update all 4 version spots (package.json, Dockerfile, build-info, ARCHITECTURE.md) |
 | `npm run docs:dev` | VitePress docs dev server |
 
 ## License

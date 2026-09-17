@@ -33,7 +33,7 @@ serving.
 
 | Role | Access |
 |---|---|
-| Admin | Everything, including users, roles, settings |
+| Admin | Everything, including users, roles, and the admin area |
 | Trainer | Students, classes, attendance, belts (floor operations) |
 | Viewer | Read-only |
 
@@ -46,7 +46,8 @@ enforced server-side and hidden client-side when absent.
 check-in (3) → Belts & gradings (4) → **Historical attendance & belt-history
 import (5)** → **Disciplines & global belt ranks (5b)** → Memberships &
 manual payments (6) → Communication (7) → Analytics (8) → Trials (9) →
-Member portal (10) → Gateways & extras (11+).
+Member portal (10) → White-label branding (11) → Student address details
+(11b) — all **done**. Next: payment gateways & REST API (12).
 
 ## Multi-location
 

@@ -9,12 +9,16 @@ Prisma, Docker Compose. Fully AGPL-3.0.
 
 ## Features
 
-Phase 0 (current) ships the platform: authentication, roles & permissions,
-in-app settings, audit log, scheduler, email, file storage, and two
-deployment modes (Postgres server or embedded single-container).
+The platform ships the full dojo suite: authentication, roles & permissions,
+students & locations, classes & schedule, attendance & QR check-in, belts &
+gradings with historical import, memberships & payments, communication
+reminders, analytics, a trial pipeline with a public booking page, a read-only
+member portal, white-label branding, and an audit log — all configurable
+in-app under **Admin**, with two deployment modes (Postgres server or embedded
+single-container).
 
-The dojo modules land phase by phase — see the [Architecture](/architecture)
-for the full roadmap.
+Payment gateways and a REST API (Phase 12) are planned — see the
+[Architecture](/architecture) for the full roadmap.
 
 ## Deployment modes
 
