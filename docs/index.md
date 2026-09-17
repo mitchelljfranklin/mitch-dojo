@@ -1,33 +1,38 @@
-# Mitch-Dojo
+---
+layout: home
 
-**Open-source, self-hosted dojo management software** for martial arts
-schools: students, classes, attendance, belt progressions, memberships, and
-communication — in one tool you own.
+hero:
+  name: "Mitch‑Dojo"
+  text: "Self-hosted dojo management software"
+  tagline: Run your martial arts school with one tool you own — students, classes, attendance with QR check-in, belt progressions, memberships, communication, and a member portal. Self-hosted, open source, and configurable entirely in-app.
+  image:
+    src: /favicon.svg
+    alt: Mitch‑Dojo
+  actions:
+    - theme: brand
+      text: Get Started
+      link: ./welcome/introduction
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/mitchelljfranklin/mitch-dojo
 
-Built on the same stack as Mitch-Risk: Next.js + TypeScript, PostgreSQL +
-Prisma, Docker Compose. Fully AGPL-3.0.
-
-## Features
-
-The platform ships the full dojo suite: authentication, roles & permissions,
-students & locations, classes & schedule, attendance & QR check-in, belts &
-gradings with historical import, memberships & payments, communication
-reminders, analytics, a trial pipeline with a public booking page, a read-only
-member portal, white-label branding, and an audit log — all configurable
-in-app under **Admin**, with two deployment modes (Postgres server or embedded
-single-container).
-
-Payment gateways and a REST API (Phase 12) are planned — see the
-[Architecture](/architecture) for the full roadmap.
-
-## Deployment modes
-
-| Mode | Containers | Database |
-|---|---|---|
-| **Postgres** (recommended) | app + postgres | PostgreSQL 17 server |
-| **Lite** | app only | embedded PostgreSQL (PGlite), volume-mounted |
-
-Both modes use the same schema and the same migration files; switching is a
-single environment variable (`DATABASE_PROVIDER`).
-
-See [Deployment](/deployment) for setup.
+features:
+  - title: Students & Locations
+    details: Multi-location enrolment with a primary home dojo, photos, attachments, guardian contacts, and CSV import/export for migrating schools.
+  - title: Classes & Schedule
+    details: Trainer roster, courses tied to a location and discipline, recurring weekly times, auto-generated sessions, and a live weekly timetable.
+  - title: Attendance & QR Check-in
+    details: Session attendance sheets with bulk marking, plus no-login QR check-in pages per location that feed belt eligibility automatically.
+  - title: Belts & Gradings
+    details: Per-discipline belt ladders with cumulative attendance-based eligibility, instructor override, and full promotion history.
+  - title: Memberships & Payments
+    details: Plan builder, enrollments, auto-generated invoices, manual payment recording, overdue tracking, and check-in suspension.
+  - title: Communication
+    details: Scheduler-driven class, payment, birthday, and trial follow-up emails with editable templates, an email log, and one-click retry.
+  - title: Trials & Member Portal
+    details: A public trial-booking page with a full lead pipeline, plus a read-only member portal your students access via magic links.
+  - title: White-label & RBAC
+    details: Your logo and colours on every public surface and email. Three system roles plus custom roles with fine-grained permissions.
+  - title: Self-Hosted
+    details: Docker Compose with PostgreSQL, or a single container with an embedded database. Local disk or S3/Azure storage. Runs anywhere.
+---

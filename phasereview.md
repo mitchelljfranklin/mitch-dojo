@@ -93,7 +93,7 @@
 ### Infrastructure / operational
 
 - [ ] **Backups documentation for Postgres mode** — the lite runbook
-      (docs/deployment.md) covers PGlite volume snapshots; Postgres-mode
+      (docs/deployment/backups.md) covers PGlite volume snapshots; Postgres-mode
       `pg_dump` scheduling deserves the same treatment.
 - [ ] **`/api/cron/run` security review** — confirmed constant-time +
       rate-limited; a one-time penetration-style pass over public routes
