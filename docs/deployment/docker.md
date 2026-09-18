@@ -2,6 +2,22 @@
 
 The recommended production deployment: the app container plus PostgreSQL 17.
 
+## Pre-built image (no build tools needed)
+
+```bash
+curl -O https://raw.githubusercontent.com/mitchelljfranklin/mitch-dojo/master/docker-compose.pull.yml
+curl -O https://raw.githubusercontent.com/mitchelljfranklin/mitch-dojo/master/.env.example
+mv .env.example .env
+```
+
+Set the secrets in `.env` (each `openssl rand -hex 32`), then:
+
+```bash
+docker compose -f docker-compose.pull.yml up -d
+```
+
+This pulls the published image from GitHub Container Registry instead of building from source. Everything below applies identically.
+
 ## 1. Prepare the environment
 
 ```bash
