@@ -38,6 +38,7 @@ const TYPE_VARIANTS: Record<
   TRIALFOLLOWUP: "secondary",
   PORTALLINK: "outline",
   BIRTHDAY: "secondary",
+  BOOKING: "secondary",
   RESET: "outline",
   TEST: "outline",
   INVITE: "default",
@@ -49,10 +50,15 @@ function statusVariant(status: string) {
   return "destructive" as const;
 }
 
-// Single-use links that cannot be replayed — the UI hides their retry button
-// (the server action refuses them too).
+// Single-use links and one-off confirmations that cannot be replayed — the
+// UI hides their retry button (the server action refuses them too). Booking
+// confirmations are one-per-booking: their tokens (chosen class/date) only
+// exist in the prospect's free-text notes, so a retry would re-send with
+// blank class details.
 function isRetryable(log: EmailLogEntry): boolean {
-  return log.status === "FAILED" && log.type !== "RESET";
+  return (
+    log.status === "FAILED" && log.type !== "RESET" && log.type !== "BOOKING"
+  );
 }
 
 function timeLabel(date: Date): string {

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { appearanceSettingsSchema } from "./schema";
+import {
+  appearanceSettingsSchema,
+  communicationsSettingsSchema,
+  emailTemplateSchema,
+} from "./schema";
 
 describe("appearanceSettingsSchema", () => {
   it("defaults the booking copy when unset", () => {
@@ -56,5 +60,22 @@ describe("appearanceSettingsSchema", () => {
       emailLogoVariant: "dark",
     });
     expect(settings.emailLogoVariant).toBe("dark");
+  });
+});
+
+describe("communicationsSettingsSchema", () => {
+  it("defaults booking confirmations to enabled", () => {
+    const settings = communicationsSettingsSchema.parse({});
+    expect(settings.bookingConfirmationsEnabled).toBe(true);
+  });
+});
+
+describe("emailTemplateSchema", () => {
+  it("defaults the booking template with the class tokens", () => {
+    const settings = emailTemplateSchema.parse({});
+    expect(settings.bookingSubject).toContain("{{appName}}");
+    expect(settings.bookingBody).toContain("{{studentName}}");
+    expect(settings.bookingBody).toContain("{{className}}");
+    expect(settings.bookingBody).toContain("{{classTime}}");
   });
 });

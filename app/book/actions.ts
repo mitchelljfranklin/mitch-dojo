@@ -90,5 +90,46 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
       outcome: result.outcome,
     },
   );
+
+  // Booking confirmation to the prospect (toggleable in Admin →
+  // Communication). Deduped per booking; sent best-effort — a send failure
+  // must never fail the booking itself.
+  const [
+    { getCommunicationsSettings },
+    { sendEmail },
+    { getOrganizationSettings },
+  ] = await Promise.all([
+    import("@/lib/settings"),
+    import("@/lib/email/mailer"),
+    import("@/lib/settings"),
+  ]);
+  const [communications, organization] = await Promise.all([
+    getCommunicationsSettings(),
+    getOrganizationSettings(),
+  ]);
+  if (communications.bookingConfirmationsEnabled && parsed.data.email) {
+    const classTime = sessionDate
+      ? sessionCourseName
+        ? `${sessionCourseName} on ${sessionDate}`
+        : sessionDate
+      : sessionCourseName || "your chosen class";
+    try {
+      await sendEmail(
+        parsed.data.email,
+        "booking",
+        {
+          appName: organization.name,
+          studentName:
+            `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
+          className: sessionCourseName || "trial class",
+          classTime,
+        },
+        { assessmentId: `booking:${result.studentId}` },
+      );
+    } catch {
+      // The email log holds the failure for staff; the booking stands.
+    }
+  }
+
   redirect("/book?booked=1");
 }

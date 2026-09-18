@@ -21,6 +21,8 @@ type EmailTemplatesFormProps = {
     paymentReminderBody: string;
     birthdaySubject: string;
     birthdayBody: string;
+    bookingSubject: string;
+    bookingBody: string;
     trialFollowUpSubject: string;
     trialFollowUpBody: string;
   };
@@ -106,6 +108,25 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
             />
             <p className="text-muted-foreground text-xs">
               Placeholders: {"{{studentName}}"}, {"{{appName}}"}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="bookingSubject">Booking confirmation subject</Label>
+            <Input
+              id="bookingSubject"
+              name="bookingSubject"
+              defaultValue={templates.bookingSubject}
+            />
+            <Label htmlFor="bookingBody">Booking confirmation body</Label>
+            <Textarea
+              id="bookingBody"
+              name="bookingBody"
+              rows={4}
+              defaultValue={templates.bookingBody}
+            />
+            <p className="text-muted-foreground text-xs">
+              Placeholders: {"{{studentName}}"}, {"{{className}}"},
+              {" {{classTime}}"}, {"{{appName}}"}
             </p>
           </div>
           <div className="grid gap-2">

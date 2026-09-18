@@ -104,6 +104,11 @@ test.describe("communication settings", () => {
     await waitAdminInteractive(page);
     await page.getByLabel("Recipient").fill("sample@dojo.test");
     await page.getByRole("button", { name: "Send sample" }).click();
+    // Either toast means the action resolved (and the log row was written
+    // in the same transaction path) — navigating earlier can abort the POST.
+    await expect(
+      page.getByText(/Sample reminder sent\.|Send failed/).first(),
+    ).toBeVisible();
 
     // The test database has no SMTP, so the send must fail — the durable
     // record is a FAILED row in the email log (client toasts are transient).
@@ -129,6 +134,11 @@ test.describe("communication settings", () => {
     await waitAdminInteractive(page);
     await page.getByLabel("Recipient").fill("sample@dojo.test");
     await page.getByRole("button", { name: "Send sample" }).click();
+    // Wait for the action to resolve before navigating — an early goto
+    // can abort the POST and leave no log row to retry.
+    await expect(
+      page.getByText(/Sample reminder sent\.|Send failed/).first(),
+    ).toBeVisible();
 
     await page.goto("/admin/email-log");
     await waitAdminInteractive(page);

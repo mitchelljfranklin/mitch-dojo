@@ -27,6 +27,8 @@ import {
   type TrialStageValue,
 } from "@/lib/db/trials";
 import { setTrialStageAction } from "@/lib/actions/trials";
+import { listActivePlansForSelection } from "@/lib/db/memberships";
+import { ConvertTrialSheet } from "./convert-trial-sheet";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -63,10 +65,12 @@ type TrialsPageProps = {
 export default async function TrialsPage({ searchParams }: TrialsPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
+  const canBill = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
   const sp = await searchParams;
   const stageFilter = STAGE_ORDER.find((stage) => stage === sp.stage);
 
   const { rows, convertedThisMonth, lostCount } = await listTrials();
+  const plans = canBill ? await listActivePlansForSelection() : [];
   // Default view: the open pipeline. CONVERTED/LOST leads appear via their
   // stage filters.
   const visible = stageFilter
@@ -185,41 +189,53 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
                             —
                           </span>
                         ) : (
-                          <form
-                            action={setTrialStageAction}
-                            className="flex items-center gap-2"
-                          >
-                            <input
-                              type="hidden"
-                              name="studentId"
-                              value={trial.studentId}
-                            />
-                            <select
-                              name="stage"
-                              defaultValue=""
-                              required
-                              className="border-input bg-background h-8 rounded-md border px-2 text-xs"
+                          <div className="flex items-center gap-2">
+                            <form
+                              action={setTrialStageAction}
+                              className="flex items-center gap-2"
                             >
-                              <option value="" disabled>
-                                Move to…
-                              </option>
-                              {TRIAL_STAGE_TRANSITIONS[trial.stage].map(
-                                (stage) => (
-                                  <option key={stage} value={stage}>
-                                    {STAGE_LABELS[stage]}
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                            <Button
-                              type="submit"
-                              size="sm"
-                              variant="outline"
-                              className="h-8 px-2 text-xs"
-                            >
-                              Apply
-                            </Button>
-                          </form>
+                              <input
+                                type="hidden"
+                                name="studentId"
+                                value={trial.studentId}
+                              />
+                              <select
+                                name="stage"
+                                defaultValue=""
+                                required
+                                className="border-input bg-background h-8 rounded-md border px-2 text-xs"
+                              >
+                                <option value="" disabled>
+                                  Move to…
+                                </option>
+                                {TRIAL_STAGE_TRANSITIONS[trial.stage].map(
+                                  (stage) => (
+                                    <option key={stage} value={stage}>
+                                      {STAGE_LABELS[stage]}
+                                    </option>
+                                  ),
+                                )}
+                              </select>
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-2 text-xs"
+                              >
+                                Apply
+                              </Button>
+                            </form>
+                            {TRIAL_STAGE_TRANSITIONS[trial.stage].includes(
+                              "CONVERTED",
+                            ) ? (
+                              <ConvertTrialSheet
+                                studentId={trial.studentId}
+                                studentName={trial.name}
+                                plans={plans}
+                                canBill={canBill}
+                              />
+                            ) : null}
+                          </div>
                         )}
                       </TableCell>
                     ) : null}

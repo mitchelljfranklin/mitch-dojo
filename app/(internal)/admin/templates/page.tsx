@@ -45,6 +45,8 @@ export default async function AdminTemplatesPage() {
               paymentReminderBody: emailTemplates.paymentReminderBody,
               birthdaySubject: emailTemplates.birthdaySubject,
               birthdayBody: emailTemplates.birthdayBody,
+              bookingSubject: emailTemplates.bookingSubject,
+              bookingBody: emailTemplates.bookingBody,
               trialFollowUpSubject: emailTemplates.trialFollowUpSubject,
               trialFollowUpBody: emailTemplates.trialFollowUpBody,
             }}

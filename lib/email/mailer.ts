@@ -47,6 +47,7 @@ type TemplateType =
   | "classReminder"
   | "paymentReminder"
   | "birthday"
+  | "booking"
   | "trialFollowUp"
   | "portalLink"
   | "reset";
@@ -130,6 +131,7 @@ export async function sendEmail(
     classReminder: templates.classReminderSubject,
     paymentReminder: templates.paymentReminderSubject,
     birthday: templates.birthdaySubject,
+    booking: templates.bookingSubject,
     trialFollowUp: templates.trialFollowUpSubject,
     portalLink: templates.portalLinkSubject,
     reset: templates.resetSubject,
@@ -140,6 +142,7 @@ export async function sendEmail(
     classReminder: templates.classReminderBody,
     paymentReminder: templates.paymentReminderBody,
     birthday: templates.birthdayBody,
+    booking: templates.bookingBody,
     trialFollowUp: templates.trialFollowUpBody,
     portalLink: templates.portalLinkBody,
     reset: templates.resetBody,

@@ -19,6 +19,7 @@ type CommunicationsFormProps = {
   birthdayEmailsEnabled: boolean;
   trialFollowUpsEnabled: boolean;
   trialFollowUpDaysAfterJoin: number;
+  bookingConfirmationsEnabled: boolean;
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -37,6 +38,7 @@ function CommunicationsFormInner({
   birthdayEmailsEnabled,
   trialFollowUpsEnabled,
   trialFollowUpDaysAfterJoin,
+  bookingConfirmationsEnabled,
 }: CommunicationsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -154,6 +156,23 @@ function CommunicationsFormInner({
             defaultValue={trialFollowUpDaysAfterJoin}
           />
         </div>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-2">
+        <Label>Booking confirmations</Label>
+        <p className="text-muted-foreground text-xs">
+          One confirmation email to the prospect the moment their booking lands
+          on the public booking page. Deduped per booking.
+        </p>
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <Checkbox
+            name="bookingConfirmationsEnabled"
+            defaultChecked={bookingConfirmationsEnabled}
+          />
+          Enable booking confirmation emails
+        </label>
       </div>
 
       {state && !state.ok ? (

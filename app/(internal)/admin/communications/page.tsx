@@ -57,6 +57,9 @@ export default async function AdminCommunicationsPage() {
             trialFollowUpDaysAfterJoin={
               communicationsSettings.trialFollowUpDaysAfterJoin
             }
+            bookingConfirmationsEnabled={
+              communicationsSettings.bookingConfirmationsEnabled
+            }
           />
         </CardContent>
       </Card>

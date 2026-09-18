@@ -38,6 +38,12 @@ export async function retryEmailSendAction(
         "Reset links are single-use and cannot be resent. Ask the user to request a new reset.",
     };
   }
+  if (log.type === "BOOKING") {
+    return {
+      error:
+        "Booking confirmations cannot be resent — the class details only exist in the booking. Contact the prospect directly.",
+    };
+  }
 
   // SMTP test emails bypass templates entirely and reuse the log row.
   if (log.type === "TEST") {

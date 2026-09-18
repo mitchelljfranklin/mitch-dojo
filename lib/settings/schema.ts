@@ -83,6 +83,12 @@ export const emailTemplateSchema = z.object({
   birthdayBody: z
     .string()
     .default("Happy birthday {{studentName}}! Have a great day."),
+  bookingSubject: z.string().default("Booking confirmed — {{appName}}"),
+  bookingBody: z
+    .string()
+    .default(
+      "Hi {{studentName}},\n\nYour trial class is booked: {{className}} on {{classTime}}. We look forward to meeting you!\n\nIf you need to change or cancel, just reply to this email.\n\n— {{appName}}",
+    ),
   trialFollowUpSubject: z
     .string()
     .default("How was your trial at {{appName}}?"),
@@ -192,6 +198,9 @@ export const communicationsSettingsSchema = z.object({
   // pipeline this many days without converting.
   trialFollowUpsEnabled: z.boolean().default(true),
   trialFollowUpDaysAfterJoin: z.coerce.number().int().min(1).max(60).default(3),
+  // Booking confirmation: one email to the prospect the moment their public
+  // /book submission creates a trial. Deduped per booking.
+  bookingConfirmationsEnabled: z.boolean().default(true),
 });
 
 export type CommunicationsSettings = z.infer<
