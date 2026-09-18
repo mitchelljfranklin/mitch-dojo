@@ -1,6 +1,6 @@
 # Phase Review — Remaining & Potential Work
 
-> **Last updated:** September 2026 (after SSO + break glass port; cleanup parity with mitch-risk confirmed)
+> **Last updated:** September 2026 (UX/product polish batches planned and approved)
 > **Purpose:** a living checklist of everything left or worth considering,
 > so nothing lives only in conversation. Tick items off or strike them out
 > as decisions land.
@@ -83,22 +83,42 @@
 - [ ] **Coverage report** — no coverage tooling configured; add
       `vitest --coverage` to CI as an informational gate.
 
-### UX / product polish (candidate backlog)
+### UX / product polish (planned September 2026 — build in this order)
 
-- [ ] **Invoice PDF export** — `@react-pdf/renderer` is already a
-      dependency (scaffold promise); a printable invoice from the detail
-      page is the natural first PDF.
-- [ ] **Student PDF report card** — attendance + belt history + balance
-      for handing to parents; reuses the same PDF dependency.
-- [ ] **Bulk actions on the students list** — bulk status change,
-      bulk enroll to plan, bulk discipline assignment.
-- [ ] **Custom roles for the Trainer experience review** — walk a Trainer
-      role through every screen and confirm nothing important is hidden.
-- [ ] **Check-in kiosk mode** — full-screen toggle on the QR check-in page
-      for a tablet at the front desk.
-- [ ] **Trial-to-student conversion enrichments** — auto-suggest the first
-      invoice from the trial's chosen plan; booking confirmation email to
-      the prospect (currently only staff see the booking).
+Approved plan (owner sign-off): all items, in the batch order below.
+
+- [ ] **Batch 1 — PDFs** (needs `@react-pdf/renderer` — *not* actually a
+      dependency yet, correcting an earlier note): shared branded PDF shell
+      (org name + light logo + primary-colour accent) + authenticated
+      `/api/.../pdf` route pattern. Then:
+      - [ ] Invoice PDF — button on the invoice detail page
+            (`memberships:view`): header, invoice number/dates/status,
+            student, line items, payment history, balance
+      - [ ] Student PDF report card — button on the student record
+            (`students:view`): photo, name, rank per discipline with colour
+            swatch, attendance summary + next-belt eligibility, balance
+- [ ] **Batch 2 — Trial conversion enrichments**:
+      - [ ] Booking confirmation email — new BOOKING template type
+            (Templates page), sent by the booking action after honeypot +
+            rate-limit pass; dedup key `booking:{trialId}`; toggleable in
+            Admin → Communication alongside the other reminder types
+            (owner decision)
+      - [ ] Conversion dialog enrichment — optional plan select + "create
+            first invoice" checkbox (plan pre-selected when exactly one
+            active plan exists); trials store only free-text session notes,
+            so no automatic plan inference
+- [ ] **Batch 3 — Bulk actions on the students list**: checkbox column +
+      select-all + floating action bar; bulk set status and bulk assign
+      disciplines (`students:edit`), bulk enroll to plan
+      (`memberships:edit`, hidden without it); one audited server action per
+      operation with row-level results
+- [ ] **Batch 4 — Check-in kiosk mode**: toggle on /checkin/[token] hiding
+      page chrome, enlarged roster + auto-focused search, Fullscreen API
+      button; persisted via `?kiosk=1`
+- [ ] **Batch 5 — Trainer experience review**: audit task, not code — walk
+      the seeded Trainer role through every screen, confirm nothing
+      important is hidden and nothing admin-y leaks; fix findings and record
+      the outcome here
 
 ### Infrastructure / operational
 

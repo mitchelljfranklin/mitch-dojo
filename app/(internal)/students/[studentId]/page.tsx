@@ -200,6 +200,11 @@ export default async function StudentDetailPage({
           {canEdit ? (
             <PortalLinkButton studentId={student.id} studentName={fullName} />
           ) : null}
+          <Button asChild variant="outline">
+            <a href={`/api/students/${student.id}/report-card`} download>
+              Report card
+            </a>
+          </Button>
           {canEdit ? (
             <Button asChild variant="outline">
               <Link href={`/students/${student.id}/edit`}>Edit</Link>

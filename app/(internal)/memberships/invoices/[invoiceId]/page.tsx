@@ -91,6 +91,11 @@ export default async function InvoiceDetailPage({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline">
+            <a href={`/api/invoices/${invoice.id}/pdf`} download>
+              Download PDF
+            </a>
+          </Button>
           {canEdit && invoice.status === "OPEN" ? (
             <RecordPaymentSheet
               currency={currency}

@@ -47,6 +47,28 @@ test.describe("students", () => {
     await expect(page.getByText("E2E Student").first()).toBeVisible();
   });
 
+  test("student report card downloads as a real PDF", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    // Open the created student from the list
+    await page.goto("/students");
+    await page.getByText("E2E Student").first().click();
+    await page.waitForURL("**/students/*");
+
+    const pdfHref = await page
+      .locator('a[href*="/api/students/"][href*="report-card"]')
+      .getAttribute("href");
+    const pdfResponse = await page.request.get(pdfHref ?? "");
+    expect(pdfResponse.status()).toBe(200);
+    expect(pdfResponse.headers()["content-type"]).toBe("application/pdf");
+    const body = await pdfResponse.body();
+    expect(body.subarray(0, 4).toString("latin1")).toBe("%PDF");
+  });
+
   test("filters students by status", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);

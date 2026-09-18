@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
     "pglite-prisma-adapter",
     "@prisma/adapter-pg",
     "@prisma/client",
+    // @react-pdf/renderer bundles its own font/web machinery that must run
+    // from node_modules in the standalone output.
+    "@react-pdf/renderer",
   ],
 };
 

@@ -61,6 +61,17 @@ test.describe("memberships", () => {
     await expect(page.getByText("Billed to")).toBeVisible();
     await expect(page.getByText("Location: E2E Dojo")).toBeVisible();
 
+    // The invoice PDF is a real server-rendered download (page.request
+    // shares the browser session's auth cookie)
+    const pdfHref = await page
+      .locator('a[href*="/api/invoices/"][href*="/pdf"]')
+      .getAttribute("href");
+    const pdfResponse = await page.request.get(pdfHref ?? "");
+    expect(pdfResponse.status()).toBe(200);
+    expect(pdfResponse.headers()["content-type"]).toBe("application/pdf");
+    const body = await pdfResponse.body();
+    expect(body.subarray(0, 4).toString("latin1")).toBe("%PDF");
+
     await page.getByRole("button", { name: "Record payment" }).click();
     // The sheet's submit shares its name with the page-level button — scope
     // to the dialog so the click cannot race the sheet's mount.
