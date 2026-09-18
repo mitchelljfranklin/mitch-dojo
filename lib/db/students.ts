@@ -234,6 +234,40 @@ export async function updateStudentStatus(
   await prisma.student.update({ where: { id: studentId }, data: { status } });
 }
 
+// Bulk discipline assignment for the students list: links every given
+// discipline to every given student, skipping pairs that already exist.
+// Returns how many links were actually created.
+export async function bulkAssignDisciplines(
+  studentIds: string[],
+  disciplineIds: string[],
+): Promise<number> {
+  if (studentIds.length === 0 || disciplineIds.length === 0) {
+    return 0;
+  }
+  const existing = await prisma.studentDiscipline.findMany({
+    where: {
+      studentId: { in: studentIds },
+      disciplineId: { in: disciplineIds },
+    },
+    select: { studentId: true, disciplineId: true },
+  });
+  const existingPairs = new Set(
+    existing.map((row) => `${row.studentId}:${row.disciplineId}`),
+  );
+  const data = studentIds
+    .flatMap((studentId) =>
+      disciplineIds.map((disciplineId) => ({ studentId, disciplineId })),
+    )
+    .filter(
+      (pair) => !existingPairs.has(`${pair.studentId}:${pair.disciplineId}`),
+    );
+  if (data.length === 0) {
+    return 0;
+  }
+  await prisma.studentDiscipline.createMany({ data });
+  return data.length;
+}
+
 export async function setStudentPhoto(
   studentId: string,
   photoKey: string | null,

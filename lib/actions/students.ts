@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
+  bulkAssignDisciplines,
   createStudent,
   deleteStudent,
   exportAllStudents,
@@ -18,11 +19,13 @@ import {
   updateStudentStatus,
 } from "@/lib/db/students";
 import { listLocations } from "@/lib/db/locations";
+import { enrollStudent } from "@/lib/db/memberships";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { resolveCountryCode } from "@/lib/countries";
 import { getField } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
+import { STUDENT_STATUS_LABELS } from "@/lib/schemas/student";
 import {
   ALLOWED_ATTACHMENT_EXTS,
   MAX_ATTACHMENT_BYTES,
@@ -481,4 +484,131 @@ export async function importStudentsAction(
     };
   }
   return { ok: false, error: "No students imported. " + rowErrors[0] };
+}
+
+// ---- bulk actions (students list selection bar) -------------------------
+
+export type BulkActionState = { ok: boolean; message: string } | undefined;
+
+function readSelectedIds(formData: FormData): string[] {
+  return formData
+    .getAll("ids")
+    .filter(
+      (value): value is string => typeof value === "string" && value.length > 0,
+    );
+}
+
+export async function bulkSetStatusAction(
+  _previousState: BulkActionState,
+  formData: FormData,
+): Promise<BulkActionState> {
+  const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const ids = readSelectedIds(formData);
+  const status = getField(formData, "status");
+  if (ids.length === 0) {
+    return { ok: false, message: "Select at least one student." };
+  }
+  if (!STUDENT_STATUSES.includes(status as StudentStatus)) {
+    return { ok: false, message: "Choose a status to apply." };
+  }
+
+  await prisma.student.updateMany({
+    where: { id: { in: ids } },
+    data: { status: status as StudentStatus },
+  });
+  await logAudit(
+    user.id,
+    AUDIT_ACTIONS.UPDATE_STUDENT_STATUS,
+    "Student",
+    "bulk",
+    { status, count: ids.length, ids },
+  );
+  return {
+    ok: true,
+    message: `Set ${ids.length} student${ids.length === 1 ? "" : "s"} to ${STUDENT_STATUS_LABELS[status as StudentStatus]}.`,
+  };
+}
+
+export async function bulkAssignDisciplinesAction(
+  _previousState: BulkActionState,
+  formData: FormData,
+): Promise<BulkActionState> {
+  const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const ids = readSelectedIds(formData);
+  const disciplineIds = formData
+    .getAll("disciplineIds")
+    .filter(
+      (value): value is string => typeof value === "string" && value.length > 0,
+    );
+  if (ids.length === 0) {
+    return { ok: false, message: "Select at least one student." };
+  }
+  if (disciplineIds.length === 0) {
+    return { ok: false, message: "Choose at least one discipline." };
+  }
+
+  const validDisciplines = await prisma.discipline.findMany({
+    where: { id: { in: disciplineIds } },
+    select: { id: true },
+  });
+  const added = await bulkAssignDisciplines(
+    ids,
+    validDisciplines.map((discipline) => discipline.id),
+  );
+  await logAudit(user.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Student", "bulk", {
+    disciplines: validDisciplines.map((discipline) => discipline.id),
+    count: ids.length,
+    ids,
+  });
+  return {
+    ok: true,
+    message:
+      added > 0
+        ? `Assigned ${added} discipline link${added === 1 ? "" : "s"} (existing ones kept).`
+        : "All selected students already train those disciplines.",
+  };
+}
+
+export async function bulkEnrollAction(
+  _previousState: BulkActionState,
+  formData: FormData,
+): Promise<BulkActionState> {
+  const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const ids = readSelectedIds(formData);
+  const planId = getField(formData, "planId");
+  if (ids.length === 0) {
+    return { ok: false, message: "Select at least one student." };
+  }
+  if (!planId) {
+    return { ok: false, message: "Choose a plan." };
+  }
+
+  const plan = await prisma.membershipPlan.findUnique({
+    where: { id: planId },
+    select: { name: true },
+  });
+  if (!plan) {
+    return { ok: false, message: "That plan no longer exists." };
+  }
+
+  const results = await Promise.all(
+    ids.map((studentId) =>
+      enrollStudent({ studentId, planId, startDate: new Date() }),
+    ),
+  );
+  const created = results.filter((r) => r.outcome === "created").length;
+  await logAudit(
+    user.id,
+    AUDIT_ACTIONS.CREATE_ENROLLMENT,
+    "Enrollment",
+    "bulk",
+    { planId, count: created, ids },
+  );
+  return {
+    ok: true,
+    message:
+      created === ids.length
+        ? `Enrolled ${created} student${created === 1 ? "" : "s"} in ${plan.name}.`
+        : `Enrolled ${created} of ${ids.length} students in ${plan.name} (the rest were already enrolled).`,
+  };
 }

@@ -16,7 +16,9 @@ import {
   STUDENT_SORTS,
   type StudentSort,
 } from "@/lib/db/students";
+import { listDisciplines } from "@/lib/db/belts";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { listActivePlansForSelection } from "@/lib/db/memberships";
 import { STUDENT_STATUS_LABELS, STUDENT_STATUSES } from "@/lib/schemas/student";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +49,12 @@ export default async function StudentsPage({
     page,
   });
   const locations = await listAssignableLocations();
+  const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
+  const canBill = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
+  const [disciplines, plans] = await Promise.all([
+    canEdit ? listDisciplines() : Promise.resolve([]),
+    canBill ? listActivePlansForSelection() : Promise.resolve([]),
+  ]);
   const hasFilters =
     Boolean(sp.query) || Boolean(sp.status) || Boolean(sp.locationId);
 
@@ -208,6 +216,13 @@ export default async function StudentsPage({
             page={page}
             pageSize={pageSize}
             totalCount={totalCount}
+            canEdit={canEdit}
+            canBill={canBill}
+            disciplines={disciplines.map((discipline) => ({
+              id: discipline.id,
+              name: discipline.name,
+            }))}
+            plans={plans.map((plan) => ({ id: plan.id, name: plan.name }))}
           />
           <Pagination
             page={page}

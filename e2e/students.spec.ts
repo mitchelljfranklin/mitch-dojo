@@ -69,6 +69,48 @@ test.describe("students", () => {
     expect(body.subarray(0, 4).toString("latin1")).toBe("%PDF");
   });
 
+  test("bulk status change updates all selected students", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/students");
+    // Select the two known e2e students (their rows carry their names)
+    await page
+      .getByRole("checkbox", { name: "Select E2E Student" })
+      .setChecked(true);
+    await page
+      .getByRole("checkbox", { name: "Select E2E Attend Kid" })
+      .setChecked(true);
+    await expect(page.getByText("2 selected")).toBeVisible();
+
+    // Set both to TRIAL, verify, then restore ACTIVE
+    await page.getByLabel("Status to apply").selectOption("TRIAL");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await expect(
+      page.getByText(/Set 2 students to Trial/).first(),
+    ).toBeVisible();
+
+    const studentRow = page.getByRole("row", { name: /E2E Student/ }).first();
+    const kidRow = page.getByRole("row", { name: /E2E Attend Kid/ }).first();
+    await expect(studentRow.getByText("Trial", { exact: true })).toBeVisible();
+    await expect(kidRow.getByText("Trial", { exact: true })).toBeVisible();
+
+    await page
+      .getByRole("checkbox", { name: "Select E2E Student" })
+      .setChecked(true);
+    await page
+      .getByRole("checkbox", { name: "Select E2E Attend Kid" })
+      .setChecked(true);
+    await page.getByLabel("Status to apply").selectOption("ACTIVE");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await expect(
+      page.getByText(/Set 2 students to Active/).first(),
+    ).toBeVisible();
+  });
+
   test("filters students by status", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);

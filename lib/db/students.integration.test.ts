@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/prisma";
 import {
+  bulkAssignDisciplines,
   createStudent,
   deleteStudent,
   exportAllStudents,
@@ -446,5 +447,81 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
 
     await deleteStudent(linked);
     await deleteStudent(unlinked);
+  });
+
+  it("bulkAssignDisciplines links pairs once and skips existing ones", async () => {
+    const first = await createStudent({
+      firstName: "Bulk",
+      lastName: `One ${suffix}`,
+      email: `bulk-one-${suffix}@example.com`,
+      phone: null,
+      status: "ACTIVE",
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+    const second = await createStudent({
+      firstName: "Bulk",
+      lastName: `Two ${suffix}`,
+      email: `bulk-two-${suffix}@example.com`,
+      phone: null,
+      status: "ACTIVE",
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [],
+    });
+
+    const added = await bulkAssignDisciplines(
+      [first, second],
+      [karateId, jujitsuId],
+    );
+    // first already trains Karate → only 3 new links (first+Jujitsu,
+    // second+Karate, second+Jujitsu)
+    expect(added).toBe(3);
+
+    // Re-running the same assignment creates nothing
+    const again = await bulkAssignDisciplines(
+      [first, second],
+      [karateId, jujitsuId],
+    );
+    expect(again).toBe(0);
+
+    const firstDisciplines = await db.studentDiscipline.findMany({
+      where: { studentId: first },
+      select: { disciplineId: true },
+    });
+    const secondDisciplines = await db.studentDiscipline.findMany({
+      where: { studentId: second },
+      select: { disciplineId: true },
+    });
+    expect(firstDisciplines).toHaveLength(2);
+    expect(secondDisciplines).toHaveLength(2);
+
+    await deleteStudent(first);
+    await deleteStudent(second);
   });
 });
