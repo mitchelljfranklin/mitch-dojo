@@ -20,14 +20,28 @@ export default async function AuthLayout({
       <div className="relative w-full max-w-sm" id="main-content">
         {appearance.logoKey ? (
           <div className="mb-8 flex flex-col items-center gap-3">
+            {/* Both variants rendered; CSS swaps per theme. Bare on both —
+                each variant is made for its background. */}
             <img
               src={`/api/brand/logo?v=${appearance.logoKey}`}
               alt={organization.name}
               width={96}
               height={56}
               loading="lazy"
-              className="h-14 w-auto object-contain"
+              className={`h-14 w-auto object-contain ${
+                appearance.logoDarkKey ? "dark:hidden" : ""
+              }`}
             />
+            {appearance.logoDarkKey ? (
+              <img
+                src={`/api/brand/logo?variant=dark&v=${appearance.logoDarkKey}`}
+                alt={organization.name}
+                width={96}
+                height={56}
+                loading="lazy"
+                className="hidden h-14 w-auto object-contain dark:block"
+              />
+            ) : null}
             <h1 className="text-muted-foreground text-sm font-medium">
               {organization.name}
             </h1>

@@ -35,13 +35,9 @@ test.describe("white-label", () => {
     await expect(
       page.getByRole("heading", { name: "Book a free trial class" }),
     ).toBeVisible();
-    await expect(page.locator('img[src*="/api/brand/logo"]')).toBeVisible();
-    // The logo renders on the white plate so single-colour badges keep
-    // their contrast on dark surfaces.
+    // The primary logo renders bare (no plate) — variants control contrast.
     await expect(
-      page.locator("[data-logo-plate]").filter({
-        has: page.locator('img[src*="/api/brand/logo"]'),
-      }),
+      page.locator('img[src*="/api/brand/logo"]:not([src*="variant=dark"])'),
     ).toBeVisible();
 
     // Seed the dark-background logo too: /book should carry both variants
@@ -57,13 +53,17 @@ test.describe("white-label", () => {
       },
     });
     await page.goto("/book");
+    // Both variants in the DOM: primary visible in light mode (Playwright
+    // default), dark variant present but hidden until dark mode is active.
     await expect(
       page.locator('img[src*="/api/brand/logo?variant=dark"]'),
     ).toHaveCount(1);
     await expect(
       page.locator('img[src*="/api/brand/logo?variant=dark"]'),
     ).toBeHidden();
-    await expect(page.locator("[data-logo-plate]")).toHaveCount(1);
+    await expect(
+      page.locator('img[src*="/api/brand/logo"]:not([src*="variant=dark"])'),
+    ).toBeVisible();
     const darkResponse = await page.request.get("/api/brand/logo?variant=dark");
     expect(darkResponse.status()).toBe(200);
     expect(darkResponse.headers()["content-type"]).toBe("image/png");

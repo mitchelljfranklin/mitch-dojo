@@ -15,25 +15,19 @@ export async function BrandMark() {
     <div className="mb-4 flex flex-col items-center gap-2 text-center">
       {appearance.logoKey ? (
         <>
-          {/* Primary logo on the white plate. When a dark logo exists it is
-              shown only in light mode; otherwise always. The plate is white
-              in both themes (--logo-plate) so single-colour badges keep
-              their contrast where the primary logo is used. Cache-busted by
-              the logo keys so re-uploads appear immediately. */}
-          <div
-            data-logo-plate
-            className={`inline-flex rounded-lg border bg-(--logo-plate) p-2 ${
+          {/* Primary logo — made for light backgrounds, so it renders bare.
+              Swapped out in dark mode when a dark variant exists.
+              Cache-busted by the logo keys so re-uploads appear
+              immediately. */}
+          <img
+            src={`/api/brand/logo?v=${appearance.logoKey}`}
+            alt={`${organization.name} logo`}
+            className={`max-h-16 w-auto max-w-[180px] object-contain ${
               hasDarkLogo ? "dark:hidden" : ""
             }`}
-          >
-            <img
-              src={`/api/brand/logo?v=${appearance.logoKey}`}
-              alt={`${organization.name} logo`}
-              className="max-h-16 w-auto max-w-[180px] object-contain"
-            />
-          </div>
+          />
           {hasDarkLogo ? (
-            /* Dark logo: made for dark backgrounds, so no plate. */
+            /* Dark logo — made for dark backgrounds, rendered bare. */
             <img
               src={`/api/brand/logo?variant=dark&v=${appearance.logoDarkKey}`}
               alt={`${organization.name} logo`}

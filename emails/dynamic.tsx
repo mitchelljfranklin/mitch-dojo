@@ -15,9 +15,9 @@ type DynamicEmailProps = {
   // Absolute URL to the dojo logo (public route) — rendered when the dojo
   // has uploaded one. Must be absolute: email clients have no base URL.
   logoUrl?: string;
-  // Which logo variant the URL points at: "primary" renders on the white
-  // plate, "dark" (a white knockout badge) renders on a dark plate so it
-  // stays visible against email clients' white background.
+  // Which logo variant the URL points at: "primary" renders bare (it is
+  // made for light backgrounds and email clients are white); "dark" (a
+  // white knockout badge) renders on a dark plate so it stays visible.
   logoVariant?: "primary" | "dark";
 };
 
@@ -29,10 +29,6 @@ export function DynamicEmail({
   logoVariant = "primary",
 }: DynamicEmailProps) {
   const paragraphs = body.split("\n").filter((line) => line.length > 0);
-  const plateStyle =
-    logoVariant === "dark"
-      ? { backgroundColor: "#18181b", borderColor: "#3f3f46" }
-      : { backgroundColor: "#ffffff", borderColor: "#e4e4e7" };
 
   return (
     <Html>
@@ -40,30 +36,44 @@ export function DynamicEmail({
       <Body style={{ fontFamily: "sans-serif", padding: "32px" }}>
         <Container>
           {logoUrl ? (
-            // The plate mirrors the app's --logo-plate token (primary) or a
-            // dark plate (dark variant) so either badge keeps its contrast.
+            // The primary logo is made for light backgrounds and renders
+            // bare (email clients are white). The dark variant is a white
+            // knockout badge, so it rides on a dark plate to stay visible.
             // Inline styles — email clients ignore CSS vars.
-            <div
-              style={{
-                display: "inline-block",
-                ...plateStyle,
-                border: `1px solid ${plateStyle.borderColor}`,
-                borderRadius: "12px",
-                padding: "8px",
-                marginBottom: "16px",
-              }}
-            >
+            logoVariant === "dark" ? (
+              <div
+                style={{
+                  display: "inline-block",
+                  backgroundColor: "#18181b",
+                  border: "1px solid #3f3f46",
+                  borderRadius: "12px",
+                  padding: "8px",
+                  marginBottom: "16px",
+                }}
+              >
+                <Img
+                  src={logoUrl}
+                  alt="Dojo logo"
+                  style={{
+                    maxHeight: "48px",
+                    maxWidth: "180px",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
+              </div>
+            ) : (
               <Img
                 src={logoUrl}
                 alt="Dojo logo"
                 style={{
-                  maxHeight: "48px",
-                  maxWidth: "180px",
+                  maxHeight: "64px",
+                  maxWidth: "200px",
                   objectFit: "contain",
-                  display: "block",
+                  marginBottom: "16px",
                 }}
               />
-            </div>
+            )
           ) : null}
           <Heading as="h2">{heading}</Heading>
           {htmlBody ? (

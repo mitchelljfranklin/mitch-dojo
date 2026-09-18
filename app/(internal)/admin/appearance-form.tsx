@@ -133,21 +133,16 @@ function AppearanceFormInner({
         ) : null}
         {hasLogo ? (
           <div className="flex flex-col gap-2">
-            <span
-              data-logo-plate
-              className="inline-flex w-fit rounded-lg border bg-(--logo-plate) p-1.5"
-            >
-              <img
-                src={`/api/brand/logo?v=${logoKey}`}
-                alt="Current logo"
-                width={48}
-                height={48}
-                className="h-10 w-auto object-contain"
-              />
-            </span>
+            <img
+              src={`/api/brand/logo?v=${logoKey}`}
+              alt="Current logo"
+              width={48}
+              height={48}
+              className="h-10 w-auto rounded-md border object-contain"
+            />
             <p className="text-muted-foreground text-xs">
-              Rendered on a white plate so single-colour badges stay visible in
-              dark mode and in emails.
+              Rendered bare — upload the dark-background variant below if this
+              badge is hard to see on dark surfaces.
             </p>
             <ConfirmDialog
               title="Remove logo?"
@@ -236,9 +231,9 @@ function AppearanceFormInner({
       <div className="grid gap-2">
         <Label htmlFor="emailLogoVariant">Email logo</Label>
         <p className="text-muted-foreground text-xs">
-          Which logo appears in the header of outgoing emails. Emails always
-          render on a white background, so the dark logo is shown on a dark
-          plate to keep it visible.
+          Which logo appears in the header of outgoing emails. Emails render on
+          a white background, so the dark logo rides on a dark plate to stay
+          visible.
         </p>
         <Select
           name="emailLogoVariant"
@@ -249,7 +244,7 @@ function AppearanceFormInner({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="primary">Primary logo (white plate)</SelectItem>
+            <SelectItem value="primary">Primary logo</SelectItem>
             <SelectItem value="dark" disabled={!hasLogoDark}>
               Dark logo (dark plate)
             </SelectItem>
