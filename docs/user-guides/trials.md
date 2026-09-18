@@ -31,7 +31,16 @@ Trials that sit too long without converting get one automated follow-up (default
 
 ## From trial to member
 
-Conversion from the pipeline makes the student active — their attendance, belts, and invoices flow into everything else (eligibility, reminders, portal). Or convert from the student record directly.
+Conversion happens at the **First class** stage (guarded transitions keep the pipeline meaningful):
+
+- **Dropdown path** — move the lead to Converted; the student flips to ACTIVE with a conversion timestamp.
+- **Convert sheet** — the **Convert** button on a First-class row opens a richer flow: optionally enroll the new member into a plan and create their **first invoice** in the same step (standard due window). Requires `memberships:edit`; without it the sheet converts plainly.
+
+Conversion makes the student active — their attendance, belts, and invoices flow into everything else (eligibility, reminders, portal).
+
+## Booking confirmations
+
+When a prospect books on the public page, they receive a branded **confirmation email** (toggleable under [Communication settings](../configuration/communication), template under [Templates](../configuration/templates)). One email per booking — deduped.
 
 ## Permissions
 

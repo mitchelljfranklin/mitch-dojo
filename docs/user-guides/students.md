@@ -16,7 +16,17 @@ Each student has:
 
 ## The list view
 
-Search by name or email, filter by status and location, and sort by name. Open a student for the full record: attendance history, belt progression, invoices, and attachments on one page.
+Search by name or email, filter by status and location, and sort by name. Open a student for the full record: attendance history, belt progression, invoices, and attachments on one page — plus a **Report card** button that downloads a branded PDF (rank per discipline, training summary, balance) for handing to parents.
+
+## Bulk actions
+
+With `students:edit`, the list gains checkboxes and a floating action bar for working in batches:
+
+- **Set status** — move many students between trial/active/inactive/alumni at once
+- **Assign discipline** — link a discipline to every selected student (existing links are kept)
+- **Enroll in plan** — enroll the selection into a membership plan (requires `memberships:edit`)
+
+Every action is audit-logged as one entry with the affected students; the bar reports what changed ("Set 2 students to Trial") and the selection clears on success.
 
 ## Adding students
 

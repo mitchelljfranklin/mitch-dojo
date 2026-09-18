@@ -15,6 +15,7 @@ Failed sends get a **Retry** action (`settings:manage`):
 - Tokens are regenerated from **current data** — a retried class reminder uses the session's latest time; a retried portal-link email issues a fresh magic link.
 - The retry is recorded against the same log row, so the history stays in one place.
 - Password-reset emails are **never** retried — reset links are single-use by design.
+- Booking confirmations are **never** retried either — the class details only exist in the booking itself; contact the prospect directly instead.
 
 ## Retention
 

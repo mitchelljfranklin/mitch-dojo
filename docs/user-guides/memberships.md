@@ -16,7 +16,7 @@ With auto-generation on ([Memberships settings](../configuration/memberships)), 
 
 ## Recording payments
 
-Open an invoice and record a payment: amount, date, and method (cash, transfer, terminal). The invoice's balance updates and its status reflects paid/partial/overdue. Full payment history is kept on the invoice.
+Open an invoice and record a payment: amount, date, and method (cash, transfer, terminal). The invoice's balance updates and its status reflects paid/partial/overdue. Full payment history is kept on the invoice, and **Download PDF** produces a branded, printable invoice (line items, payment history, balance due).
 
 ::: tip Partial payments
 Record multiple payments against one invoice — a deposit now, the rest next week. The balance and status track each one.

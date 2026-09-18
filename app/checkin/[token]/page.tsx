@@ -17,6 +17,7 @@ import {
 import { rateLimit } from "@/lib/rate-limit";
 
 import { checkInAction } from "./actions";
+import { KioskToggle } from "./kiosk-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -62,12 +63,26 @@ export default async function CheckinPage({
   }
 
   const { locationName, sessions } = await getCheckinPageData(locationId);
+  const kiosk = sp.kiosk === "1";
 
   return (
-    <div className="mx-auto max-w-md p-6">
-      <BrandMark />
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
+    // Kiosk mode drops the brand chrome and goes edge-to-edge so the roster
+    // fills a front-desk tablet.
+    <div
+      className={kiosk ? "flex min-h-svh flex-col p-4" : "mx-auto max-w-md p-6"}
+    >
+      <div className="mb-4 flex items-center justify-end">
+        <KioskToggle kiosk={kiosk} />
+      </div>
+      {kiosk ? null : <BrandMark />}
+      <div className={kiosk ? "mb-6 text-center" : "mb-6 text-center"}>
+        <h1
+          className={
+            kiosk
+              ? "text-3xl font-semibold tracking-tight"
+              : "text-2xl font-semibold tracking-tight"
+          }
+        >
           Check in at {locationName}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -99,11 +114,17 @@ export default async function CheckinPage({
           </CardHeader>
         </Card>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div
+          className={
+            kiosk ? "flex flex-1 flex-col gap-6" : "flex flex-col gap-4"
+          }
+        >
           {sessions.map((session) => (
             <Card key={session.id}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{session.courseName}</CardTitle>
+                <CardTitle className={kiosk ? "text-2xl" : "text-lg"}>
+                  {session.courseName}
+                </CardTitle>
                 <CardDescription>
                   <span className="font-mono text-xs">
                     {session.startTime}–{session.endTime}
@@ -122,6 +143,7 @@ export default async function CheckinPage({
                   sessionId={session.id}
                   students={session.students}
                   action={checkInAction}
+                  kiosk={kiosk}
                 />
               </CardContent>
             </Card>
@@ -137,11 +159,13 @@ function CheckinSessionGroup({
   sessionId,
   students,
   action,
+  kiosk,
 }: {
   token: string;
   sessionId: string;
   students: { studentId: string; name: string; checkedIn: boolean }[];
   action: (formData: FormData) => Promise<void>;
+  kiosk: boolean;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -153,7 +177,9 @@ function CheckinSessionGroup({
           <button
             type="submit"
             disabled={student.checkedIn}
-            className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+            className={`rounded-full border transition-colors ${
+              kiosk ? "px-6 py-4 text-xl" : "px-4 py-2 text-sm"
+            } ${
               student.checkedIn
                 ? "bg-success/15 border-success/30 text-success cursor-default"
                 : "hover:bg-accent hover:border-primary/40"

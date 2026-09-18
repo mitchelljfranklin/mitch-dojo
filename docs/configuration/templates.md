@@ -9,6 +9,7 @@ Every automated email's subject and body, editable with tokens. Also home of the
 | **Class reminder** | Scheduler, N hours before a session |
 | **Payment reminder** | Invoice enters the due-soon window / overdue threshold |
 | **Birthday** | On the student's birthday |
+| **Booking confirmation** | Public booking page submission |
 | **Trial follow-up** | Open trial past the follow-up window |
 | **Portal link** | Staff sends a member-portal magic link |
 | **Password reset** | Staff user requests a reset |

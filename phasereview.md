@@ -1,6 +1,6 @@
 # Phase Review — Remaining & Potential Work
 
-> **Last updated:** September 2026 (UX/product polish batches planned and approved)
+> **Last updated:** September 2026 (UX/product polish batches 1-5 complete)
 > **Purpose:** a living checklist of everything left or worth considering,
 > so nothing lives only in conversation. Tick items off or strike them out
 > as decisions land.
@@ -87,38 +87,44 @@
 
 Approved plan (owner sign-off): all items, in the batch order below.
 
-- [ ] **Batch 1 — PDFs** (needs `@react-pdf/renderer` — *not* actually a
-      dependency yet, correcting an earlier note): shared branded PDF shell
+- [x] **Batch 1 — PDFs** (`@react-pdf/renderer` installed; the earlier
+      "already a dependency" note was wrong): shared branded PDF shell
       (org name + light logo + primary-colour accent) + authenticated
-      `/api/.../pdf` route pattern. Then:
-      - [ ] Invoice PDF — button on the invoice detail page
-            (`memberships:view`): header, invoice number/dates/status,
-            student, line items, payment history, balance
-      - [ ] Student PDF report card — button on the student record
-            (`students:view`): photo, name, rank per discipline with colour
-            swatch, attendance summary + next-belt eligibility, balance
-- [ ] **Batch 2 — Trial conversion enrichments**:
-      - [ ] Booking confirmation email — new BOOKING template type
-            (Templates page), sent by the booking action after honeypot +
-            rate-limit pass; dedup key `booking:{trialId}`; toggleable in
-            Admin → Communication alongside the other reminder types
-            (owner decision)
-      - [ ] Conversion dialog enrichment — optional plan select + "create
-            first invoice" checkbox (plan pre-selected when exactly one
-            active plan exists); trials store only free-text session notes,
-            so no automatic plan inference
-- [ ] **Batch 3 — Bulk actions on the students list**: checkbox column +
+      `/api/.../pdf` route pattern. Done:
+      - [x] Invoice PDF — GET /api/invoices/[id]/pdf
+            (`memberships:view`): header, status, line items, payment
+            history, balance, notes; button on the invoice detail page
+      - [x] Student PDF report card — GET /api/students/[id]/report-card
+            (`students:view`): photo, rank per discipline with colour
+            swatch, training summary (all-time + 30 days), balance, belt
+            history; button on the student record
+- [x] **Batch 2 — Trial conversion enrichments**:
+      - [x] Booking confirmation email — BOOKING template type (Templates
+            page), toggleable in Admin → Communication (default on), sent
+            by the booking action after honeypot + rate-limit pass,
+            deduped per booking; non-retryable (tokens live only in the
+            booking notes)
+      - [x] Convert sheet on the trials pipeline — optional plan select +
+            "create first invoice" checkbox at the FIRST_CLASS stage
+            (guarded transitions); memberships:edit re-checked
+            server-side; conversion survives enrollment failure with a
+            clear message
+- [x] **Batch 3 — Bulk actions on the students list**: checkbox column +
       select-all + floating action bar; bulk set status and bulk assign
       disciplines (`students:edit`), bulk enroll to plan
-      (`memberships:edit`, hidden without it); one audited server action per
-      operation with row-level results
-- [ ] **Batch 4 — Check-in kiosk mode**: toggle on /checkin/[token] hiding
-      page chrome, enlarged roster + auto-focused search, Fullscreen API
-      button; persisted via `?kiosk=1`
-- [ ] **Batch 5 — Trainer experience review**: audit task, not code — walk
-      the seeded Trainer role through every screen, confirm nothing
-      important is hidden and nothing admin-y leaks; fix findings and record
-      the outcome here
+      (`memberships:edit`, hidden without it); one audited server action
+      per operation with row-level results
+- [x] **Batch 4 — Check-in kiosk mode**: toggle on /checkin/[token]
+      hiding the brand chrome, enlarged roster chips, Fullscreen API
+      button; persisted via `?kiosk=1` so the tablet bookmark keeps it
+- [x] **Batch 5 — Trainer experience review** (September 2026): audited
+      every screen as the seeded Trainer role and locked the result into
+      `e2e/rbac-trainer.spec.ts` — floor operations all reachable
+      (students incl. edit/bulk + portal link, schedule, classes list,
+      belts, analytics, memberships read-only, convert sheet without
+      billing), admin gear absent, direct /admin navigation bounces,
+      bulk bar hides the enroll control without memberships:edit. No
+      permission gaps found — no role changes needed.
 
 ### Infrastructure / operational
 

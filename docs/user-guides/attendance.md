@@ -28,6 +28,10 @@ Each location has a **public, no-login check-in page**. Students (or parents) sc
 The check-in URL is stable per location — print the QR once and stick it at the front desk.
 :::
 
+## Kiosk mode
+
+For a tablet at the front desk, the **Kiosk mode** toggle hides the branding chrome, goes edge-to-edge, and enlarges the name chips so students can tap themselves from across the room. It also requests the browser's fullscreen. The mode persists in the URL (`?kiosk=1`) — bookmark it once and the tablet always opens in kiosk mode.
+
 ## Why attendance matters
 
 - **Belt eligibility** — cumulative Present + Late sessions across all courses of a student's discipline (see [Belts & Gradings](./belts)).

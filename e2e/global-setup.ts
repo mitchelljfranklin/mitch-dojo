@@ -21,6 +21,9 @@ const CHECKIN_TOKEN_FILE = "e2e/.checkin-token";
 export const E2E_ADMIN_EMAIL = "e2e-admin@example.test";
 export const E2E_ADMIN_PASSWORD = "admin-password-12345";
 export const E2E_VIEWER_EMAIL = "e2e-viewer@example.test";
+export const E2E_TRAINER_EMAIL = "e2e-trainer@example.test";
+export const E2E_TRAINER_PASSWORD = "trainer-password-12345";
+
 export const E2E_VIEWER_PASSWORD = "viewer-password-12345";
 
 const E2E_LOCATION_NAME = "E2E Dojo";
@@ -241,8 +244,21 @@ export default async function globalSetup() {
     roleId: viewerRole.id,
   });
 
+  const trainerRole = await getRoleByName(SYSTEM_ROLE_NAMES.TRAINER);
+  if (!trainerRole) {
+    throw new Error("Trainer role not found during e2e setup.");
+  }
+  await prisma.user.deleteMany({ where: { email: E2E_TRAINER_EMAIL } });
+  const trainer = await createUser({
+    name: "E2E Trainer",
+    email: E2E_TRAINER_EMAIL,
+    password: E2E_TRAINER_PASSWORD,
+    roleId: trainerRole.id,
+  });
+
   await toggleUserDisabled(admin.id, false);
   await toggleUserDisabled(viewer.id, false);
+  await toggleUserDisabled(trainer.id, false);
 
   await prisma.$disconnect();
 }
