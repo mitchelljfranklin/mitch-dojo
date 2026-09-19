@@ -1,6 +1,7 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import { revalidatePath } from "next/cache";
 
 import { env } from "@/lib/env";
 import { requirePermission, getCurrentUser } from "@/lib/auth";
@@ -10,7 +11,13 @@ import {
 } from "@/lib/break-glass";
 import { PERMISSIONS } from "@/lib/permissions";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
-import { toAgreementType, createDocumentVersion } from "@/lib/db/agreements";
+import {
+  createDocument,
+  createDocumentVersion,
+  setDocumentEnabled,
+  deleteDocument,
+  getAgreementDocumentById,
+} from "@/lib/db/agreements";
 import {
   getAppearanceSettings,
   getStorageSettings,
@@ -545,6 +552,94 @@ export async function sendCommunicationSampleAction(
   };
 }
 
+export async function saveAgreementDocumentAction(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const documentId = String(formData.get("documentId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const bodyMarkdown = String(formData.get("bodyMarkdown") ?? "");
+  if (!title) {
+    return { ok: false, message: "Give the document a title." };
+  }
+  if (bodyMarkdown.trim().length === 0) {
+    return { ok: false, message: "The document body cannot be empty." };
+  }
+
+  const user = await getCurrentUser();
+  const createdById = user?.id ?? null;
+
+  let version: number;
+  if (documentId) {
+    version = await createDocumentVersion({
+      documentId,
+      title,
+      bodyMarkdown,
+      createdById,
+    });
+  } else {
+    const created = await createDocument({
+      title,
+      bodyMarkdown,
+      createdById,
+    });
+    version = created.version;
+  }
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      `agreement.${title.toLowerCase().slice(0, 40)}.v${version}`,
+    );
+  }
+  return {
+    ok: true,
+    message:
+      version === 0
+        ? "Document added (version 0) — members can sign it now."
+        : `Saved as version ${version} — members must re-sign the new version.`,
+  };
+}
+
+export async function toggleAgreementDocumentAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const documentId = String(formData.get("documentId") ?? "");
+  const enabled = formData.get("enabled") === "on";
+  if (!documentId) return;
+  await setDocumentEnabled(documentId, enabled);
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      `agreement.${documentId}.${enabled ? "enabled" : "disabled"}`,
+    );
+  }
+  revalidatePath("/admin/documents");
+}
+
+export async function deleteAgreementDocumentAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const documentId = String(formData.get("documentId") ?? "");
+  if (!documentId) return;
+  const document = await getAgreementDocumentById(documentId);
+  await deleteDocument(documentId);
+  const user = await getCurrentUser();
+  if (user && document) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      `agreement.${document.title.toLowerCase().slice(0, 40)}.deleted`,
+    );
+  }
+  revalidatePath("/admin/documents");
+}
+
 export async function saveStorageSettings(
   _previousState: { ok: boolean; message: string } | undefined,
   formData: FormData,
@@ -672,45 +767,4 @@ export async function generateBreakGlassUrlAction(
   }
 
   return { ok: true, url: `${env.APP_URL}/login?breakGlass=${token}` };
-}
-
-export async function saveAgreementDocumentAction(
-  previousState: SettingsActionState,
-  formData: FormData,
-): Promise<SettingsActionState> {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
-
-  const typeRaw = String(formData.get("type") ?? "");
-  const type = toAgreementType(typeRaw);
-  if (!type) {
-    return { ok: false, message: "Unknown document type." };
-  }
-  const title = String(formData.get("title") ?? "").trim();
-  const bodyMarkdown = String(formData.get("bodyMarkdown") ?? "");
-  if (!title) {
-    return { ok: false, message: "Give the document a title." };
-  }
-  if (bodyMarkdown.trim().length === 0) {
-    return { ok: false, message: "The document body cannot be empty." };
-  }
-
-  const user = await getCurrentUser();
-  const version = await createDocumentVersion({
-    type,
-    title,
-    bodyMarkdown,
-    createdById: user?.id ?? null,
-  });
-  if (user) {
-    await logAudit(
-      user.id,
-      AUDIT_ACTIONS.UPDATE_SETTINGS,
-      "Setting",
-      `agreement.${typeRaw.toLowerCase()}.v${version}`,
-    );
-  }
-  return {
-    ok: true,
-    message: `Saved as version ${version} — members must re-sign the new version.`,
-  };
 }

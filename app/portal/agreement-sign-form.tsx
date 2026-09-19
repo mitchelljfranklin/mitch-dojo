@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,15 +17,24 @@ type PortalAgreementSignFormProps = {
 type PortalSignState = { ok: boolean; message: string } | undefined;
 
 // Digital signing: the member (or guardian) confirms they read the document
-// and types their name. The portal token authorises the write.
+// and types their name. The portal token authorises the write. On success
+// the form triggers a refresh so the status badges update without a manual
+// reload.
 export function PortalAgreementSignForm({
   documentId,
   documentLabel,
 }: PortalAgreementSignFormProps) {
+  const router = useRouter();
   const [state, formAction, isPending] = useActionState<
     PortalSignState,
     FormData
   >(signPortalAgreementAction, undefined);
+
+  useEffect(() => {
+    if (state?.ok) {
+      router.refresh();
+    }
+  }, [state, router]);
 
   return (
     <form action={formAction} className="mt-3 flex flex-col gap-3">

@@ -1,15 +1,12 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
-import { rateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
-import { headers } from "next/headers";
+import { rateLimit } from "@/lib/rate-limit";
 import {
   signAgreementViaPortal,
   getAgreementDocumentById,
-  AGREEMENT_TYPE_LABELS,
-  type AgreementTypeValue,
 } from "@/lib/db/agreements";
 import { verifyPortalToken } from "@/lib/db/portal";
 import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
@@ -57,17 +54,15 @@ export async function signPortalAgreementAction(
   }
 
   const document = await getAgreementDocumentById(documentId);
-  if (!document) {
-    return { ok: false, message: "That document no longer exists." };
+  if (!document || !document.enabled) {
+    return { ok: false, message: "That document is no longer available." };
   }
 
   await signAgreementViaPortal({ studentId, documentId, signedByName });
-  const label =
-    AGREEMENT_TYPE_LABELS[document.type as AgreementTypeValue] ?? document.type;
   await logSystemAudit(AUDIT_ACTIONS.RECORD_AGREEMENT, "Student", studentId, {
     documentId,
     method: "PORTAL",
-    documentType: label,
+    documentTitle: document.title,
   });
 
   return { ok: true, message: `Signed — thank you, ${signedByName}.` };

@@ -312,7 +312,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
             recorded.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4">
           {agreementStatuses.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               No documents to sign yet.
@@ -320,11 +320,11 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
           ) : (
             agreementStatuses.map((status) => (
               <details
-                key={status.type}
-                className="rounded-md border p-3 text-sm"
+                key={status.documentId}
+                className="rounded-md border p-4 text-sm"
               >
                 <summary className="flex cursor-pointer flex-wrap items-center gap-2">
-                  <span className="font-medium">{status.label}</span>
+                  <span className="font-medium">{status.title}</span>
                   {status.signed && !status.reSignRequired ? (
                     <Badge variant="secondary">
                       Signed {formatDate(status.signedAt!)}
@@ -349,7 +349,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                   ) : (
                     <PortalAgreementSignForm
                       documentId={status.documentId}
-                      documentLabel={status.label}
+                      documentLabel={status.title}
                     />
                   )}
                 </div>

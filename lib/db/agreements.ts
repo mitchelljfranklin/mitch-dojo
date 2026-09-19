@@ -1,66 +1,62 @@
 import { prisma } from "@/lib/prisma";
 
-// Compliance documents: versioned school-specific agreements (privacy
-// notice, informed consent, safety expectations) and the per-student
-// signature records against them. The latest version of each type is the
-// active one; re-signing is required only when it changes.
+// Compliance documents: school-managed agreements (privacy notice, informed
+// consent, safety expectations — or anything else a school adds). The count
+// is not fixed: documents can be added, renamed (the title IS the display
+// name), enabled/disabled, and deleted. Each document carries a version;
+// editing creates a new version row (immutable history), signatures bind to
+// the version they signed, and the compliance surface reports "re-sign
+// required" when a document's version moves past a signature.
 
-export const AGREEMENT_TYPES = ["PRIVACY", "CONSENT", "SAFETY"] as const;
-
-export type AgreementTypeValue = (typeof AGREEMENT_TYPES)[number];
-
-export const AGREEMENT_TYPE_LABELS: Record<AgreementTypeValue, string> = {
-  PRIVACY: "Privacy notice",
-  CONSENT: "Informed consent",
-  SAFETY: "Safety expectations",
-};
-
-function isAgreementType(value: string): value is AgreementTypeValue {
-  return (AGREEMENT_TYPES as readonly string[]).includes(value);
-}
-
-export function toAgreementType(value: string): AgreementTypeValue | null {
-  return isAgreementType(value) ? value : null;
-}
+// Fresh/seeded documents start at version 0 so the school's first edit
+// reads as version 1.
+const INITIAL_VERSION = 0;
 
 export type ActiveDocument = {
   id: string;
-  type: AgreementTypeValue;
-  version: number;
   title: string;
   bodyMarkdown: string;
-  createdAt: Date;
+  enabled: boolean;
+  version: number;
+  signatureCount: number;
 };
 
-// The active document per type (latest version), ordered consistently.
-export async function listActiveDocuments(): Promise<ActiveDocument[]> {
+// All documents in display order (creation order). `enabledOnly` trims to
+// the ones the portal/compliance surfaces should show.
+export async function listDocuments(
+  enabledOnly = false,
+): Promise<ActiveDocument[]> {
   const rows = await prisma.agreementDocument.findMany({
-    orderBy: [{ type: "asc" }, { version: "desc" }],
+    where: enabledOnly ? { enabled: true } : undefined,
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: { _count: { select: { signatures: true } } },
   });
-  const latestByType = new Map<AgreementTypeValue, ActiveDocument>();
-  for (const row of rows) {
-    if (!latestByType.has(row.type)) {
-      latestByType.set(row.type, {
-        id: row.id,
-        type: row.type,
-        version: row.version,
-        title: row.title,
-        bodyMarkdown: row.bodyMarkdown,
-        createdAt: row.createdAt,
-      });
-    }
-  }
-  // Stable order: PRIVACY, CONSENT, SAFETY.
-  return AGREEMENT_TYPES.map((type) => latestByType.get(type)).filter(
-    (document): document is ActiveDocument => document !== undefined,
-  );
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    bodyMarkdown: row.bodyMarkdown,
+    enabled: row.enabled,
+    version: row.version,
+    signatureCount: row._count.signatures,
+  }));
 }
 
-export async function getActiveDocument(
-  type: AgreementTypeValue,
+export async function getAgreementDocumentById(
+  documentId: string,
 ): Promise<ActiveDocument | null> {
-  const all = await listActiveDocuments();
-  return all.find((document) => document.type === type) ?? null;
+  const row = await prisma.agreementDocument.findUnique({
+    where: { id: documentId },
+    include: { _count: { select: { signatures: true } } },
+  });
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    bodyMarkdown: row.bodyMarkdown,
+    enabled: row.enabled,
+    version: row.version,
+    signatureCount: row._count.signatures,
+  };
 }
 
 export type DocumentVersionRow = {
@@ -69,19 +65,15 @@ export type DocumentVersionRow = {
   title: string;
   createdAt: Date;
   createdByName: string | null;
-  signatureCount: number;
 };
 
 export async function listDocumentVersions(
-  type: AgreementTypeValue,
+  documentId: string,
 ): Promise<DocumentVersionRow[]> {
-  const rows = await prisma.agreementDocument.findMany({
-    where: { type },
+  const rows = await prisma.agreementVersion.findMany({
+    where: { documentId },
     orderBy: { version: "desc" },
-    include: {
-      createdBy: { select: { name: true } },
-      _count: { select: { signatures: true } },
-    },
+    include: { createdBy: { select: { name: true } } },
   });
   return rows.map((row) => ({
     id: row.id,
@@ -89,50 +81,105 @@ export async function listDocumentVersions(
     title: row.title,
     createdAt: row.createdAt,
     createdByName: row.createdBy?.name ?? null,
-    signatureCount: row._count.signatures,
   }));
 }
 
-// Saves a NEW version of the document (immutable history) — version is
-// max(existing)+1 per type.
+// Creates a new document starting at version 0 (the provided title/body).
+export async function createDocument(input: {
+  title: string;
+  bodyMarkdown: string;
+  createdById: string | null;
+}): Promise<{ id: string; version: number }> {
+  const last = await prisma.agreementDocument.findFirst({
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
+  const document = await prisma.agreementDocument.create({
+    data: {
+      title: input.title,
+      bodyMarkdown: input.bodyMarkdown,
+      version: INITIAL_VERSION,
+      sortOrder: (last?.sortOrder ?? 0) + 1,
+      createdById: input.createdById,
+      versions: {
+        create: {
+          version: INITIAL_VERSION,
+          title: input.title,
+          bodyMarkdown: input.bodyMarkdown,
+          createdById: input.createdById,
+        },
+      },
+    },
+    select: { id: true },
+  });
+  return { id: document.id, version: INITIAL_VERSION };
+}
+
+// Saves an edit as a NEW version (immutable history) — version = current+1,
+// and a version-history row is written for it.
 export async function createDocumentVersion(input: {
-  type: AgreementTypeValue;
+  documentId: string;
   title: string;
   bodyMarkdown: string;
   createdById: string | null;
 }): Promise<number> {
-  const latest = await prisma.agreementDocument.findFirst({
-    where: { type: input.type },
-    orderBy: { version: "desc" },
+  const document = await prisma.agreementDocument.findUnique({
+    where: { id: input.documentId },
     select: { version: true },
   });
-  const version = (latest?.version ?? 0) + 1;
-  await prisma.agreementDocument.create({
-    data: {
-      type: input.type,
-      version,
-      title: input.title,
-      bodyMarkdown: input.bodyMarkdown,
-      createdById: input.createdById,
-    },
-  });
+  if (!document) {
+    throw new Error("Document not found.");
+  }
+  const version = document.version + 1;
+  await prisma.$transaction([
+    prisma.agreementDocument.update({
+      where: { id: input.documentId },
+      data: {
+        title: input.title,
+        bodyMarkdown: input.bodyMarkdown,
+        version,
+      },
+    }),
+    prisma.agreementVersion.create({
+      data: {
+        documentId: input.documentId,
+        version,
+        title: input.title,
+        bodyMarkdown: input.bodyMarkdown,
+        createdById: input.createdById,
+      },
+    }),
+  ]);
   return version;
 }
 
+export async function setDocumentEnabled(
+  documentId: string,
+  enabled: boolean,
+): Promise<void> {
+  await prisma.agreementDocument.update({
+    where: { id: documentId },
+    data: { enabled },
+  });
+}
+
+// Deleting a document removes its version history and signatures (cascade)
+// — the compliance record for those signatures goes with it.
+export async function deleteDocument(documentId: string): Promise<void> {
+  await prisma.agreementDocument.delete({ where: { id: documentId } });
+}
+
 export type AgreementStatus = {
-  type: AgreementTypeValue;
-  label: string;
-  title: string;
-  // The active version the student should be on.
-  activeVersion: number;
   documentId: string;
+  title: string;
   bodyMarkdown: string;
-  // Signed state against the ACTIVE version.
+  // The current version the student should be on.
+  activeVersion: number;
+  // Signed state against the current version.
   signed: boolean;
   signedAt: Date | null;
   signedByName: string | null;
   method: "PORTAL" | "STAFF" | null;
-  // The version the signature was made against (when outdated).
   signedVersion: number | null;
   // True when a signature exists but against an older version.
   reSignRequired: boolean;
@@ -141,35 +188,28 @@ export type AgreementStatus = {
 export async function getStudentAgreementStatuses(
   studentId: string,
 ): Promise<AgreementStatus[]> {
-  const [activeDocuments, signatures] = await Promise.all([
-    listActiveDocuments(),
+  const [documents, signatures] = await Promise.all([
+    listDocuments(true),
     prisma.studentAgreement.findMany({
       where: { studentId },
-      include: {
-        document: { select: { id: true, type: true, version: true } },
-      },
       orderBy: { signedAt: "desc" },
     }),
   ]);
 
-  return activeDocuments.map((document) => {
-    // The most recent signature for this type — may be an older version.
-    const signature = signatures.find(
-      (row) => row.document.type === document.type,
-    );
-    const signed = signature?.document.id === document.id;
+  return documents.map((document) => {
+    const signature = signatures.find((row) => row.documentId === document.id);
+    const signed =
+      Boolean(signature) && signature!.version === document.version;
     return {
-      type: document.type,
-      label: AGREEMENT_TYPE_LABELS[document.type],
-      title: document.title,
-      activeVersion: document.version,
       documentId: document.id,
+      title: document.title,
       bodyMarkdown: document.bodyMarkdown,
+      activeVersion: document.version,
       signed,
-      signedAt: signed ? signature!.signedAt : null,
-      signedByName: signed ? signature!.signedByName : null,
-      method: signed ? signature!.method : null,
-      signedVersion: signature ? signature.document.version : null,
+      signedAt: signature?.signedAt ?? null,
+      signedByName: signature?.signedByName ?? null,
+      method: signature?.method ?? null,
+      signedVersion: signature?.version ?? null,
       reSignRequired: Boolean(signature) && !signed,
     };
   });
@@ -197,6 +237,13 @@ export async function recordStudentSignature(input: {
   signedByName: string;
   recordedById: string | null;
 }): Promise<void> {
+  const document = await prisma.agreementDocument.findUnique({
+    where: { id: input.documentId },
+    select: { version: true },
+  });
+  if (!document) {
+    throw new Error("Document not found.");
+  }
   await prisma.studentAgreement.upsert({
     where: {
       studentId_documentId: {
@@ -205,6 +252,7 @@ export async function recordStudentSignature(input: {
       },
     },
     update: {
+      version: document.version,
       signedAt: input.signedAt,
       signedByName: input.signedByName,
       method: "STAFF",
@@ -213,6 +261,7 @@ export async function recordStudentSignature(input: {
     create: {
       studentId: input.studentId,
       documentId: input.documentId,
+      version: document.version,
       signedAt: input.signedAt,
       signedByName: input.signedByName,
       method: "STAFF",
@@ -228,6 +277,13 @@ export async function signAgreementViaPortal(input: {
   documentId: string;
   signedByName: string;
 }): Promise<void> {
+  const document = await prisma.agreementDocument.findUnique({
+    where: { id: input.documentId },
+    select: { version: true },
+  });
+  if (!document) {
+    throw new Error("Document not found.");
+  }
   await prisma.studentAgreement.upsert({
     where: {
       studentId_documentId: {
@@ -236,6 +292,7 @@ export async function signAgreementViaPortal(input: {
       },
     },
     update: {
+      version: document.version,
       signedAt: new Date(),
       signedByName: input.signedByName,
       method: "PORTAL",
@@ -244,26 +301,10 @@ export async function signAgreementViaPortal(input: {
     create: {
       studentId: input.studentId,
       documentId: input.documentId,
+      version: document.version,
       signedAt: new Date(),
       signedByName: input.signedByName,
       method: "PORTAL",
     },
   });
-}
-
-export async function getAgreementDocumentById(
-  documentId: string,
-): Promise<ActiveDocument | null> {
-  const row = await prisma.agreementDocument.findUnique({
-    where: { id: documentId },
-  });
-  if (!row) return null;
-  return {
-    id: row.id,
-    type: row.type,
-    version: row.version,
-    title: row.title,
-    bodyMarkdown: row.bodyMarkdown,
-    createdAt: row.createdAt,
-  };
 }

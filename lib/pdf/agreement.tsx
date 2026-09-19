@@ -4,7 +4,6 @@ import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
 
 export type AgreementPdfInput = {
   documentTitle: string;
-  documentType: string;
   version: number;
   bodyMarkdown: string;
   studentName: string;
@@ -47,9 +46,7 @@ export function AgreementPdfDocument({
         <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
           {data.documentTitle}
         </Text>
-        <Text style={pdfStyles.muted}>
-          {data.documentType} · version {data.version}
-        </Text>
+        <Text style={pdfStyles.muted}>version {data.version}</Text>
 
         <View style={{ marginTop: 12, gap: 8 }}>
           {data.lines.map((line, index) =>

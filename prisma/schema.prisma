@@ -42,6 +42,7 @@ model User {
   recordedPayments     Payment[]            @relation("PaymentRecordedBy")
   ssoIdentities        SsoIdentity[]
   createdAgreementDocs AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
+  createdAgreementVersions AgreementVersion[] @relation("AgreementVersionCreatedBy")
   recordedAgreements   StudentAgreement[]   @relation("AgreementRecordedBy")
 
   @@index([roleId])
@@ -275,41 +276,61 @@ model Student {
 }
 
 // School-specific agreement documents (privacy notice, informed consent,
-// safety expectations). Editing creates a new immutable version row; the
-// latest version per type is the active one that new signatures reference.
-// Re-signing is required only when the active version changes.
-enum AgreementType {
-  PRIVACY
-  CONSENT
-  SAFETY
-}
-
+// safety expectations — or any others a school adds). Schools control the
+// count: add, rename (the title IS the display name), enable/disable, or
+// delete. Editing creates a new immutable version row (first edit of the
+// seeded/new version-0 document becomes v1); signatures bind to the version
+// they signed, and the compliance surface reports "re-sign required" when a
+// document's version moves past a signature.
 model AgreementDocument {
-  id          String        @id @default(cuid())
-  type        AgreementType
-  version     Int
-  title       String
+  id           String   @id @default(cuid())
+  title        String
   bodyMarkdown String
-  createdById String?
-  createdBy   User?         @relation("AgreementDocumentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt   DateTime      @default(now())
-  signatures  StudentAgreement[]
+  // Disabled documents disappear from the portal and the compliance card
+  // (prior signatures stay in the database).
+  enabled      Boolean  @default(true)
+  // Current version number; a fresh/seeded document starts at 0 so the
+  // school's first edit reads as version 1.
+  version      Int      @default(0)
+  sortOrder    Int      @default(0)
+  createdById  String?
+  createdBy    User?    @relation("AgreementDocumentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  versions     AgreementVersion[]
+  signatures   StudentAgreement[]
 
-  @@unique([type, version])
-  @@index([type, version])
   @@map("agreement_documents")
 }
 
-// One signature record per student per document version. A new document
-// version gets its own rows — the old signature stays as history, and the
-// compliance surface reports "re-sign required" when the latest version of
-// a type has no row for the student.
+// Immutable version history for a document. The document row holds the
+// current version number and content; version rows preserve what was
+// previously signed.
+model AgreementVersion {
+  id           String           @id @default(cuid())
+  documentId   String
+  document     AgreementDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version      Int
+  title        String
+  bodyMarkdown String
+  createdById  String?
+  createdBy    User?            @relation("AgreementVersionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+
+  @@unique([documentId, version])
+  @@map("agreement_document_versions")
+}
+
+// One signature per student per document (the latest wins); the version
+// field records which document version was signed so stale signatures are
+// detectable.
 model StudentAgreement {
   id           String           @id @default(cuid())
   studentId    String
   student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   documentId   String
   document     AgreementDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version      Int
   signedAt     DateTime         @default(now())
   // Name the signer typed (the student, or the guardian for minors).
   signedByName String

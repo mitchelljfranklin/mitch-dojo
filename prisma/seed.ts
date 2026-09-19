@@ -198,8 +198,8 @@ async function run(): Promise<void> {
     // replaces the bodies in Admin → Documents (editing creates version 2).
     const agreementTemplates = [
       {
-        type: "PRIVACY" as const,
         title: "Privacy information notice",
+        sortOrder: 1,
         body:
           "# Privacy information notice\n\n" +
           "Replace this text with your school's privacy notice: what personal " +
@@ -208,7 +208,7 @@ async function run(): Promise<void> {
           "By signing, the member confirms they have read and understood this notice.",
       },
       {
-        type: "CONSENT" as const,
+        sortOrder: 2,
         title: "Informed consent — contact sport",
         body:
           "# Informed consent\n\n" +
@@ -219,7 +219,7 @@ async function run(): Promise<void> {
           "By signing, the member confirms they have read and understood this consent.",
       },
       {
-        type: "SAFETY" as const,
+        sortOrder: 3,
         title: "Safety, respect & discipline expectations",
         body:
           "# Safety and expectations\n\n" +
@@ -231,16 +231,18 @@ async function run(): Promise<void> {
     ];
     for (const template of agreementTemplates) {
       const existing = await prisma.agreementDocument.findFirst({
-        where: { type: template.type },
+        where: { title: template.title },
         select: { id: true },
       });
       if (!existing) {
+        // Version 0 = the seeded content; the school's first edit in the app
+        // becomes version 1.
         await prisma.agreementDocument.create({
           data: {
-            type: template.type,
-            version: 1,
             title: template.title,
             bodyMarkdown: template.body,
+            version: 0,
+            sortOrder: template.sortOrder,
           },
         });
       }

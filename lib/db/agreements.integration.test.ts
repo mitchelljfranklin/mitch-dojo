@@ -2,12 +2,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/prisma";
 import {
+  createDocument,
   createDocumentVersion,
   getStudentAgreementStatuses,
   getStudentAgreementSummary,
   recordStudentSignature,
+  setDocumentEnabled,
   signAgreementViaPortal,
-  type AgreementTypeValue,
 } from "@/lib/db/agreements";
 import { createStudent, deleteStudent } from "@/lib/db/students";
 import { createLocation, deleteLocation } from "@/lib/db/locations";
@@ -63,13 +64,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (studentId) await deleteStudent(studentId).catch(() => undefined);
-  // The versioning tests created CONSENT/SAFETY versions with the suffix —
-  // remove them (their signature rows cascade) so other runs stay clean.
+  // The versioning tests created documents with the suffix — remove them
+  // (their signature rows cascade) so other runs stay clean.
   await prisma.agreementDocument.deleteMany({
-    where: { bodyMarkdown: { contains: "versioning test" } },
-  });
-  await prisma.agreementDocument.deleteMany({
-    where: { bodyMarkdown: "Updated safety expectations." },
+    where: { title: { contains: suffix } },
   });
   await deleteDiscipline(disciplineId).catch(() => undefined);
   await deleteLocation(locationId).catch(() => undefined);
@@ -77,18 +75,49 @@ afterAll(async () => {
 });
 
 describe.skipIf(!hasTestDatabase)("agreements", () => {
-  it("exposes the three seeded active documents, all unsigned for a new student", async () => {
+  it("seeds the three starter documents, enabled", async () => {
     const statuses = await getStudentAgreementStatuses(studentId);
-    expect(statuses).toHaveLength(3);
-    expect(statuses.map((status) => status.type).join(",")).toBe(
-      "PRIVACY,CONSENT,SAFETY",
+    // The test DB accumulates documents and version bumps across runs —
+    // assert on the seeded starters' presence only (the v0 property is
+    // covered by the add-document test).
+    const starters = statuses.filter((status) =>
+      ["Privacy information notice", "Informed consent", "Safety"].some(
+        (title) => status.title.includes(title),
+      ),
     );
-    expect(statuses.every((status) => !status.signed)).toBe(true);
+    expect(starters).toHaveLength(3);
+    expect(starters.every((status) => !status.signed)).toBe(true);
   });
 
-  it("records a staff signature against the active version", async () => {
+  it("adds a new document at version 0 and hides disabled ones", async () => {
+    const created = await createDocument({
+      title: `Code of conduct ${suffix}`,
+      bodyMarkdown: "Be excellent to each other.",
+      createdById: null,
+    });
+    expect(created.version).toBe(0);
+
+    let statuses = await getStudentAgreementStatuses(studentId);
+    const mine = statuses.find((status) =>
+      status.title.includes(`Code of conduct ${suffix}`),
+    );
+    expect(mine).toBeDefined();
+    expect(mine!.activeVersion).toBe(0);
+
+    // Disabling hides it from the compliance surface
+    await setDocumentEnabled(created.id, false);
+    statuses = await getStudentAgreementStatuses(studentId);
+    expect(
+      statuses.find((status) => status.documentId === created.id),
+    ).toBeUndefined();
+    await setDocumentEnabled(created.id, true);
+  });
+
+  it("records a staff signature against the current version", async () => {
     const statuses = await getStudentAgreementStatuses(studentId);
-    const privacy = statuses.find((status) => status.type === "PRIVACY")!;
+    const privacy = statuses.find((status) =>
+      status.title.includes("Privacy"),
+    )!;
     await recordStudentSignature({
       studentId,
       documentId: privacy.documentId,
@@ -98,19 +127,23 @@ describe.skipIf(!hasTestDatabase)("agreements", () => {
     });
 
     const after = await getStudentAgreementStatuses(studentId);
-    const privacyAfter = after.find((status) => status.type === "PRIVACY")!;
+    const privacyAfter = after.find((status) =>
+      status.title.includes("Privacy"),
+    )!;
     expect(privacyAfter.signed).toBe(true);
     expect(privacyAfter.method).toBe("STAFF");
     expect(privacyAfter.signedVersion).toBe(privacyAfter.activeVersion);
 
     const summary = await getStudentAgreementSummary(studentId);
     expect(summary.signedCount).toBe(1);
-    expect(summary.total).toBe(3);
+    expect(summary.total).toBeGreaterThanOrEqual(3);
   });
 
   it("records a portal signature with the typed signer name", async () => {
     const statuses = await getStudentAgreementStatuses(studentId);
-    const consent = statuses.find((status) => status.type === "CONSENT")!;
+    const consent = statuses.find((status) =>
+      status.title.includes("Informed consent"),
+    )!;
     await signAgreementViaPortal({
       studentId,
       documentId: consent.documentId,
@@ -118,34 +151,48 @@ describe.skipIf(!hasTestDatabase)("agreements", () => {
     });
 
     const after = await getStudentAgreementStatuses(studentId);
-    const consentAfter = after.find((status) => status.type === "CONSENT")!;
+    const consentAfter = after.find((status) =>
+      status.title.includes("Informed consent"),
+    )!;
     expect(consentAfter.signed).toBe(true);
     expect(consentAfter.method).toBe("PORTAL");
     expect(consentAfter.signedByName).toBe("Portal Signer");
   });
 
-  it("reports re-sign required for signatures on an older version", async () => {
-    const before = await getStudentAgreementStatuses(studentId);
-    const safety = before.find((status) => status.type === "SAFETY")!;
+  it("reports re-sign required when the version moves past a signature", async () => {
+    // Use a scratch document — mutating the seeded docs would drift them
+    // across runs.
+    const scratch = await createDocument({
+      title: `Re-sign scratch ${suffix}`,
+      bodyMarkdown: "Original body.",
+      createdById: null,
+    });
     await recordStudentSignature({
       studentId,
-      documentId: safety.documentId,
+      documentId: scratch.id,
       signedAt: new Date(),
       signedByName: "Paper Signer",
       recordedById: null,
     });
-    await createDocumentVersion({
-      type: "SAFETY" as AgreementTypeValue,
-      title: `Safety expectations ${suffix}`,
-      bodyMarkdown: "Updated safety expectations.",
+
+    // Editing bumps the version by exactly one (v0 → v1).
+    const newVersion = await createDocumentVersion({
+      documentId: scratch.id,
+      title: `Re-sign scratch ${suffix}`,
+      bodyMarkdown: "Updated body.",
       createdById: null,
     });
+    expect(newVersion).toBe(1);
 
     const after = await getStudentAgreementStatuses(studentId);
-    const safetyAfter = after.find((status) => status.type === "SAFETY")!;
-    expect(safetyAfter.signed).toBe(false);
-    expect(safetyAfter.reSignRequired).toBe(true);
-    expect(safetyAfter.signedVersion!).toBeLessThan(safetyAfter.activeVersion);
+    const scratchAfter = after.find((status) =>
+      status.title.includes(`Re-sign scratch ${suffix}`),
+    )!;
+    expect(scratchAfter.signed).toBe(false);
+    expect(scratchAfter.reSignRequired).toBe(true);
+    expect(scratchAfter.signedVersion!).toBeLessThan(
+      scratchAfter.activeVersion,
+    );
 
     const summary = await getStudentAgreementSummary(studentId);
     expect(summary.reSignRequired).toBe(true);

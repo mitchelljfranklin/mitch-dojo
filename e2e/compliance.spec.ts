@@ -44,23 +44,26 @@ test.describe("compliance (medical + agreements)", () => {
     await loginAs(page, E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD);
 
     await page.goto("/admin/documents");
-    const safetyForm = page
-      .locator("form")
-      .filter({ has: page.locator('input[name="type"][value="SAFETY"]') });
-    await safetyForm
-      .getByLabel("Title")
-      .fill(`Safety expectations E2E ${suffix}`);
-    await safetyForm
-      .getByLabel("Document body (Markdown)")
+    // Add a fresh document via the Add-document form (starts at version 0).
+    // Scope to the "Add a document" card — the per-document edit forms also
+    // carry "Title" fields.
+    const addCard = page
+      .locator('[data-slot="card"]')
+      .filter({ hasText: "Add a document" });
+    await addCard.locator('input[name="title"]').fill(`Safety E2E ${suffix}`);
+    await addCard
+      .locator('textarea[name="bodyMarkdown"]')
       .fill("Updated safety body for the e2e versioning check.");
-    await safetyForm.getByRole("button", { name: /Save as version/ }).click();
-    await expect(page.getByText(/Saved as version \d+/).first()).toBeVisible();
+    await addCard.getByRole("button", { name: "Add document" }).click();
+    await expect(
+      page.getByText(/Document added \(version 0\)/).first(),
+    ).toBeVisible();
 
-    // History shows two versions now
-    const before = await prisma.agreementDocument.count({
-      where: { type: "SAFETY" },
+    const created = await prisma.agreementDocument.findFirst({
+      where: { title: `Safety E2E ${suffix}` },
     });
-    expect(before).toBeGreaterThanOrEqual(2);
+    expect(created?.version).toBe(0);
+    expect(created?.enabled).toBe(true);
   });
 
   test("medical section is hidden from Viewer and gated on the record", async ({
@@ -104,7 +107,7 @@ test.describe("compliance (medical + agreements)", () => {
     await expect(page.getByText("Agreements & consent")).toBeVisible();
     const privacyRow = page
       .locator("div.rounded-md.border")
-      .filter({ hasText: "Privacy notice" })
+      .filter({ hasText: "Privacy information notice" })
       .first();
     await expect(privacyRow.getByText("Not signed")).toBeVisible();
 
@@ -120,7 +123,7 @@ test.describe("compliance (medical + agreements)", () => {
     await expect(
       page
         .locator("div.rounded-md.border")
-        .filter({ hasText: "Privacy notice" })
+        .filter({ hasText: "Privacy information notice" })
         .first()
         .getByText(/Signed/)
         .first(),

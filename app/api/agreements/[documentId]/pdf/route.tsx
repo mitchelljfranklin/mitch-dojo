@@ -3,11 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
-import {
-  getAgreementDocumentById,
-  AGREEMENT_TYPE_LABELS,
-  type AgreementTypeValue,
-} from "@/lib/db/agreements";
+import { getAgreementDocumentById } from "@/lib/db/agreements";
 import { resolvePdfBrand } from "@/lib/pdf/brand";
 import { AgreementPdfDocument, shapeAgreementPdf } from "@/lib/pdf/agreement";
 
@@ -35,9 +31,6 @@ export async function GET(
 
   const data = shapeAgreementPdf({
     documentTitle: document.title,
-    documentType:
-      AGREEMENT_TYPE_LABELS[document.type as AgreementTypeValue] ??
-      document.type,
     version: document.version,
     bodyMarkdown: document.bodyMarkdown,
     studentName: `${student.firstName} ${student.lastName}`,

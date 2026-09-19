@@ -357,12 +357,12 @@ export default async function StudentDetailPage({
         <CardContent className="flex flex-col gap-3">
           {agreementStatuses.map((status) => (
             <div
-              key={status.type}
+              key={status.documentId}
               className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3 text-sm"
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{status.label}</span>
+                  <span className="font-medium">{status.title}</span>
                   <Badge variant="outline">v{status.activeVersion}</Badge>
                   {status.signed ? (
                     <Badge variant="secondary">
@@ -398,7 +398,7 @@ export default async function StudentDetailPage({
                   <RecordSignatureSheet
                     studentId={student.id}
                     documentId={status.documentId}
-                    documentLabel={status.label}
+                    documentLabel={status.title}
                     activeVersion={status.activeVersion}
                   />
                 ) : null}
