@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { BookableSession } from "@/lib/db/trials";
+import { GUARDIAN_RELATIONSHIPS } from "@/lib/schemas/student";
 import { submitBookingAction } from "./actions";
 
 type BookingFormProps = {
@@ -98,9 +99,27 @@ export function BookingForm({
       </div>
 
       {forChild ? (
-        <div className="grid gap-2">
-          <Label htmlFor="guardianName">Guardian name (you)</Label>
-          <Input id="guardianName" name="guardianName" maxLength={60} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="guardianName">Guardian name (you)</Label>
+            <Input id="guardianName" name="guardianName" maxLength={60} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="guardianRelationship">Relationship to child</Label>
+            <select
+              id="guardianRelationship"
+              name="guardianRelationship"
+              defaultValue=""
+              className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+            >
+              <option value="">Prefer not to say</option>
+              {GUARDIAN_RELATIONSHIPS.map((relationship) => (
+                <option key={relationship} value={relationship}>
+                  {relationship}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       ) : null}
 

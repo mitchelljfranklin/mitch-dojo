@@ -172,6 +172,7 @@ test.describe("trials", () => {
     await page.getByLabel("Child's first name").fill("Kiddo");
     await page.getByLabel("Child's last name").fill("Booker");
     await page.getByLabel("Guardian name (you)").fill("Parent Booker");
+    await page.getByLabel("Relationship to child").selectOption("Mother");
     await page.getByLabel("Guardian email").fill(childEmail);
     await page.getByRole("combobox", { name: "Location" }).click();
     await page.getByRole("option", { name: "E2E Dojo", exact: true }).click();
@@ -193,6 +194,8 @@ test.describe("trials", () => {
     await page.getByText("Kiddo Booker").first().click();
     await page.waitForURL("**/students/*");
     await expect(page.getByText("Parent Booker")).toBeVisible();
+    // The relationship leads the guardian row (relationship · name · contact)
+    await expect(page.getByText(/Mother · Parent Booker/)).toBeVisible();
     // The address appears on both the child's contact and the guardian rows.
     await expect(page.getByText(childEmail).first()).toBeVisible();
   });

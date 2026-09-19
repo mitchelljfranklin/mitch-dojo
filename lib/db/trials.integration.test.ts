@@ -158,6 +158,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
       firstName: "Website",
       lastName: `Lead${suffix}`,
       guardianName: null,
+      guardianRelationship: null,
       email: `lead-${suffix}@example.com`,
       phone: null,
       locationId,
@@ -180,6 +181,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     // Adult bookings leave the guardian fields untouched, and the org's
     // default country is preselected (mirrors the manual student form).
     expect(student?.guardianEmail).toBeNull();
+    expect(student?.guardianRelationship).toBeNull();
     expect(student?.country).toBe("AU");
   });
 
@@ -189,6 +191,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
       firstName: "Kid",
       lastName: `Lead${suffix}`,
       guardianName: `Guardian ${suffix}`,
+      guardianRelationship: "Mother",
       email: `kid-lead-${suffix}@example.com`,
       phone: "0412 345 678",
       locationId,
@@ -207,6 +210,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     expect(student?.email).toBe(`kid-lead-${suffix}@example.com`);
     expect(student?.phone).toBe("0412 345 678");
     expect(student?.guardianName).toBe(`Guardian ${suffix}`);
+    expect(student?.guardianRelationship).toBe("Mother");
     expect(student?.guardianEmail).toBe(`kid-lead-${suffix}@example.com`);
     expect(student?.guardianPhone).toBe("0412 345 678");
     expect(student?.country).toBe("AU");
@@ -221,6 +225,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
       firstName: "Website",
       lastName: `Lead${suffix}`,
       guardianName: null,
+      guardianRelationship: null,
       email: `lead-${suffix}@example.com`,
       phone: null,
       locationId,

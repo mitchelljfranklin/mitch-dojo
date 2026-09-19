@@ -21,6 +21,24 @@ export const STUDENT_STATUS_LABELS: Record<
   ALUMNI: "Alumni",
 };
 
+// Guardian-relationship presets for the student form and the public booking
+// page. Free text is not offered on the public form (keep it structured);
+// the API/import paths accept any string.
+export const GUARDIAN_RELATIONSHIPS = [
+  "Mother",
+  "Father",
+  "Parent",
+  "Step-parent",
+  "Grandparent",
+  "Sibling",
+  "Aunt/Uncle",
+  "Legal guardian",
+  "Carer",
+  "Other",
+] as const;
+
+export type GuardianRelationship = (typeof GUARDIAN_RELATIONSHIPS)[number];
+
 const optionalString = z
   .string()
   .trim()
@@ -56,6 +74,7 @@ export const studentSchema = z
     guardianName: optionalString,
     guardianEmail: optionalEmail,
     guardianPhone: optionalString,
+    guardianRelationship: optionalString,
     addressLine: optionalString,
     city: optionalString,
     state: optionalString,
@@ -108,6 +127,7 @@ export const studentCsvRowSchema = z.object({
   guardianName: z.string().optional().default(""),
   guardianEmail: z.string().optional().default(""),
   guardianPhone: z.string().optional().default(""),
+  guardianRelationship: z.string().optional().default(""),
   addressLine: z.string().optional().default(""),
   city: z.string().optional().default(""),
   state: z.string().optional().default(""),

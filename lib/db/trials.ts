@@ -179,6 +179,7 @@ export type BookingInput = {
   firstName: string;
   lastName: string;
   guardianName: string | null;
+  guardianRelationship: string | null;
   email: string | null;
   phone: string | null;
   locationId: string;
@@ -241,6 +242,9 @@ export async function createTrialBooking(
       // Child mode: the entered contact is the guardian's — mirror it onto
       // the guardian fields as well as the child's own contact fields.
       guardianName: isChild ? input.guardianName?.trim() || null : null,
+      guardianRelationship: isChild
+        ? input.guardianRelationship?.trim() || null
+        : null,
       guardianEmail: isChild ? input.email?.trim() || null : null,
       guardianPhone: isChild ? input.phone?.trim() || null : null,
       country: defaultCountry || null,

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 import { COUNTRIES, countryName } from "@/lib/countries";
 import {
+  GUARDIAN_RELATIONSHIPS,
   STUDENT_STATUSES,
   STUDENT_STATUS_LABELS,
   type StudentStatus,
@@ -39,6 +40,7 @@ export type StudentFormValues = {
   guardianName: string | null;
   guardianEmail: string | null;
   guardianPhone: string | null;
+  guardianRelationship: string | null;
   addressLine: string | null;
   city: string | null;
   state: string | null;
@@ -279,6 +281,24 @@ function StudentFormInner({
               name="guardianPhone"
               defaultValue={values?.guardianPhone ?? ""}
             />
+          </div>
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="guardianRelationship">Relationship</Label>
+            <select
+              id="guardianRelationship"
+              name="guardianRelationship"
+              defaultValue={values?.guardianRelationship ?? ""}
+              className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+            >
+              <option value="">Not stated</option>
+              {GUARDIAN_RELATIONSHIPS.map((relationship) => (
+                <option key={relationship} value={relationship}>
+                  {relationship}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

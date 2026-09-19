@@ -81,6 +81,7 @@ export default async function EditStudentPage({
               guardianName: student.guardianName ?? "",
               guardianEmail: student.guardianEmail ?? "",
               guardianPhone: student.guardianPhone ?? "",
+              guardianRelationship: student.guardianRelationship ?? "",
               status: student.status,
               notes: student.notes ?? "",
               photoKey: student.photoKey,

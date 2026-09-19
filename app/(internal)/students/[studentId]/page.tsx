@@ -267,6 +267,7 @@ export default async function StudentDetailPage({
               value={
                 student.guardianName
                   ? [
+                      student.guardianRelationship,
                       student.guardianName,
                       student.guardianPhone ?? student.guardianEmail ?? "",
                     ]

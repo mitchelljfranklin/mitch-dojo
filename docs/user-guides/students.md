@@ -8,7 +8,7 @@ Each student has:
 
 - **Identity** — first/last name, email, phone, date of birth, structured address (line, city, state, postcode, country)
 - **Photo** — shown on the record, attendance sheets, and progression pages
-- **Contacts** — guardian (name, email, phone) and emergency contact; emails fall back to the guardian when the student has no address
+- **Contacts** — guardian (name, email, phone, and their **relationship** to the student) and emergency contact; emails fall back to the guardian when the student has no address
 - **Status** — `TRIAL` → `ACTIVE` → `INACTIVE` / `ALUMNI`
 - **Disciplines** — at least one (e.g. Karate, Jujitsu); progression tables only show discipline-assigned students
 - **Locations** — one or more, with exactly one **primary (home) dojo** used for reporting and eligibility

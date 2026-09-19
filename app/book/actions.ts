@@ -24,6 +24,12 @@ const bookingFormSchema = z.object({
     .max(60)
     .optional()
     .transform((value) => value ?? ""),
+  guardianRelationship: z
+    .string()
+    .trim()
+    .max(60)
+    .optional()
+    .transform((value) => value ?? ""),
   email: z
     .union([z.literal(""), z.email()])
     .optional()
@@ -56,6 +62,7 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
     guardianName: formData.get("guardianName") ?? "",
+    guardianRelationship: formData.get("guardianRelationship") ?? "",
     email: formData.get("email") ?? "",
     phone: formData.get("phone") ?? "",
     locationId: formData.get("locationId"),
@@ -82,6 +89,10 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     lastName: parsed.data.lastName,
     guardianName:
       parsed.data.bookingFor === "child" ? parsed.data.guardianName : null,
+    guardianRelationship:
+      parsed.data.bookingFor === "child"
+        ? parsed.data.guardianRelationship || null
+        : null,
     email: parsed.data.email || null,
     phone: parsed.data.phone || null,
     locationId: parsed.data.locationId,

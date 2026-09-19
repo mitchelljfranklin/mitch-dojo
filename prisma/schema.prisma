@@ -229,6 +229,10 @@ model Student {
   guardianName          String?
   guardianEmail         String?
   guardianPhone         String?
+  // Free-text relationship of the guardian to the student (Mother, Father,
+  // Grandparent, …) — captured for pickups, emergency context, and mail
+  // merge. Only meaningful when a guardian is recorded.
+  guardianRelationship  String?
   status                StudentStatus @default(TRIAL)
   // Trial pipeline (Phase 9): stage is non-null only while the student is a
   // managed trial lead; convertedAt records when they became a member.

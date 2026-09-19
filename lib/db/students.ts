@@ -182,6 +182,7 @@ export async function createStudent(input: StudentInput): Promise<string> {
       guardianName: input.guardianName,
       guardianEmail: input.guardianEmail,
       guardianPhone: input.guardianPhone,
+      guardianRelationship: input.guardianRelationship ?? null,
       status: input.status,
       notes: input.notes,
       locations: {
@@ -383,6 +384,7 @@ export type StudentExportRow = {
   guardianName: string | null;
   guardianEmail: string | null;
   guardianPhone: string | null;
+  guardianRelationship: string | null;
   notes: string | null;
   locations: { name: string; isPrimary: boolean }[];
 };
@@ -411,6 +413,7 @@ export async function exportAllStudents(): Promise<StudentExportRow[]> {
     guardianName: student.guardianName,
     guardianEmail: student.guardianEmail,
     guardianPhone: student.guardianPhone,
+    guardianRelationship: student.guardianRelationship,
     notes: student.notes,
     locations: student.locations.map((link) => ({
       name: link.location.name,

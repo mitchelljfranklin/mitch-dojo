@@ -38,6 +38,7 @@ beforeAll(async () => {
     guardianName: null,
     guardianEmail: null,
     guardianPhone: null,
+    guardianRelationship: null,
     addressLine: null,
     city: null,
     state: null,
