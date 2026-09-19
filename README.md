@@ -129,7 +129,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 ### Access Control
 - 3 system roles (Admin, Trainer, Viewer) + custom roles
-- 20 granular `resource:action` permissions
+- 21 granular `resource:action` permissions
 - UI controls hidden (not greyed) — a Viewer sees a clean read-only screen
 - Single sign-on via Microsoft Entra ID, Google, or any OpenID Connect provider, with just-in-time provisioning
 - SSO-only mode with anti-lock-out and a single-use **break-glass** URL for emergencies

@@ -9,7 +9,7 @@ import {
 import { StudentForm } from "@/components/student-form";
 import { createStudentAction } from "@/lib/actions/students";
 import { requirePermission } from "@/lib/auth";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { prisma } from "@/lib/prisma";
 import { getOrganizationSettings } from "@/lib/settings";
@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "New student" };
 
 export default async function NewStudentPage() {
-  await requirePermission(PERMISSIONS.STUDENTS_CREATE);
+  const user = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
   const [locations, disciplines, organization] = await Promise.all([
     listAssignableLocations(),
     prisma.discipline.findMany({
@@ -50,6 +50,10 @@ export default async function NewStudentPage() {
             disciplines={disciplines}
             defaultCountry={organization.defaultCountry}
             submitLabel="Create student"
+            canViewMedical={hasPermission(
+              user.permissions,
+              PERMISSIONS.STUDENTS_MEDICAL,
+            )}
           />
         </CardContent>
       </Card>

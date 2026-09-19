@@ -54,6 +54,84 @@ test.describe("member portal", () => {
     await page.waitForURL("**/portal?error=invalid");
     await expect(page.getByText("Portal access needed")).toBeVisible();
   });
+  test("documents section shows agreements and digital signing persists", async ({
+    page,
+  }) => {
+    const location = await prisma.location.create({
+      data: { name: `Portal Docs Dojo ${suffix}`, isActive: true },
+    });
+    const student = await prisma.student.create({
+      data: {
+        firstName: "E2E",
+        lastName: `Docs Kid ${suffix}`,
+        status: "ACTIVE",
+        locations: { create: { locationId: location.id, isPrimary: true } },
+      },
+    });
+    const docStudentId = student.id;
+
+    const rawToken = generateAccessToken();
+    await prisma.portalToken.create({
+      data: {
+        studentId: student.id,
+        tokenHash: hashToken(rawToken),
+        expiresAt: new Date(Date.now() + 86_400_000),
+      },
+    });
+
+    await page.goto(`http://localhost:3000/portal/welcome?token=${rawToken}`);
+    await page.waitForURL("**/portal");
+    // The portal page is heavy — interacting pre-hydration loses the
+    // form action entirely (known React 19 native-submit race).
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(300);
+
+    // The seeded privacy notice appears, unsigned
+    await expect(page.getByText("Documents & consent")).toBeVisible();
+    const privacyDetails = page
+      .locator("details")
+      .filter({ hasText: "Privacy notice" })
+      .first();
+    await expect(privacyDetails).toBeVisible();
+    await expect(privacyDetails.getByText("Signature needed")).toBeVisible();
+
+    // Open the document, confirm, sign
+    await privacyDetails.locator("summary").click();
+    await privacyDetails.getByRole("checkbox").click();
+    await privacyDetails
+      .getByLabel("Type your name to sign")
+      .fill("Portal Guardian");
+    await privacyDetails.getByRole("button", { name: /Sign Privacy/ }).click();
+
+    // Durable assertion: the signature row lands in the DB (toasts are
+    // transient and can race the assertion).
+    await expect
+      .poll(
+        async () => {
+          const signature = await prisma.studentAgreement.findFirst({
+            where: { studentId: docStudentId, method: "PORTAL" },
+          });
+          return signature?.signedByName ?? "";
+        },
+        { timeout: 10_000 },
+      )
+      .toBe("Portal Guardian");
+
+    // The signature persisted — reopening shows the signed state
+    await page.reload();
+    const signedDetails = page
+      .locator("details")
+      .filter({ hasText: "Privacy notice" })
+      .first();
+    await expect(signedDetails.getByText(/Signed/).first()).toBeVisible();
+
+    await prisma.student
+      .delete({ where: { id: docStudentId } })
+      .catch(() => undefined);
+    await prisma.location
+      .delete({ where: { id: location.id } })
+      .catch(() => undefined);
+  });
 });
 
 test.afterAll(async () => {

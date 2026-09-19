@@ -169,6 +169,12 @@ MembershipPlan ──< MembershipEnrollment >── Student
 MembershipEnrollment ──< Invoice (optional locationId for per-location revenue)
 Invoice ──< Payment (manual recording)
 PortalToken >── Student (hashed magic-link tokens, 30-day expiry)
+
+AgreementDocument (versioned school agreements: PRIVACY/CONSENT/SAFETY)
+AgreementDocument ──< StudentAgreement >── Student
+  (one signature per student per document version; method PORTAL/STAFF)
+Student carries free-text PHI (medicalMedications/Conditions/Injuries)
+  gated by the students:medical permission
 ```
 
 ### Belt eligibility (cumulative, per discipline)

@@ -1,6 +1,6 @@
 # Phase Review — Remaining & Potential Work
 
-> **Last updated:** September 2026 (UX/product polish batches 1-5 complete)
+> **Last updated:** September 2026 (compliance feature: medical PHI + versioned agreements + digital signing)
 > **Purpose:** a living checklist of everything left or worth considering,
 > so nothing lives only in conversation. Tick items off or strike them out
 > as decisions land.
@@ -28,6 +28,7 @@
 | — | Email log + retry (ported from mitch-risk; dashboard failed-email chip) |
 | — | Admin area restructure (sidebar regrouping; settings tabs → 15 sections in 7 groups at /admin/* with a /settings shim) |
 | — | SSO + break glass (Entra ID / Google / OIDC, JIT provisioning, SSO-only mode with anti-lock-out, single-use break-glass URLs) |
+| — | Compliance: health & medical section (PHI, students:medical permission), versioned agreement documents (privacy/consent/safety), digital portal signing + staff-recorded paper fallback + printable forms |
 
 ---
 

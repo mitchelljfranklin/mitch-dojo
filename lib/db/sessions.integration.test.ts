@@ -51,6 +51,9 @@ beforeAll(async () => {
     guardianEmail: null,
     guardianPhone: null,
     guardianRelationship: null,
+    medicalMedications: null,
+    medicalConditions: null,
+    medicalInjuries: null,
     addressLine: null,
     city: null,
     state: null,
@@ -67,7 +70,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await prisma.attendance.deleteMany({ where: { session: { courseId } } });
   await prisma.classSession.deleteMany({ where: { courseId } });
-  await prisma.course.delete({ where: { id: courseId } }).catch(() => undefined);
+  await prisma.course
+    .delete({ where: { id: courseId } })
+    .catch(() => undefined);
   if (studentId) await deleteStudent(studentId).catch(() => undefined);
   await deleteDiscipline(disciplineId).catch(() => undefined);
   await deleteLocation(locationId).catch(() => undefined);
@@ -101,9 +106,9 @@ describe.skipIf(!hasTestDatabase)("listSessions", () => {
     expect(firstPage.totalCount).toBe(8);
     expect(firstPage.sessions).toHaveLength(3);
     // Ordered oldest-first: the first row is the earliest in the window.
-    expect(
-      firstPage.sessions[0]!.date.getTime(),
-    ).toBeLessThan(firstPage.sessions[1]!.date.getTime());
+    expect(firstPage.sessions[0]!.date.getTime()).toBeLessThan(
+      firstPage.sessions[1]!.date.getTime(),
+    );
 
     const lastPage = await listSessions({
       courseId,

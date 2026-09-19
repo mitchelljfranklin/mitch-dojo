@@ -3,6 +3,7 @@ export const PERMISSIONS = {
   STUDENTS_CREATE: "students:create",
   STUDENTS_EDIT: "students:edit",
   STUDENTS_DELETE: "students:delete",
+  STUDENTS_MEDICAL: "students:medical",
   LOCATIONS_EDIT: "locations:edit",
   CLASSES_VIEW: "classes:view",
   CLASSES_EDIT: "classes:edit",
@@ -42,6 +43,10 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       { key: PERMISSIONS.STUDENTS_CREATE, label: "Create students" },
       { key: PERMISSIONS.STUDENTS_EDIT, label: "Edit students" },
       { key: PERMISSIONS.STUDENTS_DELETE, label: "Delete students" },
+      {
+        key: PERMISSIONS.STUDENTS_MEDICAL,
+        label: "View medical & health information",
+      },
     ],
   },
   {
@@ -139,6 +144,7 @@ const TRAINER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.STUDENTS_VIEW,
   PERMISSIONS.STUDENTS_CREATE,
   PERMISSIONS.STUDENTS_EDIT,
+  PERMISSIONS.STUDENTS_MEDICAL,
   PERMISSIONS.CLASSES_VIEW,
   PERMISSIONS.ATTENDANCE_VIEW,
   PERMISSIONS.ATTENDANCE_MARK,

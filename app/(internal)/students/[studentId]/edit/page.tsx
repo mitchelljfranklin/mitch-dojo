@@ -9,7 +9,7 @@ import {
 import { StudentForm } from "@/components/student-form";
 import { updateStudentAction } from "@/lib/actions/students";
 import { requirePermission } from "@/lib/auth";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { prisma } from "@/lib/prisma";
@@ -27,7 +27,7 @@ type EditStudentPageProps = {
 export default async function EditStudentPage({
   params,
 }: EditStudentPageProps) {
-  await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const { studentId } = await params;
   const [student, locations, disciplines, organization] = await Promise.all([
     getStudent(studentId),
@@ -68,6 +68,10 @@ export default async function EditStudentPage({
             disciplines={disciplines}
             defaultCountry={organization.defaultCountry}
             submitLabel="Save changes"
+            canViewMedical={hasPermission(
+              user.permissions,
+              PERMISSIONS.STUDENTS_MEDICAL,
+            )}
             values={{
               firstName: student.firstName,
               lastName: student.lastName,
@@ -82,6 +86,9 @@ export default async function EditStudentPage({
               guardianEmail: student.guardianEmail ?? "",
               guardianPhone: student.guardianPhone ?? "",
               guardianRelationship: student.guardianRelationship ?? "",
+              medicalMedications: student.medicalMedications ?? "",
+              medicalConditions: student.medicalConditions ?? "",
+              medicalInjuries: student.medicalInjuries ?? "",
               status: student.status,
               notes: student.notes ?? "",
               photoKey: student.photoKey,

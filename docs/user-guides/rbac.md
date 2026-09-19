@@ -2,16 +2,17 @@
 
 Mitch‑Dojo uses **permission-based** access control, not "is authenticated" gating. Three system roles are built in, and admins can create custom roles with any combination of the 20 fine-grained permissions.
 
-## Permission Catalog (20 Permissions)
+## Permission Catalog (21 Permissions)
 
-### Students (4)
+### Students (5)
 
 | Permission Key | Description |
 |---------------|-------------|
 | `students:view` | View student list and student detail pages |
 | `students:create` | Create students (including CSV import) and work the trial pipeline |
-| `students:edit` | Edit students, locations on records, send portal links |
+| `students:edit` | Edit students, locations on records, send portal links, record agreement signatures |
 | `students:delete` | Delete students (removes their photo + attachments) |
+| `students:medical` | View and edit health & medical information (PHI) |
 
 ### Locations (1)
 
@@ -79,8 +80,8 @@ Mitch‑Dojo uses **permission-based** access control, not "is authenticated" ga
 
 | Role | Permissions | Who It's For |
 |------|:----------:|--------------|
-| **Admin** | 20 (all) | Full platform control. Locked — cannot be deleted or edited. |
-| **Trainer** | 11 | Floor operations: students (no delete), classes, attendance, belts, analytics. No administration. |
+| **Admin** | 21 (all) | Full platform control. Locked — cannot be deleted or edited. |
+| **Trainer** | 12 | Floor operations: students (no delete) incl. medical visibility, classes, attendance, belts, analytics. No administration. |
 | **Viewer** | 7 | Read-only across students, classes, attendance, belts, memberships, analytics. |
 
 System roles are seeded on first run and cannot be deleted.

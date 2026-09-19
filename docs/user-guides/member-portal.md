@@ -21,8 +21,9 @@ Anyone with the link can see that student's data. Tokens are single-student, exp
 | **Upcoming classes** | Their courses' next sessions |
 | **Attendance** | Recent attendance history |
 | **Invoices & balance** | Their invoices and current balance |
+| **Documents & consent** | Read and digitally sign the school's agreements ([Compliance](./compliance)) |
 
-Everything is read-only — the portal never exposes editing. The page is white-labelled with your org name and logo.
+The portal is read-only except for document signing — the member's typed name and the date are recorded; everything else (progress, invoices) cannot be edited. The page is white-labelled with your org name and logo.
 
 ## White-labeling
 

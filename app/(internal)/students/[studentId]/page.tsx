@@ -17,6 +17,8 @@ import { StudentAttachments } from "@/components/student-attachments";
 import { PastAttendanceSheet } from "@/components/past-attendance-sheet";
 import { deleteStudentAction } from "@/lib/actions/students";
 import { deletePromotionAction } from "@/lib/actions/belts";
+import { getStudentAgreementStatuses } from "@/lib/db/agreements";
+import { RecordSignatureSheet } from "./record-signature-sheet";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
@@ -68,6 +70,10 @@ export default async function StudentDetailPage({
 }: StudentDetailPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
+  const canViewMedical = hasPermission(
+    user.permissions,
+    PERMISSIONS.STUDENTS_MEDICAL,
+  );
   const canDelete = hasPermission(
     user.permissions,
     PERMISSIONS.STUDENTS_DELETE,
@@ -87,19 +93,24 @@ export default async function StudentDetailPage({
 
   const { studentId } = await params;
   const sp = await searchParams;
-  const [student, attachments, recentAttendance, beltHistory, backfillCourses] =
-    await Promise.all([
-      getStudent(studentId),
-      prisma.attachment.findMany({
-        where: { entityType: "Student", entityId: studentId },
-        orderBy: { createdAt: "desc" },
-      }),
-      getStudentRecentAttendance(studentId),
-      getStudentBeltHistory(studentId),
-      canMarkAttendance
-        ? listCoursesForStudent(studentId)
-        : Promise.resolve([]),
-    ]);
+  const [
+    student,
+    attachments,
+    recentAttendance,
+    beltHistory,
+    backfillCourses,
+    agreementStatuses,
+  ] = await Promise.all([
+    getStudent(studentId),
+    prisma.attachment.findMany({
+      where: { entityType: "Student", entityId: studentId },
+      orderBy: { createdAt: "desc" },
+    }),
+    getStudentRecentAttendance(studentId),
+    getStudentBeltHistory(studentId),
+    canMarkAttendance ? listCoursesForStudent(studentId) : Promise.resolve([]),
+    getStudentAgreementStatuses(studentId),
+  ]);
   if (!student) {
     notFound();
   }
@@ -314,6 +325,88 @@ export default async function StudentDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {canViewMedical ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Health &amp; medical</CardTitle>
+            <CardDescription>
+              Sensitive information — visible only to medical-permitted roles.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            <DetailRow label="Medications" value={student.medicalMedications} />
+            <DetailRow label="Conditions" value={student.medicalConditions} />
+            <DetailRow
+              label="Injuries / illnesses"
+              value={student.medicalInjuries}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Agreements &amp; consent</CardTitle>
+          <CardDescription>
+            Documents the member (or their guardian) must read and sign. A new
+            document version requires re-signing; the portal handles digital
+            signing.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {agreementStatuses.map((status) => (
+            <div
+              key={status.type}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3 text-sm"
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{status.label}</span>
+                  <Badge variant="outline">v{status.activeVersion}</Badge>
+                  {status.signed ? (
+                    <Badge variant="secondary">
+                      Signed {formatDate(status.signedAt!)}
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">Not signed</Badge>
+                  )}
+                  {status.reSignRequired ? (
+                    <Badge variant="destructive">Re-sign required</Badge>
+                  ) : null}
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {status.signed
+                    ? `Signed by ${status.signedByName} (${
+                        status.method === "PORTAL"
+                          ? "portal"
+                          : "recorded by staff"
+                      })`
+                    : "Waiting for the member to sign via their portal link, or record a paper signature."}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <a
+                    href={`/api/agreements/${status.documentId}/pdf?studentId=${student.id}`}
+                    download
+                  >
+                    Print form
+                  </a>
+                </Button>
+                {canEdit ? (
+                  <RecordSignatureSheet
+                    studentId={student.id}
+                    documentId={status.documentId}
+                    documentLabel={status.label}
+                    activeVersion={status.activeVersion}
+                  />
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
       {membershipsEnabled ? (
         <Card>

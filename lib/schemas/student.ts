@@ -75,6 +75,10 @@ export const studentSchema = z
     guardianEmail: optionalEmail,
     guardianPhone: optionalString,
     guardianRelationship: optionalString,
+    // PHI — free text per prompt. Visibility is permission-gated upstream.
+    medicalMedications: optionalString,
+    medicalConditions: optionalString,
+    medicalInjuries: optionalString,
     addressLine: optionalString,
     city: optionalString,
     state: optionalString,

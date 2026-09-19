@@ -41,6 +41,8 @@ model User {
   createdInvoices      Invoice[]            @relation("InvoiceCreatedBy")
   recordedPayments     Payment[]            @relation("PaymentRecordedBy")
   ssoIdentities        SsoIdentity[]
+  createdAgreementDocs AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
+  recordedAgreements   StudentAgreement[]   @relation("AgreementRecordedBy")
 
   @@index([roleId])
   @@map("users")
@@ -246,6 +248,12 @@ model Student {
   state                 String?
   postcode              String?
   country               String?
+  // Health & medical information (PHI). Free text per prompt — every dojo
+  // asks differently. Visibility is gated by the students:medical
+  // permission, not plain students:view.
+  medicalMedications    String?
+  medicalConditions     String?
+  medicalInjuries       String?
   notes                 String?
   photoKey              String?
   joinedAt              DateTime      @default(now())
@@ -259,10 +267,66 @@ model Student {
   enrollments Enrollment[]
   invoices    Invoice[]
   portalTokens PortalToken[]
+  agreements  StudentAgreement[]
 
   @@index([lastName, firstName])
   @@index([status])
   @@map("students")
+}
+
+// School-specific agreement documents (privacy notice, informed consent,
+// safety expectations). Editing creates a new immutable version row; the
+// latest version per type is the active one that new signatures reference.
+// Re-signing is required only when the active version changes.
+enum AgreementType {
+  PRIVACY
+  CONSENT
+  SAFETY
+}
+
+model AgreementDocument {
+  id          String        @id @default(cuid())
+  type        AgreementType
+  version     Int
+  title       String
+  bodyMarkdown String
+  createdById String?
+  createdBy   User?         @relation("AgreementDocumentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime      @default(now())
+  signatures  StudentAgreement[]
+
+  @@unique([type, version])
+  @@index([type, version])
+  @@map("agreement_documents")
+}
+
+// One signature record per student per document version. A new document
+// version gets its own rows — the old signature stays as history, and the
+// compliance surface reports "re-sign required" when the latest version of
+// a type has no row for the student.
+model StudentAgreement {
+  id           String           @id @default(cuid())
+  studentId    String
+  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  documentId   String
+  document     AgreementDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  signedAt     DateTime         @default(now())
+  // Name the signer typed (the student, or the guardian for minors).
+  signedByName String
+  method       AgreementSignatureMethod @default(PORTAL)
+  recordedById String?
+  recordedBy   User?            @relation("AgreementRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+
+  @@unique([studentId, documentId])
+  @@index([documentId])
+  @@index([studentId])
+  @@map("student_agreements")
+}
+
+enum AgreementSignatureMethod {
+  PORTAL
+  STAFF
 }
 
 // Which disciplines a student trains. One or more per student (a school may

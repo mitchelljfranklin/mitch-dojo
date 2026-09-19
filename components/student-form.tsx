@@ -41,6 +41,9 @@ export type StudentFormValues = {
   guardianEmail: string | null;
   guardianPhone: string | null;
   guardianRelationship: string | null;
+  medicalMedications: string | null;
+  medicalConditions: string | null;
+  medicalInjuries: string | null;
   addressLine: string | null;
   city: string | null;
   state: string | null;
@@ -70,6 +73,7 @@ type StudentFormProps = {
   defaultCountry: string;
   submitLabel: string;
   studentId?: string;
+  canViewMedical: boolean;
 };
 
 // The form's uncontrolled inputs (checkboxes, selects) only read their
@@ -83,6 +87,7 @@ export function StudentForm(props: StudentFormProps) {
     props.locations,
     props.disciplines,
     props.defaultCountry,
+    props.canViewMedical,
   ]);
   return <StudentFormInner key={fingerprint} {...props} />;
 }
@@ -95,6 +100,7 @@ function StudentFormInner({
   defaultCountry,
   submitLabel,
   studentId,
+  canViewMedical,
 }: StudentFormProps) {
   const [state, formAction, isPending] = useActionState<
     StudentFormState,
@@ -302,6 +308,53 @@ function StudentFormInner({
           </div>
         </div>
       </div>
+
+      {canViewMedical ? (
+        <div className="border-t pt-4">
+          <h3 className="mb-2 text-sm font-medium">
+            Health &amp; medical{" "}
+            <span className="text-muted-foreground text-xs font-normal">
+              (sensitive — visible only to medical-permitted roles)
+            </span>
+          </h3>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="medicalMedications">
+                Prescribed medications that may impair reaction time or
+                judgement
+              </Label>
+              <Textarea
+                id="medicalMedications"
+                name="medicalMedications"
+                rows={2}
+                defaultValue={values?.medicalMedications ?? ""}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="medicalConditions">
+                Conditions we should be aware of (asthma, epilepsy, …)
+              </Label>
+              <Textarea
+                id="medicalConditions"
+                name="medicalConditions"
+                rows={2}
+                defaultValue={values?.medicalConditions ?? ""}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="medicalInjuries">
+                Illnesses or injuries that may affect training
+              </Label>
+              <Textarea
+                id="medicalInjuries"
+                name="medicalInjuries"
+                rows={2}
+                defaultValue={values?.medicalInjuries ?? ""}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="border-t pt-4">
         <h3 className="mb-2 text-sm font-medium">Emergency contact</h3>

@@ -19,6 +19,9 @@ import {
   getPortalUpcomingSessions,
   verifyPortalToken,
 } from "@/lib/db/portal";
+import { getStudentAgreementStatuses } from "@/lib/db/agreements";
+import ReactMarkdown from "react-markdown";
+import { PortalAgreementSignForm } from "./agreement-sign-form";
 import { getMembershipsSettings } from "@/lib/settings";
 import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 import { portalSignOutAction } from "./sign-out";
@@ -84,14 +87,21 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     );
   }
 
-  const [student, upcoming, attendance, invoices, { currency }] =
-    await Promise.all([
-      getPortalStudent(studentId),
-      getPortalUpcomingSessions(studentId),
-      getPortalAttendance(studentId),
-      getPortalInvoices(studentId),
-      getMembershipsSettings(),
-    ]);
+  const [
+    student,
+    upcoming,
+    attendance,
+    invoices,
+    agreementStatuses,
+    { currency },
+  ] = await Promise.all([
+    getPortalStudent(studentId),
+    getPortalUpcomingSessions(studentId),
+    getPortalAttendance(studentId),
+    getPortalInvoices(studentId),
+    getStudentAgreementStatuses(studentId),
+    getMembershipsSettings(),
+  ]);
 
   if (!student) {
     return (
@@ -292,6 +302,62 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Documents &amp; consent</CardTitle>
+          <CardDescription>
+            Read and sign our membership documents. Signing digitally is
+            equivalent to signing on paper — your name and the date are
+            recorded.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {agreementStatuses.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No documents to sign yet.
+            </p>
+          ) : (
+            agreementStatuses.map((status) => (
+              <details
+                key={status.type}
+                className="rounded-md border p-3 text-sm"
+              >
+                <summary className="flex cursor-pointer flex-wrap items-center gap-2">
+                  <span className="font-medium">{status.label}</span>
+                  {status.signed && !status.reSignRequired ? (
+                    <Badge variant="secondary">
+                      Signed {formatDate(status.signedAt!)}
+                    </Badge>
+                  ) : status.reSignRequired ? (
+                    <Badge variant="destructive">
+                      Updated — please sign the new version
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">Signature needed</Badge>
+                  )}
+                </summary>
+                <div className="mt-3 flex flex-col gap-2">
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown>{status.bodyMarkdown}</ReactMarkdown>
+                  </div>
+                  {status.signed && !status.reSignRequired ? (
+                    <p className="text-muted-foreground text-xs">
+                      Signed by {status.signedByName} on{" "}
+                      {formatDate(status.signedAt!)}.
+                    </p>
+                  ) : (
+                    <PortalAgreementSignForm
+                      documentId={status.documentId}
+                      documentLabel={status.label}
+                    />
+                  )}
+                </div>
+              </details>
+            ))
+          )}
+        </CardContent>
+      </Card>
     </PortalShell>
   );
 }

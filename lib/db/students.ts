@@ -183,6 +183,9 @@ export async function createStudent(input: StudentInput): Promise<string> {
       guardianEmail: input.guardianEmail,
       guardianPhone: input.guardianPhone,
       guardianRelationship: input.guardianRelationship ?? null,
+      medicalMedications: input.medicalMedications,
+      medicalConditions: input.medicalConditions,
+      medicalInjuries: input.medicalInjuries,
       status: input.status,
       notes: input.notes,
       locations: {

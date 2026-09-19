@@ -193,6 +193,59 @@ async function run(): Promise<void> {
       });
     }
 
+    console.log("Seeding agreement document templates...");
+    // Three compliance documents with generic placeholder text — each school
+    // replaces the bodies in Admin → Documents (editing creates version 2).
+    const agreementTemplates = [
+      {
+        type: "PRIVACY" as const,
+        title: "Privacy information notice",
+        body:
+          "# Privacy information notice\n\n" +
+          "Replace this text with your school's privacy notice: what personal " +
+          "and health information you collect, why you collect it, who you share " +
+          "it with, and how members can access or correct their data.\n\n" +
+          "By signing, the member confirms they have read and understood this notice.",
+      },
+      {
+        type: "CONSENT" as const,
+        title: "Informed consent — contact sport",
+        body:
+          "# Informed consent\n\n" +
+          "Replace this text with your informed-consent statement: the risks of " +
+          "participating in martial arts as a contact activity, the member's " +
+          "responsibility to declare medical conditions, and your conditions of " +
+          "participation.\n\n" +
+          "By signing, the member confirms they have read and understood this consent.",
+      },
+      {
+        type: "SAFETY" as const,
+        title: "Safety, respect & discipline expectations",
+        body:
+          "# Safety and expectations\n\n" +
+          "Replace this text with your safety rules and expectations: what may " +
+          "and may not be worn, jewellery and grooming, respect and discipline " +
+          "on the mats, and the consequences of breaches.\n\n" +
+          "By signing, the member confirms they have read and understood these expectations.",
+      },
+    ];
+    for (const template of agreementTemplates) {
+      const existing = await prisma.agreementDocument.findFirst({
+        where: { type: template.type },
+        select: { id: true },
+      });
+      if (!existing) {
+        await prisma.agreementDocument.create({
+          data: {
+            type: template.type,
+            version: 1,
+            title: template.title,
+            bodyMarkdown: template.body,
+          },
+        });
+      }
+    }
+
     const adminCount = await prisma.user.count();
     if (adminCount === 0) {
       console.log(

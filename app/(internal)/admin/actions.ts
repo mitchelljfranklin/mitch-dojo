@@ -10,6 +10,7 @@ import {
 } from "@/lib/break-glass";
 import { PERMISSIONS } from "@/lib/permissions";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
+import { toAgreementType, createDocumentVersion } from "@/lib/db/agreements";
 import {
   getAppearanceSettings,
   getStorageSettings,
@@ -671,4 +672,45 @@ export async function generateBreakGlassUrlAction(
   }
 
   return { ok: true, url: `${env.APP_URL}/login?breakGlass=${token}` };
+}
+
+export async function saveAgreementDocumentAction(
+  previousState: SettingsActionState,
+  formData: FormData,
+): Promise<SettingsActionState> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  const typeRaw = String(formData.get("type") ?? "");
+  const type = toAgreementType(typeRaw);
+  if (!type) {
+    return { ok: false, message: "Unknown document type." };
+  }
+  const title = String(formData.get("title") ?? "").trim();
+  const bodyMarkdown = String(formData.get("bodyMarkdown") ?? "");
+  if (!title) {
+    return { ok: false, message: "Give the document a title." };
+  }
+  if (bodyMarkdown.trim().length === 0) {
+    return { ok: false, message: "The document body cannot be empty." };
+  }
+
+  const user = await getCurrentUser();
+  const version = await createDocumentVersion({
+    type,
+    title,
+    bodyMarkdown,
+    createdById: user?.id ?? null,
+  });
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SETTINGS,
+      "Setting",
+      `agreement.${typeRaw.toLowerCase()}.v${version}`,
+    );
+  }
+  return {
+    ok: true,
+    message: `Saved as version ${version} — members must re-sign the new version.`,
+  };
 }

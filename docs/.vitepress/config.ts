@@ -22,6 +22,7 @@ const sidebar = [
       { text: "Attendance & Check-in", link: "/user-guides/attendance" },
       { text: "Belts & Gradings", link: "/user-guides/belts" },
       { text: "Importing History", link: "/user-guides/importing-history" },
+      { text: "Documents & Consent", link: "/user-guides/compliance" },
       { text: "Memberships & Payments", link: "/user-guides/memberships" },
       { text: "Communication", link: "/user-guides/communication" },
       { text: "Trials & Leads", link: "/user-guides/trials" },
