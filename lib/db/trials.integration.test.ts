@@ -21,9 +21,26 @@ let locationId: string;
 let disciplineId: string;
 let courseId: string;
 let trialId: string;
+let originalDefaultCountry: string | null;
 
 beforeAll(async () => {
   await prisma.notificationLog.deleteMany({});
+  // The booking mirrors the org's default country onto new trials; seed it
+  // and restore the original value afterwards.
+  const original = await prisma.appSetting.findUnique({
+    where: { key: "organization.defaultCountry" },
+  });
+  originalDefaultCountry =
+    typeof original?.value === "string" ? original.value : null;
+  await prisma.appSetting.upsert({
+    where: { key: "organization.defaultCountry" },
+    update: { value: "AU", category: "organization" },
+    create: {
+      key: "organization.defaultCountry",
+      category: "organization",
+      value: "AU",
+    },
+  });
   const location = await createLocation({
     name: `Trial Dojo ${suffix}`,
     address: null,
@@ -42,6 +59,22 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // Restore the default country the suite overwrote.
+  if (originalDefaultCountry === null) {
+    await prisma.appSetting
+      .deleteMany({ where: { key: "organization.defaultCountry" } })
+      .catch(() => undefined);
+  } else {
+    await prisma.appSetting.upsert({
+      where: { key: "organization.defaultCountry" },
+      update: { value: originalDefaultCountry, category: "organization" },
+      create: {
+        key: "organization.defaultCountry",
+        category: "organization",
+        value: originalDefaultCountry,
+      },
+    });
+  }
   await prisma.notificationLog.deleteMany({});
   await prisma.classSession.deleteMany({ where: { courseId } });
   await prisma.course
@@ -144,8 +177,10 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     expect(student?.locations).toHaveLength(1);
     expect(student?.disciplines).toHaveLength(1);
     expect(student?.notes).toContain("Booked via website");
-    // Adult bookings leave the guardian fields untouched.
+    // Adult bookings leave the guardian fields untouched, and the org's
+    // default country is preselected (mirrors the manual student form).
     expect(student?.guardianEmail).toBeNull();
+    expect(student?.country).toBe("AU");
   });
 
   it("mirrors the contact onto guardian fields for a child booking", async () => {
@@ -174,6 +209,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     expect(student?.guardianName).toBe(`Guardian ${suffix}`);
     expect(student?.guardianEmail).toBe(`kid-lead-${suffix}@example.com`);
     expect(student?.guardianPhone).toBe("0412 345 678");
+    expect(student?.country).toBe("AU");
     expect(student?.notes).toContain("Booked by the guardian");
 
     await prisma.student.delete({ where: { id: result.studentId } });

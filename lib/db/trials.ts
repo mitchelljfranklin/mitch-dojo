@@ -219,6 +219,10 @@ export async function createTrialBooking(
     throw new Error("That class is no longer available.");
   }
 
+  // Mirror the manual student form: preselect the org's default country.
+  const { getOrganizationSettings } = await import("@/lib/settings");
+  const { defaultCountry } = await getOrganizationSettings();
+
   const classNote =
     input.sessionDate && input.sessionCourseName
       ? `Booked via website for ${input.sessionCourseName} on ${input.sessionDate} at ${location.name}.`
@@ -239,6 +243,7 @@ export async function createTrialBooking(
       guardianName: isChild ? input.guardianName?.trim() || null : null,
       guardianEmail: isChild ? input.email?.trim() || null : null,
       guardianPhone: isChild ? input.phone?.trim() || null : null,
+      country: defaultCountry || null,
       status: "TRIAL",
       trialStage: "NEW",
       notes: isChild ? `${classNote} Booked by the guardian.` : classNote,
