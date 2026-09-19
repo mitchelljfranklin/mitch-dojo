@@ -52,10 +52,13 @@ test.describe("memberships", () => {
       await expect(page.getByText("Since", { exact: false })).toBeVisible();
     }
 
-    // Bill the plan manually, tagged to the E2E Dojo location. The created
+    // Bill the plan manually via the sidebar's direct Invoices route,
+    // tagged to the E2E Dojo location. The created
     // invoice number is captured from the toast so later assertions target
     // THIS invoice, not whichever one sorts first.
-    await page.goto("/memberships/invoices");
+    await page.goto("/dashboard");
+    await page.getByRole("link", { name: "Invoices" }).first().click();
+    await page.waitForURL("**/memberships/invoices");
     await page.getByRole("button", { name: "New invoice" }).click();
     await page.getByRole("combobox", { name: "Student" }).click();
     await page.getByRole("option", { name: "E2E Attend Kid" }).click();

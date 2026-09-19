@@ -17,6 +17,7 @@ import {
   KeyRound,
   LayoutDashboard,
   Mail,
+  Receipt,
   ScrollText,
   Scroll,
   Settings,
@@ -247,6 +248,12 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
           visible: canMemberships,
         },
         {
+          title: "Invoices",
+          href: "/memberships/invoices",
+          icon: Receipt,
+          visible: canMemberships,
+        },
+        {
           title: "Admin",
           href: "/admin",
           icon: Settings,
@@ -288,9 +295,20 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => {
-                  const isActive =
+                  // An item is active on an exact or child match, unless a
+                  // longer sibling item claims the path (Invoices claims
+                  // /memberships/invoices so Memberships stays dark there).
+                  const matches =
                     pathname === item.href ||
                     pathname.startsWith(`${item.href}/`);
+                  const claimedByLongerChild = items.some(
+                    (other) =>
+                      other.href !== item.href &&
+                      other.href.startsWith(`${item.href}/`) &&
+                      (pathname === other.href ||
+                        pathname.startsWith(`${other.href}/`)),
+                  );
+                  const isActive = matches && !claimedByLongerChild;
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton asChild isActive={isActive}>

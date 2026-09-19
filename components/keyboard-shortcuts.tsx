@@ -60,8 +60,14 @@ const ALL_ITEMS: PaletteItem[] = [
   },
   {
     label: "Memberships",
-    subtitle: "Plans & invoices",
+    subtitle: "Plans & billing rules",
     href: "/memberships",
+    permission: PERMISSIONS.MEMBERSHIPS_VIEW,
+  },
+  {
+    label: "Invoices",
+    subtitle: "Billing history & payments",
+    href: "/memberships/invoices",
     permission: PERMISSIONS.MEMBERSHIPS_VIEW,
   },
   { label: "Profile", subtitle: "Your account", href: "/profile" },

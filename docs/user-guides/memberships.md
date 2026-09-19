@@ -8,7 +8,7 @@ A **plan** defines a recurring membership — name, price, and billing period (e
 
 ## Invoices
 
-With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:
+Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry in the sidebar's Management group. With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:
 
 - **Due date** — configurable window after generation (default 14 days).
 - **Location tagging (optional)** — tag an invoice to a location for per-location revenue on the dashboard. Recurring invoices stay school-wide and count only towards "All locations".

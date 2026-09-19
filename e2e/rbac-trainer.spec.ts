@@ -16,15 +16,15 @@ test.describe("rbac trainer", () => {
   });
 
   test("floor operations are present", async ({ page }) => {
-    // Students: view + create + edit. The record's Delete lives in the
-    // danger zone gated by students:delete (which Trainer lacks) — the
-    // promotion-history Delete (belts:edit, which Trainer has) stays.
+    // Students: view + create + edit. The record's student-delete form is
+    // gated by students:delete (which Trainer lacks) — the belt-history
+    // delete (belts:edit, which Trainer has) only exists once belts exist.
     await page.goto("/students");
     await expect(page.getByText("E2E Attend Kid").first()).toBeVisible();
     await page.getByText("E2E Attend Kid").first().click();
     await page.waitForURL("**/students/*");
     await expect(page.getByRole("link", { name: "Edit" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Delete" })).toHaveCount(1);
+    await expect(page.locator('form[id^="delete-student-"]')).toHaveCount(0);
 
     // Schedule + classes: timetable and course list are reachable
     // (classes:view; editing courses is classes:edit, which Trainer lacks)
