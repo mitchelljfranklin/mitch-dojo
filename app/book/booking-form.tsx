@@ -37,6 +37,8 @@ export function BookingForm({
 }: BookingFormProps) {
   const [locationId, setLocationId] = useState("");
   const [disciplineId, setDisciplineId] = useState("");
+  const [bookingFor, setBookingFor] = useState<"adult" | "child">("adult");
+  const forChild = bookingFor === "child";
 
   const matchingSessions = useMemo(
     () =>
@@ -63,27 +65,61 @@ export function BookingForm({
         />
       </div>
 
+      <div className="grid gap-2">
+        <Label htmlFor="booking-for">Who is this trial for? *</Label>
+        <Select
+          name="bookingFor"
+          defaultValue="adult"
+          onValueChange={(value) => setBookingFor(value as "adult" | "child")}
+        >
+          <SelectTrigger id="booking-for">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="adult">Myself (adult)</SelectItem>
+            <SelectItem value="child">My child</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="firstName">First name *</Label>
+          <Label htmlFor="firstName">
+            {forChild ? "Child's first name" : "First name"} *
+          </Label>
           <Input id="firstName" name="firstName" required maxLength={60} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="lastName">Last name *</Label>
+          <Label htmlFor="lastName">
+            {forChild ? "Child's last name" : "Last name"} *
+          </Label>
           <Input id="lastName" name="lastName" required maxLength={60} />
         </div>
       </div>
+
+      {forChild ? (
+        <div className="grid gap-2">
+          <Label htmlFor="guardianName">Guardian name (you)</Label>
+          <Input id="guardianName" name="guardianName" maxLength={60} />
+        </div>
+      ) : null}
+
       <div className="grid gap-2">
-        <Label htmlFor="booking-email">Email</Label>
+        <Label htmlFor="booking-email">
+          {forChild ? "Guardian email" : "Email"}
+        </Label>
         <Input id="booking-email" name="email" type="email" maxLength={120} />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="booking-phone">Phone</Label>
+        <Label htmlFor="booking-phone">
+          {forChild ? "Guardian phone" : "Phone"}
+        </Label>
         <Input id="booking-phone" name="phone" type="tel" maxLength={40} />
       </div>
       <p className="text-muted-foreground text-xs">
-        Please leave either an email or a phone number so we can confirm your
-        spot.
+        {forChild
+          ? "Children don't need their own contact — we'll keep these as the guardian's details and reach you on them."
+          : "Please leave either an email or a phone number so we can confirm your spot."}
       </p>
 
       <div className="grid gap-2">

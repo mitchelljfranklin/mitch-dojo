@@ -155,6 +155,48 @@ test.describe("trials", () => {
     await expect(page.getByText("E2E Convert Plan").first()).toBeVisible();
   });
 
+  test("child booking captures the guardian details on the record", async ({
+    page,
+  }) => {
+    const childEmail = `child-booker-${Date.now()}@example.com`;
+    await page.goto("/book");
+    await expect(
+      page.getByRole("heading", { name: "Book a free trial class" }),
+    ).toBeVisible();
+
+    // Selecting child mode relabels the contact fields as the guardian's
+    await page.getByLabel("Who is this trial for?").click();
+    await page.getByRole("option", { name: "My child" }).click();
+    await expect(page.getByText("Guardian email")).toBeVisible();
+
+    await page.getByLabel("Child's first name").fill("Kiddo");
+    await page.getByLabel("Child's last name").fill("Booker");
+    await page.getByLabel("Guardian name (you)").fill("Parent Booker");
+    await page.getByLabel("Guardian email").fill(childEmail);
+    await page.getByRole("combobox", { name: "Location" }).click();
+    await page.getByRole("option", { name: "E2E Dojo", exact: true }).click();
+    await page.getByRole("combobox", { name: "Martial art" }).click();
+    await page.getByRole("option", { name: "E2E Karate" }).click();
+    await page.getByRole("button", { name: "Book my free trial" }).click();
+    await expect(page.getByText("Booking received!")).toBeVisible();
+
+    // The child's record carries the guardian details
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/trials");
+    await expect(page.getByText("Kiddo Booker").first()).toBeVisible();
+    await page.goto("/students");
+    await page.getByText("Kiddo Booker").first().click();
+    await page.waitForURL("**/students/*");
+    await expect(page.getByText("Parent Booker")).toBeVisible();
+    // The address appears on both the child's contact and the guardian rows.
+    await expect(page.getByText(childEmail).first()).toBeVisible();
+  });
+
   test("booking form rejects missing contact details", async ({ page }) => {
     await page.goto("/book?error=contact");
     await expect(page.getByText("Something went wrong")).toBeVisible();

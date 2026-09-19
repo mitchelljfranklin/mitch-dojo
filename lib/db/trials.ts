@@ -171,8 +171,14 @@ export async function setTrialStage(
 // --------------- public booking ---------------
 
 export type BookingInput = {
+  // "child" bookings capture the guardian's contact: the entered email and
+  // phone are stored on BOTH the child and the guardian fields, so reminders
+  // and portal links (student → guardian fallback) reach the family either
+  // way, and staff see the guardian on the record.
+  bookingFor: "adult" | "child";
   firstName: string;
   lastName: string;
+  guardianName: string | null;
   email: string | null;
   phone: string | null;
   locationId: string;
@@ -217,6 +223,10 @@ export async function createTrialBooking(
     input.sessionDate && input.sessionCourseName
       ? `Booked via website for ${input.sessionCourseName} on ${input.sessionDate} at ${location.name}.`
       : `Booked via website (${discipline.name} at ${location.name}).`;
+  const isChild = input.bookingFor === "child";
+  if (isChild && !input.guardianName && !input.email && !input.phone) {
+    throw new Error("A child booking needs guardian contact details.");
+  }
 
   const student = await prisma.student.create({
     data: {
@@ -224,9 +234,14 @@ export async function createTrialBooking(
       lastName: input.lastName.trim(),
       email: input.email?.trim() || null,
       phone: input.phone?.trim() || null,
+      // Child mode: the entered contact is the guardian's — mirror it onto
+      // the guardian fields as well as the child's own contact fields.
+      guardianName: isChild ? input.guardianName?.trim() || null : null,
+      guardianEmail: isChild ? input.email?.trim() || null : null,
+      guardianPhone: isChild ? input.phone?.trim() || null : null,
       status: "TRIAL",
       trialStage: "NEW",
-      notes: classNote,
+      notes: isChild ? `${classNote} Booked by the guardian.` : classNote,
       locations: {
         create: { locationId: input.locationId, isPrimary: true },
       },

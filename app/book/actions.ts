@@ -12,8 +12,18 @@ import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 const BOOKINGS_PER_HOUR = 5;
 
 const bookingFormSchema = z.object({
+  // Who the trial is for: an adult (the person booking) or a child. In child
+  // mode the contact details are the guardian's — stored on both the child
+  // and the guardian fields so reminders and portal links reach the family.
+  bookingFor: z.enum(["adult", "child"]).default("adult"),
   firstName: z.string().trim().min(1, "First name is required").max(60),
   lastName: z.string().trim().min(1, "Last name is required").max(60),
+  guardianName: z
+    .string()
+    .trim()
+    .max(60)
+    .optional()
+    .transform((value) => value ?? ""),
   email: z
     .union([z.literal(""), z.email()])
     .optional()
@@ -42,8 +52,10 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
   }
 
   const parsed = bookingFormSchema.safeParse({
+    bookingFor: formData.get("bookingFor") ?? "adult",
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
+    guardianName: formData.get("guardianName") ?? "",
     email: formData.get("email") ?? "",
     phone: formData.get("phone") ?? "",
     locationId: formData.get("locationId"),
@@ -65,8 +77,11 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
   ).map((part) => part.trim().slice(0, 120));
 
   const result = await createTrialBooking({
+    bookingFor: parsed.data.bookingFor,
     firstName: parsed.data.firstName,
     lastName: parsed.data.lastName,
+    guardianName:
+      parsed.data.bookingFor === "child" ? parsed.data.guardianName : null,
     email: parsed.data.email || null,
     phone: parsed.data.phone || null,
     locationId: parsed.data.locationId,

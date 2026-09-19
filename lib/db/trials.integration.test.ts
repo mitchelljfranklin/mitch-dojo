@@ -121,8 +121,10 @@ describe.skipIf(!hasTestDatabase)("trial stage transitions", () => {
 describe.skipIf(!hasTestDatabase)("website booking", () => {
   it("creates a TRIAL student with location, discipline, and a booking note", async () => {
     const result = await createTrialBooking({
+      bookingFor: "adult",
       firstName: "Website",
       lastName: `Lead${suffix}`,
+      guardianName: null,
       email: `lead-${suffix}@example.com`,
       phone: null,
       locationId,
@@ -142,12 +144,47 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     expect(student?.locations).toHaveLength(1);
     expect(student?.disciplines).toHaveLength(1);
     expect(student?.notes).toContain("Booked via website");
+    // Adult bookings leave the guardian fields untouched.
+    expect(student?.guardianEmail).toBeNull();
+  });
+
+  it("mirrors the contact onto guardian fields for a child booking", async () => {
+    const result = await createTrialBooking({
+      bookingFor: "child",
+      firstName: "Kid",
+      lastName: `Lead${suffix}`,
+      guardianName: `Guardian ${suffix}`,
+      email: `kid-lead-${suffix}@example.com`,
+      phone: "0412 345 678",
+      locationId,
+      disciplineId,
+      sessionDate: null,
+      sessionCourseName: null,
+    });
+    expect(result.outcome).toBe("created");
+    if (result.outcome !== "created") throw new Error("expected created");
+
+    const student = await prisma.student.findUnique({
+      where: { id: result.studentId },
+    });
+    // The entered contact lives on the child AND the guardian, so reminders
+    // and portal links reach the family either way.
+    expect(student?.email).toBe(`kid-lead-${suffix}@example.com`);
+    expect(student?.phone).toBe("0412 345 678");
+    expect(student?.guardianName).toBe(`Guardian ${suffix}`);
+    expect(student?.guardianEmail).toBe(`kid-lead-${suffix}@example.com`);
+    expect(student?.guardianPhone).toBe("0412 345 678");
+    expect(student?.notes).toContain("Booked by the guardian");
+
+    await prisma.student.delete({ where: { id: result.studentId } });
   });
 
   it("flags a duplicate email instead of creating a second student", async () => {
     const result = await createTrialBooking({
+      bookingFor: "adult",
       firstName: "Website",
       lastName: `Lead${suffix}`,
+      guardianName: null,
       email: `lead-${suffix}@example.com`,
       phone: null,
       locationId,
