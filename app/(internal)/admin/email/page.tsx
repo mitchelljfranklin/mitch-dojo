@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requirePermission } from "@/lib/auth";
+import { isLoopbackUrl, env } from "@/lib/env";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getEmailSettings } from "@/lib/settings";
 
@@ -18,6 +19,13 @@ export const metadata = { title: "Admin — Email" };
 export default async function AdminEmailPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
   const email = await getEmailSettings();
+  // Emails embed absolute links (logo, portal links, resets) built from
+  // APP_URL — a loopback APP_URL breaks them for every real recipient, so
+  // warn loudly the moment SMTP is configured against one.
+  const loopbackWarning =
+    email.smtpHost.length > 0 && isLoopbackUrl(env.APP_URL)
+      ? `APP_URL is set to ${env.APP_URL}. Emails embed links built from it — recipients' mail clients cannot reach a loopback address, so images and links arrive broken. Set APP_URL to the address your recipients can reach (LAN IP or public URL) and restart.`
+      : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -27,6 +35,17 @@ export default async function AdminEmailPage() {
           SMTP delivery for reminders, portal links, and password resets.
         </p>
       </div>
+
+      {loopbackWarning ? (
+        <Card className="border-destructive/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-destructive text-base">
+              APP_URL points at a loopback address
+            </CardTitle>
+            <CardDescription>{loopbackWarning}</CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

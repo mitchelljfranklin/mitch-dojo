@@ -83,6 +83,25 @@ export function resolveDatabaseProvider(
   return databaseProviderSchema.parse(rawProvider);
 }
 
+// True when APP_URL points at a loopback host. Emails embed absolute URLs
+// built from APP_URL (logo, portal links) — a loopback APP_URL renders
+// broken images and dead links for every recipient whose mail client is
+// not the server itself.
+export function isLoopbackUrl(appUrl: string): boolean {
+  try {
+    const url = new URL(appUrl);
+    return (
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      url.hostname === "[::1]" ||
+      url.hostname === "::1" ||
+      url.hostname.endsWith(".localhost")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function loadEnvironment(): Environment {
   const parsed = environmentSchema.safeParse(process.env);
 

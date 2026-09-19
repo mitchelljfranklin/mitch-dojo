@@ -77,16 +77,19 @@ export async function getAttendanceTrend(
   locationId?: string,
   now: Date = new Date(),
 ): Promise<AttendanceTrendBucket[]> {
+  // Session dates are UTC-midnight of the local calendar date (see
+  // ensureUpcomingSessions), so "today" as a date value is
+  // utcMidnightOf(now). Buckets are 7-day windows with an EXCLUSIVE end;
+  // the last window ends tomorrow so today's sessions land in it.
   const today = utcMidnightOf(now);
-  // Buckets are 7-day windows ending today, so the last bucket is partial —
-  // labelled by its start date either way.
-  const rangeStart = addDays(today, -(weeks * 7 - 1));
+  const rangeEnd = addDays(today, 1);
+  const rangeStart = addDays(rangeEnd, -(weeks * 7));
 
   const attendanceRows = await prisma.attendance.findMany({
     where: {
       status: { in: TRAINED_STATUSES as unknown as AttendanceStatusValue[] },
       session: {
-        date: { gte: rangeStart, lte: today },
+        date: { gte: rangeStart, lt: rangeEnd },
         ...(locationId ? { locationId } : {}),
       },
     },
@@ -95,7 +98,7 @@ export async function getAttendanceTrend(
 
   const heldSessions = await prisma.classSession.findMany({
     where: {
-      date: { gte: rangeStart, lte: today },
+      date: { gte: rangeStart, lt: rangeEnd },
       ...(locationId ? { locationId } : {}),
       attendance: { some: {} },
     },
@@ -103,9 +106,9 @@ export async function getAttendanceTrend(
   });
 
   const buckets: AttendanceTrendBucket[] = [];
-  for (let index = weeks - 1; index >= 0; index--) {
-    const bucketStart = addDays(today, -(index * 7 + 6));
-    const bucketEnd = addDays(today, -index * 7);
+  for (let index = 0; index < weeks; index++) {
+    const bucketStart = addDays(rangeStart, index * 7);
+    const bucketEnd = addDays(bucketStart, 7);
     const inBucket = attendanceRows.filter((row) => {
       const date = row.session.date.getTime();
       return date >= bucketStart.getTime() && date < bucketEnd.getTime();
@@ -140,13 +143,16 @@ export async function getRevenueTrend(
   locationId?: string,
   now: Date = new Date(),
 ): Promise<RevenueTrendBucket[]> {
+  // Local calendar months (matching getAnalyticsOverview's "revenue this
+  // month" card) expressed as UTC instants via Date.UTC(local parts).
   const rangeStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (months - 1), 1),
+    Date.UTC(now.getFullYear(), now.getMonth() - (months - 1), 1),
   );
+  const rangeEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
 
   const payments = await prisma.payment.findMany({
     where: {
-      paidAt: { gte: rangeStart },
+      paidAt: { gte: rangeStart, lt: rangeEnd },
       invoice: {
         // Null-location invoices (school-wide memberships) only count
         // towards "All locations" — a filter excludes them by design.
@@ -159,10 +165,10 @@ export async function getRevenueTrend(
   const buckets: RevenueTrendBucket[] = [];
   for (let index = months - 1; index >= 0; index--) {
     const bucketStart = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - index, 1),
+      Date.UTC(now.getFullYear(), now.getMonth() - index, 1),
     );
     const bucketEnd = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - index + 1, 1),
+      Date.UTC(now.getFullYear(), now.getMonth() - index + 1, 1),
     );
     const monthPayments = payments.filter(
       (payment) =>

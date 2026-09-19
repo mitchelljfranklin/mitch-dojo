@@ -190,6 +190,39 @@ describe.skipIf(!hasTestDatabase)("attendance trend", () => {
     const empty = await getAttendanceTrend(12, otherLocationId);
     expect(empty.reduce((sum, b) => sum + b.attendances, 0)).toBe(0);
   });
+
+  it("includes today's session in the final bucket", async () => {
+    // Regression: the last bucket's exclusive end used to equal today, so a
+    // session dated today was fetched but never counted.
+    const todaySession = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: utcMidnight(new Date()),
+        startTime: "06:00",
+        endTime: "07:00",
+      },
+    });
+    await prisma.attendance.create({
+      data: {
+        sessionId: todaySession.id,
+        studentId: eagerId,
+        status: "PRESENT",
+      },
+    });
+
+    const trend = await getAttendanceTrend(12, locationId);
+    const lastBucket = trend[trend.length - 1]!;
+    // Today's session + the 3-days-ago session both land here.
+    expect(lastBucket.attendances).toBeGreaterThanOrEqual(2);
+    expect(lastBucket.sessionsHeld).toBeGreaterThanOrEqual(2);
+
+    // Clean up so later suites see the seeded two-attendance state.
+    await prisma.attendance.deleteMany({
+      where: { sessionId: todaySession.id },
+    });
+    await prisma.classSession.delete({ where: { id: todaySession.id } });
+  });
 });
 
 describe.skipIf(!hasTestDatabase)("revenue trend", () => {
