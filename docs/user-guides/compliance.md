@@ -12,17 +12,34 @@ The student form and record carry a **Health & medical** section with three free
 
 This is sensitive information (PHI). It is **not visible to every staff role**: a dedicated **`students:medical`** permission gates the section — seeded onto **Admin** and **Trainer**, not **Viewer**. Custom roles can grant or withhold it independently. It is deliberately **not collected on the public booking page** (an unauthenticated surface); staff complete it during onboarding or the first visit.
 
-## The three agreement documents
+## The agreement documents
 
-Each school provides its own wording for three agreements, all read + signed by the member (or their guardian):
+Each school manages its own set of agreements — the three seeded starters
+(privacy notice, informed consent, safety expectations) are placeholders to
+replace, and more can be added. All are read + signed by the member (or
+their guardian):
 
-| Document | Purpose |
-|---|---|
-| **Privacy information notice** | What personal and health data you collect, why, and how it's handled |
-| **Informed consent** | Acknowledgement that martial arts is a contact activity and its risks |
-| **Safety expectations** | What may/may not be worn, respect and discipline on the mats |
+- **Privacy information notice** (seeded) — what personal and health data
+  you collect, why, and how it's handled
+- **Informed consent** (seeded) — acknowledgement that martial arts is a
+  contact activity and its risks
+- **Safety expectations** (seeded) — what may/may not be worn, respect and
+  discipline on the mats
+- **Anything you add** — e.g. a code of conduct; add/rename/disable/delete
+  documents under [Admin → Documents](../configuration/documents), and the
+  title is the name members see everywhere
 
-Templates live under **Admin → Documents** (`settings:manage`). Each has a title and a Markdown body; **saving creates a new version** — the previous version and its signatures stay as history, and every member must **re-sign the new version** (version-change-only renewal; no time-based expiry). Seeded with generic placeholder text — replace it before go-live.
+Signing is per document **version**: saving an edit creates a new version
+and every member must re-sign it. Version-change only — no time-based
+expiry.
+
+Documents are managed under **Admin → Documents** (`settings:manage`) — add,
+rename, disable, or delete freely. Each document has a title and a Markdown
+body; **saving creates a new version** (starting from version 0, your first
+edit reads as version 1) — the previous version and its signatures stay as
+history, and every member must **re-sign the new version**
+(version-change-only renewal; no time-based expiry). Seeded with generic
+placeholder text — replace it before go-live.
 
 ## Signing
 

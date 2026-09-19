@@ -71,7 +71,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 ### Students & Locations
 - Multi-location enrolment with exactly one **primary (home) dojo** per student
-- Photos, attachments, guardian and emergency contacts, structured addresses
+- Photos, attachments, guardian contacts (with relationship) and emergency contacts, structured addresses
 - Disciplines assignment — a student's rank is per discipline, global across all locations teaching it
 - Full lifecycle statuses (trial, active, inactive, alumni) and CSV import/export
 
@@ -83,6 +83,8 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 ### Attendance & QR Check-in
 - Session sheets: Present, Late, Excused, Absent — with bulk mark-all
+- Attendance browser listing every session past and upcoming with marked/trained counts
+- Printable branded attendance PDF per session
 - No-login QR check-in pages per location, secured by a revocable token
 - Check-ins feed belt eligibility automatically (Present and Late both count)
 - Students with overdue invoices can be suspended from check-in automatically
@@ -92,12 +94,13 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Cumulative eligibility: every trained session across all courses of a discipline counts toward the next rank
 - Threshold per belt with instructor override for make-up gradings
 - Full promotion history that stays readable through ladder reorganisations
+- Printable student report card (rank, training summary, balance) for parents
 
 ### Memberships & Payments
 - Plan builder with billing periods and pricing
 - Auto-generated recurring invoices, optionally tagged to a location for per-location revenue
 - Manual payment recording (cash, transfer, terminal) with partial payments and full history
-- Overdue tracking with configurable windows and automatic check-in suspension
+- Printable branded invoice PDF; overdue tracking with configurable windows and automatic check-in suspension
 
 ### Communication
 - Scheduler-driven reminders: upcoming class, payment due/overdue, birthdays, trial follow-ups
@@ -106,20 +109,27 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Email log with statuses, failure errors, and one-click retry
 
 ### Trials & Leads
-- Public trial-booking page at `/book` — rate-limited, honeypot-protected, branded
-- Lead pipeline (New → Contacted → First class → Converted/Lost) with guarded stage transitions
-- Automated follow-up emails for trials that sit too long without converting
+- Public trial-booking page at `/book` — for yourself or a child (guardian contact captured), rate-limited, honeypot-protected, branded
+- Lead pipeline (New → Contacted → First class → Converted/Lost) with guarded stage transitions; the convert sheet can enroll and create the first invoice in one step
+- Automated follow-up emails for trials that sit too long without converting; booking confirmations to prospects
 - Conversion stats and one-click conversion to an active student
 
 ### Member Portal
 - Staff-emailed magic links (hashed tokens, 30-day expiry, single-student)
 - Read-only portal: progress and belts, upcoming classes, recent attendance, invoices and balance
+- Documents & consent — members read and digitally sign the school's agreements
 - Student → guardian recipient fallback for links and all communications
 
 ### Analytics
 - Overview counters, weekly attendance trend with location filter, monthly recorded revenue
 - At-risk retention list surfacing students whose training has lapsed
 - Members-per-location breakdown
+
+### Compliance
+- Health & medical section on the student record (medications, conditions, injuries), permission-gated as PHI
+- School-managed agreement documents (privacy notice, informed consent, safety expectations, or your own) — versioned, disable/delete freely
+- Digital signing through the member portal; staff-recorded paper fallback; printable branded forms
+- Re-sign required automatically whenever a document's version moves past a signature
 
 ### White-label
 - Org name and logo on the booking page, member portal, check-in screens, and every email

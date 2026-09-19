@@ -9,12 +9,14 @@
 |---|---|
 | `dashboard.png` | Analytics dashboard — counters, attendance trend, revenue chart |
 | `students.png` | Students list with search and status filters |
-| `student-detail.png` | A student record — belts, attendance, invoices |
+| `student-detail.png` | A student record — agreements/consent card, belts, attendance, invoices |
 | `timetable.png` | Weekly timetable view |
-| `attendance.png` | A session attendance sheet |
+| `attendance-browser.png` | The attendance browser (all sessions, past + upcoming) |
+| `attendance-sheet.png` | A session attendance sheet |
 | `belts.png` | A discipline's belt ladder / progression page |
 | `memberships.png` | Membership plans or an invoice detail |
 | `trials.png` | The trial pipeline |
-| `booking.png` | The public `/book` trial-booking page |
-| `portal.png` | The read-only member portal |
+| `booking.png` | The public `/book` trial-booking page (child mode) |
+| `portal.png` | The read-only member portal with the Documents & consent card |
 | `admin.png` | The Admin area (General page) |
+| `admin-documents.png` | Admin → Documents (versioned agreements) |

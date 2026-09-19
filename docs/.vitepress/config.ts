@@ -40,6 +40,7 @@ const sidebar = [
       { text: "Storage", link: "/configuration/storage" },
       { text: "Memberships", link: "/configuration/memberships" },
       { text: "Communication", link: "/configuration/communication" },
+      { text: "Documents", link: "/configuration/documents" },
       { text: "Email", link: "/configuration/email" },
       { text: "Templates", link: "/configuration/templates" },
       { text: "Email Log", link: "/configuration/email-log" },

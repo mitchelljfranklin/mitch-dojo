@@ -7,7 +7,9 @@ Operating guide for any agent or developer working in this repository.
 **Mitch‑Dojo** — an open-source (AGPL-3.0), self-hosted, single-dojo management
 platform for martial arts schools: students, classes/schedule, attendance &
 QR check-in, belts & gradings, memberships & payments (manual recording first,
-gateways later), communication, and retention analytics.
+gateways later), communication, trials & leads, member portal, compliance
+(medical PHI + versioned agreements with digital signing), and retention
+analytics.
 
 Design principle: **simple and easy to manage**. Prefer fewer, well-connected
 screens over sprawling configuration. Do not add features that are not in the
@@ -28,11 +30,12 @@ plan without asking.
     adapter cannot run `prisma migrate deploy` yet); the migration SQL files
     are the canonical shared DDL.
 - **Auth.js (NextAuth v5)** — staff auth, JWT sessions, credentials provider
-  (SSO providers land in a later phase)
+  + SSO (Microsoft Entra ID / Google / generic OIDC with break-glass URL)
 - **Tailwind CSS v4 + shadcn/ui** — UI; themed via CSS-variable design tokens
   (light + dark)
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
-- **@react-pdf/renderer** — PDF reports (later phase)
+- **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
+  attendance sheets, printable agreements)
 - **Local-disk volume** — file storage behind a storage interface
   (`lib/storage/`; S3 and Azure Blob swappable in-app); files served only via
   authenticated routes
@@ -50,30 +53,57 @@ app/                 # Next.js App Router
   (internal)/        # authenticated dashboard
     dashboard/       #   landing page
     profile/         #   own profile
-    settings/        #   organization, appearance, operations, storage, email,
-                     #   health, users, roles, audit log
-  (auth)/            # login, first-run setup, forgot/reset password
-  api/               # auth, health, cron trigger, csp-report, brand logo
+    admin/           # the Admin area — 16 sections across 7 groups at
+                     #   /admin/* (general, appearance, storage, memberships,
+                     #   communications, documents, email, templates, email-
+                     #   log, locations, users, roles, sign-in, audit,
+                     #   scheduling, health) + shared forms/actions
+    students/        # list, new, edit, import, export; record pages carry
+                     #   attachments, agreements/consent card, medical section
+    classes/         # courses + weekly schedule; per-course sessions
+    sessions/        # per-session attendance sheets (+ attendance PDF)
+    attendance/      # attendance browser (all sessions, past + upcoming)
+    belts/           # disciplines, belt ladders, progression
+    memberships/     # plans + invoices (payments recorded per invoice)
+    trials/          # trial pipeline (convert sheet); /book is the public
+                     #   booking page (app/book)
+    analytics/       # dashboards (attendance/revenue/retention)
+    trainers/        # trainer roster
+  (auth)/            # login (+ SSO buttons, break glass), first-run setup,
+                     #   forgot/reset password
+  book/              # public trial-booking page (for-yourself or child)
+  checkin/[token]/   # public QR check-in (kiosk mode)
+  portal/            # read-only member portal + documents & consent signing
+  api/               # auth, health, cron trigger, csp-report, brand logo,
+                     #   student photo/export, invoices + report-card +
+                     #   attendance + agreement PDFs, session check-in QR
   style-guide/       # component showcase
 components/          # shadcn ui primitives + domain composites
   ui/                # button, card, dialog, table, tabs, sidebar, etc.
 hooks/               # use-form-toast, use-action-feedback, use-mobile
 lib/                 # cross-cutting logic
-  actions/           # server actions (auth, profile, roles, users)
-  cron/              # scheduled jobs (run-jobs.ts)
-  db/                # typed data-access layer (audit, roles, users)
+  actions/           # server actions (auth, profile, roles, users, students,
+                     #   trials, memberships, email-log, agreements)
+  cron/              # scheduled jobs (run-jobs.ts, reminders.ts)
+  db/                # typed data-access layer (audit, roles, users, students,
+                     #   sessions, attendance, belts, memberships, trials,
+                     #   portal, checkin, email-log, analytics, agreements)
   email/             # Nodemailer mailer + token replacer
+  pdf/               # branded PDF shell + invoice/report-card/attendance/
+                     #   agreement documents (@react-pdf/renderer)
   schemas/           # shared zod schemas + inferred types
   settings/          # DB-backed operational config (schema, accessor)
   storage/           # file storage interface (local, s3, azure, orphan-sweep)
-  api-keys.ts (later) # permissions.ts, auth.ts, env.ts, prisma.ts, tokens.ts,
-                      # rate-limit.ts, timing-safe.ts, session.ts, client-ip.ts,
-                      # crypto.ts, nav.ts, utils.ts, theme-tokens.tsx
+  permissions.ts     # plus auth.ts, env.ts, prisma.ts, tokens.ts,
+                     #   rate-limit.ts, timing-safe.ts, session.ts, client-ip.ts,
+                     #   crypto.ts, nav.ts, utils.ts, theme-tokens.tsx,
+                     #   admin-nav.ts, break-glass.ts, countries.ts
 emails/              # React Email template (dynamic.tsx)
 prisma/              # schema.prisma, migrations, seed.ts, seed-runner.cjs
 scripts/             # migrate-pglite.mjs, pglite-guard.mjs, pglite-safety.mjs
                      # (pre-migrate backups + checksum-drift warning),
-                     # prepare-standalone.mjs
+                     # pglite-probe.mjs, prepare-standalone.mjs,
+                     # docs-sweep-admin.mjs, bump-version.mjs
 e2e/                 # Playwright end-to-end tests
 docs/                # VitePress-powered user documentation site
 proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
@@ -134,6 +164,18 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   **Enforced mechanically:** `db:deploy:lite` and the lite seed probe
   :3000 first (`scripts/pglite-guard.mjs`) and refuse to open the data
   directory while something is serving.
+- **Never open the data dir with an ad-hoc inline script** (`node -e` probes,
+  quick queries) while a dev server might be running — the guard only
+  protects `db:deploy:lite`/`db:seed`, not hand-rolled scripts. Dual-open
+  can corrupt the dir **and every retained backup**, leaving a full rebuild
+  (fresh dir → migrate → seed, dev data lost) as the only recovery. Use
+  `scripts/pglite-probe.mjs` with :3000 confirmed free, and keep it
+  read-only.
+- **When a migration ships, apply it to the PGlite dev database in the same
+  delivery** (`db:deploy:lite` + `db:seed` while :3000 is free) — running
+  only `prisma migrate deploy` against the Docker Postgres databases leaves
+  the dev PGlite schema behind (every new page 500s with "table does not
+  exist").
 - `prisma migrate dev/deploy` cannot drive PGlite. **Author migrations
   against Postgres** (docker), consume them in lite mode via
   `scripts/migrate-pglite.mjs` (`npm run db:deploy:lite`).

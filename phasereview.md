@@ -26,9 +26,9 @@
 | 11 | White-label (org branding + logo on public/member surfaces and emails, editable booking copy) |
 | — | Student address details (street/city/state/postcode/country with org default) |
 | — | Email log + retry (ported from mitch-risk; dashboard failed-email chip) |
-| — | Admin area restructure (sidebar regrouping; settings tabs → 15 sections in 7 groups at /admin/* with a /settings shim) |
+| — | Admin area restructure (sidebar regrouping; settings tabs → 16 sections in 7 groups at /admin/* with a /settings shim) |
 | — | SSO + break glass (Entra ID / Google / OIDC, JIT provisioning, SSO-only mode with anti-lock-out, single-use break-glass URLs) |
-| — | Compliance: health & medical section (PHI, students:medical permission), versioned agreement documents (privacy/consent/safety), digital portal signing + staff-recorded paper fallback + printable forms |
+| — | Compliance: health & medical section (PHI, students:medical permission), school-managed agreement documents (add/rename/disable/delete, versioned from v0), digital portal signing + staff-recorded paper fallback + printable forms |
 
 ---
 
