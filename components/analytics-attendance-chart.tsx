@@ -4,6 +4,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -34,7 +35,9 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
       <CardHeader>
         <CardTitle>Attendance — last 12 weeks</CardTitle>
         <CardDescription>
-          Trained sessions (Present/Late) per week. The current week is partial.
+          Marks per week (Present/Late). A member training two classes in a week
+          counts once per class — the lighter bar shows unique members. The
+          current week is partial.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,6 +76,7 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
                   fillOpacity={0.45}
                   radius={[4, 4, 0, 0]}
                 />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
