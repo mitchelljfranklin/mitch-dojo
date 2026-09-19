@@ -8,12 +8,12 @@ type EmptyStateProps = {
     | "frameworks"
     | "findings"
     | "audit"
-    | "email";
+    | "email"
+    | "sessions";
   title: string;
   description: string;
   compact?: boolean;
 };
-
 const SIZE = {
   full: {
     wrapper: "flex flex-col items-center gap-3 py-12 text-center",
@@ -30,6 +30,31 @@ const SIZE = {
 } as const;
 
 const ICONS: Record<EmptyStateProps["icon"], React.ReactNode> = {
+  sessions: (
+    <svg viewBox="0 0 64 64" fill="none" className="size-16" aria-hidden="true">
+      <rect
+        x="10"
+        y="14"
+        width="44"
+        height="40"
+        rx="4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M10 24h44M22 10v8M42 10v8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M20 34h10M36 34h10M20 44h10M36 44h10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
   students: (
     <svg viewBox="0 0 64 64" fill="none" className="size-16" aria-hidden="true">
       <circle cx="24" cy="20" r="8" stroke="currentColor" strokeWidth="1.5" />

@@ -14,6 +14,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getSessionRoster } from "@/lib/db/attendance";
+import { formatDate } from "@/lib/utils";
 import { AttendanceForm } from "@/components/attendance-form";
 
 export const dynamic = "force-dynamic";
@@ -40,9 +41,9 @@ export default async function SessionAttendancePage({
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Classes", href: "/classes" },
+          { label: "Attendance", href: "/attendance" },
           { label: session.courseName, href: `/classes/${session.courseId}` },
-          { label: "Attendance" },
+          { label: formatDate(session.date) },
         ]}
       />
 
@@ -66,9 +67,16 @@ export default async function SessionAttendancePage({
             ) : null}
           </div>
         </div>
-        <Button asChild variant="outline">
-          <Link href={`/classes/${session.courseId}`}>Back to course</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline">
+            <a href={`/api/sessions/${session.id}/attendance-pdf`} download>
+              Download PDF
+            </a>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/classes/${session.courseId}`}>Back to course</Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

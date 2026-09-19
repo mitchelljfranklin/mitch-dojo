@@ -2,6 +2,12 @@
 
 Attendance drives everything downstream — belt eligibility, retention analytics, and reminder targeting.
 
+## The attendance browser
+
+**Sidebar → Attendance** lists **every session — past and upcoming** — in one filterable table. The default window covers the last 4 weeks plus the next 2 (today's classes on top); adjust the **from/to dates** to travel further back, and filter by course name, location, or status.
+
+Each row shows the date, time, course, location, trainer, status, and how many students were **marked** and **trained** — a quick attendance dashboard. **Open sheet** jumps to that session's attendance sheet, however old it is.
+
 ## Taking attendance
 
 Open a session from the timetable or a course page. The sheet lists the course's enrolled students with four statuses:
@@ -15,6 +21,7 @@ Open a session from the timetable or a course page. The sheet lists the course's
 
 - **Mark all** — set everyone to Present, then adjust the exceptions.
 - Saving a sheet with status changes keeps those rows' source as `MANUAL`.
+- **Download PDF** — a branded, printable record of the session: roster with each student's recorded status and the present/trained totals. Reachable from any sheet, however old.
 
 ## QR check-in
 

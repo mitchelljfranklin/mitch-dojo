@@ -18,7 +18,13 @@ test.describe("attendance", () => {
     await page.getByText("E2E Attend Course").first().click();
     await page.waitForURL("**/classes/*");
 
-    await page.getByRole("link", { name: "Attendance" }).first().click();
+    // The per-session sheet link in the course's upcoming list — scoped to
+    // main content so the sidebar's Attendance entry (the browser) can't win
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: "Attendance" })
+      .first()
+      .click();
     await page.waitForURL("**/sessions/*");
 
     await expect(page.getByText("E2E Attend Kid")).toBeVisible();
@@ -35,6 +41,54 @@ test.describe("attendance", () => {
     await select.selectOption("ABSENT");
     await page.getByRole("button", { name: "Save attendance" }).click();
     await expect(page.getByText("Attendance saved.")).toBeVisible();
+  });
+
+  test("attendance browser lists past sessions and opens their sheet", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    // The sidebar's Attendance entry lands on the browser
+    await page.getByRole("link", { name: "Attendance" }).first().click();
+    await page.waitForURL("**/attendance");
+    await expect(
+      page.getByRole("heading", { name: "Attendance" }),
+    ).toBeVisible();
+
+    // The default window covers past weeks — the E2E course's sessions show
+    // with marked/trained counts and open their sheets
+    const row = page.getByRole("row", { name: /E2E Attend Course/ }).first();
+    await expect(row).toBeVisible();
+    await row.getByRole("link", { name: "Open sheet" }).click();
+    await page.waitForURL("**/sessions/*");
+    await expect(page.getByText("E2E Attend Kid")).toBeVisible();
+  });
+
+  test("session attendance sheet downloads as a real PDF", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL("**/dashboard");
+
+    // Reach a sheet through the browser
+    await page.goto("/attendance");
+    const row = page.getByRole("row", { name: /E2E Attend Course/ }).first();
+    await row.getByRole("link", { name: "Open sheet" }).click();
+    await page.waitForURL("**/sessions/*");
+
+    const pdfHref = await page
+      .locator('a[href*="/api/sessions/"][href*="attendance-pdf"]')
+      .getAttribute("href");
+    const pdfResponse = await page.request.get(pdfHref ?? "");
+    expect(pdfResponse.status()).toBe(200);
+    expect(pdfResponse.headers()["content-type"]).toBe("application/pdf");
+    const body = await pdfResponse.body();
+    expect(body.subarray(0, 4).toString("latin1")).toBe("%PDF");
   });
 
   test("public check-in page lists today's class and taps a name", async ({

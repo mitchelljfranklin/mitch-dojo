@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   CalendarClock,
+  ClipboardCheck,
   Clock,
   FileText,
   Gauge,
@@ -169,6 +170,7 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
   const canManage = hasAnyPermission(permissions, MANAGE_PERMISSIONS);
   const canStudents = hasPermission(permissions, PERMISSIONS.STUDENTS_VIEW);
   const canClasses = hasPermission(permissions, PERMISSIONS.CLASSES_VIEW);
+  const canAttendance = hasPermission(permissions, PERMISSIONS.ATTENDANCE_VIEW);
   const canBelts = hasPermission(permissions, PERMISSIONS.BELTS_VIEW);
   const canMemberships = hasPermission(
     permissions,
@@ -206,6 +208,12 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
           href: "/classes",
           icon: CalendarDays,
           visible: canClasses,
+        },
+        {
+          title: "Attendance",
+          href: "/attendance",
+          icon: ClipboardCheck,
+          visible: canAttendance,
         },
         {
           title: "Belts & Gradings",

@@ -30,9 +30,15 @@ const ALL_ITEMS: PaletteItem[] = [
   },
   {
     label: "Classes",
-    subtitle: "Courses",
+    subtitle: "Courses & sessions",
     href: "/classes",
     permission: PERMISSIONS.CLASSES_VIEW,
+  },
+  {
+    label: "Attendance",
+    subtitle: "Every session, past & upcoming",
+    href: "/attendance",
+    permission: PERMISSIONS.ATTENDANCE_VIEW,
   },
   {
     label: "Belts & Gradings",

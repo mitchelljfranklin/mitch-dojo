@@ -1,6 +1,7 @@
 import { type Prisma } from "../../prisma/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { getAttendanceCountsBySession } from "@/lib/db/attendance";
 
 // Sessions are generated this many days ahead so attendance/check-in always
 // has concrete rows to attach to, even before anyone opens the schedule.
@@ -161,6 +162,8 @@ export type SessionListItem = {
   startTime: string;
   endTime: string;
   status: string;
+  marked: number;
+  trained: number;
 };
 
 export async function listSessions(
@@ -182,19 +185,26 @@ export async function listSessions(
     }
   }
 
-  const sessions = await prisma.classSession.findMany({
-    where,
-    orderBy: [{ date: "asc" }, { startTime: "asc" }],
-    take: filters?.pageSize ?? 50,
-    include: {
-      course: { include: { trainer: { select: { name: true } } } },
-      location: { select: { name: true } },
-    },
-  });
+  const [rows, counted] = await Promise.all([
+    prisma.classSession.findMany({
+      where,
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      take: filters?.pageSize ?? 50,
+      skip: filters?.page ? (filters.page - 1) * (filters.pageSize ?? 50) : 0,
+      include: {
+        course: { include: { trainer: { select: { name: true } } } },
+        location: { select: { name: true } },
+      },
+    }),
+    prisma.classSession.count({ where }),
+  ]);
 
-  const items = sessions.map((session) => ({
+  // Marked/trained counts per listed row (existing shared aggregation).
+  const counts = await getAttendanceCountsBySession(rows.map((row) => row.id));
+
+  const items = rows.map((session) => ({
     id: session.id,
-    courseId: session.courseId,
+    courseId: session.course.id,
     courseName: session.course.name,
     locationName: session.location.name,
     trainerName: session.course.trainer?.name ?? null,
@@ -202,9 +212,11 @@ export async function listSessions(
     startTime: session.startTime,
     endTime: session.endTime,
     status: session.status,
+    marked: counts.get(session.id)?.total ?? 0,
+    trained: counts.get(session.id)?.trained ?? 0,
   }));
 
-  return { sessions: items, totalCount: items.length };
+  return { sessions: items, totalCount: counted };
 }
 
 export async function setSessionStatus(

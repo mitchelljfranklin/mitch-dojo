@@ -16,7 +16,9 @@
 
 ## Attendance & QR check-in
 
-- Attendance sheets per session: Present, Late, Excused, Absent — with bulk mark-all and one-click check-in
+- Attendance sheets per session: Present, Late, Excused, Absent — with bulk marking and one-click check-in
+- An **attendance browser** listing every session past and upcoming with marked/trained counts, so history is always reachable
+- Printable branded **attendance PDF** per session
 - No-login QR check-in pages per location, secured by a revocable token
 - Check-ins feed belt eligibility automatically (Present and Late both count)
 - Students with overdue invoices can be suspended from check-in automatically
