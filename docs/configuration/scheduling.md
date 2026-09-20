@@ -29,7 +29,7 @@ The page also shows the **last scheduled run** so you can confirm the loop is al
 For container platforms that sleep, or to consolidate scheduling, disable the internal runner and hit the endpoint on your own cron:
 
 ```bash
-curl -H "x-cron-secret: $CRON_SECRET" https://your-dojo.example.com/api/cron/run
+curl -H "x-cron-secret: <your CRON_SECRET from the compose file>" https://your-dojo.example.com/api/cron/run
 ```
 
 - The secret is required in production and compared in **constant time**; the endpoint is rate-limited.

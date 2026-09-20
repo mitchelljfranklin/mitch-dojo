@@ -28,9 +28,7 @@ No build tools required — just Docker. Use the pre-built image from
 
 ```bash
 curl -O https://raw.githubusercontent.com/mitchelljfranklin/mitch-dojo/master/docker-compose.pull.yml
-curl -O https://raw.githubusercontent.com/mitchelljfranklin/mitch-dojo/master/.env.example
-mv .env.example .env
-# Edit .env — set AUTH_SECRET, APP_ENCRYPTION_KEY, and CRON_SECRET
+# Edit docker-compose.pull.yml — change the three change-me secrets
 # (openssl rand -hex 32 for each)
 
 docker compose -f docker-compose.pull.yml up -d
@@ -42,18 +40,16 @@ docker compose -f docker-compose.pull.yml up -d
 ```bash
 git clone https://github.com/mitchelljfranklin/mitch-dojo.git
 cd mitch-dojo
-cp .env.example .env
-# Edit .env — set AUTH_SECRET, APP_ENCRYPTION_KEY, and CRON_SECRET.
-# CRON_SECRET is required - compose refuses to start without it.
+# Edit docker-compose.yml — change the three change-me secrets.
+# The container refuses to start if CRON_SECRET is shorter than 32 characters.
 
 docker compose up -d --build
 # Open http://localhost:3000 — first visit walks you through admin setup
 ```
 
-> The Compose stack defaults to database credentials `mitch`/`mitch`. To use
-> your own, set `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in
-> `.env` before starting (the container's `DATABASE_URL` is derived from them
-> automatically).
+> All environment values live inline in the compose files — no `.env` file
+> needed. The Compose stack defaults to database credentials `mitch`/`mitch`
+> and DB `mitch_dojo`; edit those values in the compose file directly.
 
 ### Lite mode (single container, embedded database)
 
@@ -61,6 +57,8 @@ No external database required — an embedded PostgreSQL (PGlite) lives in a vol
 
 ```bash
 docker compose -f docker-compose.lite.yml up -d --build
+# … or the pre-built image (no build tools needed):
+docker compose -f docker-compose.lite-pull.yml up -d
 ```
 
 Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one migration set; switching is a single environment variable. See the [Lite Mode guide](docs/deployment/lite.md) for the full runbook including backups.
@@ -228,7 +226,7 @@ server {
 Jobs run inside the app by default — every five minutes, no external scheduler needed. Check **Admin → Scheduling** for the last run time; disable the built-in scheduler there if you'd rather trigger externally:
 
 ```bash
-curl -H "x-cron-secret: $CRON_SECRET" http://localhost:3000/api/cron/run
+curl -H "x-cron-secret: <your CRON_SECRET from the compose file>" http://localhost:3000/api/cron/run
 ```
 
 Triggers: class/payment/birthday/trial follow-up reminders, recurring invoice generation, audit log pruning, email log pruning, password-reset and portal-token pruning, and the orphaned file sweep.

@@ -6,9 +6,11 @@ A **single container** with an embedded PostgreSQL (PGlite) — no external data
 
 ```bash
 docker compose -f docker-compose.lite.yml up -d --build
+# … or the pre-built image (no build tools needed):
+docker compose -f docker-compose.lite-pull.yml up -d
 ```
 
-One container, embedded database, data in the `pglite_data` volume (which **must** remain a mounted volume — it's your entire database).
+One container, embedded database, data in the `pglite_data` volume (which **must** remain a mounted volume — it's your entire database). All environment values are inline in the compose file — edit the three `change-me` secrets before exposing the app publicly.
 
 ## Startup sequence
 

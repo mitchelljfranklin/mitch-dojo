@@ -1,22 +1,23 @@
+# App + PostgreSQL 17 for production — build from source.
+# All environment values are inline: edit the three change-me secrets and
+# `docker compose up -d --build` (no .env file needed).
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      # Credentials parameterised so a .env can override them; defaults keep
-      # first-run deployments working out of the box.
-      POSTGRES_USER: "${POSTGRES_USER:-mitch}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-mitch}"
-      POSTGRES_DB: "${POSTGRES_DB:-mitch_dojo}"
+      POSTGRES_USER: mitch
+      POSTGRES_PASSWORD: mitch
+      POSTGRES_DB: mitch_dojo
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-mitch} -d ${POSTGRES_DB:-mitch_dojo}",
+          "pg_isready -U mitch -d mitch_dojo",
         ]
       interval: 5s
       timeout: 5s
@@ -24,8 +25,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${DB_CPU_LIMIT:-0.5}"
-          memory: "${DB_MEMORY_LIMIT:-512m}"
+          cpus: 0.5
+          memory: 512m
 
   app:
     build:
@@ -37,17 +38,16 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_PROVIDER: postgres
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-mitch}:${POSTGRES_PASSWORD:-mitch}@db:5432/${POSTGRES_DB:-mitch_dojo}?schema=public"
-      AUTH_SECRET: "${AUTH_SECRET:-dev-only-auth-secret-change-me}"
-      APP_ENCRYPTION_KEY: "${APP_ENCRYPTION_KEY:-dev-only-encryption-key-change-me}"
-      APP_URL: "${APP_URL:-http://localhost:3000}"
-      # Required (compose refuses to start without it) because this stack
-      # runs NODE_ENV=production, where the app itself also enforces a
-      # minimum length - a placeholder default here previously guaranteed a
-      # confusing mid-length validation failure instead of this clear one.
-      CRON_SECRET: "${CRON_SECRET:?Set CRON_SECRET in .env - generate with: openssl rand -hex 32}"
-      DATA_STORAGE_PATH: "${DATA_STORAGE_PATH:-/app/.storage/files}"
-      TRUSTED_PROXY_COUNT: "${TRUSTED_PROXY_COUNT:-0}"
+      DATABASE_URL: "postgresql://mitch:mitch@db:5432/mitch_dojo?schema=public"
+      # CHANGE THESE THREE before exposing the app publicly — each must be
+      # 32+ characters (generate with: openssl rand -hex 32). The container
+      # refuses to start if CRON_SECRET is shorter than 32.
+      AUTH_SECRET: "change-me-AUTH-SECRET-generate-with-openssl-rand-hex-32"
+      APP_ENCRYPTION_KEY: "change-me-ENCRYPTION-KEY-generate-with-openssl-rand-hex-32"
+      CRON_SECRET: "change-me-CRON-SECRET-generate-with-openssl-rand-hex-32"
+      APP_URL: http://localhost:3000
+      DATA_STORAGE_PATH: /app/.storage/files
+      TRUSTED_PROXY_COUNT: 0
     # For local development the app port is exposed to the host. For
     # production behind a reverse proxy (Caddy/nginx), either remove this
     # port mapping or switch to an internal-only network so the app port
@@ -66,8 +66,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${APP_CPU_LIMIT:-1.0}"
-          memory: "${APP_MEMORY_LIMIT:-1g}"
+          cpus: 1.0
+          memory: 1g
 
 volumes:
   db_data:

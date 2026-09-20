@@ -32,7 +32,7 @@ Every email send writes a `NotificationLog` row with a dedup key. Repeated ticks
 ## External trigger details
 
 ```bash
-curl -H "x-cron-secret: $CRON_SECRET" https://your-dojo.example.com/api/cron/run
+curl -H "x-cron-secret: <your CRON_SECRET from the compose file>" https://your-dojo.example.com/api/cron/run
 ```
 
 - The secret is **required in production** (the app refuses to boot without it) and compared in constant time.

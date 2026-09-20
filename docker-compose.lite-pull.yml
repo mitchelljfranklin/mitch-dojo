@@ -1,0 +1,47 @@
+# Pre-built image stack for Lite mode — a single container with an embedded
+# PostgreSQL (PGlite). No source checkout, no .env, no separate database.
+# 1. curl -O this file from the repository
+# 2. EDIT THE THREE change-me SECRETS below (generate with: openssl rand -hex 32)
+# 3. docker compose -f docker-compose.lite-pull.yml up -d
+services:
+  app:
+    image: ghcr.io/mitchelljfranklin/mitch-dojo:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_PROVIDER: pglite
+      DATABASE_DIR: /app/.data/pglite
+      # CHANGE THESE THREE before exposing the app publicly — each must be
+      # 32+ characters (generate with: openssl rand -hex 32). The container
+      # refuses to start if CRON_SECRET is shorter than 32.
+      AUTH_SECRET: "change-me-AUTH-SECRET-generate-with-openssl-rand-hex-32"
+      APP_ENCRYPTION_KEY: "change-me-ENCRYPTION-KEY-generate-with-openssl-rand-hex-32"
+      CRON_SECRET: "change-me-CRON-SECRET-generate-with-openssl-rand-hex-32"
+      APP_URL: http://localhost:3000
+      DATA_STORAGE_PATH: /app/.storage/files
+      TRUSTED_PROXY_COUNT: 0
+      # Pre-migration database backups (kept: last 3) land here so they
+      # survive container rebuilds. See docs/deployment for the restore steps.
+      PGLITE_BACKUP_DIR: /app/.data/backups
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_data:/app/.storage
+      - pglite_data:/app/.data/pglite
+      - pglite_backups:/app/.data/backups
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: 1.0
+          memory: 1g
+
+volumes:
+  app_data:
+  pglite_data:
+  pglite_backups:

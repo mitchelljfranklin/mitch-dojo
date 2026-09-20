@@ -10,12 +10,15 @@ services:
       NODE_ENV: production
       DATABASE_PROVIDER: pglite
       DATABASE_DIR: /app/.data/pglite
-      AUTH_SECRET: "${AUTH_SECRET:-dev-only-auth-secret-change-me}"
-      APP_ENCRYPTION_KEY: "${APP_ENCRYPTION_KEY:-dev-only-encryption-key-change-me}"
-      APP_URL: "${APP_URL:-http://localhost:3000}"
-      CRON_SECRET: "${CRON_SECRET:?Set CRON_SECRET in .env - generate with: openssl rand -hex 32}"
-      DATA_STORAGE_PATH: "${DATA_STORAGE_PATH:-/app/.storage/files}"
-      TRUSTED_PROXY_COUNT: "${TRUSTED_PROXY_COUNT:-0}"
+      # CHANGE THESE THREE before exposing the app publicly — each must be
+      # 32+ characters (generate with: openssl rand -hex 32). The container
+      # refuses to start if CRON_SECRET is shorter than 32.
+      AUTH_SECRET: "change-me-AUTH-SECRET-generate-with-openssl-rand-hex-32"
+      APP_ENCRYPTION_KEY: "change-me-ENCRYPTION-KEY-generate-with-openssl-rand-hex-32"
+      CRON_SECRET: "change-me-CRON-SECRET-generate-with-openssl-rand-hex-32"
+      APP_URL: http://localhost:3000
+      DATA_STORAGE_PATH: /app/.storage/files
+      TRUSTED_PROXY_COUNT: 0
       # Pre-migration database backups (kept: last 3) land here so they
       # survive container rebuilds. See docs/deployment for the restore steps.
       PGLITE_BACKUP_DIR: /app/.data/backups
@@ -34,8 +37,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${APP_CPU_LIMIT:-1.0}"
-          memory: "${APP_MEMORY_LIMIT:-1g}"
+          cpus: 1.0
+          memory: 1g
 
 volumes:
   app_data:

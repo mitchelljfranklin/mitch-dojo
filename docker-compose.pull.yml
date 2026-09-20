@@ -1,24 +1,24 @@
-# Pre-built image stack: no source checkout or build needed.
-# 1. curl -O this file (and .env.example) from the repository
-# 2. fill in .env (AUTH_SECRET, APP_ENCRYPTION_KEY, CRON_SECRET, APP_URL)
+# Pre-built image stack for Postgres mode — no source checkout, no .env.
+# 1. curl -O this file from the repository
+# 2. EDIT THE THREE change-me SECRETS below (generate with: openssl rand -hex 32)
 # 3. docker compose -f docker-compose.pull.yml up -d
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: "${POSTGRES_USER:-mitch}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-mitch}"
-      POSTGRES_DB: "${POSTGRES_DB:-mitch_dojo}"
+      POSTGRES_USER: mitch
+      POSTGRES_PASSWORD: mitch
+      POSTGRES_DB: mitch_dojo
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-mitch} -d ${POSTGRES_DB:-mitch_dojo}",
+          "pg_isready -U mitch -d mitch_dojo",
         ]
       interval: 5s
       timeout: 5s
@@ -26,8 +26,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${DB_CPU_LIMIT:-0.5}"
-          memory: "${DB_MEMORY_LIMIT:-512m}"
+          cpus: 0.5
+          memory: 512m
 
   app:
     image: ghcr.io/mitchelljfranklin/mitch-dojo:latest
@@ -38,17 +38,20 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_PROVIDER: postgres
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-mitch}:${POSTGRES_PASSWORD:-mitch}@db:5432/${POSTGRES_DB:-mitch_dojo}?schema=public"
-      AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env - generate with: openssl rand -hex 32}"
-      APP_ENCRYPTION_KEY: "${APP_ENCRYPTION_KEY:?Set APP_ENCRYPTION_KEY in .env - generate with: openssl rand -hex 32}"
-      APP_URL: "${APP_URL:-http://localhost:3000}"
-      CRON_SECRET: "${CRON_SECRET:?Set CRON_SECRET in .env - generate with: openssl rand -hex 32}"
-      DATA_STORAGE_PATH: "${DATA_STORAGE_PATH:-/app/.storage/files}"
-      TRUSTED_PROXY_COUNT: "${TRUSTED_PROXY_COUNT:-0}"
+      DATABASE_URL: "postgresql://mitch:mitch@db:5432/mitch_dojo?schema=public"
+      # CHANGE THESE THREE before exposing the app publicly — each must be
+      # 32+ characters (generate with: openssl rand -hex 32). The container
+      # refuses to start if CRON_SECRET is shorter than 32.
+      AUTH_SECRET: "change-me-AUTH-SECRET-generate-with-openssl-rand-hex-32"
+      APP_ENCRYPTION_KEY: "change-me-ENCRYPTION-KEY-generate-with-openssl-rand-hex-32"
+      CRON_SECRET: "change-me-CRON-SECRET-generate-with-openssl-rand-hex-32"
+      APP_URL: http://localhost:3000
+      DATA_STORAGE_PATH: /app/.storage/files
+      TRUSTED_PROXY_COUNT: 0
     # Route only through a reverse proxy in production - a directly reachable
     # app port lets clients spoof X-Forwarded-For.
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "3000:3000"
     volumes:
       - app_data:/app/.storage
     healthcheck:
@@ -60,8 +63,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${APP_CPU_LIMIT:-1.0}"
-          memory: "${APP_MEMORY_LIMIT:-1g}"
+          cpus: 1.0
+          memory: 1g
 
 volumes:
   db_data:

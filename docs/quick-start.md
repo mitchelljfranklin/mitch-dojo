@@ -12,36 +12,33 @@ Get Mitch‑Dojo running in minutes with Docker Compose.
 
 ### Postgres mode (recommended)
 
+All environment values live inline in the compose files — no `.env` needed.
+
 ```bash
 git clone https://github.com/mitchelljfranklin/mitch-dojo.git
 cd mitch-dojo
-cp .env.example .env
 ```
 
-Edit `.env` and set your secrets (each 32+ characters):
-
-```env
-DATABASE_PROVIDER=postgres
-DATABASE_URL=postgresql://mitch:mitch@db:5432/mitch_dojo?schema=public
-AUTH_SECRET=<generate a strong random string>
-APP_ENCRYPTION_KEY=<at least 32 random characters>
-CRON_SECRET=<another strong random string>
-APP_URL=http://localhost:3000
-```
-
-Generate each secret with:
-
-```bash
-openssl rand -hex 32
-```
-
-Start the stack:
+Edit `docker-compose.yml` and change the three `change-me` secrets (each 32+
+characters — generate with `openssl rand -hex 32`), then start the stack:
 
 ```bash
 docker compose up -d --build
 ```
 
 The container applies migrations, seeds the default settings and system roles, and starts serving.
+
+### Pre-built image (no build tools needed)
+
+```bash
+curl -O https://raw.githubusercontent.com/mitchelljfranklin/mitch-dojo/master/docker-compose.pull.yml
+```
+
+Edit `docker-compose.pull.yml` and change the three `change-me` secrets, then:
+
+```bash
+docker compose -f docker-compose.pull.yml up -d
+```
 
 ### Lite mode (single container, embedded database)
 
@@ -50,6 +47,8 @@ PostgreSQL (PGlite):
 
 ```bash
 docker compose -f docker-compose.lite.yml up -d --build
+# … or the pre-built image (no build tools needed):
+docker compose -f docker-compose.lite-pull.yml up -d
 ```
 
 See [Lite Mode](./deployment/lite) for the full runbook, including backups.
@@ -76,7 +75,7 @@ After logging in, set up your dojo:
 
 ```bash
 npm install --legacy-peer-deps
-docker compose -f docker-compose.db-only.yml up -d   # or set DATABASE_PROVIDER=pglite
+docker compose -f docker-compose.db-only.yml up -d
 cp .env.example .env                                 # fill in the secrets
 npx prisma migrate deploy
 npm run db:seed
