@@ -60,7 +60,6 @@ next-env.d.ts
 
 # AuditChecks
 AuditNonSync.md
-AUDIT.md
 
 # Local data directories (PGlite embedded database, test artifacts)
 /.data
