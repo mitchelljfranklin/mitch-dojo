@@ -41,7 +41,9 @@ RUN npm prune --production --legacy-peer-deps
 RUN mkdir -p /app/.storage/files /app/.data/pglite /app/.data/backups && chown -R node:node /app/.storage /app/.data
 EXPOSE 3000
 USER node
-# Postgres mode (DATABASE_PROVIDER=postgres, default): npx prisma migrate deploy.
-# Lite mode (DATABASE_PROVIDER=pglite): scripts/migrate-pglite.mjs applies the
-# same SQL files to the embedded database. Seeding is idempotent-safe.
-CMD ["sh", "-c", "( [ \"$DATABASE_PROVIDER\" = \"pglite\" ] && node scripts/migrate-pglite.mjs || npx prisma migrate deploy ) && ( [ \"$SKIP_SEED\" = true ] && echo 'Seed skipped (SKIP_SEED=true).' || ( [ -f /app/.storage/.seeded ] && echo 'Seed already applied.' || ( npx prisma db seed && touch /app/.storage/.seeded || echo 'Seed failed — continuing anyway' ) ) ) && echo 'Starting server...' && node server.js"]
+# Entrypoint: migrate -> seed (once, marker-file guarded) -> serve.
+# A script file instead of an inline sh -c one-liner: no quote-nesting
+# fragility and ASCII-only (non-ASCII in the Dockerfile has died through
+# the git/Actions pipeline before). POSIX sh - keep it dash-compatible.
+COPY --from=build /app/scripts/docker-entrypoint.sh ./docker-entrypoint.sh
+ENTRYPOINT ["/bin/sh", "./docker-entrypoint.sh"]
