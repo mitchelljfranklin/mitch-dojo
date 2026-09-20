@@ -36,74 +36,76 @@ function daysFromNow(days: number): Date {
   return date;
 }
 
-beforeAll(async () => {
-  studentId = await createStudent({
-    firstName: "Member",
-    lastName: `Tester${suffix}`,
-    email: null,
-    phone: null,
-    dateOfBirth: null,
-    emergencyContactName: null,
-    emergencyContactPhone: null,
-    guardianName: null,
-    guardianEmail: null,
-    guardianPhone: null,
-    guardianRelationship: null,
-    medicalMedications: null,
-    medicalConditions: null,
-    medicalInjuries: null,
-    addressLine: null,
-    city: null,
-    state: null,
-    postcode: null,
-    country: null,
-    status: "ACTIVE",
-    notes: null,
-    locationIds: [],
-    primaryLocationId: "",
-    disciplineIds: [],
+describe.skipIf(!hasTestDatabase)("shared fixtures", () => {
+  beforeAll(async () => {
+    studentId = await createStudent({
+      firstName: "Member",
+      lastName: `Tester${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [],
+    });
+
+    const recurringPlan = await createMembershipPlan({
+      name: `Monthly Test ${suffix}`,
+      description: null,
+      planType: "RECURRING",
+      billingPeriod: "MONTHLY",
+      priceCents: 8950,
+    });
+    recurringPlanId = recurringPlan.id;
+
+    const itemPlan = await createMembershipPlan({
+      name: `Grading Fee Test ${suffix}`,
+      description: null,
+      planType: "ITEM",
+      billingPeriod: null,
+      priceCents: 4000,
+    });
+    itemPlanId = itemPlan.id;
   });
 
-  const recurringPlan = await createMembershipPlan({
-    name: `Monthly Test ${suffix}`,
-    description: null,
-    planType: "RECURRING",
-    billingPeriod: "MONTHLY",
-    priceCents: 8950,
+  afterAll(async () => {
+    if (studentId) {
+      await prisma.invoice
+        .deleteMany({ where: { studentId } })
+        .catch(() => undefined);
+      await prisma.enrollment
+        .deleteMany({ where: { studentId } })
+        .catch(() => undefined);
+      await deleteStudent(studentId).catch(() => undefined);
+    }
+    if (recurringPlanId) {
+      await prisma.membershipPlan
+        .delete({ where: { id: recurringPlanId } })
+        .catch(() => undefined);
+    }
+    if (itemPlanId) {
+      await prisma.membershipPlan
+        .delete({ where: { id: itemPlanId } })
+        .catch(() => undefined);
+    }
+    await prisma.$disconnect();
   });
-  recurringPlanId = recurringPlan.id;
-
-  const itemPlan = await createMembershipPlan({
-    name: `Grading Fee Test ${suffix}`,
-    description: null,
-    planType: "ITEM",
-    billingPeriod: null,
-    priceCents: 4000,
-  });
-  itemPlanId = itemPlan.id;
-});
-
-afterAll(async () => {
-  if (studentId) {
-    await prisma.invoice
-      .deleteMany({ where: { studentId } })
-      .catch(() => undefined);
-    await prisma.enrollment
-      .deleteMany({ where: { studentId } })
-      .catch(() => undefined);
-    await deleteStudent(studentId).catch(() => undefined);
-  }
-  if (recurringPlanId) {
-    await prisma.membershipPlan
-      .delete({ where: { id: recurringPlanId } })
-      .catch(() => undefined);
-  }
-  if (itemPlanId) {
-    await prisma.membershipPlan
-      .delete({ where: { id: itemPlanId } })
-      .catch(() => undefined);
-  }
-  await prisma.$disconnect();
 });
 
 describe.skipIf(!hasTestDatabase)("membership plans", () => {

@@ -30,8 +30,23 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: mitch_dojo_unit_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d mitch_dojo_unit_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       NEXT_TELEMETRY_DISABLED: "1"
+      TEST_DATABASE_URL: "postgresql://ci:ci@localhost:5432/mitch_dojo_unit_ci?schema=public"
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -40,6 +55,16 @@ jobs:
           cache: "npm"
       - run: npm ci --no-audit --no-fund --legacy-peer-deps
       - run: npx prisma generate
+      - name: Apply migrations to the unit-test database
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/mitch_dojo_unit_ci?schema=public"
+          DATABASE_PROVIDER: postgres
+      - name: Seed the unit-test database
+        run: npx prisma db seed
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/mitch_dojo_unit_ci?schema=public"
+          DATABASE_PROVIDER: postgres
       - run: npm run test
 
   pglite-mode:
