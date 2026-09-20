@@ -13,6 +13,7 @@ const hasTestDatabase = Boolean(process.env.TEST_DATABASE_URL);
 
 const EMAIL_KEYS = [
   "email.smtpHost",
+  "email.smtpUser",
   "email.smtpAuthType",
   "email.smtpOAuth2Provider",
   "email.smtpOAuth2ClientId",
@@ -20,6 +21,10 @@ const EMAIL_KEYS = [
   "email.smtpOAuth2ClientSecret",
   "email.smtpOAuth2RefreshToken",
 ];
+
+// Every transport test sets the mailbox explicitly so the suite is hermetic
+// on a fresh database (CI) — smtpUser leaks across runs otherwise.
+const SMTP_USER = "jo@example.test";
 
 beforeAll(async () => {
   await prisma.appSetting.deleteMany({
@@ -92,6 +97,7 @@ describe.skipIf(!hasTestDatabase)("smtp transport auth", () => {
   it("builds an OAUTH2 auth block with the Microsoft token endpoint", async () => {
     await updateEmailSettings({
       smtpHost: "smtp.office365.com",
+      smtpUser: SMTP_USER,
       smtpAuthType: "oauth2",
       smtpOAuth2Provider: "microsoft",
       smtpOAuth2ClientId: "client-id-1",
@@ -103,7 +109,7 @@ describe.skipIf(!hasTestDatabase)("smtp transport auth", () => {
     const options = await transportOptions();
     const auth = options.auth!;
     expect(auth.type).toBe("OAUTH2");
-    expect(auth.user).toBe("[EMAIL]");
+    expect(auth.user).toBe(SMTP_USER);
     expect(auth.clientId).toBe("client-id-1");
     expect(auth.refreshToken).toBe("test-refresh");
     expect(String(auth.accessUrl)).toContain(
@@ -117,6 +123,7 @@ describe.skipIf(!hasTestDatabase)("smtp transport auth", () => {
   it("builds an OAUTH2 auth block with Google defaults", async () => {
     await updateEmailSettings({
       smtpHost: "smtp.gmail.com",
+      smtpUser: SMTP_USER,
       smtpAuthType: "oauth2",
       smtpOAuth2Provider: "google",
       smtpOAuth2ClientId: "google-id",
@@ -136,6 +143,7 @@ describe.skipIf(!hasTestDatabase)("smtp transport auth", () => {
   it("builds basic auth by default and when oauth2 credentials are missing", async () => {
     await updateEmailSettings({
       smtpHost: "smtp.example.com",
+      smtpUser: SMTP_USER,
       smtpAuthType: "basic",
       smtpPassword: "pw-123",
     });
