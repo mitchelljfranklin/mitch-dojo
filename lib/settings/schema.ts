@@ -29,6 +29,16 @@ export const emailSettingsSchema = z.object({
     .default(""),
   fromName: z.string().default("My Dojo"),
   smtpPassword: z.string().default(""),
+  // SMTP authentication mode. "basic" = username/password; "oauth2" =
+  // XOAUTH2 (refresh-token grant) for providers like Gmail and Microsoft 365
+  // that deprecated basic-auth SMTP.
+  smtpAuthType: z.enum(["basic", "oauth2"]).default("basic"),
+  smtpOAuth2Provider: z.enum(["google", "microsoft"]).default("google"),
+  smtpOAuth2ClientId: z.string().default(""),
+  // Microsoft-only: tenant ID builds the token endpoint and the SMTP scope.
+  smtpOAuth2Tenant: z.string().default(""),
+  smtpOAuth2ClientSecret: z.string().default(""),
+  smtpOAuth2RefreshToken: z.string().default(""),
 });
 
 export type EmailSettings = z.infer<typeof emailSettingsSchema>;

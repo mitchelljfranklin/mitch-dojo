@@ -96,17 +96,37 @@ export async function updateOrganizationSettings(
   await persistCategory("organization", input, NO_SECRETS);
 }
 
-const EMAIL_SECRET_FIELDS: ReadonlySet<string> = new Set(["smtpPassword"]);
+const EMAIL_SECRET_FIELDS: ReadonlySet<string> = new Set([
+  "smtpPassword",
+  "smtpOAuth2ClientSecret",
+  "smtpOAuth2RefreshToken",
+]);
 
-export type EmailSettingsView = Omit<EmailSettings, "smtpPassword"> & {
+export type EmailSettingsView = Omit<
+  EmailSettings,
+  "smtpPassword" | "smtpOAuth2ClientSecret" | "smtpOAuth2RefreshToken"
+> & {
   smtpPasswordConfigured: boolean;
+  smtpOAuth2ClientSecretConfigured: boolean;
+  smtpOAuth2RefreshTokenConfigured: boolean;
 };
 
 export async function getEmailSettings(): Promise<EmailSettingsView> {
   const record = await readCategoryRecord("email");
   const smtpPasswordConfigured =
     typeof record.smtpPassword === "string" && record.smtpPassword.length > 0;
-  const parsed = emailSettingsSchema.parse({ ...record, smtpPassword: "" });
+  const smtpOAuth2ClientSecretConfigured =
+    typeof record.smtpOAuth2ClientSecret === "string" &&
+    record.smtpOAuth2ClientSecret.length > 0;
+  const smtpOAuth2RefreshTokenConfigured =
+    typeof record.smtpOAuth2RefreshToken === "string" &&
+    record.smtpOAuth2RefreshToken.length > 0;
+  const parsed = emailSettingsSchema.parse({
+    ...record,
+    smtpPassword: "",
+    smtpOAuth2ClientSecret: "",
+    smtpOAuth2RefreshToken: "",
+  });
 
   return {
     smtpHost: parsed.smtpHost,
@@ -114,12 +134,37 @@ export async function getEmailSettings(): Promise<EmailSettingsView> {
     smtpUser: parsed.smtpUser,
     fromAddress: parsed.fromAddress,
     fromName: parsed.fromName,
+    smtpAuthType: parsed.smtpAuthType,
+    smtpOAuth2Provider: parsed.smtpOAuth2Provider,
+    smtpOAuth2ClientId: parsed.smtpOAuth2ClientId,
+    smtpOAuth2Tenant: parsed.smtpOAuth2Tenant,
     smtpPasswordConfigured,
+    smtpOAuth2ClientSecretConfigured,
+    smtpOAuth2RefreshTokenConfigured,
   };
 }
 
-export async function updateEmailSettings(input: EmailSettings): Promise<void> {
-  await persistCategory("email", input, EMAIL_SECRET_FIELDS);
+// Accepts a partial update: stored values are merged over so callers can
+// change only the fields their form owns without resetting the rest. Empty
+// secret fields keep the stored secret (persistCategory skips them).
+export async function updateEmailSettings(
+  input: Partial<EmailSettings>,
+): Promise<void> {
+  const record = await readCategoryRecord("email");
+  // Parse with secrets blanked so merged secret values are empty when the
+  // caller omits them — otherwise the stored (already-encrypted) blob would
+  // be re-encrypted on every partial save.
+  const merged = emailSettingsSchema.parse({
+    ...record,
+    smtpPassword: "",
+    smtpOAuth2ClientSecret: "",
+    smtpOAuth2RefreshToken: "",
+  });
+  await persistCategory(
+    "email",
+    { ...merged, ...input } as unknown as Record<string, unknown>,
+    EMAIL_SECRET_FIELDS,
+  );
 }
 
 export async function getFileSettings(): Promise<FileSettings> {
@@ -142,8 +187,12 @@ function safeDecryptSecret(value: string, settingKey: string): string | null {
   }
 }
 
-export async function getEmailSecret(): Promise<string | null> {
-  const key = "email.smtpPassword";
+// Decrypts an email-category secret field (smtpPassword, SMTP OAuth2
+// secrets, …). Returns null when unset or undecryptable.
+export async function getEmailSecret(
+  field: string = "smtpPassword",
+): Promise<string | null> {
+  const key = `email.${field}`;
   const row = await prisma.appSetting.findUnique({ where: { key } });
   if (!row || typeof row.value !== "string" || row.value.length === 0) {
     return null;

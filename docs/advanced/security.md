@@ -25,7 +25,7 @@ The model behind the platform's defences, for reviewers and the curious.
 ## Secrets & cryptography
 
 - `AUTH_SECRET`, `APP_ENCRYPTION_KEY`, `CRON_SECRET` — environment only, never stored in the database, never returned to the client.
-- **AES-256-GCM** for secrets at rest (SMTP password, cloud-storage credentials). Rotating `APP_ENCRYPTION_KEY` invalidates stored secrets (logged warning, no crash — re-enter them).
+- **AES-256-GCM** for secrets at rest (SMTP password and OAuth2 secrets, cloud-storage credentials). Rotating `APP_ENCRYPTION_KEY` invalidates stored secrets (logged warning, no crash — re-enter them).
 - **Constant-time comparison** for all secret checks (cron secret included) — no timing side channels.
 
 ## Rate limiting

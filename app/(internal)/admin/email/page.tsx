@@ -51,7 +51,8 @@ export default async function AdminEmailPage() {
         <CardHeader>
           <CardTitle>SMTP</CardTitle>
           <CardDescription>
-            The password is encrypted at rest. Test the connection after saving.
+            Secrets are encrypted at rest. Test the connection with a
+            sample-send after saving.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,6 +63,16 @@ export default async function AdminEmailPage() {
             fromAddress={email.fromAddress}
             fromName={email.fromName}
             smtpPasswordConfigured={email.smtpPasswordConfigured}
+            smtpAuthType={email.smtpAuthType}
+            smtpOAuth2Provider={email.smtpOAuth2Provider}
+            smtpOAuth2ClientId={email.smtpOAuth2ClientId}
+            smtpOAuth2Tenant={email.smtpOAuth2Tenant}
+            smtpOAuth2ClientSecretConfigured={
+              email.smtpOAuth2ClientSecretConfigured
+            }
+            smtpOAuth2RefreshTokenConfigured={
+              email.smtpOAuth2RefreshTokenConfigured
+            }
           />
         </CardContent>
       </Card>

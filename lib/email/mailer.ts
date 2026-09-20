@@ -14,17 +14,21 @@ import {
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
-async function getTransporter(): Promise<nodemailer.Transporter | null> {
+// Exported for tests: builds the SMTP transport from the current settings.
+export async function getTransporter(): Promise<nodemailer.Transporter | null> {
   const settings = await getEmailSettings();
   if (!settings.smtpHost) {
     return null;
   }
 
-  const password = await getEmailSecret();
-
   const user = settings.smtpUser || undefined;
-  const pass = password || undefined;
-  const auth = user || pass ? { user, pass } : undefined;
+  let auth: Record<string, unknown> | undefined;
+  if (settings.smtpAuthType === "oauth2") {
+    auth = await buildOAuth2Auth(user);
+  } else {
+    const password = await getEmailSecret();
+    auth = user || password ? { user, pass: password } : undefined;
+  }
 
   return nodemailer.createTransport({
     host: settings.smtpHost,
@@ -32,6 +36,54 @@ async function getTransporter(): Promise<nodemailer.Transporter | null> {
     secure: settings.smtpPort === 465,
     auth,
   });
+}
+
+// XOAUTH2 auth for the refresh-token grant. Microsoft needs a tenant-scoped
+// token endpoint and the SMTP scope passed as a custom param; Google works
+// with Nodemailer's default access URL. Missing OAuth2 credentials fall back
+// to the basic-auth block so the failure lands in the email log with the
+// provider's auth error instead of silently disabling sending.
+async function buildOAuth2Auth(
+  user: string | undefined,
+): Promise<Record<string, unknown> | undefined> {
+  const settings = await getEmailSettings();
+  const clientId = settings.smtpOAuth2ClientId;
+  const [clientSecret, refreshToken] = await Promise.all([
+    getEmailSecret("smtpOAuth2ClientSecret"),
+    getEmailSecret("smtpOAuth2RefreshToken"),
+  ]);
+
+  if (!user || !clientId || !clientSecret || !refreshToken) {
+    console.error(
+      "[email] SMTP auth type is oauth2 but credentials are incomplete — falling back to basic auth. Set client ID, client secret, and refresh token (encrypted at rest) in Admin → Email.",
+    );
+    const password = await getEmailSecret();
+    return user || password ? { user, pass: password } : undefined;
+  }
+
+  if (settings.smtpOAuth2Provider === "microsoft") {
+    const tenant = settings.smtpOAuth2Tenant || "common";
+    return {
+      type: "OAUTH2",
+      user,
+      clientId,
+      clientSecret,
+      refreshToken,
+      accessUrl: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+      // SMTP.Send is the delegated scope Exchange Online's SMTP AUTH
+      // endpoints accept for XOAUTH2.
+      customParams: { scope: "https://outlook.office365.com/SMTP.Send" },
+    };
+  }
+
+  // Google: Nodemailer's default access URL is Google's token endpoint.
+  return {
+    type: "OAUTH2",
+    user,
+    clientId,
+    clientSecret,
+    refreshToken,
+  };
 }
 
 function replaceTokens(text: string, tokens: Record<string, string>): string {

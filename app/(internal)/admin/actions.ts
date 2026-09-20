@@ -358,12 +358,41 @@ export async function saveEmailSettings(
     fromAddress: formData.get("fromAddress") ?? "",
     fromName: formData.get("fromName") ?? "",
     smtpPassword: formData.get("smtpPassword") ?? "",
+    smtpAuthType: formData.get("smtpAuthType") || "basic",
+    smtpOAuth2Provider: formData.get("smtpOAuth2Provider") || "google",
+    smtpOAuth2ClientId: formData.get("smtpOAuth2ClientId") ?? "",
+    smtpOAuth2Tenant: formData.get("smtpOAuth2Tenant") ?? "",
+    smtpOAuth2ClientSecret: formData.get("smtpOAuth2ClientSecret") ?? "",
+    smtpOAuth2RefreshToken: formData.get("smtpOAuth2RefreshToken") ?? "",
   });
   if (!parsed.success) {
     return {
       ok: false,
       message: parsed.error.issues[0]?.message ?? "Invalid input.",
     };
+  }
+
+  // OAuth2 mode requires its credential set; refuse the combination instead
+  // of letting every send fall back to basic auth with a stale password.
+  if (parsed.data.smtpAuthType === "oauth2") {
+    const missing = [
+      !parsed.data.smtpUser ? "SMTP username" : null,
+      !parsed.data.smtpOAuth2ClientId ? "OAuth2 client ID" : null,
+      !parsed.data.smtpOAuth2ClientSecret &&
+      !formData.get("smtpOAuth2ClientSecret")
+        ? "OAuth2 client secret"
+        : null,
+      !parsed.data.smtpOAuth2RefreshToken &&
+      !formData.get("smtpOAuth2RefreshToken")
+        ? "OAuth2 refresh token"
+        : null,
+    ].filter(Boolean);
+    if (missing.length > 0) {
+      return {
+        ok: false,
+        message: `OAuth2 auth requires: ${missing.join(", ")}.`,
+      };
+    }
   }
 
   await updateEmailSettings(parsed.data);
