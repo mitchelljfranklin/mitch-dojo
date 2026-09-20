@@ -1,10 +1,13 @@
 name: Deploy Docs
+# Manual for now: GitHub Pages requires a public repo (or a paid plan) —
+# flip the push trigger back on when the repository goes public.
 on:
-  push:
-    branches: [master]
-    paths:
-      - "docs/**"
-      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+  # push:
+  #   branches: [master]
+  #   paths:
+  #     - "docs/**"
+  #     - ".github/workflows/docs.yml"
 
 permissions:
   contents: read
