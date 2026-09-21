@@ -9,7 +9,12 @@ fail() {
   exit 1
 }
 
-echo "Entrypoint: starting (DATABASE_PROVIDER=${DATABASE_PROVIDER:-unset})..."
+# Compose files do not set SKIP_SEED - every referenced variable needs a
+# default expansion or `set -u` kills the script (restart loop).
+DATABASE_PROVIDER="${DATABASE_PROVIDER:-postgres}"
+SKIP_SEED="${SKIP_SEED:-false}"
+
+echo "Entrypoint: starting (DATABASE_PROVIDER=${DATABASE_PROVIDER})..."
 
 # --- migrate ---
 if [ "${DATABASE_PROVIDER}" = "pglite" ]; then
