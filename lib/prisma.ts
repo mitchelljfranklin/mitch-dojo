@@ -43,8 +43,13 @@ function createPrismaClient(): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+// The globalThis dedupe is unconditional — the standalone build duplicates
+// lib/prisma across module graphs (pages vs route handlers), and each copy
+// would otherwise create its OWN PrismaClient. With PGlite that means
+// multiple engines over one data dir: split state (stale reads on logo
+// routes etc.) and on-disk corruption risk. One client per process, always.
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = createPrismaClient();
 }
+
+export const prisma = globalForPrisma.prisma;
