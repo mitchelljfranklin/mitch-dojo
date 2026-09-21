@@ -23,6 +23,10 @@ RUN node -e "const { execSync } = require('child_process'); const fs = require('
 FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# Docker injects HOSTNAME=<container-id>; the standalone server binds to it
+# (container IP only), which breaks in-container localhost checks. Pin it so
+# the healthcheck (curl localhost:3000/api/health) can connect.
+ENV HOSTNAME=0.0.0.0
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next/static ./.next/static
