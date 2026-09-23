@@ -31,6 +31,8 @@ export const trainingTimeSchema = z.object({
     .string()
     .regex(TIME_PATTERN, "Start time must be HH:MM (24-hour)"),
   endTime: z.string().regex(TIME_PATTERN, "End time must be HH:MM (24-hour)"),
+  // Unchecked boxes are absent from FormData — absent means opted out.
+  trialBookable: z.boolean().default(true),
 });
 
 export type TrainingTimeInput = z.infer<typeof trainingTimeSchema>;

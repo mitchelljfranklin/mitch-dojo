@@ -495,15 +495,18 @@ model StudentBelt {
 // Recurring weekly slot for a course. Weekday follows JS getDay convention
 // (0 = Sunday … 6 = Saturday); times are wall-clock "HH:MM" strings so the
 // dojo's local timetable stays unambiguous across DST boundaries.
+// trialBookable gates whether sessions generated from this slot appear on
+// the public trial-booking page (senior-only classes can opt out).
 model TrainingTime {
-  id        String   @id @default(cuid())
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  weekday   Int
-  startTime String
-  endTime   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  courseId      String
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  weekday       Int
+  startTime     String
+  endTime       String
+  trialBookable Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@unique([courseId, weekday, startTime])
   @@map("training_times")

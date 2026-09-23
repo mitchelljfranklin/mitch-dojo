@@ -146,8 +146,13 @@ export default async function CourseDetailPage({
                   <span className="font-medium">
                     {WEEKDAY_LABELS[slot.weekday] ?? slot.weekday}
                   </span>
-                  <span className="text-muted-foreground font-mono text-xs">
-                    {slot.startTime} – {slot.endTime}
+                  <span className="flex items-center gap-2">
+                    {!slot.trialBookable ? (
+                      <Badge variant="outline">Not trial bookable</Badge>
+                    ) : null}
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {slot.startTime} – {slot.endTime}
+                    </span>
                   </span>
                 </div>
               ))

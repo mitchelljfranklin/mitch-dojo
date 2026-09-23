@@ -81,6 +81,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
                 weekday: slot.weekday,
                 startTime: slot.startTime,
                 endTime: slot.endTime,
+                trialBookable: slot.trialBookable,
               })),
             }}
           />

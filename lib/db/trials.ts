@@ -292,7 +292,10 @@ export type BookableSession = {
 };
 
 // Upcoming scheduled sessions across active courses — the slots a prospect
-// can book. Bounded window keeps the public payload small.
+// can book. Bounded window keeps the public payload small. Sessions carry no
+// FK to their generating TrainingTime, so bookable slots are matched by
+// (courseId, weekday, startTime) — toggling a slot's trial-bookable flag
+// therefore takes effect on the booking page immediately.
 export async function listBookableSessions(
   now: Date = new Date(),
 ): Promise<BookableSession[]> {
@@ -300,25 +303,45 @@ export async function listBookableSessions(
   const horizon = new Date(today);
   horizon.setUTCDate(horizon.getUTCDate() + 14);
 
-  const sessions = await prisma.classSession.findMany({
-    where: {
-      status: "SCHEDULED",
-      date: { gte: today, lte: horizon },
-      course: { isActive: true, location: { isActive: true } },
-    },
-    include: {
-      course: { select: { name: true, locationId: true, disciplineId: true } },
-    },
-    orderBy: [{ date: "asc" }, { startTime: "asc" }],
-    take: 200,
-  });
+  const [bookableSlots, sessions] = await Promise.all([
+    prisma.trainingTime.findMany({
+      where: { trialBookable: true, course: { isActive: true } },
+      select: { courseId: true, weekday: true, startTime: true },
+    }),
+    prisma.classSession.findMany({
+      where: {
+        status: "SCHEDULED",
+        date: { gte: today, lte: horizon },
+        course: { isActive: true, location: { isActive: true } },
+      },
+      include: {
+        course: {
+          select: { name: true, locationId: true, disciplineId: true },
+        },
+      },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      take: 200,
+    }),
+  ]);
 
-  return sessions.map((session) => ({
-    id: session.id,
-    courseName: session.course.name,
-    date: session.date.toISOString().slice(0, 10),
-    startTime: session.startTime,
-    locationId: session.course.locationId,
-    disciplineId: session.course.disciplineId,
-  }));
+  const bookableKeys = new Set(
+    bookableSlots.map(
+      (slot) => `${slot.courseId}|${slot.weekday}|${slot.startTime}`,
+    ),
+  );
+
+  return sessions
+    .filter((session) =>
+      bookableKeys.has(
+        `${session.courseId}|${session.date.getUTCDay()}|${session.startTime}`,
+      ),
+    )
+    .map((session) => ({
+      id: session.id,
+      courseName: session.course.name,
+      date: session.date.toISOString().slice(0, 10),
+      startTime: session.startTime,
+      locationId: session.course.locationId,
+      disciplineId: session.course.disciplineId,
+    }));
 }

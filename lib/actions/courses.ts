@@ -16,17 +16,25 @@ export type CourseFormState =
   { error: string } | { ok: true; message: string } | undefined;
 
 function parseCourseInput(formData: FormData) {
-  const rawSlots: { weekday: string; startTime: string; endTime: string }[] =
-    [];
+  const rawSlots: {
+    weekday: string;
+    startTime: string;
+    endTime: string;
+    trialBookable: boolean;
+  }[] = [];
   const weekdays = formData.getAll("slotWeekday").map(String);
   const starts = formData.getAll("slotStartTime").map(String);
   const ends = formData.getAll("slotEndTime").map(String);
+  const trialBookable = formData.getAll("slotTrialBookable").map(String);
   for (let i = 0; i < Math.min(starts.length, ends.length); i++) {
     if (!starts[i] && !ends[i]) continue;
     rawSlots.push({
       weekday: weekdays[i] ?? "",
       startTime: starts[i] ?? "",
       endTime: ends[i] ?? "",
+      // Radix checkboxes post no native value; the hidden twin posts
+      // "on"/"off" per row. "off" (or absent) means opted out.
+      trialBookable: trialBookable[i] === "on",
     });
   }
 

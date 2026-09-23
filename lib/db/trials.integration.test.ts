@@ -251,6 +251,16 @@ describe.skipIf(!hasTestDatabase)("bookable sessions", () => {
         endTime: "19:00",
       },
     });
+    // Sessions are generated from weekly slots; the bookable filter matches
+    // sessions back to their slot, so the slot must exist and allow trials.
+    await prisma.trainingTime.create({
+      data: {
+        courseId,
+        weekday: future.getUTCDay(),
+        startTime: "18:00",
+        endTime: "19:00",
+      },
+    });
 
     const sessions = await listBookableSessions();
     const ours = sessions.find((session) =>
@@ -258,6 +268,43 @@ describe.skipIf(!hasTestDatabase)("bookable sessions", () => {
     );
     expect(ours).toBeDefined();
     expect(ours?.disciplineId).toBe(disciplineId);
+  });
+
+  it("hides sessions whose weekly slot is not trial bookable", async () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 4);
+    future.setUTCHours(0, 0, 0, 0);
+    const session = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: future,
+        startTime: "19:30",
+        endTime: "20:30",
+      },
+    });
+
+    // Slot exists but opted out of trials — the session stays hidden even
+    // though it is scheduled at an active course.
+    await prisma.trainingTime.create({
+      data: {
+        courseId,
+        weekday: future.getUTCDay(),
+        startTime: "19:30",
+        endTime: "20:30",
+        trialBookable: false,
+      },
+    });
+    const optedOut = await listBookableSessions();
+    expect(optedOut.filter((row) => row.id === session.id)).toHaveLength(0);
+
+    // Flipping the slot to bookable reveals the session immediately.
+    await prisma.trainingTime.updateMany({
+      where: { courseId, startTime: "19:30" },
+      data: { trialBookable: true },
+    });
+    const optedIn = await listBookableSessions();
+    expect(optedIn.some((row) => row.id === session.id)).toBe(true);
   });
 });
 

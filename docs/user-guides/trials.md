@@ -10,6 +10,7 @@ Your school gets a public trial-booking page at `/book`:
 - **For yourself or a child** — a dropdown at the top. In **child mode** the contact fields relabel as *Guardian email/phone* (with an optional guardian name and **relationship to child**), and the entered contact is stored on **both** the child and the guardian — so reminders and portal links reach the family either way, and staff see the guardian (and their relationship) on the record.
 - **Branded** — your org name, logo, colours, and editable headline/description ([Appearance](../configuration/appearance)).
 - **Protected** — rate-limited per IP with a honeypot field against bots.
+- **Only trial-bookable classes appear** — each weekly training slot on a course has a **Trial bookable** checkbox (on by default). Untick it for classes that shouldn't take new starters (senior-only sessions, for example) and they disappear from the booking page immediately.
 - Booking creates a `TRIAL` student with the chosen class and lands in the pipeline.
 
 Staff see the booking; the prospect receives a [confirmation email](#booking-confirmations). Follow up by phone or reply manually.

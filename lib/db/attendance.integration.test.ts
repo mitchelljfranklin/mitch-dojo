@@ -151,7 +151,12 @@ describe.skipIf(!hasTestDatabase)("attendance data layer", () => {
       trainerId: null,
       isActive: true,
       trainingTimes: [
-        { weekday: todayWeekday, startTime: "06:00", endTime: "07:00" },
+        {
+          weekday: todayWeekday,
+          startTime: "06:00",
+          endTime: "07:00",
+          trialBookable: true,
+        },
       ],
     });
 

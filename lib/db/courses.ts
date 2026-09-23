@@ -127,6 +127,7 @@ export async function createCourse(input: CourseFormInput): Promise<string> {
           weekday: slot.weekday,
           startTime: slot.startTime,
           endTime: slot.endTime,
+          trialBookable: slot.trialBookable,
         })),
       },
     },
@@ -153,6 +154,7 @@ export async function updateCourse(
           weekday: slot.weekday,
           startTime: slot.startTime,
           endTime: slot.endTime,
+          trialBookable: slot.trialBookable,
         })),
       });
     }

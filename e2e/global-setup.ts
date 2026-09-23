@@ -179,6 +179,7 @@ export default async function globalSetup() {
             weekday: new Date().getDay(),
             startTime: "06:00",
             endTime: "07:00",
+            trialBookable: true,
           },
         ],
       },

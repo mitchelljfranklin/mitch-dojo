@@ -99,7 +99,9 @@ beforeAll(async () => {
     disciplineId,
     trainerId: null,
     isActive: true,
-    trainingTimes: [{ weekday: 3, startTime: "17:30", endTime: "18:30" }],
+    trainingTimes: [
+      { weekday: 3, startTime: "17:30", endTime: "18:30", trialBookable: true },
+    ],
   });
 
   const novice = await createBeltRangeEntry(disciplineId, {

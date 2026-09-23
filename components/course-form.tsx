@@ -25,7 +25,12 @@ export type CourseFormValues = {
   disciplineId: string;
   trainerId: string | null;
   isActive: boolean;
-  trainingTimes: { weekday: number; startTime: string; endTime: string }[];
+  trainingTimes: {
+    weekday: number;
+    startTime: string;
+    endTime: string;
+    trialBookable: boolean;
+  }[];
 };
 
 export type CourseFormState =
@@ -46,12 +51,18 @@ type CourseFormProps = {
   courseId?: string;
 };
 
-type SlotRow = { weekday: number; startTime: string; endTime: string };
+type SlotRow = {
+  weekday: number;
+  startTime: string;
+  endTime: string;
+  trialBookable: boolean;
+};
 
 const initialSlot: SlotRow = {
   weekday: 1,
   startTime: "18:00",
   endTime: "19:00",
+  trialBookable: true,
 };
 
 // Keying the inner form on a fingerprint of the server data remounts it when
@@ -85,10 +96,12 @@ function CourseFormInner({
 
   const [slots, setSlots] = useState<SlotRow[]>(
     values?.trainingTimes.length
-      ? values.trainingTimes.map((slot) => ({ ...slot }))
-      : values?.trainingTimes.length
-        ? []
-        : [{ ...initialSlot }],
+      ? values.trainingTimes.map((slot) => ({
+          ...slot,
+          // Existing rows saved before the flag default to bookable.
+          trialBookable: slot.trialBookable ?? true,
+        }))
+      : [{ ...initialSlot }],
   );
 
   function addSlot() {
@@ -233,7 +246,7 @@ function CourseFormInner({
                 onChange={(event) =>
                   updateSlot(index, { startTime: event.target.value })
                 }
-                className="w-28"
+                className="w-32"
                 required
               />
               <span className="text-muted-foreground text-xs">to</span>
@@ -245,9 +258,24 @@ function CourseFormInner({
                 onChange={(event) =>
                   updateSlot(index, { endTime: event.target.value })
                 }
-                className="w-28"
+                className="w-32"
                 required
               />
+              <label className="flex items-center gap-1.5 text-xs">
+                <input
+                  type="hidden"
+                  name="slotTrialBookable"
+                  value={slot.trialBookable ? "on" : "off"}
+                />
+                <Checkbox
+                  aria-label={`Slot ${index + 1} trial bookable`}
+                  checked={slot.trialBookable}
+                  onCheckedChange={(checked) =>
+                    updateSlot(index, { trialBookable: checked === true })
+                  }
+                />
+                Trial bookable
+              </label>
               <Button
                 type="button"
                 variant="ghost"

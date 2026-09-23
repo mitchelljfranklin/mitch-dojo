@@ -82,6 +82,35 @@ describe("courseFormSchema", () => {
     }
   });
 
+  it("defaults slots to trial bookable when the flag is absent", () => {
+    const result = courseFormSchema.safeParse({
+      ...base,
+      trainingTimes: [{ weekday: 1, startTime: "18:00", endTime: "19:00" }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.trainingTimes[0]?.trialBookable).toBe(true);
+    }
+  });
+
+  it("keeps an explicit trial-bookable opt-out", () => {
+    const result = courseFormSchema.safeParse({
+      ...base,
+      trainingTimes: [
+        {
+          weekday: 1,
+          startTime: "18:00",
+          endTime: "19:00",
+          trialBookable: false,
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.trainingTimes[0]?.trialBookable).toBe(false);
+    }
+  });
+
   it("covers all weekday labels", () => {
     expect(Object.keys(WEEKDAY_LABELS)).toHaveLength(7);
   });
