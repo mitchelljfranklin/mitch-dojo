@@ -60,7 +60,11 @@ export default async function AttendancePage({
   const to = sp.to || isoDaysFromToday(DEFAULT_TO_DAYS);
   const course = sp.course || "";
   const location = sp.location || "";
-  const status = sp.status || "";
+  const statusFilter =
+    sp.status === "SCHEDULED" || sp.status === "CANCELLED"
+      ? sp.status
+      : undefined;
+  const statusInput = sp.status ?? "";
   const page = sp.page ? parseInt(sp.page, 10) || 1 : 1;
 
   // The course filter matches the discipline select on the booking page in
@@ -70,25 +74,17 @@ export default async function AttendancePage({
     listDisciplines(),
   ]);
 
+  const courseName = sp.course?.trim() ?? "";
   const result = await listSessions({
     fromDate: new Date(`${from}T00:00:00`),
     toDate: new Date(`${to}T00:00:00`),
+    courseNameContains: courseName || undefined,
     locationId: location || undefined,
+    status: status || undefined,
     page,
     pageSize: PAGE_SIZE,
   });
-
-  // Course-name filter is applied here because the schema filter is by id
-  // and the browser filters by free text typed against course names.
-  const term = sp.course?.trim().toLowerCase() ?? "";
-  const filtered = term
-    ? {
-        ...result,
-        sessions: result.sessions.filter((session) =>
-          session.courseName.toLowerCase().includes(term),
-        ),
-      }
-    : result;
+  const filtered = result;
 
   return (
     <div className="flex flex-col gap-6">
@@ -160,7 +156,7 @@ export default async function AttendancePage({
               <AutoSubmitSelect
                 name="status"
                 id="attendance-status"
-                defaultValue={status || "ALL"}
+                defaultValue={statusInput || "ALL"}
                 options={[
                   { value: "ALL", label: "All statuses" },
                   { value: "SCHEDULED", label: "Scheduled" },

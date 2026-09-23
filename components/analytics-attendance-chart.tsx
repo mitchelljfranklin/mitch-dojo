@@ -36,7 +36,7 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
         <CardTitle>Attendance — last 12 weeks</CardTitle>
         <CardDescription>
           Marks per week (Present/Late). A member training two classes in a week
-          counts once per class — the lighter bar shows unique members. The
+          counts once per class — the second colour shows unique members. The
           current week is partial.
         </CardDescription>
       </CardHeader>
@@ -66,14 +66,13 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
                 <Bar
                   dataKey="attendances"
                   name="Attendances"
-                  fill="var(--primary)"
+                  fill="var(--color-chart-1)"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="uniqueAttendees"
                   name="Unique members"
-                  fill="var(--primary)"
-                  fillOpacity={0.45}
+                  fill="var(--color-chart-2)"
                   radius={[4, 4, 0, 0]}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />

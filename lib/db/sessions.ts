@@ -145,7 +145,9 @@ export async function ensureHistoricalSession(
 
 export type SessionFilters = {
   courseId?: string;
+  courseNameContains?: string;
   locationId?: string;
+  status?: string;
   fromDate?: Date;
   toDate?: Date;
   page?: number;
@@ -172,7 +174,21 @@ export async function listSessions(
   const where: Prisma.ClassSessionWhereInput = {};
 
   if (filters?.courseId) where.courseId = filters.courseId;
-  if (filters?.locationId) where.locationId = filters.locationId;
+  // "All" sentinels from the filter UI never reach the query — only a real
+  // id/status does, otherwise the filter is dropped entirely.
+  if (filters?.locationId && filters.locationId !== "ALL") {
+    where.locationId = filters.locationId;
+  }
+  if (filters?.status && filters.status !== "ALL") {
+    const status = filters.status;
+    if (status === "SCHEDULED" || status === "CANCELLED") {
+      where.status = status;
+    }
+  }
+  const courseName = filters?.courseNameContains?.trim().toLowerCase();
+  if (courseName) {
+    where.course = { name: { contains: courseName, mode: "insensitive" } };
+  }
   if (filters?.fromDate || filters?.toDate) {
     where.date = {};
     if (filters.fromDate) {

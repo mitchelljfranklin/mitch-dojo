@@ -168,4 +168,114 @@ describe.skipIf(!hasTestDatabase)("listSessions", () => {
     });
     expect(outOfRange.totalCount).toBe(0);
   });
+
+  it("treats the ALL sentinel as no location filter", async () => {
+    const all = await listSessions({
+      courseId,
+      fromDate: daysFromToday(-30),
+      toDate: daysFromToday(30),
+      locationId: "ALL",
+    });
+    const none = await listSessions({
+      courseId,
+      fromDate: daysFromToday(-30),
+      toDate: daysFromToday(30),
+    });
+    expect(all.totalCount).toBe(none.totalCount);
+    expect(all.totalCount).toBeGreaterThanOrEqual(9);
+  });
+
+  it("filters by status", async () => {
+    const session = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: daysFromToday(-3),
+        startTime: "21:00",
+        endTime: "22:00",
+      },
+    });
+    await prisma.classSession.update({
+      where: { id: session.id },
+      data: { status: "CANCELLED", cancelledAt: new Date() },
+    });
+
+    const cancelled = await listSessions({
+      courseId,
+      fromDate: daysFromToday(-30),
+      toDate: daysFromToday(30),
+      status: "CANCELLED",
+    });
+    expect(cancelled.sessions.every((row) => row.status === "CANCELLED")).toBe(
+      true,
+    );
+    expect(cancelled.sessions.some((row) => row.id === session.id)).toBe(true);
+
+    const scheduled = await listSessions({
+      courseId,
+      fromDate: daysFromToday(-30),
+      toDate: daysFromToday(30),
+      status: "SCHEDULED",
+    });
+    expect(scheduled.sessions.some((row) => row.id === session.id)).toBe(false);
+  });
+
+  it("filters by course-name fragment with a correct totalCount", async () => {
+    const otherLocation = await createLocation({
+      name: `Sessions Other Dojo ${suffix}`,
+      address: null,
+      phone: null,
+      email: null,
+      isActive: true,
+      sortOrder: 61,
+    });
+    const otherCourse = await prisma.course.create({
+      data: {
+        name: `Weekend Sparring ${suffix}`,
+        locationId: otherLocation.id,
+        disciplineId,
+      },
+    });
+    await prisma.classSession.create({
+      data: {
+        courseId: otherCourse.id,
+        locationId: otherLocation.id,
+        date: daysFromToday(-2),
+        startTime: "12:00",
+        endTime: "13:00",
+      },
+    });
+
+    const matched = await listSessions({
+      fromDate: daysFromToday(-30),
+      toDate: daysFromToday(30),
+      courseNameContains: "sparring",
+      page: 1,
+      pageSize: 25,
+    });
+    expect(matched.totalCount).toBe(1);
+    expect(matched.sessions).toHaveLength(1);
+    expect(matched.sessions[0]!.courseName).toContain("Weekend Sparring");
+
+    const partial = await listSessions({
+      fromDate: daysFromToday(-30),
+      toDate: daysFromToday(30),
+      courseNameContains: `Sessions Course ${suffix}`.slice(0, 12),
+      page: 1,
+      pageSize: 25,
+    });
+    expect(
+      partial.sessions.every((row) =>
+        row.courseName
+          .toLowerCase()
+          .includes(`Sessions Course ${suffix}`.slice(0, 12).toLowerCase()),
+      ),
+    ).toBe(true);
+
+    await prisma.classSession.deleteMany({
+      where: { courseId: otherCourse.id },
+    });
+    await prisma.course.delete({ where: { id: otherCourse.id } });
+    await deleteLocation(otherLocation.id);
+  });
 });

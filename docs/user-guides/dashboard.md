@@ -21,6 +21,6 @@ The at-risk list surfaces active students whose recent attendance has dropped of
 
 ## Notes
 
-- The weekly trend counts **Present** and **Late** attendance — the same basis used for belt eligibility. The solid bar counts **marks**: a member training two classes in a week counts once per class (e.g. a member who trains at two locations), so it can exceed the member count; the lighter bar shows **unique members** and caps at your member count.
+- The weekly trend counts **Present** and **Late** attendance — the same basis used for belt eligibility. The solid bar counts **marks**: a member training two classes in a week counts once per class (e.g. a member who trains at two locations), so it can exceed the member count; the second-colour bar shows **unique members** and caps at your member count.
 - Revenue counts recorded payments, not invoiced amounts, so the chart reflects money actually received.
 - Invoices may be tagged to a location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations".
