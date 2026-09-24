@@ -269,12 +269,12 @@ function PromotionSheet({
               }}
             />
             <p className="text-muted-foreground text-xs">
-              Prior sessions this student brings from elsewhere, so the counter
-              for the next belt continues from where they are. Prefilled with{" "}
+              Prior sessions this student brings from elsewhere. Prefilled with{" "}
               {selectedBelt?.name ?? "this belt"}
-              &apos;s requirement ({creditDefault}) — lower it if you expect
-              them to re-earn some of it locally. Later promotions never
-              re-credit.
+              &apos;s requirement ({creditDefault}) — enter more if they had
+              extra sessions. The counter always covers the belt being awarded:
+              a lower value is topped up at save. Shown only for the first belt
+              in a discipline.
             </p>
           </div>
         ) : null}
@@ -311,8 +311,9 @@ function PromotionSheet({
               <span className="text-muted-foreground block text-xs">
                 The student counts {effectiveTrainings} of the{" "}
                 {selectedRequired} trainings {selectedBelt?.name ?? "this belt"}{" "}
-                requires. Tick this to record the promotion anyway (e.g.
-                exceptional progression or a make-up grading).
+                requires. Tick this to record the promotion anyway — the counter
+                is then aligned to the new rank (e.g. exceptional progression, a
+                make-up grading, or a multi-level grading).
               </span>
             </span>
           </label>

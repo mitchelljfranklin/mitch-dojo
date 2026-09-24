@@ -265,14 +265,21 @@ export async function recordPromotion(input: {
   awardedAt: Date;
   notes: string | null;
   awardedById: string | null;
-  // Applied only when this is the student's FIRST belt in the discipline:
-  // prior trainings credited so the progression counter continues from
-  // where the student realistically is (transferring students).
+  // Prior trainings asserted with the FIRST belt (transferring students
+  // whose history lives outside the system). Beyond that, the counter is
+  // reconciled on EVERY promotion so it always covers the awarded belt's
+  // requirement — a multi-level grading or an override promotion aligns
+  // the next grading's count with the new rank.
   trainingsCredit?: number;
 }): Promise<void> {
   const beltEntry = await prisma.beltRangeEntry.findUnique({
     where: { id: input.beltRangeEntryId },
-    select: { name: true, colorHex: true, disciplineId: true },
+    select: {
+      name: true,
+      colorHex: true,
+      disciplineId: true,
+      requiredTrainings: true,
+    },
   });
   if (!beltEntry) {
     throw new Error("Belt not found.");
@@ -291,33 +298,65 @@ export async function recordPromotion(input: {
       },
     });
 
-    if (input.trainingsCredit === undefined || input.trainingsCredit === 0) {
-      return;
-    }
-    // First belt only: the row just created is the only history in this
-    // discipline. A prior promotion means the counter already runs — never
-    // re-credit mid-way.
-    const historyCount = await tx.studentBelt.count({
-      where: {
-        studentId: input.studentId,
-        beltRangeEntry: { disciplineId: beltEntry.disciplineId },
-      },
-    });
-    if (historyCount > 1) return;
-    await tx.studentDiscipline.upsert({
-      where: {
-        studentId_disciplineId: {
+    const enteredCredit = input.trainingsCredit ?? 0;
+    const [link, disciplineCourses] = await Promise.all([
+      tx.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId: input.studentId,
+            disciplineId: beltEntry.disciplineId,
+          },
+        },
+        select: { trainingsCredit: true },
+      }),
+      tx.course.findMany({
+        where: { disciplineId: beltEntry.disciplineId },
+        select: { id: true },
+      }),
+    ]);
+    const existingCredit = link?.trainingsCredit ?? 0;
+    const attendance =
+      disciplineCourses.length > 0
+        ? await tx.attendance.count({
+            where: {
+              studentId: input.studentId,
+              status: {
+                in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
+              },
+              session: {
+                courseId: { in: disciplineCourses.map((course) => course.id) },
+              },
+            },
+          })
+        : 0;
+
+    // Reconcile: the counter (credit + attendance) must never sit below
+    // the belt just awarded — top the credit up by any shortfall. An
+    // eligible promotion never needs a top-up (shortfall 0), and extra
+    // entered credit is kept as-is.
+    const provisionalCount = existingCredit + enteredCredit + attendance;
+    const shortfall = Math.max(
+      0,
+      beltEntry.requiredTrainings - provisionalCount,
+    );
+    const finalCredit = existingCredit + enteredCredit + shortfall;
+
+    if (finalCredit > 0 && (shortfall > 0 || enteredCredit > 0)) {
+      await tx.studentDiscipline.upsert({
+        where: {
+          studentId_disciplineId: {
+            studentId: input.studentId,
+            disciplineId: beltEntry.disciplineId,
+          },
+        },
+        create: {
           studentId: input.studentId,
           disciplineId: beltEntry.disciplineId,
+          trainingsCredit: finalCredit,
         },
-      },
-      create: {
-        studentId: input.studentId,
-        disciplineId: beltEntry.disciplineId,
-        trainingsCredit: input.trainingsCredit,
-      },
-      update: { trainingsCredit: input.trainingsCredit },
-    });
+        update: { trainingsCredit: finalCredit },
+      });
+    }
   });
 }
 

@@ -184,10 +184,12 @@ Student carries free-text PHI (medicalMedications/Conditions/Injuries)
 
 A student's trainings for a discipline = count of ALL Present/Late attendance
 across **every course of that discipline** (at any location), from their very
-first class, **plus a per-discipline trainings credit** recorded when the
-student's first belt is entered (transferring students whose history lives
-outside the system — the promotion sheet prefills it with the belt's
-requirement; later promotions never re-credit). A belt's
+first class, **plus a per-discipline trainings credit** that keeps the counter
+aligned with the held rank: it is set when the first belt is recorded
+(transferring students whose history lives outside the system — the promotion
+sheet prefills it with the belt's requirement) and reconciled upward on every
+promotion whenever the counter sits below the awarded belt's requirement
+(multi-level gradings, override promotions). A belt's
 `requiredTrainings` is the cumulative total needed to
 be awarded that belt (0 for the entry rank) — e.g. Black at 300 means a
 student training twice a week across two locations reaches it around the

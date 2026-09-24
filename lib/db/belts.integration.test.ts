@@ -183,9 +183,11 @@ describe.skipIf(!hasTestDatabase)("eligibility", () => {
       yellowBeltId!,
     );
     // After the promotion the student IS at Yellow Stripe — checking
-    // eligibility against the same belt reports the current rank.
+    // eligibility against the same belt reports the current rank. The
+    // recorded count (1) sat below the belt's requirement (3), so the
+    // promotion reconciled the credit and the counter now covers the rank.
     expect(afterPromotion?.currentBeltName).toBe("Yellow Stripe");
-    expect(afterPromotion?.trainingsTotal).toBe(1);
+    expect(afterPromotion?.trainingsTotal).toBe(3);
   });
 });
 
@@ -255,8 +257,9 @@ describe.skipIf(!hasTestDatabase)("first-belt trainings credit", () => {
       expect(eligibility?.trainingsTotal).toBe(10);
       expect(eligibility?.status).toBe("eligible");
 
-      // A later promotion never re-credits: award Yellow with the default
-      // 0 and the stored credit must stay 10.
+      // A later promotion above the count never shrinks the credit: award
+      // Yellow Stripe (requires 3) with a count of 10 — no shortfall, so
+      // the stored credit stays 10.
       await recordPromotion({
         studentId: transferId,
         beltRangeEntryId: yellowBeltId!,
@@ -350,6 +353,139 @@ describe.skipIf(!hasTestDatabase)("first-belt trainings credit", () => {
     } finally {
       await prisma.studentBelt.deleteMany({ where: { studentId: directId } });
       await deleteStudent(directId).catch(() => undefined);
+    }
+  });
+
+  it("aligns the counter when a promotion jumps ahead of the count", async () => {
+    // A student graded two levels in one go: the awarded belt's requirement
+    // exceeds their count, so the credit tops up and the NEXT grading's
+    // count starts aligned with the new rank.
+    const jumpId = await createStudent({
+      firstName: "Jumper",
+      lastName: `Kid${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [disciplineId!],
+    });
+
+    try {
+      const green = await createBeltRangeEntry(disciplineId!, {
+        name: "Green",
+        colorHex: "#00AA00",
+        order: 2,
+        requiredTrainings: 10,
+      });
+
+      // First belt: White (requires 0) — no credit needed.
+      await recordPromotion({
+        studentId: jumpId,
+        beltRangeEntryId: whiteBeltId!,
+        awardedAt: new Date("2026-01-05"),
+        notes: null,
+        awardedById: null,
+      });
+
+      // Double grading straight to Green (requires 10) with 0 local
+      // sessions — the counter aligns to the new rank.
+      await recordPromotion({
+        studentId: jumpId,
+        beltRangeEntryId: green.id,
+        awardedAt: new Date("2026-06-01"),
+        notes: "Double grading",
+        awardedById: null,
+      });
+
+      const stored = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId: jumpId,
+            disciplineId: disciplineId!,
+          },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(stored?.trainingsCredit).toBe(10);
+
+      const eligibility = await checkPromotionEligibility(jumpId, green.id);
+      expect(eligibility?.trainingsTotal).toBe(10);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId: jumpId } });
+      await deleteStudent(jumpId).catch(() => undefined);
+    }
+  });
+
+  it("floors a first-belt credit at the awarded belt's requirement", async () => {
+    // Entering less than the belt's requirement cannot leave the rank
+    // unsupported — the save tops the credit up to cover it.
+    const floorId = await createStudent({
+      firstName: "Floored",
+      lastName: `Kid${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [disciplineId!],
+    });
+
+    try {
+      await recordPromotion({
+        studentId: floorId,
+        beltRangeEntryId: yellowBeltId!,
+        awardedAt: new Date("2026-02-02"),
+        notes: null,
+        awardedById: null,
+        trainingsCredit: 1,
+      });
+
+      const stored = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId: floorId,
+            disciplineId: disciplineId!,
+          },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(stored?.trainingsCredit).toBe(3);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId: floorId } });
+      await deleteStudent(floorId).catch(() => undefined);
     }
   });
 });

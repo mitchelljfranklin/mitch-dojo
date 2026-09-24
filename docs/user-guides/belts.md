@@ -44,7 +44,11 @@ Eligibility counts from the student's very first class, including imported histo
 
 ### Transferring students (starting credit)
 
-If you don't want to import a transferring student's full history, just record their current belt via **Promote**: because it's their **first belt** in the discipline, the sheet shows a **Starting trainings credit** field, prefilled with the belt's requirement. Lower it if you expect the student to re-earn part locally, then save — the eligibility counter continues from there, so their next grading follows naturally. Later promotions never re-credit, and importing full history instead works exactly as before.
+If you don't want to import a transferring student's full history, just record their current belt via **Promote**: because it's their **first belt** in the discipline, the sheet shows a **Starting trainings credit** field, prefilled with the belt's requirement — enter more if they had extra sessions, then save. The counter always covers the belt being awarded: a lower value is topped up at save.
+
+### Multi-level gradings
+
+Grading a student past one belt (e.g. Yellow straight to Black) works the same way — the belt picker lists every belt, and the counter is **reconciled at every promotion** so it never sits below the rank just awarded. The next grading therefore always starts aligned with the current rank. If the count is below the target belt's requirement, the promotion needs the **Override** tick; after saving, the counter aligns to the new rank.
 
 ## Permissions
 
