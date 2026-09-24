@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useActionState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -192,6 +192,19 @@ function PromotionSheet({
 
   const promotionSaved = state !== undefined && "ok" in state && state.ok;
 
+  // First belt in the discipline: the instructor can credit prior trainings
+  // (transferring student whose history lives outside the system) so the
+  // progression counter continues from where the student realistically is.
+  const isFirstBelt = !student.currentBeltName;
+  const [selectedBeltId, setSelectedBeltId] = useState(defaultBeltId);
+  const selectedBelt = belts.find((belt) => belt.id === selectedBeltId);
+  const creditDefault = useMemo(
+    () => selectedBelt?.requiredTrainings ?? 0,
+    [selectedBelt],
+  );
+  const [creditTouched, setCreditTouched] = useState(false);
+  const creditValue = creditTouched ? undefined : creditDefault;
+
   return (
     <SheetContent className="w-full overflow-y-auto sm:max-w-md">
       <SheetHeader>
@@ -215,6 +228,7 @@ function PromotionSheet({
             id="promotion-belt"
             name="beltRangeEntryId"
             defaultValue={defaultBeltId}
+            onChange={(event) => setSelectedBeltId(event.target.value)}
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             required
           >
@@ -226,6 +240,29 @@ function PromotionSheet({
             ))}
           </select>
         </div>
+        {isFirstBelt ? (
+          <div className="grid gap-2">
+            <Label htmlFor="promotion-credit">Starting trainings credit</Label>
+            <Input
+              id="promotion-credit"
+              name="trainingsCredit"
+              type="number"
+              min={0}
+              max={9999}
+              key={selectedBeltId}
+              defaultValue={creditValue ?? undefined}
+              onChange={() => setCreditTouched(true)}
+            />
+            <p className="text-muted-foreground text-xs">
+              Prior sessions this student brings from elsewhere, so the counter
+              for the next belt continues from where they are. Prefilled with{" "}
+              {selectedBelt?.name ?? "this belt"}
+              &apos;s requirement ({creditDefault}) — lower it if you expect
+              them to re-earn some of it locally. Later promotions never
+              re-credit.
+            </p>
+          </div>
+        ) : null}
         <div className="grid gap-2">
           <Label htmlFor="promotion-date">Award date</Label>
           <Input

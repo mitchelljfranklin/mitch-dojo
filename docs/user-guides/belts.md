@@ -28,7 +28,7 @@ Belt entries that have been awarded cannot be deleted — history rows keep a co
 
 ## Eligibility & promotion
 
-On a course's progression page you see each discipline-assigned student with:
+On the discipline's progression page you see each discipline-assigned student with:
 
 - Current rank, and their progression history
 - A count of **all** trained sessions across **every** course of that discipline, at any location
@@ -36,11 +36,15 @@ On a course's progression page you see each discipline-assigned student with:
 
 Promoting:
 
-1. Open the course's progression page.
+1. Open the discipline's progression page.
 2. Eligible students show the badge; click **Promote**.
 3. Students below the threshold require the **Override** tick — for make-up gradings and exceptional progression. The override is recorded.
 
 Eligibility counts from the student's very first class, including imported history — see [Importing History](./importing-history).
+
+### Transferring students (starting credit)
+
+If you don't want to import a transferring student's full history, just record their current belt via **Promote**: because it's their **first belt** in the discipline, the sheet shows a **Starting trainings credit** field, prefilled with the belt's requirement. Lower it if you expect the student to re-earn part locally, then save — the eligibility counter continues from there, so their next grading follows naturally. Later promotions never re-credit, and importing full history instead works exactly as before.
 
 ## Permissions
 

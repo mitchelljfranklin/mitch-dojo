@@ -145,6 +145,12 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
       firstName: true,
       lastName: true,
       photoKey: true,
+      // Prior trainings credited when the student's first belt was recorded
+      // (transferring students whose history lives outside this system).
+      disciplines: {
+        where: { disciplineId },
+        select: { trainingsCredit: true },
+      },
     },
   });
 
@@ -189,9 +195,11 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
   const rows: ProgressRow[] = [];
   for (const student of students) {
     const currentRecord = currentByStudent.get(student.id) ?? null;
+    const trainingsCredit = student.disciplines[0]?.trainingsCredit ?? 0;
 
     const trainingsTotal =
-      courseIds.length > 0
+      trainingsCredit +
+      (courseIds.length > 0
         ? await prisma.attendance.count({
             where: {
               studentId: student.id,
@@ -201,7 +209,7 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
               session: { courseId: { in: courseIds } },
             },
           })
-        : 0;
+        : 0);
 
     const currentBelt = currentRecord
       ? (belts.find((belt) => belt.id === currentRecord.beltRangeEntryId) ??
@@ -257,25 +265,59 @@ export async function recordPromotion(input: {
   awardedAt: Date;
   notes: string | null;
   awardedById: string | null;
+  // Applied only when this is the student's FIRST belt in the discipline:
+  // prior trainings credited so the progression counter continues from
+  // where the student realistically is (transferring students).
+  trainingsCredit?: number;
 }): Promise<void> {
   const beltEntry = await prisma.beltRangeEntry.findUnique({
     where: { id: input.beltRangeEntryId },
-    select: { name: true, colorHex: true },
+    select: { name: true, colorHex: true, disciplineId: true },
   });
   if (!beltEntry) {
     throw new Error("Belt not found.");
   }
 
-  await prisma.studentBelt.create({
-    data: {
-      studentId: input.studentId,
-      beltRangeEntryId: input.beltRangeEntryId,
-      beltName: beltEntry.name,
-      colorHex: beltEntry.colorHex,
-      awardedAt: input.awardedAt,
-      notes: input.notes,
-      awardedById: input.awardedById,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.studentBelt.create({
+      data: {
+        studentId: input.studentId,
+        beltRangeEntryId: input.beltRangeEntryId,
+        beltName: beltEntry.name,
+        colorHex: beltEntry.colorHex,
+        awardedAt: input.awardedAt,
+        notes: input.notes,
+        awardedById: input.awardedById,
+      },
+    });
+
+    if (input.trainingsCredit === undefined || input.trainingsCredit === 0) {
+      return;
+    }
+    // First belt only: the row just created is the only history in this
+    // discipline. A prior promotion means the counter already runs — never
+    // re-credit mid-way.
+    const historyCount = await tx.studentBelt.count({
+      where: {
+        studentId: input.studentId,
+        beltRangeEntry: { disciplineId: beltEntry.disciplineId },
+      },
+    });
+    if (historyCount > 1) return;
+    await tx.studentDiscipline.upsert({
+      where: {
+        studentId_disciplineId: {
+          studentId: input.studentId,
+          disciplineId: beltEntry.disciplineId,
+        },
+      },
+      create: {
+        studentId: input.studentId,
+        disciplineId: beltEntry.disciplineId,
+        trainingsCredit: input.trainingsCredit,
+      },
+      update: { trainingsCredit: input.trainingsCredit },
+    });
   });
 }
 
@@ -296,7 +338,8 @@ export type PromotionEligibility = {
 // Server-side eligibility gate for a promotion: counts ALL Present/Late
 // attendance across ALL courses of the target belt's discipline (cumulative
 // — every trained session from the student's first class counts towards
-// their ranks). Reused by the record-promotion action and integration tests.
+// their ranks), plus any prior-trainings credit recorded with their first
+// belt. Reused by the record-promotion action and integration tests.
 export async function checkPromotionEligibility(
   studentId: string,
   beltRangeEntryId: string,
@@ -307,19 +350,34 @@ export async function checkPromotionEligibility(
   });
   if (!target) return null;
 
-  const currentRecord = await prisma.studentBelt.findFirst({
-    where: { studentId, beltRangeEntry: { disciplineId: target.disciplineId } },
-    orderBy: { awardedAt: "desc" },
-    select: { beltName: true },
-  });
-
-  const disciplineCourseIds = await prisma.course.findMany({
-    where: { disciplineId: target.disciplineId },
-    select: { id: true },
-  });
+  const [currentRecord, disciplineLink, disciplineCourseIds] =
+    await Promise.all([
+      prisma.studentBelt.findFirst({
+        where: {
+          studentId,
+          beltRangeEntry: { disciplineId: target.disciplineId },
+        },
+        orderBy: { awardedAt: "desc" },
+        select: { beltName: true },
+      }),
+      prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId,
+            disciplineId: target.disciplineId,
+          },
+        },
+        select: { trainingsCredit: true },
+      }),
+      prisma.course.findMany({
+        where: { disciplineId: target.disciplineId },
+        select: { id: true },
+      }),
+    ]);
 
   const trainingsTotal =
-    disciplineCourseIds.length > 0
+    (disciplineLink?.trainingsCredit ?? 0) +
+    (disciplineCourseIds.length > 0
       ? await prisma.attendance.count({
           where: {
             studentId,
@@ -331,7 +389,7 @@ export async function checkPromotionEligibility(
             },
           },
         })
-      : 0;
+      : 0);
 
   return {
     status:

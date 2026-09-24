@@ -227,6 +227,7 @@ export async function recordPromotionAction(
     beltRangeEntryId: getField(formData, "beltRangeEntryId"),
     awardedAt: getField(formData, "awardedAt"),
     notes: getField(formData, "notes"),
+    trainingsCredit: getField(formData, "trainingsCredit") || "0",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
@@ -258,6 +259,7 @@ export async function recordPromotionAction(
       awardedAt: new Date(parsed.data.awardedAt),
       notes: parsed.data.notes,
       awardedById: user.id,
+      trainingsCredit: parsed.data.trainingsCredit,
     });
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes("not found")) {

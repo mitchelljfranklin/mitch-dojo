@@ -184,7 +184,11 @@ Student carries free-text PHI (medicalMedications/Conditions/Injuries)
 
 A student's trainings for a discipline = count of ALL Present/Late attendance
 across **every course of that discipline** (at any location), from their very
-first class. A belt's `requiredTrainings` is the cumulative total needed to
+first class, **plus a per-discipline trainings credit** recorded when the
+student's first belt is entered (transferring students whose history lives
+outside the system — the promotion sheet prefills it with the belt's
+requirement; later promotions never re-credit). A belt's
+`requiredTrainings` is the cumulative total needed to
 be awarded that belt (0 for the entry rank) — e.g. Black at 300 means a
 student training twice a week across two locations reaches it around the
 3-year mark. Each belt's threshold is set once on the discipline's ladder

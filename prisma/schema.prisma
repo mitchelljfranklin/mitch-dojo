@@ -358,6 +358,10 @@ model StudentDiscipline {
   student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
   disciplineId String
   discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  // Prior trainings credited when a transferring student's first belt is
+  // recorded (their history lives outside this system). Counts on top of
+  // locally recorded attendance in every eligibility calculation.
+  trainingsCredit Int @default(0)
 
   @@id([studentId, disciplineId])
   @@index([disciplineId])

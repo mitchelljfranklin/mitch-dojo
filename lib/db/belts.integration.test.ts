@@ -188,3 +188,95 @@ describe.skipIf(!hasTestDatabase)("eligibility", () => {
     expect(afterPromotion?.trainingsTotal).toBe(1);
   });
 });
+
+describe.skipIf(!hasTestDatabase)("first-belt trainings credit", () => {
+  it("credits prior trainings on the first belt and counts them everywhere", async () => {
+    // A second student with no belts yet — a transferring green belt.
+    const transferId = await createStudent({
+      firstName: "Transfer",
+      lastName: `Kid${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [disciplineId!],
+    });
+
+    try {
+      // First belt with a credit of 10 — the counter continues from there.
+      await recordPromotion({
+        studentId: transferId,
+        beltRangeEntryId: whiteBeltId!,
+        awardedAt: new Date("2026-02-01"),
+        notes: "Transferred from another dojo",
+        awardedById: null,
+        trainingsCredit: 10,
+      });
+
+      const stored = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId: transferId,
+            disciplineId: disciplineId!,
+          },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(stored?.trainingsCredit).toBe(10);
+
+      // Progress table: credit + the 0 local sessions of this student.
+      const { rows } = await getDisciplineProgress(disciplineId!);
+      const row = rows.find((entry) => entry.studentId === transferId);
+      expect(row?.trainingsTotal).toBe(10);
+
+      // Eligibility gate counts the credit too (10 + 1 local for the first
+      // student is separate — this student has no local attendance).
+      const eligibility = await checkPromotionEligibility(
+        transferId,
+        yellowBeltId!,
+      );
+      expect(eligibility?.trainingsTotal).toBe(10);
+      expect(eligibility?.status).toBe("eligible");
+
+      // A later promotion never re-credits: award Yellow with the default
+      // 0 and the stored credit must stay 10.
+      await recordPromotion({
+        studentId: transferId,
+        beltRangeEntryId: yellowBeltId!,
+        awardedAt: new Date(2026, 8, 1),
+        notes: null,
+        awardedById: null,
+      });
+      const storedAfterSecond = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId: transferId,
+            disciplineId: disciplineId!,
+          },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(storedAfterSecond?.trainingsCredit).toBe(10);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId: transferId } });
+      await deleteStudent(transferId).catch(() => undefined);
+    }
+  });
+});

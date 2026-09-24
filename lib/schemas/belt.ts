@@ -38,6 +38,12 @@ export const promotionSchema = z.object({
   beltRangeEntryId: z.string().min(1, "Choose the belt being awarded"),
   awardedAt: isoBeltDate,
   notes: optionalString,
+  // Prior trainings credited when this is the student's FIRST belt in the
+  // discipline (transferring students whose history lives outside the
+  // system). 0 = start counting from local attendance only. The action
+  // applies it only on first-belt promotions and defaults it to the belt's
+  // requirement when the field is left blank.
+  trainingsCredit: z.coerce.number().int().min(0).max(9999).default(0),
 });
 
 export type PromotionInput = z.infer<typeof promotionSchema>;

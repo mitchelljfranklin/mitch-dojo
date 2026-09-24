@@ -70,6 +70,26 @@ describe("promotionSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.notes).toBe("Grading day");
+      expect(result.data.trainingsCredit).toBe(0);
     }
+  });
+
+  it("coerces and bounds the trainings credit", () => {
+    const withCredit = promotionSchema.safeParse({
+      beltRangeEntryId: "belt-1",
+      awardedAt: "2026-09-13",
+      trainingsCredit: "12",
+    });
+    expect(withCredit.success).toBe(true);
+    if (withCredit.success) {
+      expect(withCredit.data.trainingsCredit).toBe(12);
+    }
+
+    const negative = promotionSchema.safeParse({
+      beltRangeEntryId: "belt-1",
+      awardedAt: "2026-09-13",
+      trainingsCredit: "-1",
+    });
+    expect(negative.success).toBe(false);
   });
 });
