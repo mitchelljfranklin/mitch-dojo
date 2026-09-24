@@ -234,7 +234,10 @@ export async function recordPromotionAction(
   }
 
   // Enforce the training requirement unless the instructor explicitly
-  // overrides (make-up gradings, exceptional progression, …).
+  // overrides (make-up gradings, exceptional progression, …). On a
+  // first-belt promotion the trainings credit entered with it counts
+  // towards its own threshold — the instructor is asserting the student
+  // already trained that much elsewhere.
   const eligibility = await checkPromotionEligibility(
     studentId,
     parsed.data.beltRangeEntryId,
@@ -242,12 +245,16 @@ export async function recordPromotionAction(
   if (eligibility === null) {
     return { error: "That belt no longer exists." };
   }
-  if (eligibility.status === "insufficient") {
+  const requiredTrainings = eligibility.requiredTrainings ?? 0;
+  const creditTowardsGate =
+    eligibility.currentBeltName === null ? parsed.data.trainingsCredit : 0;
+  const effectiveTrainings = eligibility.trainingsTotal + creditTowardsGate;
+  if (effectiveTrainings < requiredTrainings) {
     const overrideConfirmed =
       getField(formData, "overrideEligibility") === "on";
     if (!overrideConfirmed) {
       return {
-        error: `${eligibility.targetBeltName} requires ${eligibility.requiredTrainings} trainings — the student has attended ${eligibility.trainingsTotal}. Tick "Override eligibility" to record anyway.`,
+        error: `${eligibility.targetBeltName} requires ${requiredTrainings} trainings — the student counts ${effectiveTrainings}. Tick "Override eligibility" to record anyway.`,
       };
     }
   }

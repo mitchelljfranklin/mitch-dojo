@@ -279,4 +279,77 @@ describe.skipIf(!hasTestDatabase)("first-belt trainings credit", () => {
       await deleteStudent(transferId).catch(() => undefined);
     }
   });
+
+  it("first-belt credit covers the awarded belt's own threshold", async () => {
+    // A fresh student promoted straight to Yellow (requires 3 locally, they
+    // have 0): the credit entered with the first belt must satisfy the
+    // belt's own requirement — this mirrors the action gate counting the
+    // just-entered credit, so no override is needed.
+    const directId = await createStudent({
+      firstName: "Direct",
+      lastName: `Kid${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [disciplineId!],
+    });
+
+    try {
+      const before = await checkPromotionEligibility(directId, yellowBeltId!);
+      expect(before?.status).toBe("insufficient");
+      expect(before?.trainingsTotal).toBe(0);
+
+      // The action computes trainings + entered credit for a first belt
+      // (currentBeltName null) — with the prefilled credit of 3 the gate
+      // passes without an override. Replicate that arithmetic and record.
+      const enteredCredit = 3;
+      const effective =
+        (before?.trainingsTotal ?? 0) +
+        (before?.currentBeltName === null ? enteredCredit : 0);
+      expect(effective).toBeGreaterThanOrEqual(before?.requiredTrainings ?? 0);
+
+      await recordPromotion({
+        studentId: directId,
+        beltRangeEntryId: yellowBeltId!,
+        awardedAt: new Date("2026-03-01"),
+        notes: "Transferred at Yellow",
+        awardedById: null,
+        trainingsCredit: enteredCredit,
+      });
+
+      const stored = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: {
+            studentId: directId,
+            disciplineId: disciplineId!,
+          },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(stored?.trainingsCredit).toBe(3);
+      const after = await checkPromotionEligibility(directId, yellowBeltId!);
+      expect(after?.trainingsTotal).toBe(3);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId: directId } });
+      await deleteStudent(directId).catch(() => undefined);
+    }
+  });
 });

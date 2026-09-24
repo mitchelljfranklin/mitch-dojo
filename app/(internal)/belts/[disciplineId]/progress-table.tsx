@@ -202,8 +202,19 @@ function PromotionSheet({
     () => selectedBelt?.requiredTrainings ?? 0,
     [selectedBelt],
   );
-  const [creditTouched, setCreditTouched] = useState(false);
-  const creditValue = creditTouched ? undefined : creditDefault;
+  // The credit input is controlled: null = follow the selected belt's
+  // requirement (the prefilled default), a number = instructor's override.
+  // It resets when the belt changes via the input's key below.
+  const [manualCredit, setManualCredit] = useState<number | null>(null);
+  // The gate in the action counts the credit entered alongside a first-belt
+  // promotion, so the live eligibility check mirrors that: selected belt's
+  // requirement vs the student's local count + the current credit value.
+  const currentCredit = manualCredit ?? creditDefault;
+  const selectedRequired = selectedBelt?.requiredTrainings ?? 0;
+  const effectiveTrainings = isFirstBelt
+    ? student.trainingsTotal + currentCredit
+    : student.trainingsTotal;
+  const needsOverride = effectiveTrainings < selectedRequired;
 
   return (
     <SheetContent className="w-full overflow-y-auto sm:max-w-md">
@@ -250,8 +261,12 @@ function PromotionSheet({
               min={0}
               max={9999}
               key={selectedBeltId}
-              defaultValue={creditValue ?? undefined}
-              onChange={() => setCreditTouched(true)}
+              value={manualCredit ?? creditDefault}
+              onChange={(event) => {
+                setManualCredit(
+                  event.target.value === "" ? null : Number(event.target.value),
+                );
+              }}
             />
             <p className="text-muted-foreground text-xs">
               Prior sessions this student brings from elsewhere, so the counter
@@ -282,7 +297,7 @@ function PromotionSheet({
             placeholder="Optional — grading day, examiner, techniques assessed, etc."
           />
         </div>
-        {!student.isEligible ? (
+        {needsOverride ? (
           <label className="border-warning/40 bg-warning/10 flex items-start gap-2 rounded-md border p-3 text-sm">
             <Checkbox
               name="overrideEligibility"
@@ -294,8 +309,9 @@ function PromotionSheet({
                 Override eligibility requirement
               </span>
               <span className="text-muted-foreground block text-xs">
-                The student has not met the next belt&apos;s training
-                requirement. Tick this to record the promotion anyway (e.g.
+                The student counts {effectiveTrainings} of the{" "}
+                {selectedRequired} trainings {selectedBelt?.name ?? "this belt"}{" "}
+                requires. Tick this to record the promotion anyway (e.g.
                 exceptional progression or a make-up grading).
               </span>
             </span>
