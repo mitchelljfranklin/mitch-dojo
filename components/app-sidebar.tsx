@@ -80,6 +80,7 @@ type AppSidebarProps = {
   hasLogo: boolean;
   logoKey: string;
   logoDarkKey?: string;
+  newTrialsCount: number;
 };
 
 const MANAGE_PERMISSIONS: Permission[] = [
@@ -96,6 +97,7 @@ export function AppSidebar({
   hasLogo,
   logoKey,
   logoDarkKey = "",
+  newTrialsCount,
 }: AppSidebarProps) {
   const pathname = usePathname();
   const inAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -144,7 +146,11 @@ export function AppSidebar({
         {inAdminArea ? (
           <AdminNav permissions={permissions} />
         ) : (
-          <WorkspaceNav permissions={permissions} pathname={pathname} />
+          <WorkspaceNav
+            permissions={permissions}
+            pathname={pathname}
+            newTrialsCount={newTrialsCount}
+          />
         )}
       </SidebarContent>
     </Sidebar>
@@ -154,6 +160,7 @@ export function AppSidebar({
 type NavProps = {
   permissions: string[];
   pathname: string;
+  newTrialsCount: number;
 };
 
 type NavItem = {
@@ -161,6 +168,7 @@ type NavItem = {
   href: string;
   icon: ComponentType;
   visible: boolean;
+  badge?: number | null;
 };
 
 type NavGroup = {
@@ -168,7 +176,7 @@ type NavGroup = {
   items: NavItem[];
 };
 
-function WorkspaceNav({ permissions, pathname }: NavProps) {
+function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
   const canManage = hasAnyPermission(permissions, MANAGE_PERMISSIONS);
   const canStudents = hasPermission(permissions, PERMISSIONS.STUDENTS_VIEW);
   const canClasses = hasPermission(permissions, PERMISSIONS.CLASSES_VIEW);
@@ -239,6 +247,7 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
           href: "/trials",
           icon: UserPlus,
           visible: canStudents,
+          badge: newTrialsCount > 0 ? newTrialsCount : null,
         },
         {
           title: "Trainers",
@@ -325,6 +334,11 @@ function WorkspaceNav({ permissions, pathname }: NavProps) {
                         <Link href={item.href}>
                           <item.icon />
                           <span>{item.title}</span>
+                          {item.badge ? (
+                            <span className="bg-primary text-primary-foreground ml-auto rounded-full px-2 py-0.5 text-[11px] leading-none font-medium">
+                              {item.badge > 99 ? "99+" : item.badge}
+                            </span>
+                          ) : null}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

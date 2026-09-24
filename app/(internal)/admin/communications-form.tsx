@@ -20,6 +20,8 @@ type CommunicationsFormProps = {
   trialFollowUpsEnabled: boolean;
   trialFollowUpDaysAfterJoin: number;
   bookingConfirmationsEnabled: boolean;
+  bookingStaffAlertsEnabled: boolean;
+  bookingStaffAlertRecipients: string[];
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -39,6 +41,8 @@ function CommunicationsFormInner({
   trialFollowUpsEnabled,
   trialFollowUpDaysAfterJoin,
   bookingConfirmationsEnabled,
+  bookingStaffAlertsEnabled,
+  bookingStaffAlertRecipients,
 }: CommunicationsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -173,6 +177,39 @@ function CommunicationsFormInner({
           />
           Enable booking confirmation emails
         </label>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-2">
+        <Label>New booking alerts (staff)</Label>
+        <p className="text-muted-foreground text-xs">
+          One alert email per recipient every time a booking lands on the public
+          booking page, so staff see it without opening the Trials page.
+          Template editable under Admin → Templates.
+        </p>
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <Checkbox
+            name="bookingStaffAlertsEnabled"
+            defaultChecked={bookingStaffAlertsEnabled}
+          />
+          Enable new-booking alert emails
+        </label>
+        <div className="grid max-w-md gap-2">
+          <Label htmlFor="bookingStaffAlertRecipients">
+            Alert recipients (comma-separated emails)
+          </Label>
+          <Input
+            id="bookingStaffAlertRecipients"
+            name="bookingStaffAlertRecipients"
+            type="text"
+            placeholder="sensei@example.com, owner@example.com"
+            defaultValue={bookingStaffAlertRecipients.join(", ")}
+          />
+          <p className="text-muted-foreground text-xs">
+            Alerts start once at least one address is saved.
+          </p>
+        </div>
       </div>
 
       {state && !state.ok ? (

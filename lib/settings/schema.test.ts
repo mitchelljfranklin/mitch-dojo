@@ -68,6 +68,28 @@ describe("communicationsSettingsSchema", () => {
     const settings = communicationsSettingsSchema.parse({});
     expect(settings.bookingConfirmationsEnabled).toBe(true);
   });
+
+  it("defaults staff alerts enabled with an empty recipient list", () => {
+    const settings = communicationsSettingsSchema.parse({});
+    expect(settings.bookingStaffAlertsEnabled).toBe(true);
+    expect(settings.bookingStaffAlertRecipients).toEqual([]);
+  });
+
+  it("keeps provided staff alert recipients", () => {
+    const settings = communicationsSettingsSchema.parse({
+      bookingStaffAlertRecipients: [" sensei@example.com "],
+    });
+    expect(settings.bookingStaffAlertRecipients).toEqual([
+      "sensei@example.com",
+    ]);
+  });
+
+  it("rejects malformed staff alert recipients", () => {
+    const result = communicationsSettingsSchema.safeParse({
+      bookingStaffAlertRecipients: ["not-an-email"],
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("emailTemplateSchema", () => {
@@ -77,5 +99,14 @@ describe("emailTemplateSchema", () => {
     expect(settings.bookingBody).toContain("{{studentName}}");
     expect(settings.bookingBody).toContain("{{className}}");
     expect(settings.bookingBody).toContain("{{classTime}}");
+  });
+
+  it("defaults the staff alert template with the booking tokens", () => {
+    const settings = emailTemplateSchema.parse({});
+    expect(settings.bookingStaffSubject).toContain("{{appName}}");
+    expect(settings.bookingStaffBody).toContain("{{studentName}}");
+    expect(settings.bookingStaffBody).toContain("{{bookingFor}}");
+    expect(settings.bookingStaffBody).toContain("{{contact}}");
+    expect(settings.bookingStaffBody).toContain("{{classTime}}");
   });
 });

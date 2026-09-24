@@ -60,6 +60,12 @@ export default async function AdminCommunicationsPage() {
             bookingConfirmationsEnabled={
               communicationsSettings.bookingConfirmationsEnabled
             }
+            bookingStaffAlertsEnabled={
+              communicationsSettings.bookingStaffAlertsEnabled
+            }
+            bookingStaffAlertRecipients={
+              communicationsSettings.bookingStaffAlertRecipients
+            }
           />
         </CardContent>
       </Card>

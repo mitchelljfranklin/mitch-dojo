@@ -22,6 +22,8 @@ import {
   getOperationsSettings,
   getOrganizationSettings,
 } from "@/lib/settings";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
+import { countNewTrials } from "@/lib/db/trials";
 
 export default async function InternalLayout({
   children,
@@ -33,11 +35,17 @@ export default async function InternalLayout({
     user.permissions,
     ADMIN_AREA_PERMISSIONS,
   );
-  const [organization, appearance, operations] = await Promise.all([
-    getOrganizationSettings(),
-    getAppearanceSettings(),
-    getOperationsSettings(),
-  ]);
+  const canStudents = hasPermission(
+    user.permissions,
+    PERMISSIONS.STUDENTS_VIEW,
+  );
+  const [organization, appearance, operations, newTrialsCount] =
+    await Promise.all([
+      getOrganizationSettings(),
+      getAppearanceSettings(),
+      getOperationsSettings(),
+      canStudents ? countNewTrials() : Promise.resolve(0),
+    ]);
 
   return (
     <>
@@ -51,6 +59,7 @@ export default async function InternalLayout({
           hasLogo={Boolean(appearance.logoKey)}
           logoKey={appearance.logoKey ?? ""}
           logoDarkKey={appearance.logoDarkKey ?? ""}
+          newTrialsCount={newTrialsCount}
         />
         <SidebarInset>
           <header className="bg-background sticky top-0 z-10 flex h-14 items-center gap-2 border-b px-4">

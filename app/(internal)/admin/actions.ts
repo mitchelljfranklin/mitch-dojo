@@ -489,6 +489,14 @@ export async function saveCommunicationsSettings(
     trialFollowUpDaysAfterJoin: formData.get("trialFollowUpDaysAfterJoin") ?? 3,
     bookingConfirmationsEnabled:
       formData.get("bookingConfirmationsEnabled") === "on",
+    bookingStaffAlertsEnabled:
+      formData.get("bookingStaffAlertsEnabled") === "on",
+    bookingStaffAlertRecipients: String(
+      formData.get("bookingStaffAlertRecipients") ?? "",
+    )
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0),
   });
   if (!parsed.success) {
     return {
@@ -527,6 +535,8 @@ export async function saveEmailTemplatesAction(
     birthdayBody: String(formData.get("birthdayBody") ?? ""),
     bookingSubject: String(formData.get("bookingSubject") ?? ""),
     bookingBody: String(formData.get("bookingBody") ?? ""),
+    bookingStaffSubject: String(formData.get("bookingStaffSubject") ?? ""),
+    bookingStaffBody: String(formData.get("bookingStaffBody") ?? ""),
     trialFollowUpSubject: String(formData.get("trialFollowUpSubject") ?? ""),
     trialFollowUpBody: String(formData.get("trialFollowUpBody") ?? ""),
   });

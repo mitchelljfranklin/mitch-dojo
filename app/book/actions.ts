@@ -157,5 +157,22 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     }
   }
 
+  // Staff alert: one email per configured recipient so a new booking is
+  // seen without watching the Trials page. Best-effort, same as above.
+  const { sendBookingStaffAlert } =
+    await import("@/lib/email/booking-staff-alert");
+  await sendBookingStaffAlert({
+    studentId: result.studentId,
+    firstName: parsed.data.firstName,
+    lastName: parsed.data.lastName,
+    bookingFor: parsed.data.bookingFor,
+    guardianName:
+      parsed.data.bookingFor === "child" ? parsed.data.guardianName : null,
+    email: parsed.data.email || null,
+    phone: parsed.data.phone || null,
+    sessionCourseName: sessionCourseName || null,
+    sessionDate: sessionDate || null,
+  });
+
   redirect("/book?booked=1");
 }

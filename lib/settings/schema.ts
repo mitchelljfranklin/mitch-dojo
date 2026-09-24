@@ -99,6 +99,12 @@ export const emailTemplateSchema = z.object({
     .default(
       "Hi {{studentName}},\n\nYour trial class is booked: {{className}} on {{classTime}}. We look forward to meeting you!\n\nIf you need to change or cancel, just reply to this email.\n\n— {{appName}}",
     ),
+  bookingStaffSubject: z.string().default("New trial booking — {{appName}}"),
+  bookingStaffBody: z
+    .string()
+    .default(
+      "A new trial booking has come in:\n\nName: {{studentName}}\nBooking for: {{bookingFor}}\nContact: {{contact}}\nPreferred class: {{className}} on {{classTime}}\n\nOpen the Trials page to follow up.\n\n— {{appName}}",
+    ),
   trialFollowUpSubject: z
     .string()
     .default("How was your trial at {{appName}}?"),
@@ -211,6 +217,14 @@ export const communicationsSettingsSchema = z.object({
   // Booking confirmation: one email to the prospect the moment their public
   // /book submission creates a trial. Deduped per booking.
   bookingConfirmationsEnabled: z.boolean().default(true),
+  // New-booking alert: one email per listed staff recipient when a public
+  // booking lands. Recipients start empty — alerts begin once at least one
+  // address is entered.
+  bookingStaffAlertsEnabled: z.boolean().default(true),
+  bookingStaffAlertRecipients: z
+    .array(z.string().trim().pipe(z.email("Enter a valid email address")))
+    .max(20, "Keep the recipient list to 20 addresses or fewer")
+    .default([]),
 });
 
 export type CommunicationsSettings = z.infer<

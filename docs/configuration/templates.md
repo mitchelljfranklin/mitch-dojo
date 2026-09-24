@@ -9,7 +9,8 @@ Every automated email's subject and body, editable with tokens. Also home of the
 | **Class reminder** | Scheduler, N hours before a session |
 | **Payment reminder** | Invoice enters the due-soon window / overdue threshold |
 | **Birthday** | On the student's birthday |
-| **Booking confirmation** | Public booking page submission |
+| **Booking confirmation** | Public booking page submission (to the prospect) |
+| **New-booking alert** | Public booking page submission (to staff recipients) |
 | **Trial follow-up** | Open trial past the follow-up window |
 | **Portal link** | Staff sends a member-portal magic link |
 | **Password reset** | Staff user requests a reset |
@@ -27,6 +28,8 @@ Tokens work in both subjects and bodies and are replaced at send time:
 | `{{className}}` | Class reminder | Course name |
 | `{{classTime}}` | Class reminder | Date and start time |
 | `{{dueDate}}` | Payment reminder | Invoice due date |
+| `{{bookingFor}}` | New-booking alert | "Adult" or "Child (guardian: …)" |
+| `{{contact}}` | New-booking alert | Email and/or phone the prospect left |
 | `{{trialDays}}` | Trial follow-up | Days in the pipeline |
 | `{{portalUrl}}` | Portal link | One-time magic link |
 | `{{expiryDays}}` | Portal link | Days until the link expires |

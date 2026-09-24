@@ -264,6 +264,12 @@ export async function createTrialBooking(
   return { outcome: "created", studentId: student.id };
 }
 
+// Count of NEW-stage trials — the badge on the sidebar Trials item, so a
+// fresh public booking is visible from anywhere in the app.
+export async function countNewTrials(): Promise<number> {
+  return prisma.student.count({ where: { trialStage: "NEW" } });
+}
+
 // --------------- booking page data ---------------
 
 export async function listBookableOptions() {
