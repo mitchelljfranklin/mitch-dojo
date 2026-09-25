@@ -7,7 +7,7 @@ Turn website visitors and walk-ins into trials, then manage them to conversion.
 Your school gets a public trial-booking page at `/book`:
 
 - **No login** — prospects pick a class, enter their details, and submit.
-- **For yourself or a child** — a dropdown at the top. In **child mode** the contact fields relabel as *Guardian email/phone* (with an optional guardian name and **relationship to child**), and the entered contact is stored on **both** the child and the guardian — so reminders and portal links reach the family either way, and staff see the guardian (and their relationship) on the record.
+- **For yourself or a child** — a dropdown at the top. In **child mode** the contact fields relabel as *Guardian email/phone* (with an optional guardian name and **relationship to child**), and the entered contact is stored on the child's **guardian fields** — so reminders and portal links reach the family, and staff see the guardian (and their relationship) on the record. One guardian email can book **several children**; only booking the same child twice is flagged as a duplicate.
 - **Branded** — your org name, logo, colours, and editable headline/description ([Appearance](../configuration/appearance)).
 - **Protected** — rate-limited per IP with a honeypot field against bots.
 - **Only trial-bookable classes appear** — each weekly training slot on a course has a **Trial bookable** checkbox (on by default). Untick it for classes that shouldn't take new starters (senior-only sessions, for example) and they disappear from the booking page immediately.

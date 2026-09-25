@@ -185,7 +185,7 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     expect(student?.country).toBe("AU");
   });
 
-  it("mirrors the contact onto guardian fields for a child booking", async () => {
+  it("stores a child booking's contact on the guardian fields only", async () => {
     const result = await createTrialBooking({
       bookingFor: "child",
       firstName: "Kid",
@@ -205,10 +205,12 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     const student = await prisma.student.findUnique({
       where: { id: result.studentId },
     });
-    // The entered contact lives on the child AND the guardian, so reminders
-    // and portal links reach the family either way.
-    expect(student?.email).toBe(`kid-lead-${suffix}@example.com`);
-    expect(student?.phone).toBe("0412 345 678");
+    // The entered contact is the guardian's — it lives on the guardian
+    // fields ONLY. Student.email is unique, and copying the guardian's
+    // address onto every child would block a second sibling booking.
+    // Reminders and portal links fall back to the guardian.
+    expect(student?.email).toBeNull();
+    expect(student?.phone).toBeNull();
     expect(student?.guardianName).toBe(`Guardian ${suffix}`);
     expect(student?.guardianRelationship).toBe("Mother");
     expect(student?.guardianEmail).toBe(`kid-lead-${suffix}@example.com`);
@@ -217,6 +219,71 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     expect(student?.notes).toContain("Booked by the guardian");
 
     await prisma.student.delete({ where: { id: result.studentId } });
+  });
+
+  it("lets one guardian book several children with the same email", async () => {
+    const guardianEmail = `parent-${suffix}@example.com`;
+    const first = await createTrialBooking({
+      bookingFor: "child",
+      firstName: "Elder",
+      lastName: `Sibling${suffix}`,
+      guardianName: `Guardian ${suffix}`,
+      guardianRelationship: "Father",
+      email: guardianEmail,
+      phone: null,
+      locationId,
+      disciplineId,
+      sessionDate: null,
+      sessionCourseName: null,
+    });
+    expect(first.outcome).toBe("created");
+
+    // Second child, same guardian address — must NOT be flagged as a
+    // duplicate (the guardian's email is not the child's identity).
+    const second = await createTrialBooking({
+      bookingFor: "child",
+      firstName: "Younger",
+      lastName: `Sibling${suffix}`,
+      guardianName: `Guardian ${suffix}`,
+      guardianRelationship: "Father",
+      email: guardianEmail,
+      phone: null,
+      locationId,
+      disciplineId,
+      sessionDate: null,
+      sessionCourseName: null,
+    });
+    expect(second.outcome).toBe("created");
+
+    // Booking the SAME child again (same name + guardian email) is caught.
+    const rebook = await createTrialBooking({
+      bookingFor: "child",
+      firstName: "Younger",
+      lastName: `Sibling${suffix}`,
+      guardianName: `Guardian ${suffix}`,
+      guardianRelationship: "Father",
+      email: guardianEmail,
+      phone: null,
+      locationId,
+      disciplineId,
+      sessionDate: null,
+      sessionCourseName: null,
+    });
+    expect(rebook.outcome).toBe("duplicate");
+
+    const students = await prisma.student.findMany({
+      where: { guardianEmail, lastName: `Sibling${suffix}` },
+      select: { id: true, guardianEmail: true, email: true },
+    });
+    expect(students).toHaveLength(2);
+    for (const student of students) {
+      expect(student.guardianEmail).toBe(guardianEmail);
+      expect(student.email).toBeNull();
+    }
+
+    await prisma.student.deleteMany({
+      where: { guardianEmail, lastName: `Sibling${suffix}` },
+    });
   });
 
   it("flags a duplicate email instead of creating a second student", async () => {

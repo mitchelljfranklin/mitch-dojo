@@ -28,7 +28,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid: "Please fill in all required fields.",
   contact: "Please leave an email address or a phone number.",
   exists:
-    "We already have a student with that email — contact us and we will sort it out.",
+    "We already have a booking for that student — contact us and we will sort it out.",
 };
 
 type BookPageProps = {

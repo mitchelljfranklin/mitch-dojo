@@ -198,12 +198,29 @@ export type BookingResult =
 export async function createTrialBooking(
   input: BookingInput,
 ): Promise<BookingResult> {
-  const existing = input.email
-    ? await prisma.student.findFirst({
-        where: { email: { equals: input.email, mode: "insensitive" } },
-        select: { id: true },
-      })
-    : null;
+  const isChild = input.bookingFor === "child";
+  // Duplicate guard. Adult bookings match on the entered email (Student.email
+  // is unique). Child bookings carry the GUARDIAN's email — that must never
+  // block a sibling (a parent with two kids reuses one address), so the
+  // guard matches the child's identity instead: same name booked twice with
+  // the same guardian email is a rebooking of the same child.
+  const existing = isChild
+    ? input.email
+      ? await prisma.student.findFirst({
+          where: {
+            firstName: { equals: input.firstName.trim(), mode: "insensitive" },
+            lastName: { equals: input.lastName.trim(), mode: "insensitive" },
+            guardianEmail: { equals: input.email, mode: "insensitive" },
+          },
+          select: { id: true },
+        })
+      : null
+    : input.email
+      ? await prisma.student.findFirst({
+          where: { email: { equals: input.email, mode: "insensitive" } },
+          select: { id: true },
+        })
+      : null;
   if (existing) {
     return { outcome: "duplicate" };
   }
@@ -228,7 +245,6 @@ export async function createTrialBooking(
     input.sessionDate && input.sessionCourseName
       ? `Booked via website for ${input.sessionCourseName} on ${input.sessionDate} at ${location.name}.`
       : `Booked via website (${discipline.name} at ${location.name}).`;
-  const isChild = input.bookingFor === "child";
   if (isChild && !input.guardianName && !input.email && !input.phone) {
     throw new Error("A child booking needs guardian contact details.");
   }
@@ -237,10 +253,13 @@ export async function createTrialBooking(
     data: {
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
-      email: input.email?.trim() || null,
-      phone: input.phone?.trim() || null,
-      // Child mode: the entered contact is the guardian's — mirror it onto
-      // the guardian fields as well as the child's own contact fields.
+      // Child mode: the entered contact is the GUARDIAN's — it lives only on
+      // the guardian fields. Student.email is unique, and copying the
+      // guardian's address onto every child would block a second sibling
+      // booking. Reminders and portal links fall back to the guardian, so
+      // the family stays reachable either way.
+      email: isChild ? null : input.email?.trim() || null,
+      phone: isChild ? null : input.phone?.trim() || null,
       guardianName: isChild ? input.guardianName?.trim() || null : null,
       guardianRelationship: isChild
         ? input.guardianRelationship?.trim() || null
