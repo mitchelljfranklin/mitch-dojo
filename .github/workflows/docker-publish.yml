@@ -49,19 +49,20 @@ jobs:
             echo "tags=${IMAGE}:${TAG},${IMAGE}:latest" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # Accept comma/newline separated entries; every entry is joined
-          # onto the full ghcr image name so a bare tag (e.g. "2409" from
-          # "latest, 2409") can never be pushed to Docker Hub by mistake.
+          # Accept comma/space/newline separated entries; every entry is
+          # joined onto the full ghcr image name so a bare tag (e.g. "2409"
+          # from "latest, 2409") can never be pushed to Docker Hub by
+          # mistake. Comma-to-space + word splitting sidesteps the classic
+          # `while read` gotcha where a final line without a trailing
+          # newline is silently dropped.
           TAGS=""
-          while IFS= read -r entry; do
-            entry="${entry//[[:space:]]/}"
-            [ -n "$entry" ] || continue
+          for entry in ${TAG_INPUT//,/ }; do
             if ! [[ "$entry" =~ ^[A-Za-z0-9._-]+$ ]]; then
               echo "Invalid tag entry: ${entry}" >&2
               exit 1
             fi
             TAGS="${TAGS:+${TAGS},}${IMAGE}:${entry}"
-          done < <(printf '%s' "$TAG_INPUT" | tr ',' '\n')
+          done
           [ -n "$TAGS" ] || { echo "No tags resolved." >&2; exit 1; }
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
