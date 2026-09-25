@@ -8,7 +8,7 @@ on:
     inputs:
       tag:
         description: "Image tag (latest, v1.0.0, etc.)"
-        required: true
+        required: false
         default: "latest"
 
 env:
@@ -37,8 +37,11 @@ jobs:
 
       - name: Determine tags
         id: tags
+        # Defaults from the workflow_dispatch block are applied by the UI
+        # only — a dispatch via gh CLI / API without the input arrives
+        # EMPTY. Fall back here so a missing tag always means "latest".
         env:
-          TAG_INPUT: ${{ inputs.tag }}
+          TAG_INPUT: ${{ inputs.tag || 'latest' }}
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           if [ "${{ github.event_name }}" = "push" ]; then
