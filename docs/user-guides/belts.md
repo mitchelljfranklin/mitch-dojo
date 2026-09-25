@@ -34,6 +34,8 @@ On the discipline's progression page you see each discipline-assigned student wi
 - A count of **all** trained sessions across **every** course of that discipline, at any location
 - An eligibility badge for the next belt
 
+The table filters as you type — search by name, filter by **current belt** (or unranked), or show only students **eligible for their next belt** / still **needing trainings** (the grading-day view).
+
 Promoting:
 
 1. Open the discipline's progression page.

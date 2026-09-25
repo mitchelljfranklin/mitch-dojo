@@ -3,7 +3,10 @@ import { expect, test } from "@playwright/test";
 import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from "./global-setup";
 
 test.describe("belts", () => {
-  test("views the discipline ladder and records a promotion for the attendance kid", async ({
+  // Single test: the promotion flow leaves state (kid at Advanced) that the
+  // filter checks depend on, and a second login here would contend with
+  // parallel spec files for the shared in-memory login rate limit.
+  test("ladder, promotion with override, progression filters, and history", async ({
     page,
   }) => {
     await page.goto("/login");
@@ -57,6 +60,39 @@ test.describe("belts", () => {
     await expect(
       page.getByText("Advanced", { exact: true }).first(),
     ).toBeVisible();
+
+    // Progression filters (still logged in, kid now at Advanced).
+    const search = page.getByLabel("Filter students by name");
+    const beltFilter = page.getByLabel("Filter by belt");
+    const eligibilityFilter = page.getByLabel("Filter by eligibility");
+
+    // Name search: a miss shows the empty state, a hit shows the student.
+    await search.fill("zzz-no-match");
+    await expect(
+      page.getByText("No students match the filters."),
+    ).toBeVisible();
+    await search.fill("Attend");
+    await expect(page.getByText("E2E Attend Kid")).toBeVisible();
+
+    // Belt filter: Novice holds nobody (the kid is at Advanced now).
+    await beltFilter.selectOption({ label: "Novice" });
+    await expect(
+      page.getByText("No students match the filters."),
+    ).toBeVisible();
+    await beltFilter.selectOption({ label: "Advanced" });
+    await expect(page.getByText("E2E Attend Kid")).toBeVisible();
+
+    // Eligibility: at the top of the ladder (no next belt) the kid is
+    // neither eligible nor "needs trainings".
+    await eligibilityFilter.selectOption("ELIGIBLE");
+    await expect(
+      page.getByText("No students match the filters."),
+    ).toBeVisible();
+
+    // Clear restores the unfiltered list.
+    await page.getByRole("button", { name: "Clear" }).click();
+    await expect(page.getByText("E2E Attend Kid")).toBeVisible();
+    await expect(search).toHaveValue("");
 
     // History is visible on the student record
     await page.goto("/students");

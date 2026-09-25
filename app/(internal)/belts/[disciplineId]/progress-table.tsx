@@ -72,6 +72,37 @@ export function ProgressTable({
 }: ProgressTableProps) {
   const [promoting, setPromoting] = useState<ProgressRow | null>(null);
   const [defaultBeltId, setDefaultBeltId] = useState("");
+  // Client-side filters: the rows are already in memory, so filtering
+  // stays instant with no server round-trip.
+  const [query, setQuery] = useState("");
+  const [beltFilter, setBeltFilter] = useState("ALL");
+  const [eligibilityFilter, setEligibilityFilter] = useState("ALL");
+
+  const filteredRows = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (term && !row.name.toLowerCase().includes(term)) return false;
+      if (beltFilter === "UNRANKED") {
+        if (row.currentBeltName) return false;
+      } else if (beltFilter !== "ALL") {
+        if (
+          row.currentBeltName !== belts.find((b) => b.id === beltFilter)?.name
+        )
+          return false;
+      }
+      if (eligibilityFilter === "ELIGIBLE") {
+        if (!row.isEligible) return false;
+      } else if (eligibilityFilter === "NEEDS") {
+        if (row.isEligible || row.requiredTrainings === null) return false;
+      }
+      return true;
+    });
+  }, [rows, belts, query, beltFilter, eligibilityFilter]);
+
+  const filtersActive =
+    query.trim().length > 0 ||
+    beltFilter !== "ALL" ||
+    eligibilityFilter !== "ALL";
 
   return (
     <Card>
@@ -90,60 +121,122 @@ export function ProgressTable({
             No active or trial students yet.
           </p>
         ) : (
-          <div className="flex flex-col divide-y rounded-lg border">
-            {rows.map((row) => (
-              <div
-                key={row.studentId}
-                className="flex flex-wrap items-center justify-between gap-2 p-3"
+          <>
+            <div className="mb-3 flex flex-wrap items-end gap-2">
+              <Input
+                aria-label="Filter students by name"
+                placeholder="Search students…"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="h-9 w-52"
+              />
+              <select
+                aria-label="Filter by belt"
+                value={beltFilter}
+                onChange={(event) => setBeltFilter(event.target.value)}
+                className="border-input bg-background h-9 rounded-md border px-3 text-sm"
               >
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-medium">
-                    {row.name}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    {row.currentBeltName
-                      ? `${row.trainingsTotal} training${row.trainingsTotal === 1 ? "" : "s"} on this discipline`
-                      : "No belt recorded yet"}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {row.currentBeltName ? (
-                    <BeltChip
-                      name={row.currentBeltName}
-                      colorHex={row.currentBeltColor}
-                    />
-                  ) : (
-                    <Badge variant="outline" className="text-xs">
-                      Unranked
-                    </Badge>
-                  )}
-                  {row.nextBeltName && row.requiredTrainings !== null ? (
-                    <Badge
-                      variant={row.isEligible ? "default" : "outline"}
-                      className="text-xs"
+                <option value="ALL">All belts</option>
+                <option value="UNRANKED">Unranked</option>
+                {belts.map((belt) => (
+                  <option key={belt.id} value={belt.id}>
+                    {belt.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Filter by eligibility"
+                value={eligibilityFilter}
+                onChange={(event) => setEligibilityFilter(event.target.value)}
+                className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+              >
+                <option value="ALL">All students</option>
+                <option value="ELIGIBLE">Eligible for next belt</option>
+                <option value="NEEDS">Needs trainings</option>
+              </select>
+              {filtersActive ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setQuery("");
+                    setBeltFilter("ALL");
+                    setEligibilityFilter("ALL");
+                  }}
+                >
+                  Clear
+                </Button>
+              ) : null}
+            </div>
+            {filteredRows.length === 0 ? (
+              <p className="text-muted-foreground pb-2 text-sm">
+                No students match the filters.
+              </p>
+            ) : (
+              <>
+                {filtersActive && filteredRows.length < rows.length ? (
+                  <p className="text-muted-foreground mb-2 text-xs">
+                    Showing {filteredRows.length} of {rows.length} students
+                  </p>
+                ) : null}
+                <div className="flex flex-col divide-y rounded-lg border">
+                  {filteredRows.map((row) => (
+                    <div
+                      key={row.studentId}
+                      className="flex flex-wrap items-center justify-between gap-2 p-3"
                     >
-                      {row.isEligible
-                        ? `Eligible: ${row.nextBeltName}`
-                        : `${row.nextBeltName}: ${row.trainingsTotal}/${row.requiredTrainings}`}
-                    </Badge>
-                  ) : null}
-                  {canEdit ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setPromoting(row);
-                        setDefaultBeltId(defaultBeltIdFor(row, belts));
-                      }}
-                    >
-                      Promote
-                    </Button>
-                  ) : null}
+                      <div className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm font-medium">
+                          {row.name}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {row.currentBeltName
+                            ? `${row.trainingsTotal} training${row.trainingsTotal === 1 ? "" : "s"} on this discipline`
+                            : "No belt recorded yet"}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {row.currentBeltName ? (
+                          <BeltChip
+                            name={row.currentBeltName}
+                            colorHex={row.currentBeltColor}
+                          />
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            Unranked
+                          </Badge>
+                        )}
+                        {row.nextBeltName && row.requiredTrainings !== null ? (
+                          <Badge
+                            variant={row.isEligible ? "default" : "outline"}
+                            className="text-xs"
+                          >
+                            {row.isEligible
+                              ? `Eligible: ${row.nextBeltName}`
+                              : `${row.nextBeltName}: ${row.trainingsTotal}/${row.requiredTrainings}`}
+                          </Badge>
+                        ) : null}
+                        {canEdit ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setPromoting(row);
+                              setDefaultBeltId(defaultBeltIdFor(row, belts));
+                            }}
+                          >
+                            Promote
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              </>
+            )}
+          </>
         )}
       </CardContent>
 

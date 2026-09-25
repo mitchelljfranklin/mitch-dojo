@@ -158,6 +158,11 @@ test.describe("trials", () => {
   test("child booking captures the guardian details on the record", async ({
     page,
   }) => {
+    // Unique per run: stale Kiddo Bookers from previous runs linger in the
+    // test database (global-setup does not clean them), and clicking the
+    // first name match would open an old record with a different email.
+    const kidLastName = `Booker${Date.now().toString(36)}`;
+    const kidName = `Kiddo ${kidLastName}`;
     const childEmail = `child-booker-${Date.now()}@example.com`;
     await page.goto("/book");
     await expect(
@@ -170,7 +175,7 @@ test.describe("trials", () => {
     await expect(page.getByText("Guardian email")).toBeVisible();
 
     await page.getByLabel("Child's first name").fill("Kiddo");
-    await page.getByLabel("Child's last name").fill("Booker");
+    await page.getByLabel("Child's last name").fill(kidLastName);
     await page.getByLabel("Guardian name (you)").fill("Parent Booker");
     await page.getByLabel("Relationship to child").selectOption("Mother");
     await page.getByLabel("Guardian email").fill(childEmail);
@@ -189,9 +194,9 @@ test.describe("trials", () => {
     await page.waitForURL("**/dashboard");
 
     await page.goto("/trials");
-    await expect(page.getByText("Kiddo Booker").first()).toBeVisible();
+    await expect(page.getByText(kidName).first()).toBeVisible();
     await page.goto("/students");
-    await page.getByText("Kiddo Booker").first().click();
+    await page.getByText(kidName).first().click();
     await page.waitForURL("**/students/*");
     await expect(page.getByText("Parent Booker")).toBeVisible();
     // The relationship leads the guardian row (relationship · name · contact)
