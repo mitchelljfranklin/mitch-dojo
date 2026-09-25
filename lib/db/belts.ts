@@ -159,7 +159,9 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
       studentId: { in: students.map((student) => student.id) },
       beltRangeEntry: { disciplineId },
     },
-    orderBy: { awardedAt: "desc" },
+    // Awarded-at desc decides recency; ladder order breaks ties so a
+    // backfilled lower rank (same date) never shadows the newer belt.
+    orderBy: [{ awardedAt: "desc" }, { beltRangeEntry: { order: "desc" } }],
     select: {
       id: true,
       studentId: true,
@@ -250,7 +252,7 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
 export async function getStudentBeltHistory(studentId: string) {
   return prisma.studentBelt.findMany({
     where: { studentId },
-    orderBy: { awardedAt: "desc" },
+    orderBy: [{ awardedAt: "desc" }, { beltRangeEntry: { order: "desc" } }],
     include: {
       beltRangeEntry: {
         include: { discipline: { select: { id: true, name: true } } },
@@ -279,6 +281,7 @@ export async function recordPromotion(input: {
       colorHex: true,
       disciplineId: true,
       requiredTrainings: true,
+      order: true,
     },
   });
   if (!beltEntry) {
@@ -286,6 +289,42 @@ export async function recordPromotion(input: {
   }
 
   await prisma.$transaction(async (tx) => {
+    // Missing rungs below the awarded belt (first belt at a higher rank, or
+    // a multi-level grading) are backfilled so the student's history shows
+    // a complete ladder view.
+    const [disciplineBelts, existingHistory] = await Promise.all([
+      tx.beltRangeEntry.findMany({
+        where: { disciplineId: beltEntry.disciplineId },
+        orderBy: { order: "asc" },
+        select: { id: true, name: true, colorHex: true, order: true },
+      }),
+      tx.studentBelt.findMany({
+        where: {
+          studentId: input.studentId,
+          beltRangeEntry: { disciplineId: beltEntry.disciplineId },
+        },
+        select: { beltRangeEntryId: true },
+      }),
+    ]);
+    const recordedEntryIds = new Set(
+      existingHistory.map((row) => row.beltRangeEntryId),
+    );
+    const skippedBelts = disciplineBelts.filter(
+      (belt) => belt.order < beltEntry.order && !recordedEntryIds.has(belt.id),
+    );
+    if (skippedBelts.length > 0) {
+      await tx.studentBelt.createMany({
+        data: skippedBelts.map((belt) => ({
+          studentId: input.studentId,
+          beltRangeEntryId: belt.id,
+          beltName: belt.name,
+          colorHex: belt.colorHex,
+          awardedAt: input.awardedAt,
+          notes: `Backfilled — rank recorded directly at ${beltEntry.name}`,
+        })),
+      });
+    }
+
     await tx.studentBelt.create({
       data: {
         studentId: input.studentId,
@@ -396,7 +435,8 @@ export async function checkPromotionEligibility(
           studentId,
           beltRangeEntry: { disciplineId: target.disciplineId },
         },
-        orderBy: { awardedAt: "desc" },
+        // Ladder order breaks same-date ties (backfilled lower ranks).
+        orderBy: [{ awardedAt: "desc" }, { beltRangeEntry: { order: "desc" } }],
         select: { beltName: true },
       }),
       prisma.studentDiscipline.findUnique({

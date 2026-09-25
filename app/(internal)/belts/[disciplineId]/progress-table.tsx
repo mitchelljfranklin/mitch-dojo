@@ -250,6 +250,11 @@ function PromotionSheet({
               </option>
             ))}
           </select>
+          <p className="text-muted-foreground text-xs">
+            Skipping belts (first belt at a higher rank, or a multi-level
+            grading) also records the skipped lower belts so the history shows
+            the complete ladder.
+          </p>
         </div>
         {isFirstBelt ? (
           <div className="grid gap-2">

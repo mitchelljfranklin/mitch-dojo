@@ -50,6 +50,8 @@ If you don't want to import a transferring student's full history, just record t
 
 Grading a student past one belt (e.g. Yellow straight to Black) works the same way — the belt picker lists every belt, and the counter is **reconciled at every promotion** so it never sits below the rank just awarded. The next grading therefore always starts aligned with the current rank. If the count is below the target belt's requirement, the promotion needs the **Override** tick; after saving, the counter aligns to the new rank.
 
+Skipped belts are **recorded automatically**: promoting straight to Green (from nothing, or two levels up) also writes the earlier rungs into the student's grading history, marked "Backfilled", so the record always shows a complete ladder view.
+
 ## Permissions
 
 | Action | Permission |

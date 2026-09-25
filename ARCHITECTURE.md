@@ -189,8 +189,11 @@ aligned with the held rank: it is set when the first belt is recorded
 (transferring students whose history lives outside the system — the promotion
 sheet prefills it with the belt's requirement) and reconciled upward on every
 promotion whenever the counter sits below the awarded belt's requirement
-(multi-level gradings, override promotions). A belt's
-`requiredTrainings` is the cumulative total needed to
+(multi-level gradings, override promotions). Skipped lower belts are
+backfilled into the student's history (marked "Backfilled", same award
+date) so the record shows a complete ladder; current-rank resolution
+tiebreaks on ladder order so a backfilled rung never shadows the newer
+belt. A belt's `requiredTrainings` is the cumulative total needed to
 be awarded that belt (0 for the entry rank) — e.g. Black at 300 means a
 student training twice a week across two locations reaches it around the
 3-year mark. Each belt's threshold is set once on the discipline's ladder

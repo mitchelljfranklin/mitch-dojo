@@ -427,9 +427,88 @@ describe.skipIf(!hasTestDatabase)("first-belt trainings credit", () => {
 
       const eligibility = await checkPromotionEligibility(jumpId, green.id);
       expect(eligibility?.trainingsTotal).toBe(10);
+      expect(eligibility?.currentBeltName).toBe("Green");
+
+      // The skipped rung (order 1) is backfilled so the history shows the
+      // complete ladder, marked as a backfill note.
+      const history = await prisma.studentBelt.findMany({
+        where: { studentId: jumpId },
+        select: { beltName: true, notes: true },
+      });
+      expect(history).toHaveLength(3);
+      const backfilled = history.find((row) =>
+        row.notes?.includes("Backfilled"),
+      );
+      expect(backfilled?.beltName).toBe("Yellow Stripe");
+
+      // Current-rank resolution survives the same-date tie: the jump
+      // student's progression row must report Green, not a backfill.
+      const { rows } = await getDisciplineProgress(disciplineId!);
+      const jumpRow = rows.find((entry) => entry.studentId === jumpId);
+      expect(jumpRow?.currentBeltName).toBe("Green");
     } finally {
       await prisma.studentBelt.deleteMany({ where: { studentId: jumpId } });
       await deleteStudent(jumpId).catch(() => undefined);
+    }
+  });
+
+  it("does not duplicate rungs on a normal single-step promotion", async () => {
+    const stepId = await createStudent({
+      firstName: "Stepper",
+      lastName: `Kid${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [disciplineId!],
+    });
+
+    try {
+      // First belt at White (entry rank): nothing below to backfill.
+      await recordPromotion({
+        studentId: stepId,
+        beltRangeEntryId: whiteBeltId!,
+        awardedAt: new Date("2026-01-05"),
+        notes: null,
+        awardedById: null,
+      });
+      // Single step to Yellow Stripe: White is already in history.
+      await recordPromotion({
+        studentId: stepId,
+        beltRangeEntryId: yellowBeltId!,
+        awardedAt: new Date("2026-03-05"),
+        notes: null,
+        awardedById: null,
+      });
+
+      const history = await prisma.studentBelt.findMany({
+        where: { studentId: stepId },
+        select: { beltName: true },
+      });
+      expect(history.map((row) => row.beltName).sort()).toEqual([
+        "White",
+        "Yellow Stripe",
+      ]);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId: stepId } });
+      await deleteStudent(stepId).catch(() => undefined);
     }
   });
 
