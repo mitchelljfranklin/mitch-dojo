@@ -2,6 +2,10 @@ import { type Prisma } from "../../prisma/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getMembershipsSettings } from "@/lib/settings";
+import {
+  TRAINED_STATUSES,
+  type AttendanceStatusValue,
+} from "@/lib/schemas/attendance";
 
 type PlanTypeValue = "RECURRING" | "ITEM";
 type BillingPeriodValue = "WEEKLY" | "MONTHLY" | "QUARTERLY" | "YEARLY";
@@ -98,6 +102,7 @@ export async function listActivePlansForSelection() {
       planType: true,
       billingPeriod: true,
       priceCents: true,
+      chargeOnlyWithAttendance: true,
     },
     orderBy: [{ planType: "asc" }, { name: "asc" }],
   });
@@ -109,6 +114,7 @@ export async function createMembershipPlan(input: {
   planType: PlanTypeValue;
   billingPeriod: BillingPeriodValue | null;
   priceCents: number;
+  chargeOnlyWithAttendance?: boolean;
 }) {
   return prisma.membershipPlan.create({
     data: {
@@ -117,6 +123,7 @@ export async function createMembershipPlan(input: {
       planType: input.planType,
       billingPeriod: input.billingPeriod,
       priceCents: input.priceCents,
+      chargeOnlyWithAttendance: input.chargeOnlyWithAttendance ?? false,
     },
   });
 }
@@ -129,6 +136,7 @@ export async function updateMembershipPlan(
     planType: PlanTypeValue;
     billingPeriod: BillingPeriodValue | null;
     priceCents: number;
+    chargeOnlyWithAttendance?: boolean;
   },
 ) {
   return prisma.membershipPlan.update({
@@ -139,6 +147,7 @@ export async function updateMembershipPlan(
       planType: input.planType,
       billingPeriod: input.billingPeriod,
       priceCents: input.priceCents,
+      chargeOnlyWithAttendance: input.chargeOnlyWithAttendance ?? false,
     },
   });
 }
@@ -502,12 +511,47 @@ export async function generateDueInvoices(
   });
 
   let generated = 0;
+  let skippedCycles = 0;
   for (const enrollment of dueEnrollments) {
     const period = enrollment.plan.billingPeriod ?? "MONTHLY";
     let cycleDate = startOfToday(enrollment.nextInvoiceDate ?? today);
     let iterations = 0;
 
+    // Attendance-gated plans bill only when the member trained since the
+    // last invoice. The window is [previous invoice issueDate, cycleDate):
+    // in-advance billing means each invoice covers the cycle it opens, so
+    // the observable check is "did they train during the period just
+    // billed?". The enrollment's FIRST invoice is exempt — there is no
+    // previous period, and the dojo chose to enroll the member.
+    const gated = enrollment.plan.chargeOnlyWithAttendance;
+    const lastInvoice = await prisma.invoice.findFirst({
+      where: { enrollmentId: enrollment.id },
+      orderBy: { issueDate: "desc" },
+      select: { issueDate: true },
+    });
+    let previousIssueDate = lastInvoice?.issueDate ?? null;
+
     while (cycleDate <= today && iterations < MAX_CATCH_UP_INVOICES) {
+      if (gated && previousIssueDate !== null) {
+        const attended = await prisma.attendance.count({
+          where: {
+            studentId: enrollment.studentId,
+            status: {
+              in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
+            },
+            session: { date: { gte: previousIssueDate, lt: cycleDate } },
+          },
+        });
+        if (attended === 0) {
+          // No attendance since the last invoice — skip the charge, but
+          // keep the cycle moving so a later training still bills.
+          skippedCycles++;
+          cycleDate = advanceBillingDate(cycleDate, period);
+          iterations++;
+          continue;
+        }
+      }
+
       const number = await nextInvoiceNumber();
       await prisma.invoice.create({
         data: {
@@ -528,6 +572,7 @@ export async function generateDueInvoices(
         },
       });
       generated++;
+      previousIssueDate = cycleDate;
       cycleDate = advanceBillingDate(cycleDate, period);
       iterations++;
     }
@@ -536,6 +581,12 @@ export async function generateDueInvoices(
       where: { id: enrollment.id },
       data: { nextInvoiceDate: cycleDate },
     });
+  }
+
+  if (skippedCycles > 0) {
+    console.log(
+      `[cron] skipped ${skippedCycles} invoice cycle(s) — attendance-gated plans without trained sessions`,
+    );
   }
 
   return generated;

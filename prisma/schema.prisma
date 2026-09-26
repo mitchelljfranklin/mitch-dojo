@@ -572,6 +572,10 @@ model MembershipPlan {
   billingPeriod BillingPeriod?
   priceCents    Int
   isActive      Boolean        @default(true)
+  // When true, recurring invoices are generated only if the member has at
+  // least one trained session (Present/Late) since the previous invoice.
+  // The enrollment's first invoice always bills (in-advance billing).
+  chargeOnlyWithAttendance Boolean @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

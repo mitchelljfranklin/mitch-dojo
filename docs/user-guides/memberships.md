@@ -6,6 +6,15 @@ Plans, enrollments, invoices, and manual payment recording. Online gateways (Str
 
 A **plan** defines a recurring membership — name, price, and billing period (e.g. "Kids monthly — $95/month"). Students **enroll** in a plan from their record; the enrollment drives invoice generation.
 
+### Charge only with attendance
+
+Some plans bill whether the member trains or not; others should only charge when the member actually turned up. The plan's **Charge only with attendance** checkbox (edit the plan) makes recurring invoices **attendance-gated**:
+
+- Each cycle, the invoice generates only if the member has at least one **trained session** (Present or Late) since the previous invoice.
+- No attendance → the cycle is **skipped, not charged** — and billing simply resumes at the next cycle date once they train again.
+- The **first invoice** after enrolling always bills (the dojo chose to enroll them; there's no previous period to check).
+- Plans with the flag show an **Attendance-gated** badge on the plans table.
+
 ## Invoices
 
 Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry in the sidebar's Management group. With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:

@@ -103,7 +103,15 @@ export default async function MembershipsPage({
                 {plans.map((plan) => (
                   <TableRow key={plan.id}>
                     <TableCell>
-                      <div className="font-medium">{plan.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{plan.name}</span>
+                        {plan.planType === "RECURRING" &&
+                        plan.chargeOnlyWithAttendance ? (
+                          <Badge variant="outline" className="text-xs">
+                            Attendance-gated
+                          </Badge>
+                        ) : null}
+                      </div>
                       {plan.description ? (
                         <div className="text-muted-foreground max-w-md truncate text-xs">
                           {plan.description}
@@ -140,6 +148,8 @@ export default async function MembershipsPage({
                               billingPeriod: plan.billingPeriod,
                               price: (plan.priceCents / 100).toFixed(2),
                               isActive: plan.isActive,
+                              chargeOnlyWithAttendance:
+                                plan.chargeOnlyWithAttendance,
                             }}
                           />
                           <form

@@ -459,6 +459,175 @@ describe.skipIf(!hasTestDatabase)("recurring invoice generation", () => {
   });
 });
 
+describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
+  let locationId: string;
+  let courseId: string;
+  let gatedPlanId: string;
+  let gatedStudentId: string;
+
+  beforeAll(async () => {
+    const location = await createLocation({
+      name: `Gated Dojo ${suffix}`,
+      address: null,
+      phone: null,
+      email: null,
+      isActive: true,
+      sortOrder: 80,
+    });
+    locationId = location.id;
+    const discipline = await prisma.discipline.create({
+      data: { name: `Gated Karate ${suffix}` },
+    });
+    const course = await prisma.course.create({
+      data: {
+        name: `Gated Course ${suffix}`,
+        locationId,
+        disciplineId: discipline.id,
+      },
+    });
+    courseId = course.id;
+    gatedStudentId = await createStudent({
+      firstName: "Gated",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [],
+    });
+    const gatedPlan = await createMembershipPlan({
+      name: `Train-to-Bill ${suffix}`,
+      description: null,
+      planType: "RECURRING",
+      billingPeriod: "MONTHLY",
+      priceCents: 5000,
+      chargeOnlyWithAttendance: true,
+    });
+    gatedPlanId = gatedPlan.id;
+  });
+
+  afterAll(async () => {
+    if (!hasTestDatabase) return;
+    await prisma.attendance.deleteMany({ where: { session: { courseId } } });
+    await prisma.classSession.deleteMany({ where: { courseId } });
+    await prisma.course
+      .delete({ where: { id: courseId } })
+      .catch(() => undefined);
+    await prisma.discipline
+      .delete({ where: { name: `Gated Karate ${suffix}` } })
+      .catch(() => undefined);
+    await deleteLocation(locationId).catch(() => undefined);
+    if (gatedStudentId) {
+      await deleteStudent(gatedStudentId).catch(() => undefined);
+    }
+  });
+
+  it("bills the first cycle, gates the second on attendance", async () => {
+    await enrollStudent({
+      studentId: gatedStudentId,
+      planId: gatedPlanId,
+      startDate: daysFromNow(-40),
+    });
+    // Force the cycle into the past: one missed month with NO attendance.
+    await prisma.enrollment.updateMany({
+      where: { planId: gatedPlanId, status: "ACTIVE" },
+      data: { nextInvoiceDate: daysFromNow(-40) },
+    });
+
+    // First cycle: exempt (no previous invoice).
+    let generated = await generateDueInvoices(new Date(), 14);
+    expect(generated).toBeGreaterThanOrEqual(1);
+
+    const enrollment = await prisma.enrollment.findFirst({
+      where: { planId: gatedPlanId, studentId: gatedStudentId },
+    });
+    const firstInvoice = await prisma.invoice.findFirst({
+      where: { enrollmentId: enrollment!.id },
+      orderBy: { issueDate: "asc" },
+    });
+    expect(firstInvoice).not.toBeNull();
+
+    // Second cycle arrives with NO attendance since the first invoice —
+    // the run must generate nothing further and still advance the cycle.
+    await prisma.enrollment.update({
+      where: { id: enrollment!.id },
+      data: { nextInvoiceDate: daysFromNow(-10) },
+    });
+    generated = await generateDueInvoices(new Date(), 14);
+    const invoicesAfterSkip = await prisma.invoice.findMany({
+      where: { enrollmentId: enrollment!.id },
+    });
+    expect(generated).toBe(0);
+    expect(invoicesAfterSkip).toHaveLength(1);
+
+    // Training once since the last invoice bills the next cycle. The skip
+    // advanced nextInvoiceDate to the following cycle — force it due again
+    // to run that cycle now.
+    await recordAttendanceForGate();
+    await prisma.enrollment.update({
+      where: { id: enrollment!.id },
+      data: { nextInvoiceDate: daysFromNow(-3) },
+    });
+    await generateDueInvoices(new Date(), 14);
+    const invoicesAfterAttendance = await prisma.invoice.findMany({
+      where: { enrollmentId: enrollment!.id },
+    });
+    expect(invoicesAfterAttendance.length).toBe(2);
+  });
+
+  async function recordAttendanceForGate() {
+    const session = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: daysFromNow(-5),
+        startTime: "19:00",
+        endTime: "20:00",
+      },
+    });
+    await prisma.attendance.create({
+      data: {
+        sessionId: session.id,
+        studentId: gatedStudentId,
+        status: "LATE",
+      },
+    });
+  }
+
+  it("keeps charging ungated plans regardless of attendance", async () => {
+    // The recurringPlanId enrollment (non-gated) bills even with zero
+    // attendance — covered by the existing generation test; assert the
+    // flag itself is stored as configured.
+    const plan = await prisma.membershipPlan.findUnique({
+      where: { id: recurringPlanId! },
+      select: { chargeOnlyWithAttendance: true },
+    });
+    expect(plan?.chargeOnlyWithAttendance).toBe(false);
+    const gated = await prisma.membershipPlan.findUnique({
+      where: { id: gatedPlanId },
+      select: { chargeOnlyWithAttendance: true },
+    });
+    expect(gated?.chargeOnlyWithAttendance).toBe(true);
+  });
+});
+
 describe("billing date math", () => {
   it("advances monthly across month boundaries", () => {
     const next = advanceBillingDate(new Date(Date.UTC(2026, 0, 31)), "MONTHLY");

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,6 +38,7 @@ type PlanFormValues = {
   billingPeriod: "WEEKLY" | "MONTHLY" | "QUARTERLY" | "YEARLY" | null;
   price: string;
   isActive: boolean;
+  chargeOnlyWithAttendance: boolean;
 };
 
 type PlanFormSheetProps =
@@ -133,23 +135,41 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
               </Select>
             </div>
             {planType === "RECURRING" ? (
-              <div className="grid gap-2">
-                <Label htmlFor="plan-billing-period">Billing period</Label>
-                <Select
-                  name="billingPeriod"
-                  defaultValue={plan?.billingPeriod ?? "MONTHLY"}
-                >
-                  <SelectTrigger id="plan-billing-period">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="WEEKLY">Weekly</SelectItem>
-                    <SelectItem value="MONTHLY">Monthly</SelectItem>
-                    <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                    <SelectItem value="YEARLY">Yearly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="plan-billing-period">Billing period</Label>
+                  <Select
+                    name="billingPeriod"
+                    defaultValue={plan?.billingPeriod ?? "MONTHLY"}
+                  >
+                    <SelectTrigger id="plan-billing-period">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="WEEKLY">Weekly</SelectItem>
+                      <SelectItem value="MONTHLY">Monthly</SelectItem>
+                      <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                      <SelectItem value="YEARLY">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <label className="flex flex-col gap-2 rounded-md border p-3 text-sm">
+                  <span className="flex items-center gap-2">
+                    <Checkbox
+                      name="chargeOnlyWithAttendance"
+                      defaultChecked={plan?.chargeOnlyWithAttendance ?? false}
+                    />
+                    <span className="font-medium">
+                      Charge only with attendance
+                    </span>
+                  </span>
+                  <span className="text-muted-foreground block text-xs">
+                    Generate the recurring invoice only when the member has at
+                    least one trained session since the previous invoice. The
+                    first invoice after enrolling always bills.
+                  </span>
+                </label>
+              </>
             ) : null}
             <div className="grid gap-2">
               <Label htmlFor="plan-price">Price ({currency})</Label>

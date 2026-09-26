@@ -49,6 +49,9 @@ export const membershipPlanSchema = z
     planType: z.enum(["RECURRING", "ITEM"]),
     billingPeriod: z.enum(BILLING_PERIODS).optional(),
     price: priceInputSchema,
+    // Recurring invoices generate only when the member trained since the
+    // last invoice (unchecked = charge every cycle regardless).
+    chargeOnlyWithAttendance: z.boolean().default(false),
   })
   .refine(
     (plan) => plan.planType === "ITEM" || plan.billingPeriod !== undefined,

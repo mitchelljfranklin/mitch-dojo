@@ -47,6 +47,8 @@ function parsePlanInput(formData: FormData) {
     planType: getField(formData, "planType") ?? "RECURRING",
     billingPeriod: getField(formData, "billingPeriod") || undefined,
     price: getField(formData, "price"),
+    chargeOnlyWithAttendance:
+      getField(formData, "chargeOnlyWithAttendance") === "on",
   });
 }
 
@@ -73,6 +75,7 @@ export async function createMembershipPlanAction(
           ? (parsed.data.billingPeriod ?? null)
           : null,
       priceCents: parsed.data.price,
+      chargeOnlyWithAttendance: parsed.data.chargeOnlyWithAttendance,
     });
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
@@ -117,6 +120,7 @@ export async function updateMembershipPlanAction(
           ? (parsed.data.billingPeriod ?? null)
           : null,
       priceCents: parsed.data.price,
+      chargeOnlyWithAttendance: parsed.data.chargeOnlyWithAttendance,
     });
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
