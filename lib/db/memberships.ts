@@ -499,12 +499,19 @@ export async function deletePayment(paymentId: string): Promise<void> {
 export async function voidInvoice(invoiceId: string): Promise<void> {
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
-    select: { status: true },
+    select: { status: true, _count: { select: { payments: true } } },
   });
   if (!invoice) throw new Error("Invoice not found.");
   if (invoice.status === "PAID") {
     throw new Error(
       "A paid invoice cannot be voided — delete its payments first.",
+    );
+  }
+  // A voided invoice keeps its payments (and they still count as revenue)
+  // with no in-app way to correct it, so require clearing payments first.
+  if (invoice._count.payments > 0) {
+    throw new Error(
+      "This invoice has payments recorded — delete them before voiding.",
     );
   }
   await prisma.invoice.update({
@@ -695,7 +702,7 @@ export async function getStudentSuspension(
   const { suspendAfterOverdueDays } = await getMembershipsSettings();
   const today = startOfToday(now);
 
-  const invoice = await prisma.invoice.findFirst({
+  const overdueInvoices = await prisma.invoice.findMany({
     where: { studentId, status: "OPEN", dueDate: { lt: today } },
     include: {
       items: { select: { quantity: true, unitPriceCents: true } },
@@ -704,7 +711,14 @@ export async function getStudentSuspension(
     orderBy: { dueDate: "asc" },
   });
 
-  if (!invoice) {
+  // Judge suspension from every overdue invoice that still has a balance: a
+  // single zero-balance OPEN row (e.g. a $0 plan that never flips to PAID)
+  // must not mask genuinely unpaid later invoices.
+  const oldestUnpaid = overdueInvoices.find(
+    (invoice) => computeInvoiceFinancials(invoice).balanceCents > 0,
+  );
+
+  if (!oldestUnpaid) {
     return {
       suspended: false,
       daysOverdue: 0,
@@ -713,15 +727,12 @@ export async function getStudentSuspension(
   }
 
   const daysOverdue = Math.floor(
-    (today.getTime() - invoice.dueDate.getTime()) / 86_400_000,
+    (today.getTime() - oldestUnpaid.dueDate.getTime()) / 86_400_000,
   );
-  const hasBalance = computeInvoiceFinancials(invoice).balanceCents > 0;
 
   return {
     suspended:
-      hasBalance &&
-      suspendAfterOverdueDays > 0 &&
-      daysOverdue >= suspendAfterOverdueDays,
+      suspendAfterOverdueDays > 0 && daysOverdue >= suspendAfterOverdueDays,
     daysOverdue,
     suspendAfterDays: suspendAfterOverdueDays,
   };

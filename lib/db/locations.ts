@@ -42,7 +42,9 @@ export async function updateLocation(
 export async function deleteLocation(id: string): Promise<void> {
   const location = await prisma.location.findUnique({
     where: { id },
-    include: { _count: { select: { studentLocations: true } } },
+    include: {
+      _count: { select: { studentLocations: true, courses: true } },
+    },
   });
   if (!location) {
     throw new Error("Location not found.");
@@ -50,6 +52,13 @@ export async function deleteLocation(id: string): Promise<void> {
   if (location._count.studentLocations > 0) {
     throw new Error(
       "This location has students assigned. Deactivate it instead of deleting.",
+    );
+  }
+  // Courses (and their sessions) reference the location with Restrict, so a
+  // delete would fail with a raw FK error — guard it with the same advice.
+  if (location._count.courses > 0) {
+    throw new Error(
+      "This location has courses assigned. Deactivate it instead of deleting.",
     );
   }
 

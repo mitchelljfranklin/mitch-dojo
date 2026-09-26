@@ -311,7 +311,15 @@ export async function deleteStudent(studentId: string): Promise<void> {
     select: { storageKey: true },
   });
 
-  await prisma.student.delete({ where: { id: studentId } });
+  // Attachment rows are polymorphic (no FK), so they must be deleted
+  // explicitly — otherwise they survive with a dangling entityId and keep
+  // their storageKey in the orphan sweep's referenced set forever.
+  await prisma.$transaction(async (tx) => {
+    await tx.attachment.deleteMany({
+      where: { entityType: "Student", entityId: studentId },
+    });
+    await tx.student.delete({ where: { id: studentId } });
+  });
 
   const keys = [
     ...(student?.photoKey ? [student.photoKey] : []),

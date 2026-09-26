@@ -285,6 +285,52 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
     expect(disciplineLinks).toHaveLength(0);
   });
 
+  it("deletes a student's attachment rows (no dangling polymorphic rows)", async () => {
+    const studentId = await createStudent({
+      firstName: "Attached",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "TRIAL",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+    await db.attachment.create({
+      data: {
+        entityType: "Student",
+        entityId: studentId,
+        fileName: "waiver.pdf",
+        storageKey: `test-attachment-${suffix}.pdf`,
+        mimeType: "application/pdf",
+        sizeBytes: 10,
+      },
+    });
+
+    await deleteStudent(studentId);
+
+    const rows = await db.attachment.findMany({
+      where: { entityType: "Student", entityId: studentId },
+    });
+    expect(rows).toHaveLength(0);
+  });
+
   it("stores discipline links on create and replaces them on update", async () => {
     const studentId = await createStudent({
       firstName: "Multi",

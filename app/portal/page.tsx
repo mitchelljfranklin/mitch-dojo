@@ -120,7 +120,17 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
   }
 
   const fullName = `${student.firstName} ${student.lastName}`;
-  const currentBelts = student.belts.slice(0, student.disciplines.length);
+  // One current belt per discipline: belts are ordered newest-first, so the
+  // first award seen for each discipline is that discipline's current rank
+  // (slicing the first N rows showed two belts from one art otherwise).
+  const currentBelts: typeof student.belts = [];
+  const seenDisciplines = new Set<string>();
+  for (const belt of student.belts) {
+    const key = belt.beltRangeEntry?.disciplineId ?? "unknown";
+    if (seenDisciplines.has(key)) continue;
+    seenDisciplines.add(key);
+    currentBelts.push(belt);
+  }
 
   return (
     <PortalShell>

@@ -194,24 +194,32 @@ export async function getDisciplineProgress(disciplineId: string): Promise<{
     return next[0] ?? null;
   }
 
+  // One grouped count for the whole roster instead of a query per student.
+  const attendanceCounts =
+    courseIds.length > 0
+      ? await prisma.attendance.groupBy({
+          by: ["studentId"],
+          where: {
+            studentId: { in: students.map((student) => student.id) },
+            status: {
+              in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
+            },
+            session: { courseId: { in: courseIds } },
+          },
+          _count: { _all: true },
+        })
+      : [];
+  const attendanceByStudent = new Map(
+    attendanceCounts.map((row) => [row.studentId, row._count._all]),
+  );
+
   const rows: ProgressRow[] = [];
   for (const student of students) {
     const currentRecord = currentByStudent.get(student.id) ?? null;
     const trainingsCredit = student.disciplines[0]?.trainingsCredit ?? 0;
 
     const trainingsTotal =
-      trainingsCredit +
-      (courseIds.length > 0
-        ? await prisma.attendance.count({
-            where: {
-              studentId: student.id,
-              status: {
-                in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
-              },
-              session: { courseId: { in: courseIds } },
-            },
-          })
-        : 0);
+      trainingsCredit + (attendanceByStudent.get(student.id) ?? 0);
 
     const currentBelt = currentRecord
       ? (belts.find((belt) => belt.id === currentRecord.beltRangeEntryId) ??
@@ -400,7 +408,68 @@ export async function recordPromotion(input: {
 }
 
 export async function deletePromotion(promotionId: string): Promise<void> {
-  await prisma.studentBelt.delete({ where: { id: promotionId } });
+  const promotion = await prisma.studentBelt.findUnique({
+    where: { id: promotionId },
+    select: {
+      studentId: true,
+      beltRangeEntry: { select: { disciplineId: true } },
+    },
+  });
+  if (!promotion) return;
+  const disciplineId = promotion.beltRangeEntry?.disciplineId ?? null;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.studentBelt.delete({ where: { id: promotionId } });
+    if (!disciplineId) return;
+
+    // Recompute the carry-in credit so it still covers the highest remaining
+    // rank (0 when none remain). Deleting an override promotion must not
+    // leave the synthetic credit behind, which would overstate eligibility.
+    const remaining = await tx.studentBelt.findFirst({
+      where: {
+        studentId: promotion.studentId,
+        beltRangeEntry: { disciplineId },
+      },
+      orderBy: { beltRangeEntry: { order: "desc" } },
+      select: { beltRangeEntry: { select: { requiredTrainings: true } } },
+    });
+
+    if (!remaining?.beltRangeEntry) {
+      await tx.studentDiscipline.updateMany({
+        where: { studentId: promotion.studentId, disciplineId },
+        data: { trainingsCredit: 0 },
+      });
+      return;
+    }
+
+    const courseIds = (
+      await tx.course.findMany({
+        where: { disciplineId },
+        select: { id: true },
+      })
+    ).map((course) => course.id);
+    const attendance =
+      courseIds.length > 0
+        ? await tx.attendance.count({
+            where: {
+              studentId: promotion.studentId,
+              status: {
+                in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
+              },
+              session: { courseId: { in: courseIds } },
+            },
+          })
+        : 0;
+
+    const credit = Math.max(
+      0,
+      remaining.beltRangeEntry.requiredTrainings - attendance,
+    );
+    await tx.studentDiscipline.updateMany({
+      where: { studentId: promotion.studentId, disciplineId },
+      data: { trainingsCredit: credit },
+    });
+  });
 }
 
 // --------------- eligibility gate ---------------

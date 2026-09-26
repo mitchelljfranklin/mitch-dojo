@@ -52,7 +52,8 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
         <CardHeader>
           <CardTitle>Course details</CardTitle>
           <CardDescription>
-            Updating training times does not alter already-generated sessions.
+            Updating training times regenerates upcoming sessions from the new
+            slots; sessions that already have attendance are kept.
           </CardDescription>
         </CardHeader>
         <CardContent>

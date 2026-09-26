@@ -64,7 +64,7 @@ export async function sendPortalLinkAction(
       expiryDays: String(expiryDays),
       appName,
     },
-    { sentById: user.id },
+    { sentById: user.id, assessmentId: `portal-link:${studentId}` },
   );
 
   await logAudit(

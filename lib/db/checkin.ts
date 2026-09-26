@@ -129,6 +129,8 @@ export async function checkInStudent(
     select: { locationId: true, status: true, date: true },
   });
   if (!session || session.locationId !== locationId) return "not_found";
+  // A cancelled session isn't held — refuse a stale form or crafted POST.
+  if (session.status !== "SCHEDULED") return "not_found";
 
   const today = utcMidnightOf(new Date());
   if (session.date.getTime() !== today.getTime()) return "not_found";

@@ -335,6 +335,20 @@ export async function deleteAttachmentAction(formData: FormData) {
   await prisma.attachment.delete({ where: { id: attachmentId } });
   await storage.delete(attachment.storageKey).catch(() => undefined);
 
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_STUDENT,
+      "Student",
+      studentId,
+      {
+        attachmentId,
+        removed: attachment.storageKey,
+      },
+    );
+  }
+
   revalidatePath(`/students/${studentId}`);
 }
 
@@ -392,6 +406,13 @@ export async function importStudentsAction(
       guardianName: raw.guardianname ?? raw.guardianName ?? "",
       guardianEmail: raw.guardianemail ?? raw.guardianEmail ?? "",
       guardianPhone: raw.guardianphone ?? raw.guardianPhone ?? "",
+      guardianRelationship:
+        raw.guardianrelationship ?? raw.guardianRelationship ?? "",
+      addressLine: raw.addressline ?? raw.addressLine ?? "",
+      city: raw.city ?? "",
+      state: raw.state ?? "",
+      postcode: raw.postcode ?? "",
+      country: raw.country ?? "",
       status: raw.status ?? "",
       notes: raw.notes ?? "",
       locations: raw.locations ?? "",

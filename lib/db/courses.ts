@@ -142,11 +142,26 @@ export async function updateCourse(
 ): Promise<void> {
   const { trainingTimes, ...fields } = input;
 
+  // Local calendar day (matching how ClassSession.date is generated).
+  const now = new Date();
+  const today = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+  );
+
   await prisma.$transaction(async (tx) => {
     await tx.course.update({ where: { id: courseId }, data: fields });
-    // Weekly slots are replaced wholesale; generated ClassSession rows are
-    // NOT touched — they keep their own location copy and attendance later.
+    // Weekly slots are replaced wholesale. Future sessions that have no
+    // attendance are regenerated from the new slots (they would otherwise
+    // linger at the old time/location for up to two weeks); sessions with
+    // recorded attendance are preserved so history never moves.
     await tx.trainingTime.deleteMany({ where: { courseId } });
+    await tx.classSession.deleteMany({
+      where: {
+        courseId,
+        date: { gte: today },
+        attendance: { none: {} },
+      },
+    });
     if (trainingTimes.length > 0) {
       await tx.trainingTime.createMany({
         data: trainingTimes.map((slot) => ({

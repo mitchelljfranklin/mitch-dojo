@@ -333,6 +333,38 @@ describe.skipIf(!hasTestDatabase)("invoice lifecycle", () => {
     ).rejects.toThrow("void");
   });
 
+  it("refuses to void an invoice that has payments recorded", async () => {
+    const plan = await prisma.membershipPlan.findUnique({
+      where: { id: itemPlanId! },
+    });
+    const invoice = await prisma.invoice.create({
+      data: {
+        number: 800_000 + Math.floor(Math.random() * 90_000),
+        studentId: studentId!,
+        status: "OPEN",
+        issueDate: daysFromNow(-10),
+        dueDate: daysFromNow(4),
+        items: {
+          create: {
+            description: plan?.name ?? "test",
+            quantity: 1,
+            unitPriceCents: 4000,
+          },
+        },
+      },
+    });
+    await recordPayment({
+      invoiceId: invoice.id,
+      amountCents: 1000,
+      method: "CASH",
+      paidAt: daysFromNow(0),
+      reference: null,
+      recordedById: null,
+    });
+
+    await expect(voidInvoice(invoice.id)).rejects.toThrow("payments");
+  });
+
   it("filters the invoice list by overdue status", async () => {
     // Recreate an open, long-overdue invoice directly.
     const plan = await prisma.membershipPlan.findUnique({

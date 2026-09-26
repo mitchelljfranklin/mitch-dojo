@@ -9,6 +9,7 @@ import {
   checkPromotionEligibility,
   createBeltRangeEntry,
   deleteBeltRangeEntry,
+  deletePromotion,
   getDisciplineProgress,
   recordPromotion,
   updateBeltRangeEntry,
@@ -565,6 +566,101 @@ describe.skipIf(!hasTestDatabase)("first-belt trainings credit", () => {
     } finally {
       await prisma.studentBelt.deleteMany({ where: { studentId: floorId } });
       await deleteStudent(floorId).catch(() => undefined);
+    }
+  });
+
+  it("recomputes the trainings credit when a promotion is deleted", async () => {
+    const studentId = await createStudent({
+      firstName: "Undo",
+      lastName: `Kid${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [disciplineId!],
+    });
+
+    const purple = await createBeltRangeEntry(disciplineId!, {
+      name: "Purple",
+      colorHex: "#800080",
+      order: 3,
+      requiredTrainings: 30,
+    });
+
+    try {
+      await recordPromotion({
+        studentId,
+        beltRangeEntryId: whiteBeltId!,
+        awardedAt: new Date("2026-01-10"),
+        notes: null,
+        awardedById: null,
+      });
+      // Jump to Purple (req 30): credit tops up to 30.
+      await recordPromotion({
+        studentId,
+        beltRangeEntryId: purple.id,
+        awardedAt: new Date("2026-05-01"),
+        notes: "jump",
+        awardedById: null,
+      });
+      const creditAfterJump = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: { studentId, disciplineId: disciplineId! },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(creditAfterJump?.trainingsCredit).toBe(30);
+
+      // Deleting the Purple promotion must not leave the synthetic credit:
+      // recomputed to cover the highest remaining rank.
+      const purplePromotion = await prisma.studentBelt.findFirst({
+        where: { studentId, beltName: "Purple" },
+      });
+      await deletePromotion(purplePromotion!.id);
+
+      const remainingHighest = await prisma.studentBelt.findFirst({
+        where: {
+          studentId,
+          beltRangeEntry: { disciplineId: disciplineId! },
+        },
+        orderBy: { beltRangeEntry: { order: "desc" } },
+        select: { beltRangeEntry: { select: { requiredTrainings: true } } },
+      });
+      const expectedCredit =
+        remainingHighest?.beltRangeEntry?.requiredTrainings ?? 0;
+
+      const creditAfterDelete = await prisma.studentDiscipline.findUnique({
+        where: {
+          studentId_disciplineId: { studentId, disciplineId: disciplineId! },
+        },
+        select: { trainingsCredit: true },
+      });
+      expect(creditAfterDelete?.trainingsCredit).toBe(expectedCredit);
+      // And it actually dropped from the deleted belt's requirement.
+      expect(creditAfterDelete?.trainingsCredit).toBeLessThan(30);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId } });
+      await prisma.beltRangeEntry
+        .delete({ where: { id: purple.id } })
+        .catch(() => undefined);
+      await deleteStudent(studentId).catch(() => undefined);
     }
   });
 });

@@ -92,6 +92,9 @@ export async function getPortalStudent(studentId: string) {
           beltName: true,
           colorHex: true,
           awardedAt: true,
+          // Used to keep one "current" belt per discipline (a member training
+          // several arts has a latest award in each).
+          beltRangeEntry: { select: { disciplineId: true } },
         },
       },
     },
