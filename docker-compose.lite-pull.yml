@@ -20,6 +20,11 @@ services:
       APP_URL: http://localhost:3000
       DATA_STORAGE_PATH: /app/.storage/files
       TRUSTED_PROXY_COUNT: 0
+      # The dojo's time zone — check-in ("today's classes"), reminders,
+      # analytics, and the schedule all key off the server's local day.
+      # Set this to your IANA zone; the default here is Brisbane (UTC+10,
+      # no daylight saving).
+      TZ: Australia/Brisbane
       # Pre-migration database backups (kept: last 3) land here so they
       # survive container rebuilds. See docs/deployment for the restore steps.
       PGLITE_BACKUP_DIR: /app/.data/backups

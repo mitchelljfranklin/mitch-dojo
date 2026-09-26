@@ -90,8 +90,20 @@ All values live inline in the compose file (edit `docker-compose.yml` or
 | `APP_URL` | `http://localhost:3000` | Public base URL (used in emails and public pages) |
 | `DATA_STORAGE_PATH` | `/app/.storage/files` | File storage root |
 | `TRUSTED_PROXY_COUNT` | `0` | Proxy hops for client-IP resolution |
+| `TZ` | `Australia/Brisbane` | The dojo's IANA time zone — see the note below |
 
 > **Change the three `change-me` secrets before exposing the app publicly.**
 > The container refuses to start if `CRON_SECRET` is shorter than 32 characters.
+
+## Time zone
+
+The container's `TZ` **must match the dojo's time zone** — there is no in-app
+timezone setting. Check-in ("today's classes"), session generation, the
+attendance browser's default window, analytics day buckets, trial follow-up
+windows, and reminder timing all key off the **server's local day**. With the
+default UTC container timezone, a dojo east of UTC would see "No classes
+today" on the check-in page for any class starting before the UTC day rolls
+over (10am for UTC+10). Set `TZ` to your IANA zone (e.g. `Australia/Sydney`,
+`Europe/London`, `America/New_York`) and recreate the container.
 
 Health check: `GET /api/health` returns `200 {"status":"ok"}`.

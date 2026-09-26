@@ -48,4 +48,5 @@ docker compose -f docker-compose.lite.yml up -d
 - **PGlite is real PostgreSQL** — enums, JSON, and array columns behave exactly as in server mode. The schema never forks between modes; switching is a single environment variable.
 - **No TCP access to the database** — pgAdmin/BI tools can't connect directly. Backups are stop-copy-start of the data directory (see [Backups](./backups)).
 - **Single connection** — queries run serially. That's fine for a single dojo; the platform is sized for it.
+- **Set `TZ` to the dojo's time zone** (the compose files default to `Australia/Brisbane`) — there is no in-app timezone setting, and check-in, reminders, and analytics all key off the server's local day. See the [time zone note](./docker#time-zone).
 - Full dual-mode details: [Dual-Mode Database](../advanced/dual-mode-database).

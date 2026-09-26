@@ -44,6 +44,11 @@ services:
       APP_URL: http://localhost:3000
       DATA_STORAGE_PATH: /app/.storage/files
       TRUSTED_PROXY_COUNT: 0
+      # The dojo's time zone — check-in ("today's classes"), reminders,
+      # analytics, and the schedule all key off the server's local day.
+      # Set this to your IANA zone; the default here is Brisbane (UTC+10,
+      # no daylight saving).
+      TZ: Australia/Brisbane
     # For local development the app port is exposed to the host. For
     # production behind a reverse proxy (Caddy/nginx), either remove this
     # port mapping or switch to an internal-only network so the app port

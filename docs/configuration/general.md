@@ -14,4 +14,8 @@ Organization identity — the name everything else picks up.
 
 Change the organization name here and it propagates everywhere: sidebar, browser titles, the [booking page](../user-guides/trials), the [member portal](../user-guides/member-portal), check-in screens, and every email via the `{{appName}}` token. One place, no hunting.
 
+::: note There is no in-app time zone setting
+The dojo's time zone comes from the deployment container's `TZ` environment variable (the compose files default to `Australia/Brisbane`). Check-in, reminders, and analytics all key off the server's local day — see the [deployment time zone note](../deployment/docker#time-zone).
+:::
+
 Requires `settings:manage`. Changes are audited.
