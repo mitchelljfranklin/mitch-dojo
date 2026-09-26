@@ -11,8 +11,8 @@ import {
 } from "@/lib/schemas/attendance";
 
 // Replaces the full attendance sheet for one session in a transaction.
-// source/markedBy describe who marked it; CHECKIN entries keep their origin
-// when later overwritten by staff.
+// source/markedBy describe who marked it; a staff save stamps the row MANUAL
+// (a QR CHECKIN row it overwrote is no longer a pure check-in).
 export async function setSessionAttendance(
   sessionId: string,
   entries: AttendanceEntryInput[],

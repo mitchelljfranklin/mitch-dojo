@@ -50,8 +50,9 @@ export async function createLocationAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
+  let location;
   try {
-    await createLocation(parsed.data);
+    location = await createLocation(parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
       return { error: "A location with this name already exists." };
@@ -65,7 +66,8 @@ export async function createLocationAction(
       user.id,
       AUDIT_ACTIONS.CREATE_LOCATION,
       "Location",
-      parsed.data.name,
+      location.id,
+      { name: parsed.data.name },
     );
   }
   return { ok: true, message: "Location created." };

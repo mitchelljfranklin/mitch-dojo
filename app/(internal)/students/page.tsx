@@ -40,7 +40,7 @@ export default async function StudentsPage({
 
   const sp = await searchParams;
   const sort = (sp.sort as StudentSort) || "name";
-  const page = sp.page ? parseInt(sp.page, 10) || 1 : 1;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const { students, totalCount, pageSize } = await listStudents({
     query: sp.query,
     status: sp.status || undefined,

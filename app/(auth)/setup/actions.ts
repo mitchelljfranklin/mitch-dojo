@@ -5,6 +5,7 @@ import { AuthError } from "next-auth";
 import { signIn } from "@/lib/auth";
 import { countUsers, createUser } from "@/lib/db/users";
 import { ensureSystemRoles, getRoleByName } from "@/lib/db/roles";
+import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { SYSTEM_ROLE_NAMES } from "@/lib/permissions";
 import { setupAdminSchema } from "@/lib/schemas/auth";
 import { Prisma } from "../../../prisma/generated/prisma/client";
@@ -36,6 +37,9 @@ export async function createInitialAdmin(
 
   try {
     await createUser({ ...parsed.data, roleId: adminRole.id });
+    await logSystemAudit(AUDIT_ACTIONS.CREATE_USER, "User", undefined, {
+      bootstrap: true,
+    });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

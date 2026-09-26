@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 import "@/lib/env";
 import { getClientIp } from "@/lib/client-ip";
-import { logAudit } from "@/lib/db/audit";
+import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { verifyUserCredentials } from "@/lib/db/users";
 import { resolveSsoUser, toSsoProviderKey } from "@/lib/db/sso";
 import { prisma } from "@/lib/prisma";
@@ -218,14 +218,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
           }
           token.id = ssoUser.id;
           token.roleId = ssoUser.roleId;
-          await logAudit(ssoUser.id, "LOGIN");
+          await logAudit(ssoUser.id, AUDIT_ACTIONS.LOGIN);
           return token;
         }
 
         if (user?.id) {
           token.id = user.id;
           token.roleId = user.roleId;
-          await logAudit(user.id, "LOGIN");
+          await logAudit(user.id, AUDIT_ACTIONS.LOGIN);
         }
 
         return token;

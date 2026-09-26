@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/users";
 import { sendEmail } from "@/lib/email/mailer";
 import { env } from "@/lib/env";
+import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { rateLimit } from "@/lib/rate-limit";
 import { forgotPasswordSchema, resetPasswordSchema } from "@/lib/schemas/auth";
 import { getOperationsSettings, getOrganizationSettings } from "@/lib/settings";
@@ -102,5 +103,8 @@ export async function resetPasswordAction(
   }
 
   await resetUserPassword(userId, parsed.data.password);
+  await logAudit(userId, AUDIT_ACTIONS.RESET_PASSWORD, "User", userId, {
+    selfService: true,
+  });
   redirect("/login?reset=1");
 }

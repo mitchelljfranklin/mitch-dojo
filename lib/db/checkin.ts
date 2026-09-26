@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getStudentSuspension } from "@/lib/db/memberships";
+import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 
 // Raw check-in capability token stored per location (like mitch-risk portal
 // links): the QR/link needs to embed the token, so it must be retrievable.
@@ -162,6 +163,14 @@ export async function checkInStudent(
       source: "CHECKIN",
     },
   });
+
+  // Anonymous public writes are auditable like the booking path.
+  await logSystemAudit(
+    AUDIT_ACTIONS.UPDATE_ATTENDANCE,
+    "ClassSession",
+    sessionId,
+    { studentId, source: "CHECKIN" },
+  );
 
   return "ok";
 }

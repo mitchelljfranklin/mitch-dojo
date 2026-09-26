@@ -30,7 +30,7 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
 
   const sp = await searchParams;
   const sort = (sp.sort as CourseSort) || "name";
-  const page = sp.page ? parseInt(sp.page, 10) || 1 : 1;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const { courses, totalCount, pageSize } = await listCourses({
     query: sp.query,
     locationId: sp.locationId || undefined,

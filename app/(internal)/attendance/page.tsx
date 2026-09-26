@@ -58,12 +58,11 @@ export default async function AttendancePage({
   const sp = await searchParams;
   const from = sp.from || isoDaysFromToday(DEFAULT_FROM_DAYS);
   const to = sp.to || isoDaysFromToday(DEFAULT_TO_DAYS);
-  const course = sp.course || "";
   const location = sp.location || "";
   const statusInput =
     sp.status === "SCHEDULED" || sp.status === "CANCELLED" ? sp.status : "";
   const statusFilter = statusInput || undefined;
-  const page = sp.page ? parseInt(sp.page, 10) || 1 : 1;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
   // The course filter matches the discipline select on the booking page in
   // spirit — here we list courses directly (they are few in a single dojo).
@@ -82,7 +81,6 @@ export default async function AttendancePage({
     page,
     pageSize: PAGE_SIZE,
   });
-  const filtered = result;
 
   return (
     <div className="flex flex-col gap-6">
@@ -173,7 +171,7 @@ export default async function AttendancePage({
             </Link>
           </form>
 
-          {filtered.sessions.length === 0 ? (
+          {result.sessions.length === 0 ? (
             <EmptyState
               icon="sessions"
               title="No sessions in this window"
@@ -198,7 +196,7 @@ export default async function AttendancePage({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.sessions.map((session) => (
+                    {result.sessions.map((session) => (
                       <TableRow key={session.id}>
                         <TableCell className="text-sm font-medium">
                           {formatDateUtc(session.date)}
@@ -248,7 +246,7 @@ export default async function AttendancePage({
               <Pagination
                 page={page}
                 pageSize={PAGE_SIZE}
-                totalCount={filtered.totalCount}
+                totalCount={result.totalCount}
                 itemLabel="sessions"
               />
             </>

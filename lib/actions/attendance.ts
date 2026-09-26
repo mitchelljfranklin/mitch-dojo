@@ -47,7 +47,10 @@ export async function saveAttendanceAction(
 
   const parsed = attendanceBulkSchema.safeParse({ entries });
   if (!parsed.success) {
-    return { ok: false, message: "Invalid attendance data." };
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Invalid attendance data.",
+    };
   }
 
   await setSessionAttendance(sessionId, parsed.data.entries, user.id);

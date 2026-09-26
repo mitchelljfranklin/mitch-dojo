@@ -25,8 +25,7 @@ export default async function SetupPage() {
       <CardHeader>
         <CardTitle>Create the first admin</CardTitle>
         <CardDescription>
-          Set up the initial administrator account to start managing vendor
-          risk.
+          Set up the initial administrator account to start managing your dojo.
         </CardDescription>
       </CardHeader>
       <CardContent>

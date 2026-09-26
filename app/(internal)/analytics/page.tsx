@@ -124,7 +124,8 @@ export default async function AnalyticsPage({
         />
         <StatCard
           label="Revenue this month"
-          value={Math.round(overview.revenueThisMonthCents / 100)}
+          value={overview.revenueThisMonthCents / 100}
+          decimals={2}
           suffix={currency}
         />
       </div>

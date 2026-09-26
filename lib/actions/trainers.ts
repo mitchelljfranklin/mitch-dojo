@@ -42,8 +42,9 @@ export async function createTrainerAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
+  let trainer;
   try {
-    await createTrainer(parsed.data);
+    trainer = await createTrainer(parsed.data);
   } catch (error: unknown) {
     if (isUniqueError(error)) {
       return { error: "That email or linked account is already in use." };
@@ -57,7 +58,8 @@ export async function createTrainerAction(
       user.id,
       AUDIT_ACTIONS.CREATE_TRAINER,
       "Trainer",
-      parsed.data.name,
+      trainer.id,
+      { name: parsed.data.name },
     );
   }
   // Feeds useActionState — must not revalidatePath (see AGENTS.md); the

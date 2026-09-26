@@ -43,6 +43,8 @@ type StatCardProps = {
   value: number;
   suffix?: string;
   format?: "number" | "percent";
+  // Fraction digits for money-style values (e.g. 2 for currency cents).
+  decimals?: number;
   colorClass?: string;
   trend?: "up" | "down" | "stable";
   sparklineData?: number[];
@@ -53,6 +55,7 @@ export function StatCard({
   value,
   suffix,
   format = "number",
+  decimals = 0,
   colorClass,
   trend,
   sparklineData,
@@ -61,12 +64,13 @@ export function StatCard({
   const trendIcon = TREND_CONFIG[trend ?? ""]?.icon ?? null;
   const trendColor = TREND_CONFIG[trend ?? ""]?.color ?? "";
 
+  const amount = animated.toFixed(decimals);
   const display =
     format === "percent"
-      ? `${animated}%`
+      ? `${amount}%`
       : suffix
-        ? `${animated} ${suffix}`
-        : String(animated);
+        ? `${amount} ${suffix}`
+        : amount;
 
   return (
     <Card>
