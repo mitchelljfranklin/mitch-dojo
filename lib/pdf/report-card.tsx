@@ -1,6 +1,6 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 
-import { formatDate, formatMoney } from "@/lib/utils";
+import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
 
@@ -97,7 +97,7 @@ export function ReportCardPdfDocument({
               <Text
                 style={[pdfStyles.muted, { width: 90, textAlign: "right" }]}
               >
-                since {formatDate(belt.awardedAt)}
+                since {formatDateUtc(belt.awardedAt)}
               </Text>
             </View>
           ))
@@ -138,7 +138,7 @@ export function ReportCardPdfDocument({
                 <Text style={{ flex: 1 }}>{belt.beltName}</Text>
                 <Text style={{ flex: 1 }}>{belt.disciplineName}</Text>
                 <Text style={{ width: 100, textAlign: "right" }}>
-                  {formatDate(belt.awardedAt)}
+                  {formatDateUtc(belt.awardedAt)}
                 </Text>
               </View>
             ))}

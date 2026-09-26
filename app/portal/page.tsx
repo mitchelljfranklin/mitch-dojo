@@ -177,7 +177,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                   />
                   <span className="font-medium">{belt.beltName}</span>
                   <span className="text-muted-foreground text-xs">
-                    since {formatDate(belt.awardedAt)}
+                    since {formatDateUtc(belt.awardedAt)}
                   </span>
                 </div>
               ))

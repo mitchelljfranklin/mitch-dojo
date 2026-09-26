@@ -1,6 +1,6 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 
-import { formatMoney, formatDate } from "@/lib/utils";
+import { formatMoney, formatDate, formatDateUtc } from "@/lib/utils";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
 
@@ -114,7 +114,7 @@ export function InvoicePdfDocument({
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text>
-              Issued: {formatDate(data.issueDate)} · Due:{" "}
+              Issued: {formatDateUtc(data.issueDate)} · Due:{" "}
               {formatDate(data.dueDate)}
             </Text>
             <Text

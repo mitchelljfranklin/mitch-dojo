@@ -14,7 +14,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getSessionRoster } from "@/lib/db/attendance";
-import { formatDate } from "@/lib/utils";
+import { formatDateUtc } from "@/lib/utils";
 import { AttendanceForm } from "@/components/attendance-form";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export default async function SessionAttendancePage({
         segments={[
           { label: "Attendance", href: "/attendance" },
           { label: session.courseName, href: `/classes/${session.courseId}` },
-          { label: formatDate(session.date) },
+          { label: formatDateUtc(session.date) },
         ]}
       />
 

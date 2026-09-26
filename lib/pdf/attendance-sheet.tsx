@@ -1,6 +1,6 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 
-import { formatDate } from "@/lib/utils";
+import { formatDateUtc } from "@/lib/utils";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
 
@@ -71,7 +71,7 @@ export function AttendanceSheetPdfDocument({
 }) {
   return (
     <Document
-      title={`${data.courseName} — attendance ${formatDate(data.date)}`}
+      title={`${data.courseName} — attendance ${formatDateUtc(data.date)}`}
       author={brand.orgName}
     >
       <Page size="A4" style={pdfStyles.page}>
@@ -82,7 +82,7 @@ export function AttendanceSheetPdfDocument({
             Attendance — {data.courseName}
           </Text>
           <Text style={pdfStyles.muted}>
-            {formatDate(data.date)} · {data.startTime}–{data.endTime} ·{" "}
+            {formatDateUtc(data.date)} · {data.startTime}–{data.endTime} ·{" "}
             {data.locationName}
             {data.trainerName ? ` · Trainer: ${data.trainerName}` : ""}
           </Text>
@@ -129,7 +129,7 @@ export function AttendanceSheetPdfDocument({
 
         <Text style={pdfStyles.footer} fixed>
           {brand.orgName} — attendance for {data.courseName} on{" "}
-          {formatDate(data.date)}
+          {formatDateUtc(data.date)}
         </Text>
       </Page>
     </Document>

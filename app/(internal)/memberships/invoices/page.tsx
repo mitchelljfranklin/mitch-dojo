@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import {
 } from "@/lib/db/memberships";
 import { prisma } from "@/lib/prisma";
 import { getMembershipsSettings } from "@/lib/settings";
-import { formatDate, formatMoney } from "@/lib/utils";
+import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -197,7 +197,7 @@ export default async function InvoicesPage({
                         </span>
                       ) : null}
                     </TableCell>
-                    <TableCell>{formatDate(invoice.issueDate)}</TableCell>
+                    <TableCell>{formatDateUtc(invoice.issueDate)}</TableCell>
                     <TableCell>{formatDate(invoice.dueDate)}</TableCell>
                     <TableCell>
                       {invoice.isOverdue ? (

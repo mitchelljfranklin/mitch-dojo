@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isValidIsoDateString } from "@/lib/utils";
+
 export const ATTENDANCE_STATUSES = [
   "PRESENT",
   "LATE",
@@ -40,7 +42,7 @@ const isoDate = z
   .string()
   .trim()
   .min(1, "Date is required")
-  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+  .refine(isValidIsoDateString, {
     message: "Enter a valid date (YYYY-MM-DD)",
   });
 

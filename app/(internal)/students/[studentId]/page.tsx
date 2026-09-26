@@ -42,7 +42,7 @@ import {
   STUDENT_STATUS_LABELS,
   type StudentStatus,
 } from "@/lib/schemas/student";
-import { formatDate, formatMoney } from "@/lib/utils";
+import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 import { EnrollStudentSheet } from "./enroll-student-sheet";
 import { PortalLinkButton } from "./portal-link-button";
@@ -449,7 +449,7 @@ export default async function StudentDetailPage({
                         {enrollment.status === "ACTIVE"
                           ? `Since ${formatDate(enrollment.startDate)}${
                               enrollment.nextInvoiceDate
-                                ? ` · next invoice ${formatDate(enrollment.nextInvoiceDate)}`
+                                ? ` · next invoice ${formatDateUtc(enrollment.nextInvoiceDate)}`
                                 : ""
                             }`
                           : `Ended ${enrollment.endDate ? formatDate(enrollment.endDate) : ""}`}
@@ -533,7 +533,7 @@ export default async function StudentDetailPage({
                         #{invoice.number}
                       </span>
                       <span className="text-muted-foreground text-xs">
-                        Issued {formatDate(invoice.issueDate)}
+                        Issued {formatDateUtc(invoice.issueDate)}
                       </span>
                       <Badge
                         variant={
@@ -602,7 +602,7 @@ export default async function StudentDetailPage({
                   <span className="text-muted-foreground truncate text-xs">
                     {record.beltRangeEntry?.discipline.name ??
                       "Discipline removed"}{" "}
-                    · {formatDate(record.awardedAt)}
+                    · {formatDateUtc(record.awardedAt)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -623,7 +623,7 @@ export default async function StudentDetailPage({
                       />
                       <ConfirmDialog
                         title="Delete promotion record?"
-                        description={`${record.beltName} (${formatDate(record.awardedAt)}) will be permanently removed from ${fullName}'s history.`}
+                        description={`${record.beltName} (${formatDateUtc(record.awardedAt)}) will be permanently removed from ${fullName}'s history.`}
                         confirmLabel="Delete"
                         formId={`delete-promotion-${record.id}`}
                       >
@@ -674,7 +674,7 @@ export default async function StudentDetailPage({
                 <div className="flex min-w-0 flex-col">
                   <span>{row.courseName}</span>
                   <span className="text-muted-foreground text-xs">
-                    {formatDate(row.date)} · {row.locationName}
+                    {formatDateUtc(row.date)} · {row.locationName}
                   </span>
                 </div>
                 <Badge

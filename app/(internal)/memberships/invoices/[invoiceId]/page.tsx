@@ -26,7 +26,7 @@ import {
   PAYMENT_METHOD_LABELS,
   type PaymentMethod,
 } from "@/lib/schemas/membership";
-import { formatDate, formatMoney } from "@/lib/utils";
+import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +85,7 @@ export default async function InvoiceDetailPage({
               </Badge>
             )}
             <span className="text-muted-foreground text-sm">
-              Issued {formatDate(invoice.issueDate)} · Due{" "}
+              Issued {formatDateUtc(invoice.issueDate)} · Due{" "}
               {formatDate(invoice.dueDate)}
             </span>
           </div>

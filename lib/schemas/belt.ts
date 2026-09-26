@@ -1,10 +1,12 @@
 import { z } from "zod";
 
+import { isValidIsoDateString } from "@/lib/utils";
+
 const isoBeltDate = z
   .string()
   .trim()
   .min(1, "Award date is required")
-  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+  .refine(isValidIsoDateString, {
     message: "Enter a valid date (YYYY-MM-DD)",
   });
 

@@ -60,7 +60,8 @@ export async function createTrainerAction(
       parsed.data.name,
     );
   }
-  revalidatePath("/trainers");
+  // Feeds useActionState — must not revalidatePath (see AGENTS.md); the
+  // client refreshes via useActionFeedback.
   return { ok: true, message: "Trainer created." };
 }
 
@@ -89,7 +90,7 @@ export async function updateTrainerAction(
   if (user) {
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_TRAINER, "Trainer", trainerId);
   }
-  revalidatePath("/trainers");
+  // Feeds useActionState — must not revalidatePath (see AGENTS.md).
   return { ok: true, message: "Trainer updated." };
 }
 

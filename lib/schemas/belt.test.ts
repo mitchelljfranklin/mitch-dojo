@@ -93,3 +93,21 @@ describe("promotionSchema", () => {
     expect(negative.success).toBe(false);
   });
 });
+
+describe("promotionSchema date rollover", () => {
+  it("rejects calendar rollovers like 2026-02-31", () => {
+    const result = promotionSchema.safeParse({
+      beltRangeEntryId: "belt-1",
+      awardedAt: "2026-02-31",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a real date", () => {
+    const result = promotionSchema.safeParse({
+      beltRangeEntryId: "belt-1",
+      awardedAt: "2026-02-28",
+    });
+    expect(result.success).toBe(true);
+  });
+});

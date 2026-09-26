@@ -28,7 +28,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { listSessions } from "@/lib/db/sessions";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { listDisciplines } from "@/lib/db/belts";
-import { formatDate } from "@/lib/utils";
+import { formatDateUtc } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -201,7 +201,7 @@ export default async function AttendancePage({
                     {filtered.sessions.map((session) => (
                       <TableRow key={session.id}>
                         <TableCell className="text-sm font-medium">
-                          {formatDate(session.date)}
+                          {formatDateUtc(session.date)}
                         </TableCell>
                         <TableCell className="text-muted-foreground font-mono text-xs">
                           {session.startTime}–{session.endTime}

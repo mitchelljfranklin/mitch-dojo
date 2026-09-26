@@ -23,7 +23,7 @@ import { getCourse } from "@/lib/db/courses";
 import { ensureUpcomingSessions, listSessions } from "@/lib/db/sessions";
 import { getAttendanceCountsBySession } from "@/lib/db/attendance";
 import { WEEKDAY_LABELS } from "@/lib/schemas/course";
-import { formatDate } from "@/lib/utils";
+import { formatDateUtc } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -185,7 +185,7 @@ export default async function CourseDetailPage({
                   >
                     <div className="flex min-w-0 flex-col">
                       <span>
-                        {formatDate(session.date)} ·{" "}
+                        {formatDateUtc(session.date)} ·{" "}
                         <span className="font-mono text-xs">
                           {session.startTime}–{session.endTime}
                         </span>
