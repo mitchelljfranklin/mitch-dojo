@@ -17,8 +17,16 @@ import {
   getOrganizationSettings,
   getSsoSettings,
 } from "@/lib/settings";
-import { verifyBreakGlassToken, shouldShowLocalAuth } from "@/lib/break-glass";
-import { consumeBreakGlassHash, getBreakGlassHash } from "@/lib/settings";
+import {
+  verifyBreakGlassToken,
+  shouldShowLocalAuth,
+  countConfiguredSsoProviders,
+} from "@/lib/break-glass";
+import {
+  consumeBreakGlassHash,
+  getBreakGlassHash,
+  setBreakGlassGrant,
+} from "@/lib/settings";
 
 import { LoginForm } from "./login-form";
 import { SsoButtons, type SsoButton } from "./sso-buttons";
@@ -85,10 +93,19 @@ async function verifyBreakGlassParam(
     return false;
   }
   const valid = await verifyBreakGlassToken(token, storedHash);
-  if (valid) {
-    await consumeBreakGlassHash();
+  if (!valid) {
+    return false;
   }
-  return valid;
+  // Atomic consume: only the request that actually flips the flag proceeds,
+  // so a scanner/prefetch racing a real use can't both win.
+  const consumed = await consumeBreakGlassHash();
+  if (!consumed) {
+    return false;
+  }
+  // Mint a short-lived grant so the credentials callback accepts the local
+  // sign-in this token just unlocked (SSO-only mode otherwise rejects it).
+  await setBreakGlassGrant();
+  return true;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -107,7 +124,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const breakGlassValid = await verifyBreakGlassParam(sp.breakGlass);
   const showLocalAuth = shouldShowLocalAuth({
     disableLocalAuth: ssoSettings.disableLocalAuth,
-    ssoProviderCount: ssoButtons.length,
+    ssoProviderCount: countConfiguredSsoProviders(ssoSettings),
     breakGlassValid,
   });
 

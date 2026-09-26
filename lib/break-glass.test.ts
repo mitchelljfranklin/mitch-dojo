@@ -1,84 +1,95 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  generateBreakGlassToken,
-  hashBreakGlassToken,
+  countConfiguredSsoProviders,
+  isSsoOnlyActive,
+  shouldAllowLocalCredentials,
   shouldShowLocalAuth,
-  verifyBreakGlassToken,
-} from "./break-glass";
+} from "@/lib/break-glass";
 
-describe("generateBreakGlassToken", () => {
-  it("produces a 48-character hex token", () => {
-    const token = generateBreakGlassToken();
-    expect(token).toMatch(/^[0-9a-f]{48}$/);
-  });
+function settings(overrides: Record<string, unknown> = {}) {
+  return {
+    entraIdEnabled: false,
+    entraIdClientId: "",
+    entraIdSecretConfigured: false,
+    googleEnabled: false,
+    googleClientId: "",
+    googleSecretConfigured: false,
+    oidcEnabled: false,
+    oidcIssuer: "",
+    oidcClientId: "",
+    oidcSecretConfigured: false,
+    ...overrides,
+  };
+}
 
-  it("produces unique tokens", () => {
-    const tokens = new Set(
-      Array.from({ length: 20 }, () => generateBreakGlassToken()),
-    );
-    expect(tokens.size).toBe(20);
+describe("countConfiguredSsoProviders", () => {
+  it("counts only fully configured providers (enabled + id + secret)", () => {
+    expect(countConfiguredSsoProviders(settings())).toBe(0);
+    expect(
+      countConfiguredSsoProviders(
+        settings({ googleEnabled: true, googleClientId: "id" }),
+      ),
+    ).toBe(0); // no secret
+    expect(
+      countConfiguredSsoProviders(
+        settings({
+          googleEnabled: true,
+          googleClientId: "id",
+          googleSecretConfigured: true,
+        }),
+      ),
+    ).toBe(1);
+    expect(
+      countConfiguredSsoProviders(
+        settings({
+          oidcEnabled: true,
+          oidcIssuer: "https://idp.example",
+          oidcClientId: "id",
+          oidcSecretConfigured: true,
+        }),
+      ),
+    ).toBe(1);
   });
 });
 
-describe("verifyBreakGlassToken", () => {
-  it("accepts the token it hashed", async () => {
-    const token = generateBreakGlassToken();
-    const hash = await hashBreakGlassToken(token);
-    await expect(verifyBreakGlassToken(token, hash)).resolves.toBe(true);
+describe("shouldAllowLocalCredentials (SSO-only write gate)", () => {
+  it("allows local sign-in when local auth is not disabled", () => {
+    expect(shouldAllowLocalCredentials(false, 1, false)).toBe(true);
   });
 
-  it("rejects a wrong token", async () => {
-    const hash = await hashBreakGlassToken(generateBreakGlassToken());
-    await expect(
-      verifyBreakGlassToken(generateBreakGlassToken(), hash),
-    ).resolves.toBe(false);
+  it("allows local sign-in when no provider is usable (anti-lock-out)", () => {
+    expect(shouldAllowLocalCredentials(true, 0, false)).toBe(true);
   });
 
-  it("rejects empty input", async () => {
-    const hash = await hashBreakGlassToken(generateBreakGlassToken());
-    await expect(verifyBreakGlassToken("", hash)).resolves.toBe(false);
-  });
-});
-
-describe("shouldShowLocalAuth", () => {
-  it("shows local auth when not disabled", () => {
-    expect(
-      shouldShowLocalAuth({
-        disableLocalAuth: false,
-        ssoProviderCount: 2,
-        breakGlassValid: false,
-      }),
-    ).toBe(true);
+  it("blocks local sign-in in SSO-only mode without a break-glass grant", () => {
+    expect(shouldAllowLocalCredentials(true, 1, false)).toBe(false);
   });
 
-  it("shows local auth when disabled but zero providers are configured (anti-lock-out)", () => {
-    expect(
-      shouldShowLocalAuth({
-        disableLocalAuth: true,
-        ssoProviderCount: 0,
-        breakGlassValid: false,
-      }),
-    ).toBe(true);
+  it("allows local sign-in in SSO-only mode WITH a break-glass grant", () => {
+    expect(shouldAllowLocalCredentials(true, 1, true)).toBe(true);
   });
 
-  it("hides local auth in SSO-only mode", () => {
-    expect(
-      shouldShowLocalAuth({
-        disableLocalAuth: true,
-        ssoProviderCount: 1,
-        breakGlassValid: false,
-      }),
-    ).toBe(false);
+  it("keeps the page-render rule consistent with the write gate", () => {
+    // The form is shown exactly when the credentials callback would accept.
+    for (const disableLocalAuth of [false, true]) {
+      for (const count of [0, 1]) {
+        for (const grant of [false, true]) {
+          expect(
+            shouldShowLocalAuth({
+              disableLocalAuth,
+              ssoProviderCount: count,
+              breakGlassValid: grant,
+            }),
+          ).toBe(shouldAllowLocalCredentials(disableLocalAuth, count, grant));
+        }
+      }
+    }
   });
 
-  it("shows local auth with a valid break-glass token even in SSO-only mode", () => {
-    expect(
-      shouldShowLocalAuth({
-        disableLocalAuth: true,
-        ssoProviderCount: 3,
-        breakGlassValid: true,
-      }),
-    ).toBe(true);
+  it("isSsoOnlyActive only with local auth off AND a usable provider", () => {
+    expect(isSsoOnlyActive(true, 1)).toBe(true);
+    expect(isSsoOnlyActive(true, 0)).toBe(false);
+    expect(isSsoOnlyActive(false, 1)).toBe(false);
   });
 });

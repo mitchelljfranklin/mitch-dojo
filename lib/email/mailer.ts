@@ -86,10 +86,22 @@ async function buildOAuth2Auth(
   };
 }
 
+// HTML-escape template data before it is interpolated into the (admin-authored
+// markdown) body: token values can come from free text (student names, booking
+// notes), and `marked` does not sanitise HTML, so an unescaped `<`/`>` would
+// inject markup into every email.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function replaceTokens(text: string, tokens: Record<string, string>): string {
-  return text.replace(
-    /\{\{(\w+)\}\}/g,
-    (_, key) => tokens[key] ?? `{{${key}}}`,
+  return text.replace(/\{\{(\w+)\}\}/g, (_, key) =>
+    key in tokens ? escapeHtml(tokens[key]!) : `{{${key}}}`,
   );
 }
 

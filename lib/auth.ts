@@ -18,10 +18,15 @@ import {
   hasPermission as permissionInList,
 } from "@/lib/permissions";
 import {
+  getBreakGlassGrant,
   getOperationsSettings,
   getSsoSecret,
   getSsoSettings,
 } from "@/lib/settings";
+import {
+  countConfiguredSsoProviders,
+  shouldAllowLocalCredentials,
+} from "@/lib/break-glass";
 import { computeSessionExpiry } from "@/lib/session";
 
 export async function getRolePermissions(
@@ -126,16 +131,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
             ? getClientIp(request.headers)
             : "unknown";
           // Honour the same admin-configured login throttle as the login form,
-          // so the direct-callback path can't be used to bypass it.
+          // so the direct-callback path can't be used to bypass it. Same
+          // bucket ("login") — two namespaces would double the budget.
           const { loginRateLimitPerMin } = await getOperationsSettings();
-          if (
-            !rateLimit("credentials-callback", clientIp, loginRateLimitPerMin)
-          ) {
+          if (!rateLimit("login", clientIp, loginRateLimitPerMin)) {
             return null;
           }
 
           const parsed = credentialsSchema.safeParse(rawCredentials);
           if (!parsed.success) {
+            return null;
+          }
+
+          // SSO-only enforcement: hiding the form is not enough — the raw
+          // credentials callback must reject local sign-in too. A valid
+          // break-glass grant (minted by a one-time token) is the only way
+          // through; anti-lock-out keeps local auth when no provider is
+          // actually usable.
+          const ssoSettings = await getSsoSettings();
+          const providerCount = countConfiguredSsoProviders(ssoSettings);
+          const grantValid = await getBreakGlassGrant();
+          if (
+            !shouldAllowLocalCredentials(
+              ssoSettings.disableLocalAuth,
+              providerCount,
+              grantValid,
+            )
+          ) {
             return null;
           }
 
@@ -259,7 +281,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 
 export async function getCurrentUser() {
   const session = await auth();
-  return session?.user ?? null;
+  const user = session?.user;
+  if (!user) {
+    return null;
+  }
+  // The session callback zeroes roleId for a disabled or deleted account.
+  // Treat that as unauthenticated so a stale JWT can't keep rendering the
+  // app shell (layout, dashboard) after the account is gone.
+  if (typeof user.id === "string" && !user.roleId) {
+    return null;
+  }
+  return user;
 }
 
 export async function requireUser() {

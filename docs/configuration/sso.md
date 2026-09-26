@@ -41,14 +41,14 @@ A provider only appears on the login page when it is enabled **and** fully confi
 
 ## SSO-only mode and break glass
 
-Ticking **Disable email/password sign-in (SSO only)** hides the local login form. Two safety rails:
+Ticking **Disable email/password sign-in (SSO only)** does two things: it hides the local login form **and** rejects local credentials at the sign-in callback — so a hidden form can't be bypassed by posting to the credentials endpoint directly. (Passwordless SSO accounts can never use it anyway.) Two safety rails:
 
 - **Anti-lock-out** — the flag is ignored while zero SSO providers are fully configured, and the save action refuses the combination outright. A mis-click can never lock everyone out.
 - **Break glass** — click **Generate URL** on the SSO page to create a single-use sign-in URL (`/login?breakGlass=<token>`):
 
-  - Valid for **24 hours**, **one use only** (consumed on first render), rate-limited per IP (configurable on the same page).
+  - Valid for **24 hours**, **one use only** (consumed atomically on first render), rate-limited per IP (configurable on the same page).
   - Only a bcrypt hash is stored — the URL is **shown once**, so copy it somewhere safe (password manager, sealed envelope). Generating a new one revokes the old.
-  - Using it restores the local form; the resulting login is a normal credentials sign-in (rate-limited, audited).
+  - Using it restores the local form and mints a short-lived (15-minute) local sign-in grant; the resulting login is a normal credentials sign-in (rate-limited, audited).
 
 ## Troubleshooting
 

@@ -520,16 +520,44 @@ export async function getBreakGlassHash(): Promise<string | null> {
   return record.hash;
 }
 
-export async function consumeBreakGlassHash(): Promise<void> {
+// Atomically marks the token consumed. Returns true only for the caller that
+// actually flipped it, so two concurrent requests can't both "use" one token.
+export async function consumeBreakGlassHash(): Promise<boolean> {
+  const affected = await prisma.$executeRaw`
+    UPDATE app_settings
+    SET value = jsonb_set(value, '{consumed}', 'true')
+    WHERE key = ${BREAK_GLASS_KEY}
+      AND (value->>'consumed')::boolean IS NOT TRUE
+  `;
+  return affected > 0;
+}
+
+// A short-lived grant minted when a valid break-glass token is consumed: it
+// lets the credentials callback accept local sign-in for a few minutes even
+// in SSO-only mode. Server-side and time-boxed, so it can't be forged by a
+// client (unlike a cookie).
+const BREAK_GLASS_GRANT_KEY = "sso.breakGlassGrantUntil";
+const BREAK_GLASS_GRANT_TTL_MS = 15 * 60 * 1000;
+
+export async function setBreakGlassGrant(): Promise<void> {
+  const until = new Date(Date.now() + BREAK_GLASS_GRANT_TTL_MS).toISOString();
+  await prisma.appSetting.upsert({
+    where: { key: BREAK_GLASS_GRANT_KEY },
+    update: { value: until, category: "sso" },
+    create: { key: BREAK_GLASS_GRANT_KEY, category: "sso", value: until },
+  });
+}
+
+export async function getBreakGlassGrant(): Promise<boolean> {
   const row = await prisma.appSetting.findUnique({
-    where: { key: BREAK_GLASS_KEY },
+    where: { key: BREAK_GLASS_GRANT_KEY },
   });
-  if (!row || typeof row.value !== "object" || row.value === null) {
-    return;
-  }
-  const record = row.value as BreakGlassRecord;
-  await prisma.appSetting.update({
-    where: { key: BREAK_GLASS_KEY },
-    data: { value: { ...record, consumed: true } },
-  });
+  const raw = row?.value;
+  if (typeof raw !== "string") return false;
+  const until = Date.parse(raw);
+  return !Number.isNaN(until) && until > Date.now();
+}
+
+export async function clearBreakGlassGrant(): Promise<void> {
+  await prisma.appSetting.deleteMany({ where: { key: BREAK_GLASS_GRANT_KEY } });
 }

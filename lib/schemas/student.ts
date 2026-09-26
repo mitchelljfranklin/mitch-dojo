@@ -47,10 +47,14 @@ const optionalString = z
   .transform((value) => (value.length > 0 ? value : null));
 
 const optionalEmail = z
-  .union([z.literal(""), z.email("Enter a valid email address")])
+  .string()
+  .trim()
   .optional()
   .default("")
-  .transform((value) => (value.length > 0 ? value : null));
+  .refine((value) => value.length === 0 || z.email().safeParse(value).success, {
+    message: "Enter a valid email address",
+  })
+  .transform((value) => (value.length > 0 ? value.toLowerCase() : null));
 
 const optionalDate = z
   .union([z.literal(""), z.string()])

@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin — Communication" };
 
 export default async function AdminCommunicationsPage() {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
   const communicationsSettings = await getCommunicationsSettings();
 
   return (

@@ -99,7 +99,12 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     disciplineId: parsed.data.disciplineId,
     sessionDate: sessionDate || null,
     sessionCourseName: sessionCourseName || null,
-  });
+  }).catch(() => null);
+  if (result === null) {
+    // Inactive class/discipline or a duplicate race — a friendly error,
+    // never an unhandled 500 on a public page.
+    redirect("/book?error=invalid");
+  }
 
   if (result.outcome === "duplicate") {
     await logSystemAudit(AUDIT_ACTIONS.WEBSITE_BOOKING, "Student", undefined, {

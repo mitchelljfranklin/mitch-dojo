@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { hashBreakGlassToken } from "@/lib/break-glass";
+import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from "./global-setup";
 import { prisma } from "@/lib/prisma";
 
 const SSO_KEYS = [
@@ -19,6 +20,7 @@ const SSO_KEYS = [
   "sso.allowedDomain",
   "sso.disableLocalAuth",
   "sso.breakGlassHash",
+  "sso.breakGlassGrantUntil",
 ];
 
 async function seedSsoSetting(key: string, value: string | boolean) {
@@ -106,6 +108,13 @@ test.describe("sso login page", () => {
 
     await page.goto(`/login?breakGlass=${token}`);
     await expect(page.getByLabel("Password")).toBeVisible();
+
+    // The break-glass grant also unlocks the credentials callback — SSO-only
+    // mode would otherwise reject this local sign-in.
+    await page.getByLabel("Email").fill(E2E_ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.waitForURL("**/dashboard");
 
     // Second visit without a token: SSO-only again (single-use consumed).
     await page.goto("/login");

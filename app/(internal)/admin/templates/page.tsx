@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin — Templates" };
 
 export default async function AdminTemplatesPage() {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
   const emailTemplates = await getEmailTemplateSettings();
 
   return (

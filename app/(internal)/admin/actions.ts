@@ -20,6 +20,7 @@ import {
 } from "@/lib/db/agreements";
 import {
   getAppearanceSettings,
+  getEmailSettings,
   getStorageSettings,
   updateOperationsSettings,
   updateOrganizationSettings,
@@ -374,16 +375,21 @@ export async function saveEmailSettings(
 
   // OAuth2 mode requires its credential set; refuse the combination instead
   // of letting every send fall back to basic auth with a stale password.
+  // A stored secret/refresh token stays valid when its field is left blank
+  // (the form never re-submits secrets it already holds).
   if (parsed.data.smtpAuthType === "oauth2") {
+    const currentEmail = await getEmailSettings();
     const missing = [
       !parsed.data.smtpUser ? "SMTP username" : null,
       !parsed.data.smtpOAuth2ClientId ? "OAuth2 client ID" : null,
       !parsed.data.smtpOAuth2ClientSecret &&
-      !formData.get("smtpOAuth2ClientSecret")
+      !formData.get("smtpOAuth2ClientSecret") &&
+      !currentEmail.smtpOAuth2ClientSecretConfigured
         ? "OAuth2 client secret"
         : null,
       !parsed.data.smtpOAuth2RefreshToken &&
-      !formData.get("smtpOAuth2RefreshToken")
+      !formData.get("smtpOAuth2RefreshToken") &&
+      !currentEmail.smtpOAuth2RefreshTokenConfigured
         ? "OAuth2 refresh token"
         : null,
     ].filter(Boolean);
@@ -475,7 +481,7 @@ export async function saveCommunicationsSettings(
   previousState: SettingsActionState,
   formData: FormData,
 ): Promise<SettingsActionState> {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
 
   const parsed = communicationsSettingsSchema.safeParse({
     classRemindersEnabled: formData.get("classRemindersEnabled") === "on",
@@ -522,9 +528,9 @@ export async function saveEmailTemplatesAction(
   previousState: SettingsActionState,
   formData: FormData,
 ): Promise<SettingsActionState> {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
 
-  await updateEmailTemplateFields({
+  const templates = {
     classReminderSubject: String(formData.get("classReminderSubject") ?? ""),
     classReminderBody: String(formData.get("classReminderBody") ?? ""),
     paymentReminderSubject: String(
@@ -539,7 +545,20 @@ export async function saveEmailTemplatesAction(
     bookingStaffBody: String(formData.get("bookingStaffBody") ?? ""),
     trialFollowUpSubject: String(formData.get("trialFollowUpSubject") ?? ""),
     trialFollowUpBody: String(formData.get("trialFollowUpBody") ?? ""),
-  });
+  };
+
+  // An empty subject or body would be sent as a blank email — reject it.
+  const empty = Object.entries(templates).find(
+    ([, value]) => value.trim().length === 0,
+  );
+  if (empty) {
+    return {
+      ok: false,
+      message: "Every subject and body must have content.",
+    };
+  }
+
+  await updateEmailTemplateFields(templates);
 
   const user = await getCurrentUser();
   if (user)
@@ -558,7 +577,7 @@ export async function sendCommunicationSampleAction(
   previousState: SettingsActionState,
   formData: FormData,
 ): Promise<SettingsActionState> {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
 
   const recipientRaw = String(formData.get("recipient") ?? "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientRaw)) {
@@ -711,6 +730,33 @@ export async function saveStorageSettings(
     return {
       ok: false,
       message: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
+  }
+
+  // Refuse an incomplete cloud config: it would save "successfully" while
+  // every write silently fell back to local disk, so objects appear missing.
+  // Stored secrets were merged above, so a blank field here is genuinely
+  // missing rather than "unchanged".
+  if (
+    parsed.data.provider === "s3" &&
+    (!parsed.data.s3Bucket ||
+      !parsed.data.s3Region ||
+      !parsed.data.s3AccessKeyId ||
+      !parsed.data.s3SecretAccessKey)
+  ) {
+    return {
+      ok: false,
+      message:
+        "S3 requires a bucket, region, access key ID, and secret access key.",
+    };
+  }
+  if (
+    parsed.data.provider === "azure" &&
+    (!parsed.data.azureConnectionString || !parsed.data.azureContainerName)
+  ) {
+    return {
+      ok: false,
+      message: "Azure Blob requires a connection string and container name.",
     };
   }
 

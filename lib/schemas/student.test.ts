@@ -264,3 +264,29 @@ describe("applyMedicalPermission", () => {
     expect(data.medicalInjuries).toBeNull();
   });
 });
+
+describe("studentSchema email normalisation", () => {
+  it("lowercases the student email", () => {
+    const result = studentSchema.safeParse({
+      firstName: "Aiko",
+      lastName: "Tanaka",
+      email: "  Aiko.Tanaka@Example.COM ",
+      phone: "",
+      dateOfBirth: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      guardianName: "",
+      guardianEmail: "",
+      guardianPhone: "",
+      status: "TRIAL",
+      notes: "",
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-1",
+      disciplineIds: ["disc-1"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe("aiko.tanaka@example.com");
+    }
+  });
+});

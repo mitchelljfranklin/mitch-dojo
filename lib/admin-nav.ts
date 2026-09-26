@@ -56,7 +56,7 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
       {
         label: "Communication",
         href: "/admin/communications",
-        permission: PERMISSIONS.SETTINGS_MANAGE,
+        permission: PERMISSIONS.COMMUNICATIONS_EDIT,
       },
       {
         label: "Documents",
@@ -76,7 +76,7 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
       {
         label: "Templates",
         href: "/admin/templates",
-        permission: PERMISSIONS.SETTINGS_MANAGE,
+        permission: PERMISSIONS.COMMUNICATIONS_EDIT,
       },
       {
         label: "Email log",
