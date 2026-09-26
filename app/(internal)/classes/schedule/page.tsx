@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getWeeklySchedule } from "@/lib/db/sessions";
+import { ensureUpcomingSessions, getWeeklySchedule } from "@/lib/db/sessions";
 import { WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/lib/schemas/course";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +32,10 @@ function formatTime(time: string): string {
 
 export default async function SchedulePage() {
   await requirePermission(PERMISSIONS.CLASSES_VIEW);
+  // Generate upcoming sessions on view too (idempotent) so the schedule and
+  // check-in always have concrete rows to attach to. The scheduler also runs
+  // this every tick, so a dojo that never opens a course page still gets them.
+  await ensureUpcomingSessions();
   const slots = await getWeeklySchedule();
 
   const byWeekday = new Map<number, ScheduleSlot[]>();

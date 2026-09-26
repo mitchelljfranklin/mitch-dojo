@@ -6,6 +6,7 @@ import {
 } from "@/lib/settings";
 import { storage } from "@/lib/storage";
 import { findOrphanFileKeys } from "@/lib/storage/orphan-sweep";
+import { ensureUpcomingSessions } from "@/lib/db/sessions";
 import { generateDueInvoices } from "@/lib/db/memberships";
 import { runReminderJobs } from "@/lib/cron/reminders";
 
@@ -17,6 +18,7 @@ export type ScheduledJobsResult = {
   prunedFileKeys?: string[];
   generatedInvoices?: number;
   skippedInvoices?: number;
+  generatedSessions?: number;
   classRemindersSent?: number;
   paymentRemindersSent?: number;
   birthdayEmailsSent?: number;
@@ -125,6 +127,16 @@ export async function runScheduledJobs(
     console.log(
       `[cron] orphan sweep removed ${deletedFileKeys.length} file(s): ${deletedFileKeys.join(", ")}`,
     );
+  }
+
+  // --- session generation ---
+  // Keep the next two weeks of ClassSession rows present even when nobody
+  // opens the schedule or a course page (e.g. a dojo that only uses the
+  // check-in kiosk). Idempotent: repeated ticks create nothing new.
+  const generatedSessions = await ensureUpcomingSessions(now);
+  if (generatedSessions > 0) {
+    result.generatedSessions = generatedSessions;
+    console.log(`[cron] generated ${generatedSessions} class session(s)`);
   }
 
   // --- recurring invoice generation ---

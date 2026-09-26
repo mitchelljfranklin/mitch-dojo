@@ -23,7 +23,7 @@ Toggle under [Admin → Scheduling](../configuration/scheduling). Both modes run
 | **Portal-token pruning** | Expired member-portal magic links (30-day lifetime) |
 | **Orphaned-file sweep** | Deletes storage files not referenced by any record (photos, attachments, logo) |
 
-Not on the clock: **session generation** for the timetable happens on view (schedule or course page open), 14 days ahead, idempotently.
+Session generation for the timetable runs **on the clock and on view**: the scheduler generates the next 14 days every tick (so a kiosk-only dojo whose staff never open the schedule still has sessions), and the schedule/course pages generate on open for immediacy. Idempotent either way.
 
 ## Deduplication contract
 

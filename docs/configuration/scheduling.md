@@ -13,8 +13,9 @@ Every **5 minutes** (Node runtime only — never on edge):
 | **Retention pruning** | Audit log and email log per their retention settings |
 | **Token pruning** | Expired password-reset and portal-link tokens |
 | **Orphan-file sweep** | Deletes storage files no longer referenced by any record |
+| **Session generation** | Keeps the next 14 days of class sessions present, so check-in and attendance always have rows even if nobody opens the schedule |
 
-Session generation for the timetable happens on view (whenever the schedule or a course page is opened) rather than on the clock.
+Session generation also runs on view (opening the schedule or a course page) for immediacy — both paths are idempotent.
 
 ## Controls
 

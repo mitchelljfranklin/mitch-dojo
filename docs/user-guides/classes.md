@@ -25,7 +25,7 @@ A discipline taught at multiple locations means one course per location, each wi
 
 ## Sessions
 
-Sessions are auto-generated **14 days ahead** from the weekly times whenever the schedule or a course page is viewed. Generation is idempotent — the same course/date/time is never duplicated.
+Sessions are auto-generated **14 days ahead** from the weekly times by the scheduler (every 5 minutes) and on viewing the schedule or a course page. Generation is idempotent — the same course/date/time is never duplicated.
 
 - **Cancel** a session (e.g. a public holiday) — it's kept with a `CANCELLED` status, never deleted, so history stays honest.
 - **Location changes** — a session keeps the location it was generated with, so past attendance never moves.
