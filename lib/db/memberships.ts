@@ -1,4 +1,4 @@
-import { type Prisma } from "../../prisma/generated/prisma/client";
+import { Prisma } from "../../prisma/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getMembershipsSettings } from "@/lib/settings";
@@ -239,6 +239,13 @@ export async function listStudentEnrollments(studentId: string) {
 
 // ---- invoices -----------------------------------------------------------
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
+}
+
 async function nextInvoiceNumber(): Promise<number> {
   const aggregate = await prisma.invoice.aggregate({
     _max: { number: true },
@@ -410,27 +417,35 @@ export async function recordPayment(input: {
   reference: string | null;
   recordedById: string | null;
 }) {
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: input.invoiceId },
-    include: {
-      items: { select: { quantity: true, unitPriceCents: true } },
-      payments: { select: { amountCents: true } },
-    },
-  });
-  if (!invoice) throw new Error("Invoice not found.");
-  if (invoice.status === "VOID") {
-    throw new Error("This invoice is void — payments cannot be recorded.");
-  }
+  return prisma.$transaction(async (tx) => {
+    // Lock the invoice row for the duration of the check + write. Two
+    // concurrent payments on the same invoice would otherwise both read the
+    // same balance and both pass, over-allocating the invoice.
+    const locked = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM invoices WHERE id = ${input.invoiceId} FOR UPDATE
+    `;
+    if (locked.length === 0) throw new Error("Invoice not found.");
 
-  const financials = computeInvoiceFinancials(invoice);
-  if (input.amountCents > financials.balanceCents) {
-    throw new Error(
-      "The payment exceeds the outstanding balance on this invoice.",
-    );
-  }
+    const invoice = await tx.invoice.findUnique({
+      where: { id: input.invoiceId },
+      include: {
+        items: { select: { quantity: true, unitPriceCents: true } },
+        payments: { select: { amountCents: true } },
+      },
+    });
+    if (!invoice) throw new Error("Invoice not found.");
+    if (invoice.status === "VOID") {
+      throw new Error("This invoice is void — payments cannot be recorded.");
+    }
 
-  const [payment] = await prisma.$transaction([
-    prisma.payment.create({
+    const financials = computeInvoiceFinancials(invoice);
+    if (input.amountCents > financials.balanceCents) {
+      throw new Error(
+        "The payment exceeds the outstanding balance on this invoice.",
+      );
+    }
+
+    const payment = await tx.payment.create({
       data: {
         invoiceId: input.invoiceId,
         amountCents: input.amountCents,
@@ -439,15 +454,15 @@ export async function recordPayment(input: {
         reference: input.reference,
         recordedById: input.recordedById,
       },
-    }),
-    prisma.invoice.update({
+    });
+    await tx.invoice.update({
       where: { id: input.invoiceId },
       data: {
         status: input.amountCents === financials.balanceCents ? "PAID" : "OPEN",
       },
-    }),
-  ]);
-  return payment;
+    });
+    return payment;
+  });
 }
 
 export async function deletePayment(paymentId: string): Promise<void> {
@@ -568,26 +583,42 @@ export async function generateDueInvoices(
         }
       }
 
-      const number = await nextInvoiceNumber();
-      await prisma.invoice.create({
-        data: {
-          number,
-          studentId: enrollment.studentId,
-          enrollmentId: enrollment.id,
-          status: "OPEN",
-          issueDate: cycleDate,
-          dueDate: addDays(cycleDate, issueDueDays),
-          notes: null,
-          items: {
-            create: {
-              description: enrollment.plan.name,
-              quantity: 1,
-              unitPriceCents: enrollment.plan.priceCents,
-            },
-          },
-        },
+      // Skip cycles that already have an invoice (a crashed or overlapping
+      // previous run may not have advanced nextInvoiceDate). The unique
+      // (enrollmentId, issueDate) index is the hard backstop; the create is
+      // wrapped so a lost race is treated as already-invoiced rather than
+      // failing the whole run.
+      const alreadyInvoiced = await prisma.invoice.findFirst({
+        where: { enrollmentId: enrollment.id, issueDate: cycleDate },
+        select: { id: true },
       });
-      generated++;
+      if (!alreadyInvoiced) {
+        try {
+          const number = await nextInvoiceNumber();
+          await prisma.invoice.create({
+            data: {
+              number,
+              studentId: enrollment.studentId,
+              enrollmentId: enrollment.id,
+              status: "OPEN",
+              issueDate: cycleDate,
+              dueDate: addDays(cycleDate, issueDueDays),
+              notes: null,
+              items: {
+                create: {
+                  description: enrollment.plan.name,
+                  quantity: 1,
+                  unitPriceCents: enrollment.plan.priceCents,
+                },
+              },
+            },
+          });
+          generated++;
+        } catch (error: unknown) {
+          if (!isUniqueConstraintError(error)) throw error;
+          // Another runner created this cycle first — no double-billing.
+        }
+      }
       previousIssueDate = cycleDate;
       cycleDate = advanceBillingDate(cycleDate, period);
       iterations++;

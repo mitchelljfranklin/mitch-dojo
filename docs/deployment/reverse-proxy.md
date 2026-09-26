@@ -20,6 +20,10 @@ The app resolves client IPs (for rate limiting and audit) by walking the `X-Forw
 Too high: clients can spoof their IP and sidestep rate limits. Too low: every request shares the proxy's IP, so login throttling locks everyone out together. Match the real hop count.
 :::
 
+Forwarding headers are **only trusted behind a declared proxy**. With `TRUSTED_PROXY_COUNT=0` (direct exposure) the app ignores `X-Forwarded-For` and `X-Real-IP` entirely and buckets every client as `unknown` — this stops a client from rotating `X-Real-IP` to defeat rate limits, at the cost of a single shared bucket. Put a proxy in front and set the hop count for real per-client buckets.
+
+If your proxy/CDN uses a single non-standard header (e.g. `CF-Connecting-IP`), set `CLIENT_IP_HEADER` to it instead of relying on the XFF chain.
+
 ### `APP_URL`
 
 Set the public base URL (`https://dojo.example.com`) — emails, portal links, and public pages are built from it.

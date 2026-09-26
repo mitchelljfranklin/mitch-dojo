@@ -353,6 +353,77 @@ describe.skipIf(!hasTestDatabase)("students data layer", () => {
     await deleteStudent(studentId);
   });
 
+  it("preserves the discipline trainings credit across an update", async () => {
+    const studentId = await createStudent({
+      firstName: "Credited",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId, jujitsuId],
+    });
+
+    // First-belt promotion wrote a carry-in credit onto the Karate link.
+    await db.studentDiscipline.update({
+      where: {
+        studentId_disciplineId: { studentId, disciplineId: karateId },
+      },
+      data: { trainingsCredit: 12 },
+    });
+
+    await updateStudent(studentId, {
+      firstName: "Credited",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [mainDojoId],
+      primaryLocationId: mainDojoId,
+      disciplineIds: [karateId],
+    });
+
+    const karateLink = await db.studentDiscipline.findUnique({
+      where: { studentId_disciplineId: { studentId, disciplineId: karateId } },
+    });
+    expect(karateLink?.trainingsCredit).toBe(12);
+
+    await deleteStudent(studentId);
+  });
+
   it("stores address details and includes them in the export", async () => {
     const studentId = await createStudent({
       firstName: "Addressed",

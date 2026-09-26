@@ -638,6 +638,10 @@ model Invoice {
   @@index([studentId])
   @@index([status, dueDate])
   @@index([locationId])
+  // One recurring invoice per enrollment cycle. NULL enrollmentId (manual
+  // invoices) is unaffected by Postgres unique semantics. This is the hard
+  // backstop against duplicate generation on a crash or concurrent run.
+  @@unique([enrollmentId, issueDate])
   @@map("invoices")
 }
 

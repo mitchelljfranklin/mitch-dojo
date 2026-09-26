@@ -113,6 +113,31 @@ export const studentSchema = z
 
 export type StudentInput = z.infer<typeof studentSchema>;
 
+// Medical PHI is gated by students:medical. Without it the form renders no
+// medical inputs, so writing the parsed (empty → null) values would erase
+// stored PHI. This applies that gate on the WRITE side: editors without the
+// permission get the existing values preserved (or null on create), and any
+// crafted submission of PHI is ignored. Pure and unit-tested.
+export function applyMedicalPermission(
+  input: StudentInput,
+  existing: {
+    medicalMedications: string | null;
+    medicalConditions: string | null;
+    medicalInjuries: string | null;
+  } | null,
+  canEditMedical: boolean,
+): StudentInput {
+  if (canEditMedical) {
+    return input;
+  }
+  return {
+    ...input,
+    medicalMedications: existing?.medicalMedications ?? null,
+    medicalConditions: existing?.medicalConditions ?? null,
+    medicalInjuries: existing?.medicalInjuries ?? null,
+  };
+}
+
 export const studentCsvRowSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),

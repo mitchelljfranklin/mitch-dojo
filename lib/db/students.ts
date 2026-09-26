@@ -221,13 +221,27 @@ export async function updateStudent(
         isPrimary: locationId === primaryLocationId,
       })),
     });
-    await tx.studentDiscipline.deleteMany({ where: { studentId } });
-    await tx.studentDiscipline.createMany({
-      data: disciplineIds.map((disciplineId) => ({
-        studentId,
-        disciplineId,
-      })),
+    // Discipline links are replaced wholesale, but each carries the prior-
+    // trainings credit from first-belt promotions — recreating them without
+    // it would silently zero the student's progression counter. Carry the
+    // existing credit across for retained disciplines (0 for newly added).
+    const existingLinks = await tx.studentDiscipline.findMany({
+      where: { studentId },
+      select: { disciplineId: true, trainingsCredit: true },
     });
+    const creditByDiscipline = new Map(
+      existingLinks.map((link) => [link.disciplineId, link.trainingsCredit]),
+    );
+    await tx.studentDiscipline.deleteMany({ where: { studentId } });
+    if (disciplineIds.length > 0) {
+      await tx.studentDiscipline.createMany({
+        data: disciplineIds.map((disciplineId) => ({
+          studentId,
+          disciplineId,
+          trainingsCredit: creditByDiscipline.get(disciplineId) ?? 0,
+        })),
+      });
+    }
   });
 }
 

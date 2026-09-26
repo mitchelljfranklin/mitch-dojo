@@ -4,6 +4,8 @@ import {
   studentSchema,
   studentCsvRowSchema,
   STUDENT_STATUSES,
+  applyMedicalPermission,
+  type StudentInput,
 } from "@/lib/schemas/student";
 import { locationSchema } from "@/lib/schemas/location";
 
@@ -201,5 +203,64 @@ describe("locationSchema", () => {
       expect(result.data.sortOrder).toBe(3);
       expect(result.data.isActive).toBe(true);
     }
+  });
+});
+
+describe("applyMedicalPermission", () => {
+  function studentInput(): StudentInput {
+    return {
+      firstName: "Aiko",
+      lastName: "Tanaka",
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: "inhaler",
+      medicalConditions: "asthma",
+      medicalInjuries: "left ankle",
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "TRIAL",
+      notes: null,
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-1",
+      disciplineIds: ["disc-1"],
+    } as StudentInput;
+  }
+
+  it("keeps submitted PHI when the editor has students:medical", () => {
+    const data = applyMedicalPermission(studentInput(), null, true);
+    expect(data.medicalMedications).toBe("inhaler");
+    expect(data.medicalConditions).toBe("asthma");
+  });
+
+  it("preserves stored PHI when the editor lacks students:medical", () => {
+    const data = applyMedicalPermission(
+      { ...studentInput(), medicalMedications: null },
+      {
+        medicalMedications: "stored med",
+        medicalConditions: "stored condition",
+        medicalInjuries: "stored injury",
+      },
+      false,
+    );
+    expect(data.medicalMedications).toBe("stored med");
+    expect(data.medicalConditions).toBe("stored condition");
+    expect(data.medicalInjuries).toBe("stored injury");
+  });
+
+  it("strips crafted PHI on create without students:medical", () => {
+    const data = applyMedicalPermission(studentInput(), null, false);
+    expect(data.medicalMedications).toBeNull();
+    expect(data.medicalConditions).toBeNull();
+    expect(data.medicalInjuries).toBeNull();
   });
 });

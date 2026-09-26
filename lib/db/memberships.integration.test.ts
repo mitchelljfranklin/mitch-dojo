@@ -619,7 +619,11 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
 
   // A fresh attendance-gated member + enrollment for the catch-up and
   // boundary cases, tracked for cleanup.
-  async function createGatedMember(tag: string, startDaysAgo: number) {
+  async function createGatedMember(
+    tag: string,
+    startDaysAgo: number,
+    gated = true,
+  ) {
     const studentId = await createStudent({
       firstName: "Gated",
       lastName: `${tag}${suffix}`,
@@ -653,7 +657,7 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       planType: "RECURRING",
       billingPeriod: "MONTHLY",
       priceCents: 5000,
-      chargeOnlyWithAttendance: true,
+      chargeOnlyWithAttendance: gated,
     });
     await enrollStudent({
       studentId,
@@ -757,6 +761,30 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       where: { enrollmentId },
     });
     expect(afterSecond).toHaveLength(2);
+  });
+
+  it("never duplicates a cycle that already has an invoice", async () => {
+    // Non-gated so the attendance gate can't mask the duplicate guard.
+    const { enrollmentId } = await createGatedMember("Dupe", -35, false);
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-35) },
+    });
+    await generateDueInvoices(new Date(), 14);
+    const firstCount = await prisma.invoice.count({ where: { enrollmentId } });
+    expect(firstCount).toBeGreaterThanOrEqual(1);
+
+    // Simulate a crashed/overlapping run that failed to advance
+    // nextInvoiceDate: replaying the same cycles must not create duplicates
+    // (existence guard + the unique (enrollmentId, issueDate) index).
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-35) },
+    });
+    await generateDueInvoices(new Date(), 14);
+    expect(await prisma.invoice.count({ where: { enrollmentId } })).toBe(
+      firstCount,
+    );
   });
 
   it("keeps charging ungated plans regardless of attendance", async () => {

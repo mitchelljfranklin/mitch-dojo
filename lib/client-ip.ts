@@ -57,11 +57,20 @@ export function resolveClientIp(
         return hops[index];
       }
     }
+    // Proxy deployments that set only X-Real-IP (no X-Forwarded-For).
+    const realIp = headers.get("x-real-ip");
+    const normalizedRealIp = realIp ? normalizeIp(realIp) : "";
+    if (normalizedRealIp) {
+      return normalizedRealIp;
+    }
   }
 
-  const realIp = headers.get("x-real-ip");
-  const normalizedRealIp = realIp ? normalizeIp(realIp) : "";
-  return normalizedRealIp || UNKNOWN_IP;
+  // No trusted proxy and no operator-declared header: every client-supplied
+  // forwarding header is spoofable, so the only safe answer is a shared
+  // "unknown" bucket. Trusting X-Real-IP here would let an attacker rotate it
+  // and defeat every per-IP rate limit. Deploy behind a reverse proxy and set
+  // TRUSTED_PROXY_COUNT (or CLIENT_IP_HEADER) for real per-client buckets.
+  return UNKNOWN_IP;
 }
 
 export function getClientIp(headers: HeaderGetter): string {

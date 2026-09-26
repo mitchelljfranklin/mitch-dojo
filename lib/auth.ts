@@ -46,10 +46,15 @@ function mapSsoProfile(roleId = "") {
     name?: string;
     email?: string;
     preferred_username?: string;
+    email_verified?: boolean;
   }) => ({
     id: profile.sub ?? "",
     name: profile.name ?? profile.preferred_username ?? "",
     email: profile.email ?? "",
+    // Carried through so account linking can refuse an unverified email
+    // (self-registered IdP accounts must not be able to claim an existing
+    // user's address). Google/Entra report this; generic OIDC may omit it.
+    emailVerified: profile.email_verified,
     roleId,
   });
 }
@@ -183,6 +188,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
             providerId: account.providerAccountId,
             email: user?.email,
             name: user?.name,
+            emailVerified: (user as { emailVerified?: boolean } | undefined)
+              ?.emailVerified,
           });
           if (!ssoUser) {
             return null;

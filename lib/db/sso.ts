@@ -64,13 +64,17 @@ export type SsoSignIn = {
   providerId: string;
   email: string | null | undefined;
   name: string | null | undefined;
+  // From the IdP's `email_verified` claim. `false` means the provider itself
+  // does not vouch for the address — account linking/provisioning by that
+  // email is refused to prevent takeover of an existing account.
+  emailVerified?: boolean;
 };
 
 /**
  * Resolves an SSO sign-in to a local user, creating the account on first
  * sign-in (just-in-time provisioning). Returns null when sign-in must be
- * denied: unknown provider key, disabled user, missing email, or no valid
- * role available for provisioning.
+ * denied: unknown provider key, disabled user, missing email, an email the
+ * IdP reports as unverified, or no valid role available for provisioning.
  *
  * Linking order: existing identity → email match → provision. The upsert
  * makes concurrent first sign-ins race-safe (both link to one account).
@@ -80,6 +84,7 @@ export async function resolveSsoUser({
   providerId,
   email,
   name,
+  emailVerified,
 }: SsoSignIn) {
   if (!SSO_PROVIDERS.includes(provider)) {
     return null;
@@ -91,6 +96,13 @@ export async function resolveSsoUser({
   }
 
   if (!email) {
+    return null;
+  }
+
+  // An unverified email must never match an existing account (or create a
+  // new one claiming it): a self-registered IdP identity could otherwise
+  // sign in as an existing user.
+  if (emailVerified === false) {
     return null;
   }
 

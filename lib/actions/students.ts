@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import {
   bulkAssignDisciplines,
   createStudent,
@@ -37,6 +37,7 @@ import {
   studentSchema,
   studentCsvRowSchema,
   STUDENT_STATUSES,
+  applyMedicalPermission,
   type StudentInput,
   type StudentCsvRow,
 } from "@/lib/schemas/student";
@@ -137,16 +138,25 @@ export async function createStudentAction(
   previousState: StudentFormState,
   formData: FormData,
 ): Promise<StudentFormState> {
-  await requirePermission(PERMISSIONS.STUDENTS_CREATE);
+  const actor = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
 
   const parsed = parseStudentInput(formData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
+  // Medical PHI is gated by students:medical on the WRITE side too: without
+  // it the fields are never rendered, so anything submitted (including a
+  // crafted request) must be ignored rather than stored.
+  const data = applyMedicalPermission(
+    parsed.data,
+    null,
+    hasPermission(actor.permissions, PERMISSIONS.STUDENTS_MEDICAL),
+  );
+
   let studentId: string;
   try {
-    studentId = await createStudent(parsed.data);
+    studentId = await createStudent(data);
   } catch (error: unknown) {
     if (isDuplicateEmailError(error)) {
       return { error: "A student with this email already exists." };
@@ -162,10 +172,7 @@ export async function createStudentAction(
     await setStudentPhoto(studentId, photoKey);
   }
 
-  const user = await getCurrentUser();
-  if (user) {
-    await logAudit(user.id, AUDIT_ACTIONS.CREATE_STUDENT, "Student", studentId);
-  }
+  await logAudit(actor.id, AUDIT_ACTIONS.CREATE_STUDENT, "Student", studentId);
   redirect(`/students/${studentId}?created=1`);
 }
 
@@ -173,7 +180,7 @@ export async function updateStudentAction(
   previousState: StudentFormState,
   formData: FormData,
 ): Promise<StudentFormState> {
-  await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const actor = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const studentId = getField(formData, "studentId");
 
   const parsed = parseStudentInput(formData);
@@ -183,11 +190,25 @@ export async function updateStudentAction(
 
   const existing = await prisma.student.findUnique({
     where: { id: studentId },
-    select: { photoKey: true },
+    select: {
+      photoKey: true,
+      medicalMedications: true,
+      medicalConditions: true,
+      medicalInjuries: true,
+    },
   });
 
+  // Without students:medical the medical inputs are absent from the form —
+  // writing the parsed (empty → null) values would erase the student's PHI.
+  // Preserve the stored values (and ignore any crafted submission) instead.
+  const data = applyMedicalPermission(
+    parsed.data,
+    existing,
+    hasPermission(actor.permissions, PERMISSIONS.STUDENTS_MEDICAL),
+  );
+
   try {
-    await updateStudent(studentId, parsed.data);
+    await updateStudent(studentId, data);
   } catch (error: unknown) {
     if (isDuplicateEmailError(error)) {
       return { error: "A student with this email already exists." };
@@ -206,10 +227,7 @@ export async function updateStudentAction(
     await setStudentPhoto(studentId, photoKey);
   }
 
-  const user = await getCurrentUser();
-  if (user) {
-    await logAudit(user.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Student", studentId);
-  }
+  await logAudit(actor.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Student", studentId);
   // Post/redirect/get: land back on the student's display page with a flash
   // toast (redirect() supersedes the useActionState return value).
   redirect(`/students/${studentId}?updated=1`);
