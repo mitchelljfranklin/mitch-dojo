@@ -413,14 +413,30 @@ export async function generateInvoicesNowAction(
     };
   }
 
-  const generated = await generateDueInvoices(new Date(), invoiceDueDays);
+  const { generated, skipped } = await generateDueInvoices(
+    new Date(),
+    invoiceDueDays,
+  );
   await logAudit(
     user.id,
     AUDIT_ACTIONS.GENERATE_INVOICES,
     "Invoice",
     `${generated} invoice(s)`,
+    { skipped, reason: skipped > 0 ? "no attendance (gated plans)" : null },
   );
-  return generated > 0
-    ? { ok: true, message: `Generated ${generated} invoice(s).` }
-    : { ok: true, message: "Nothing to generate — all cycles are current." };
+
+  if (generated === 0 && skipped === 0) {
+    return {
+      ok: true,
+      message: "Nothing to generate — all cycles are current.",
+    };
+  }
+  const parts: string[] = [];
+  if (generated > 0) parts.push(`Generated ${generated} invoice(s)`);
+  if (skipped > 0) {
+    parts.push(
+      `skipped ${skipped} cycle(s) with no attendance (attendance-gated plans)`,
+    );
+  }
+  return { ok: true, message: `${parts.join("; ")}.` };
 }

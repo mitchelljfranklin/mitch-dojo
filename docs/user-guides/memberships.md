@@ -13,7 +13,10 @@ Some plans bill whether the member trains or not; others should only charge when
 - Each cycle, the invoice generates only if the member has at least one **trained session** (Present or Late) since the previous invoice.
 - No attendance → the cycle is **skipped, not charged** — and billing simply resumes at the next cycle date once they train again.
 - The **first invoice** after enrolling always bills (the dojo chose to enroll them; there's no previous period to check).
-- Plans with the flag show an **Attendance-gated** badge on the plans table.
+- Plans with the flag show an **Attendance-gated** badge on the plans table, and the student's enrollment card shows an **Only if trained** badge.
+- The setting applies to **future cycles** — invoices already generated are untouched. Turning it on for an existing plan starts gating from the next cycle.
+
+When a cycle is skipped, nothing is charged for it and no invoice exists to pay; the manual **Generate now** button reports how many cycles were skipped, and the scheduler logs the same.
 
 ## Invoices
 

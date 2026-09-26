@@ -9,7 +9,7 @@ Every **5 minutes** (Node runtime only — never on edge):
 | Job | Purpose |
 |---|---|
 | **Reminders** | Class, payment, birthday, trial follow-up emails ([Communication](./communication)) |
-| **Invoice generation** | Recurring invoices for active enrollments ([Memberships](./memberships)) |
+| **Invoice generation** | Recurring invoices for active enrollments ([Memberships](./memberships)). Plans marked **Charge only with attendance** generate only when the member has trained since the previous invoice — skipped cycles are reported in the run result. |
 | **Retention pruning** | Audit log and email log per their retention settings |
 | **Token pruning** | Expired password-reset and portal-link tokens |
 | **Orphan-file sweep** | Deletes storage files no longer referenced by any record |

@@ -16,7 +16,7 @@ Toggle under [Admin → Scheduling](../configuration/scheduling). Both modes run
 | Job | Detail |
 |---|---|
 | **Reminder pass** | Class reminders (hours-before window), payment reminders (due-soon + overdue), birthday emails (day-of), trial follow-ups (per open trial past the window) |
-| **Invoice generation** | Recurring invoices for active enrollments, due date from settings |
+| **Invoice generation** | Recurring invoices for active enrollments, due date from settings. Attendance-gated plans (`chargeOnlyWithAttendance`) skip a cycle when the member hasn't trained since the previous invoice; the run result carries `generatedInvoices` and `skippedInvoices` |
 | **Audit-log pruning** | Entries older than the audit retention (default: keep forever) |
 | **Email-log pruning** | Rows older than the email-log retention (default 14 days) |
 | **Password-reset token pruning** | Expired single-use reset tokens |

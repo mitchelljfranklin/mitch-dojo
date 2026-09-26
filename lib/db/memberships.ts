@@ -123,7 +123,12 @@ export async function createMembershipPlan(input: {
       planType: input.planType,
       billingPeriod: input.billingPeriod,
       priceCents: input.priceCents,
-      chargeOnlyWithAttendance: input.chargeOnlyWithAttendance ?? false,
+      // Only meaningful for recurring plans; keep the flag off for items so
+      // editing a one-off plan can never leave a stray value behind.
+      chargeOnlyWithAttendance:
+        input.planType === "RECURRING"
+          ? (input.chargeOnlyWithAttendance ?? false)
+          : false,
     },
   });
 }
@@ -147,7 +152,10 @@ export async function updateMembershipPlan(
       planType: input.planType,
       billingPeriod: input.billingPeriod,
       priceCents: input.priceCents,
-      chargeOnlyWithAttendance: input.chargeOnlyWithAttendance ?? false,
+      chargeOnlyWithAttendance:
+        input.planType === "RECURRING"
+          ? (input.chargeOnlyWithAttendance ?? false)
+          : false,
     },
   });
 }
@@ -496,10 +504,18 @@ export async function voidInvoice(invoiceId: string): Promise<void> {
 // thousands of invoices in one tick.
 const MAX_CATCH_UP_INVOICES = 24;
 
+export type GenerateInvoicesResult = {
+  generated: number;
+  // Cycles skipped because an attendance-gated plan's member had no trained
+  // session since the previous invoice. Surfaced to the caller so the
+  // scheduler result and the manual "Generate now" report can say so.
+  skipped: number;
+};
+
 export async function generateDueInvoices(
   now: Date = new Date(),
   issueDueDays: number = 14,
-): Promise<number> {
+): Promise<GenerateInvoicesResult> {
   const today = startOfToday(now);
   const dueEnrollments = await prisma.enrollment.findMany({
     where: {
@@ -511,7 +527,7 @@ export async function generateDueInvoices(
   });
 
   let generated = 0;
-  let skippedCycles = 0;
+  let skipped = 0;
   for (const enrollment of dueEnrollments) {
     const period = enrollment.plan.billingPeriod ?? "MONTHLY";
     let cycleDate = startOfToday(enrollment.nextInvoiceDate ?? today);
@@ -545,7 +561,7 @@ export async function generateDueInvoices(
         if (attended === 0) {
           // No attendance since the last invoice — skip the charge, but
           // keep the cycle moving so a later training still bills.
-          skippedCycles++;
+          skipped++;
           cycleDate = advanceBillingDate(cycleDate, period);
           iterations++;
           continue;
@@ -583,13 +599,7 @@ export async function generateDueInvoices(
     });
   }
 
-  if (skippedCycles > 0) {
-    console.log(
-      `[cron] skipped ${skippedCycles} invoice cycle(s) — attendance-gated plans without trained sessions`,
-    );
-  }
-
-  return generated;
+  return { generated, skipped };
 }
 
 // ---- overdue & suspension -----------------------------------------------

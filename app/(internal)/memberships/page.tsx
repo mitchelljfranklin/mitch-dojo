@@ -107,7 +107,11 @@ export default async function MembershipsPage({
                         <span className="font-medium">{plan.name}</span>
                         {plan.planType === "RECURRING" &&
                         plan.chargeOnlyWithAttendance ? (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge
+                            variant="outline"
+                            className="text-xs"
+                            title="Recurring invoices generate only when the member has trained since the previous invoice"
+                          >
                             Attendance-gated
                           </Badge>
                         ) : null}

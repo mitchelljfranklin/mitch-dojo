@@ -13,7 +13,7 @@ Billing rules for invoices and overdue handling. Plan/enrollment management live
 
 ## How the pieces connect
 
-1. Auto-generation creates invoices for active enrollments (due date = today + *invoice due days*). Plans with **Charge only with attendance** ([plan option](../user-guides/memberships#charge-only-with-attendance)) generate only when the member trained since the previous invoice; skipped cycles log to the scheduler output.
+1. Auto-generation creates invoices for active enrollments (due date = today + *invoice due days*). Plans with **Charge only with attendance** ([plan option](../user-guides/memberships#charge-only-with-attendance)) generate only when the member trained since the previous invoice — the scheduler result reports `generatedInvoices` and `skippedInvoices` (also shown by the manual **Generate now**).
 2. A payment reminder fires once when the invoice enters the due-soon window ([Communication](./communication)).
 3. Another reminder fires once it's been overdue for the configured days.
 4. Past the suspension threshold, the student's QR check-in refuses until the balance is cleared — the attendance sheet still works for staff.

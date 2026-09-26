@@ -456,6 +456,16 @@ export default async function StudentDetailPage({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
+                      {enrollment.status === "ACTIVE" &&
+                      enrollment.plan.chargeOnlyWithAttendance ? (
+                        <Badge
+                          variant="outline"
+                          className="text-xs"
+                          title="Recurring invoices generate only when the member has trained since the previous invoice"
+                        >
+                          Only if trained
+                        </Badge>
+                      ) : null}
                       <Badge
                         variant={
                           enrollment.status === "ACTIVE"

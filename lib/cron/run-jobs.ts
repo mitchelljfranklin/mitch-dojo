@@ -16,6 +16,7 @@ export type ScheduledJobsResult = {
   prunedFiles?: number;
   prunedFileKeys?: string[];
   generatedInvoices?: number;
+  skippedInvoices?: number;
   classRemindersSent?: number;
   paymentRemindersSent?: number;
   birthdayEmailsSent?: number;
@@ -133,13 +134,23 @@ export async function runScheduledJobs(
   // is not applicable here.
   const membershipsSettings = await getMembershipsSettings();
   if (membershipsSettings.autoGenerateInvoices) {
-    const generated = await generateDueInvoices(
+    const { generated, skipped } = await generateDueInvoices(
       now,
       membershipsSettings.invoiceDueDays,
     );
     if (generated > 0) {
       result.generatedInvoices = generated;
-      console.log(`[cron] generated ${generated} recurring invoice(s)`);
+    }
+    if (skipped > 0) {
+      result.skippedInvoices = skipped;
+    }
+    if (generated > 0 || skipped > 0) {
+      console.log(
+        `[cron] generated ${generated} recurring invoice(s)` +
+          (skipped > 0
+            ? `, skipped ${skipped} cycle(s) — attendance-gated plans without trained sessions`
+            : ""),
+      );
     }
   }
 

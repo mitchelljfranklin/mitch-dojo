@@ -426,7 +426,7 @@ describe.skipIf(!hasTestDatabase)("recurring invoice generation", () => {
       data: { nextInvoiceDate: daysFromNow(-62) },
     });
 
-    const generated = await generateDueInvoices(new Date(), 14);
+    const { generated } = await generateDueInvoices(new Date(), 14);
     expect(generated).toBeGreaterThanOrEqual(2);
 
     const updated = await prisma.enrollment.findFirst({
@@ -454,7 +454,7 @@ describe.skipIf(!hasTestDatabase)("recurring invoice generation", () => {
   });
 
   it("is idempotent — a repeated run generates nothing", async () => {
-    const generated = await generateDueInvoices(new Date(), 14);
+    const { generated } = await generateDueInvoices(new Date(), 14);
     expect(generated).toBe(0);
   });
 });
@@ -464,6 +464,7 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
   let courseId: string;
   let gatedPlanId: string;
   let gatedStudentId: string;
+  const extraStudentIds: string[] = [];
 
   beforeAll(async () => {
     const location = await createLocation({
@@ -537,6 +538,9 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
     if (gatedStudentId) {
       await deleteStudent(gatedStudentId).catch(() => undefined);
     }
+    for (const studentId of extraStudentIds) {
+      await deleteStudent(studentId).catch(() => undefined);
+    }
   });
 
   it("bills the first cycle, gates the second on attendance", async () => {
@@ -552,8 +556,8 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
     });
 
     // First cycle: exempt (no previous invoice).
-    let generated = await generateDueInvoices(new Date(), 14);
-    expect(generated).toBeGreaterThanOrEqual(1);
+    const firstRun = await generateDueInvoices(new Date(), 14);
+    expect(firstRun.generated).toBeGreaterThanOrEqual(1);
 
     const enrollment = await prisma.enrollment.findFirst({
       where: { planId: gatedPlanId, studentId: gatedStudentId },
@@ -564,17 +568,19 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
     });
     expect(firstInvoice).not.toBeNull();
 
-    // Second cycle arrives with NO attendance since the first invoice —
-    // the run must generate nothing further and still advance the cycle.
+    // Second cycle arrives with NO attendance since the first invoice — the
+    // run generates nothing further (and reports the skip) while still
+    // advancing the cycle.
     await prisma.enrollment.update({
       where: { id: enrollment!.id },
       data: { nextInvoiceDate: daysFromNow(-10) },
     });
-    generated = await generateDueInvoices(new Date(), 14);
+    const secondRun = await generateDueInvoices(new Date(), 14);
     const invoicesAfterSkip = await prisma.invoice.findMany({
       where: { enrollmentId: enrollment!.id },
     });
-    expect(generated).toBe(0);
+    expect(secondRun.generated).toBe(0);
+    expect(secondRun.skipped).toBeGreaterThanOrEqual(1);
     expect(invoicesAfterSkip).toHaveLength(1);
 
     // Training once since the last invoice bills the next cycle. The skip
@@ -610,6 +616,148 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       },
     });
   }
+
+  // A fresh attendance-gated member + enrollment for the catch-up and
+  // boundary cases, tracked for cleanup.
+  async function createGatedMember(tag: string, startDaysAgo: number) {
+    const studentId = await createStudent({
+      firstName: "Gated",
+      lastName: `${tag}${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [],
+    });
+    extraStudentIds.push(studentId);
+    const plan = await createMembershipPlan({
+      name: `Gated ${tag} ${suffix}`,
+      description: null,
+      planType: "RECURRING",
+      billingPeriod: "MONTHLY",
+      priceCents: 5000,
+      chargeOnlyWithAttendance: true,
+    });
+    await enrollStudent({
+      studentId,
+      planId: plan.id,
+      startDate: daysFromNow(startDaysAgo),
+    });
+    const enrollment = await prisma.enrollment.findFirst({
+      where: { studentId, planId: plan.id },
+    });
+    return { studentId, enrollmentId: enrollment!.id };
+  }
+
+  it("bills only the catch-up cycles whose window contains training", async () => {
+    const { studentId, enrollmentId } = await createGatedMember("Jump", -95);
+    // Three monthly cycles are due.
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-95) },
+    });
+
+    // No attendance: the first cycle bills (exempt), the other three skip.
+    const firstRun = await generateDueInvoices(new Date(), 14);
+    expect(firstRun.skipped).toBeGreaterThanOrEqual(3);
+    const afterFirst = await prisma.invoice.findMany({
+      where: { enrollmentId },
+      orderBy: { issueDate: "asc" },
+    });
+    expect(afterFirst).toHaveLength(1);
+    expect(afterFirst[0]!.issueDate.getTime()).toBe(daysFromNow(-95).getTime());
+
+    // One late session 50 days ago falls inside the second cycle's window
+    // [-95, -35) but not the first [-95, -65). Replay the catch-up.
+    const session = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: daysFromNow(-50),
+        startTime: "18:30",
+        endTime: "19:30",
+      },
+    });
+    await prisma.attendance.create({
+      data: { sessionId: session.id, studentId, status: "PRESENT" },
+    });
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-65) },
+    });
+    await generateDueInvoices(new Date(), 14);
+
+    const afterSecond = await prisma.invoice.findMany({
+      where: { enrollmentId },
+      orderBy: { issueDate: "asc" },
+    });
+    // The cycle whose window contains the training bills; the next skips
+    // ([that cycle, next) has no training). Expected issue dates are derived
+    // with the same calendar-month arithmetic the generator uses.
+    const cycle1 = daysFromNow(-95);
+    const cycle2 = advanceBillingDate(cycle1, "MONTHLY");
+    const cycle3 = advanceBillingDate(cycle2, "MONTHLY");
+    expect(afterSecond.map((i) => i.issueDate.getTime())).toEqual([
+      cycle1.getTime(),
+      cycle3.getTime(),
+    ]);
+  });
+
+  it("counts attendance on the previous invoice's issue date", async () => {
+    const { studentId, enrollmentId } = await createGatedMember("Edge", -35);
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-35) },
+    });
+    await generateDueInvoices(new Date(), 14);
+    // First invoice at -35; the cycle at -5 skipped (no attendance).
+    const afterFirst = await prisma.invoice.findMany({
+      where: { enrollmentId },
+    });
+    expect(afterFirst).toHaveLength(1);
+
+    // Training exactly on the first invoice's issue date is inside the next
+    // window ([−35, −5)) — the boundary is inclusive, so it bills.
+    const session = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: daysFromNow(-35),
+        startTime: "17:00",
+        endTime: "18:00",
+      },
+    });
+    await prisma.attendance.create({
+      data: { sessionId: session.id, studentId, status: "PRESENT" },
+    });
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-5) },
+    });
+    await generateDueInvoices(new Date(), 14);
+
+    const afterSecond = await prisma.invoice.findMany({
+      where: { enrollmentId },
+    });
+    expect(afterSecond).toHaveLength(2);
+  });
 
   it("keeps charging ungated plans regardless of attendance", async () => {
     // The recurringPlanId enrollment (non-gated) bills even with zero
