@@ -1,8 +1,8 @@
 # RBAC & Roles
 
-Mitch‑Dojo uses **permission-based** access control, not "is authenticated" gating. Three system roles are built in, and admins can create custom roles with any combination of the 21 fine-grained permissions.
+Mitch‑Dojo uses **permission-based** access control, not "is authenticated" gating. Three system roles are built in, and admins can create custom roles with any combination of the 22 fine-grained permissions.
 
-## Permission Catalog (21 Permissions)
+## Permission Catalog (22 Permissions)
 
 ### Students (5)
 

@@ -40,6 +40,7 @@ principles:
 | 11b | **Student address details**: structured address (line/city/postcode) on the student record, form, detail view, and CSV import/export; saving an edit returns to the student's display page with a flash toast | Done |
 | — | **Admin area**: sidebar regrouping (Overview/Operations/People/Management) and the settings area restructured into 16 sections across 7 groups (Workspace, Storage, Programs, Email, Locations, Access & security, Platform) at `/admin/*` with a `/settings` compatibility shim | Done |
 | 11c | **SSO + break glass** (ported from mitch-risk): Microsoft Entra ID / Google / generic OIDC sign-in with DB-backed encrypted client secrets, email-match linking, JIT provisioning with a default role, allowed-domain restriction, SSO-only mode with anti-lock-out, and single-use break-glass URLs (24h, bcrypt-hashed, rate-limited) | Done |
+| 11d | **Compliance**: permission-gated health & medical PHI, school-managed versioned agreements (add/rename/disable/delete, versioned from v0), printable agreement PDF, member-portal digital signing (confirm + typed name) and staff-recorded paper fallback | Done |
 | 12 | Stripe/SEPA/PayPal gateways, REST API + Swagger | Planned |
 
 Out of scope (explicitly): SMS/WhatsApp marketing, funnel/landing-page
@@ -288,7 +289,7 @@ width, booking-page copy), operations (login throttle, session timeout,
 retention, scheduler toggle), files, storage (local/S3/Azure), email (SMTP;
 password AES-256-GCM encrypted at rest), email templates, memberships,
 communications, sso (provider toggles/client IDs; secrets encrypted). Managed
-across the 15-section Admin area. Only deployment
+across the 16-section Admin area. Only deployment
 bootstrap belongs in env (`DATABASE_URL`/`DIR`, `AUTH_SECRET`,
 `APP_ENCRYPTION_KEY`, `APP_URL`, `CRON_SECRET`, `DATA_STORAGE_PATH`,
 `TRUSTED_PROXY_COUNT`).

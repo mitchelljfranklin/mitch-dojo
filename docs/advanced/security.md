@@ -13,7 +13,7 @@ The model behind the platform's defences, for reviewers and the curious.
 
 ## Authorization
 
-- **21 fine-grained `resource:action` permissions**, enforced with `requirePermission` at the start of **every** server action, route handler, and page.
+- **22 fine-grained `resource:action` permissions**, enforced with `requirePermission` at the start of **every** server action, route handler, and page.
 - UI controls are **hidden, never disabled**, when a role lacks the permission — no dead buttons.
 - Admin-area access is itself permission-gated: the gear button doesn't render without any admin permission.
 

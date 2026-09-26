@@ -15,9 +15,9 @@ Under **Admin → Users** (`users:manage`):
 
 ## Roles
 
-Three **system roles** are seeded on first run and cannot be deleted: **Admin** (all 20 permissions), **Trainer** (floor operations), **Viewer** (read-only). See [RBAC & Roles](../user-guides/rbac) for the full catalog.
+Three **system roles** are seeded on first run and cannot be deleted: **Admin** (all 22 permissions), **Trainer** (floor operations), **Viewer** (read-only). See [RBAC & Roles](../user-guides/rbac) for the full catalog.
 
-Custom roles (`roles:manage`) pick any subset of the 20 permissions:
+Custom roles (`roles:manage`) pick any subset of the 22 permissions:
 
 1. Click **Create role**.
 2. Name it, describe it, tick the permissions.

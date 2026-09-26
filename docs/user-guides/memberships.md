@@ -23,7 +23,7 @@ When a cycle is skipped, nothing is charged for it and no invoice exists to pay;
 Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry in the sidebar's Management group. With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:
 
 - **Due date** — configurable window after generation (default 14 days).
-- **Location tagging (optional)** — tag an invoice to a location for per-location revenue on the dashboard. Recurring invoices stay school-wide and count only towards "All locations".
+- **Location tagging (optional)** — tag an invoice to a location for per-location revenue on the Analytics page. Recurring invoices stay school-wide and count only towards "All locations".
 - **Void** — voided invoices stay visible with a `VOID` status; they are never deleted.
 
 ## Recording payments

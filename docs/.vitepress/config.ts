@@ -16,6 +16,7 @@ const sidebar = [
     collapsed: true,
     items: [
       { text: "Dashboard", link: "/user-guides/dashboard" },
+      { text: "Analytics", link: "/user-guides/analytics" },
       { text: "Students", link: "/user-guides/students" },
       { text: "Locations", link: "/user-guides/locations" },
       { text: "Classes & Schedule", link: "/user-guides/classes" },

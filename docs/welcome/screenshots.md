@@ -7,7 +7,8 @@
 
 | File | What to capture |
 |---|---|
-| `dashboard.png` | Analytics dashboard — counters, attendance trend, revenue chart |
+| `dashboard.png` | The Dashboard landing page (overdue payments, failed-email chip) |
+| `analytics.png` | The Analytics page — counters, attendance trend, revenue chart |
 | `students.png` | Students list with search and status filters |
 | `student-detail.png` | A student record — agreements/consent card, belts, attendance, invoices |
 | `timetable.png` | Weekly timetable view |
