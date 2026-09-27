@@ -25,6 +25,8 @@ Custom roles (`roles:manage`) pick any subset of the 24 permissions:
 
 Role edits are audited; permission changes take effect on the user's next page load.
 
+When an upgrade adds new permission keys, they are **granted to the system roles automatically at server start** — restart the app and the new keys (e.g. `incidents:manage`) appear on Admin/Trainer/Viewer without a manual reseed. Custom roles are never touched; grant new keys to them by hand if you want them there.
+
 ## First-run setup
 
 The very first visit walks through creating the initial administrator — the setup page only exists while no users are present, then it's gone.

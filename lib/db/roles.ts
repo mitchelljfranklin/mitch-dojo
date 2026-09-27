@@ -133,3 +133,42 @@ export async function ensureSystemRoles(): Promise<void> {
     });
   }
 }
+
+// Grants any permissions the code defines for a system role that are missing
+// from the stored row (a union — nothing is revoked), creating the role if it
+// is absent. Runs once at server boot so newly added permission keys take
+// effect on existing databases after an upgrade, without waiting for a manual
+// reseed. Idempotent: after the first run it performs no writes.
+export async function convergeSystemRolePermissions(): Promise<void> {
+  for (const definition of SYSTEM_ROLE_DEFINITIONS) {
+    const role = await prisma.role.findUnique({
+      where: { name: definition.name },
+      select: { id: true, permissions: true },
+    });
+    if (!role) {
+      await prisma.role.create({
+        data: {
+          name: definition.name,
+          description: definition.description,
+          permissions: [...definition.permissions],
+          isSystem: true,
+        },
+      });
+      continue;
+    }
+
+    const current = new Set(role.permissions);
+    const missing = definition.permissions.filter(
+      (permission) => !current.has(permission),
+    );
+    if (missing.length > 0) {
+      await prisma.role.update({
+        where: { id: role.id },
+        data: {
+          permissions: sanitizePermissions([...role.permissions, ...missing]),
+          isSystem: true,
+        },
+      });
+    }
+  }
+}

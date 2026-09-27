@@ -14,24 +14,14 @@ see**. Tick the box when it behaves.
 - [ ] **Migrations run automatically** on container start (the entrypoint runs
       `prisma migrate deploy`, or the PGlite runner in lite mode). If you applied
       the new image, just restart the container.
-- [ ] **Seed once for the new permissions.** `incidents:view` / `incidents:manage`
-      are added to the seeded system roles only when the seed runs, and the
-      container only seeds once (marker-guarded). On an existing deployment run:
-
-      Postgres mode:
-      ```bash
-      docker compose -f docker-compose.pull.yml exec app npx prisma db seed
-      ```
-
-      Lite mode (PGlite is single-process — stop the app first):
-      ```bash
-      docker compose -f docker-compose.lite-pull.yml stop app
-      docker compose -f docker-compose.lite-pull.yml run --rm --entrypoint npx app prisma db seed
-      docker compose -f docker-compose.lite-pull.yml start app
-      ```
-
-      Then **refresh** the app in your browser (permissions reload per request —
-      no need to sign out).
+- [ ] **New permissions apply on restart.** The app grants any newly added
+      permission keys to the seeded system roles at boot, so after pulling the
+      new image just **restart the container** and refresh the browser. (On a
+      brand-new volume the entrypoint also seeds defaults; a manual
+      `npx prisma db seed` is only needed if you want to *reset* the system
+      roles or settings to their seeded values.)
+- [ ] Confirm **Admin → Roles → Admin** shows **24 / 24 permissions** after the
+      restart.
 - [ ] **Have some data ready**: at least one location, one discipline, one
       student, one course, one membership plan, and a week or two of past
       sessions marked with attendance.

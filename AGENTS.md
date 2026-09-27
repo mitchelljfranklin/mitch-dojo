@@ -131,8 +131,11 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 - **e2e runs against the production build** (`npm run build` output), needs
   `CRON_SECRET`, and refuses non-test databases.
-- **New permission keys converge to existing databases only when the seed
-  runs** (`npm run db:seed` or `ensureSystemRoles()`).
+- **New permission keys converge automatically at server boot**
+  (`convergeSystemRolePermissions()` in `instrumentation.ts` grants any
+  missing code-defined permissions to the seeded system roles, without
+  revoking custom grants). A full reseed (`npm run db:seed` /
+  `ensureSystemRoles()`) still resets the system roles strictly.
 - **Apply new Prisma migrations to both dev and test databases** before
   running integration tests.
 - **Never edit an applied migration — always add a new one.** Editing a
