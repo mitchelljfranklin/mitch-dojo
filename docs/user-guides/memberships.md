@@ -31,6 +31,7 @@ Injured, travelling, or taking a break? **Pause** an enrollment from the student
 Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry in the sidebar's Management group. With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:
 
 - **Due date** — configurable window after generation (default 14 days).
+- **Tax / GST** — when a rate is set in [Memberships settings](../configuration/memberships), new invoices include a tax line (subtotal, tax, total). The rate is captured at creation, so later changes don't alter issued invoices.
 - **Location tagging (optional)** — tag an invoice to a location for per-location revenue on the Analytics page. Recurring invoices stay school-wide and count only towards "All locations".
 - **Void** — voided invoices stay visible with a `VOID` status; they are never deleted.
 

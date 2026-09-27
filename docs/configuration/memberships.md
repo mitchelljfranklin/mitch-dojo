@@ -10,6 +10,10 @@ Billing rules for invoices and overdue handling. Plan/enrollment management live
 | **Invoice due days** | 14 | 0–90 | Days after generation until an invoice is due |
 | **Auto-generate invoices** | on | — | Scheduler creates invoices for active enrollments each billing cycle |
 | **Suspend check-in after overdue** | 30 days | 0–365 | Days overdue before QR check-in is refused; **0 disables suspension** |
+| **Tax / GST rate** | 0% | 0–100 | Percentage added to invoices when they are created |
+| **Tax label** | Tax | max 20 chars | Shown as the tax line on invoices (e.g. "GST", "VAT") |
+
+The tax rate is applied at **invoice creation** and stored on the invoice (`taxCents` + `taxLabel`), so changing the rate later never rewrites issued invoices. Existing invoices keep the tax captured when they were raised.
 
 ## How the pieces connect
 

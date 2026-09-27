@@ -643,6 +643,10 @@ model Invoice {
   status       InvoiceStatus @default(OPEN)
   issueDate    DateTime
   dueDate      DateTime
+  // Tax/GST captured at issue time (immutable): a snapshot of the rate's
+  // amount and label so re-issued/printed invoices and reports stay stable.
+  taxCents     Int           @default(0)
+  taxLabel     String?
   notes        String?
   createdById  String?
   createdBy    User?         @relation("InvoiceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)

@@ -30,6 +30,8 @@ export type InvoicePdfInput = {
   items: InvoicePdfItem[];
   payments: InvoicePdfPayment[];
   currency: string;
+  taxCents?: number;
+  taxLabel?: string | null;
 };
 
 export type InvoicePdfData = InvoicePdfInput & {
@@ -45,10 +47,11 @@ export function shapeInvoiceForPdf(
   input: InvoicePdfInput,
   now: Date = new Date(),
 ): InvoicePdfData {
-  const totalCents = input.items.reduce(
+  const subtotalCents = input.items.reduce(
     (sum, item) => sum + item.quantity * item.unitPriceCents,
     0,
   );
+  const totalCents = subtotalCents + (input.taxCents ?? 0);
   const paidCents = input.payments.reduce(
     (sum, payment) => sum + payment.amountCents,
     0,
@@ -143,6 +146,20 @@ export function InvoicePdfDocument({
             </Text>
           </View>
         ))}
+        {(data.taxCents ?? 0) > 0 ? (
+          <>
+            <View style={pdfStyles.tableRow}>
+              <Text style={CELL_DESC}>Subtotal</Text>
+              <Text style={CELL_MONEY}>
+                {money(data.totalCents - (data.taxCents ?? 0))}
+              </Text>
+            </View>
+            <View style={pdfStyles.tableRow}>
+              <Text style={CELL_DESC}>{data.taxLabel ?? "Tax"}</Text>
+              <Text style={CELL_MONEY}>{money(data.taxCents ?? 0)}</Text>
+            </View>
+          </>
+        ) : null}
         <View style={[pdfStyles.tableRow, { fontFamily: "Helvetica-Bold" }]}>
           <Text style={CELL_DESC}>Total</Text>
           <Text style={CELL_MONEY}>{money(data.totalCents)}</Text>

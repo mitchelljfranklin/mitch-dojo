@@ -457,6 +457,8 @@ export async function saveMembershipsSettings(
     invoiceDueDays: formData.get("invoiceDueDays") ?? 14,
     suspendAfterOverdueDays: formData.get("suspendAfterOverdueDays") ?? 30,
     autoGenerateInvoices: formData.get("autoGenerateInvoices") === "on",
+    taxRatePercent: formData.get("taxRatePercent") ?? 0,
+    taxLabel: formData.get("taxLabel") ?? "Tax",
   });
   if (!parsed.success) {
     return {

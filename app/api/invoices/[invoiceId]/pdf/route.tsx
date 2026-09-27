@@ -45,6 +45,8 @@ export async function GET(
       reference: payment.reference,
     })),
     currency: settings.currency,
+    taxCents: detail.taxCents,
+    taxLabel: detail.taxLabel,
   });
 
   const buffer = await renderToBuffer(

@@ -327,11 +327,13 @@ export type InvoiceFinancials = {
 export function computeInvoiceFinancials(invoice: {
   items: { quantity: number; unitPriceCents: number }[];
   payments: { amountCents: number }[];
+  taxCents?: number | null;
 }): InvoiceFinancials {
-  const totalCents = invoice.items.reduce(
+  const subtotalCents = invoice.items.reduce(
     (sum, item) => sum + item.quantity * item.unitPriceCents,
     0,
   );
+  const totalCents = subtotalCents + (invoice.taxCents ?? 0);
   const paidCents = invoice.payments.reduce(
     (sum, payment) => sum + payment.amountCents,
     0,
@@ -358,6 +360,9 @@ export async function createInvoice(input: CreateInvoiceInput) {
     throw new Error("That plan no longer exists.");
   }
 
+  const { taxRatePercent, taxLabel: label } = await getMembershipsSettings();
+  const taxCents = Math.round(plan.priceCents * (taxRatePercent / 100));
+
   const number = await nextInvoiceNumber();
   return prisma.invoice.create({
     data: {
@@ -368,6 +373,8 @@ export async function createInvoice(input: CreateInvoiceInput) {
       status: "OPEN",
       issueDate: input.issueDate,
       dueDate: input.dueDate,
+      taxCents,
+      taxLabel: taxCents > 0 ? label : null,
       notes: input.notes,
       createdById: input.createdById ?? null,
       items: {
@@ -615,6 +622,7 @@ export async function generateDueInvoices(
 
   let generated = 0;
   let skipped = 0;
+  const { taxRatePercent, taxLabel } = await getMembershipsSettings();
   for (const enrollment of dueEnrollments) {
     const period = enrollment.plan.billingPeriod ?? "MONTHLY";
     let cycleDate = startOfToday(enrollment.nextInvoiceDate ?? today);
@@ -667,6 +675,9 @@ export async function generateDueInvoices(
       if (!alreadyInvoiced) {
         try {
           const number = await nextInvoiceNumber();
+          const taxCents = Math.round(
+            enrollment.plan.priceCents * (taxRatePercent / 100),
+          );
           await prisma.invoice.create({
             data: {
               number,
@@ -675,6 +686,8 @@ export async function generateDueInvoices(
               status: "OPEN",
               issueDate: cycleDate,
               dueDate: addDays(cycleDate, issueDueDays),
+              taxCents,
+              taxLabel: taxCents > 0 ? taxLabel : null,
               notes: null,
               items: {
                 create: {

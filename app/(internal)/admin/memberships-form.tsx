@@ -14,6 +14,8 @@ type MembershipsFormProps = {
   invoiceDueDays: number;
   suspendAfterOverdueDays: number;
   autoGenerateInvoices: boolean;
+  taxRatePercent: number;
+  taxLabel: string;
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -28,6 +30,8 @@ function MembershipsFormInner({
   invoiceDueDays,
   suspendAfterOverdueDays,
   autoGenerateInvoices,
+  taxRatePercent,
+  taxLabel,
 }: MembershipsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -93,6 +97,30 @@ function MembershipsFormInner({
           />
           Generate recurring invoices automatically
         </label>
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="taxRatePercent">Tax / GST rate (%)</Label>
+        <Input
+          id="taxRatePercent"
+          name="taxRatePercent"
+          type="number"
+          min={0}
+          max={100}
+          step="0.01"
+          defaultValue={taxRatePercent}
+        />
+        <Label htmlFor="taxLabel">Tax label</Label>
+        <Input
+          id="taxLabel"
+          name="taxLabel"
+          maxLength={20}
+          defaultValue={taxLabel}
+          placeholder="e.g. GST"
+        />
+        <p className="text-muted-foreground text-xs">
+          Applied to new invoices and captured at issue time, so changing the
+          rate later never rewrites history.
+        </p>
       </div>
       {state && !state.ok ? (
         <p className="text-destructive text-sm" role="alert">

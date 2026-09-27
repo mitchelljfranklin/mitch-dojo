@@ -162,6 +162,25 @@ export default async function InvoiceDetailPage({
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
+            {invoice.taxCents > 0 ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>
+                    {formatMoney(
+                      invoice.financials.totalCents - invoice.taxCents,
+                      currency,
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    {invoice.taxLabel ?? "Tax"}
+                  </span>
+                  <span>{formatMoney(invoice.taxCents, currency)}</span>
+                </div>
+              </>
+            ) : null}
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total</span>
               <span>

@@ -288,10 +288,11 @@ export async function getPortalInvoices(studentId: string) {
   });
 
   const rows: PortalInvoice[] = invoices.map((invoice) => {
-    const totalCents = invoice.items.reduce(
+    const subtotalCents = invoice.items.reduce(
       (sum, item) => sum + item.quantity * item.unitPriceCents,
       0,
     );
+    const totalCents = subtotalCents + invoice.taxCents;
     const paidCents = invoice.payments.reduce(
       (sum, payment) => sum + payment.amountCents,
       0,

@@ -199,6 +199,10 @@ export const membershipsSettingsSchema = z.object({
   invoiceDueDays: z.coerce.number().int().min(0).max(90).default(14),
   suspendAfterOverdueDays: z.coerce.number().int().min(0).max(365).default(30),
   autoGenerateInvoices: z.boolean().default(true),
+  // Tax/GST applied to new invoices (0 = no tax). Captured onto each invoice
+  // at issue time so later rate changes never rewrite history.
+  taxRatePercent: z.coerce.number().min(0).max(100).default(0),
+  taxLabel: z.string().trim().max(20).default("Tax"),
 });
 
 export type MembershipsSettings = z.infer<typeof membershipsSettingsSchema>;

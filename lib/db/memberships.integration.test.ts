@@ -991,4 +991,47 @@ describe("invoice financials", () => {
     expect(financials.paidCents).toBe(8950);
     expect(financials.balanceCents).toBe(2000);
   });
+
+  it("adds the invoice tax to the total and balance", () => {
+    const financials = computeInvoiceFinancials({
+      items: [{ quantity: 1, unitPriceCents: 10000 }],
+      payments: [{ amountCents: 2000 }],
+      taxCents: 1000,
+    });
+    expect(financials.totalCents).toBe(11000);
+    expect(financials.balanceCents).toBe(9000);
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("invoice tax", () => {
+  it("captures the configured tax on a manual invoice", async () => {
+    const { updateMembershipsSettings } = await import("@/lib/settings");
+    const plan = await createMembershipPlan({
+      name: `Taxed Plan ${suffix}`,
+      description: null,
+      planType: "ITEM",
+      billingPeriod: null,
+      priceCents: 10000,
+    });
+    let invoiceId: string | null = null;
+    await updateMembershipsSettings({ taxRatePercent: 10, taxLabel: "GST" });
+    try {
+      const invoice = await createInvoice({
+        studentId,
+        planId: plan.id,
+        issueDate: daysFromNow(0),
+        dueDate: daysFromNow(14),
+        notes: null,
+      });
+      invoiceId = invoice.id;
+      expect(invoice.taxCents).toBe(1000);
+      expect(invoice.taxLabel).toBe("GST");
+    } finally {
+      await updateMembershipsSettings({ taxRatePercent: 0, taxLabel: "Tax" });
+      if (invoiceId) {
+        await prisma.invoice.delete({ where: { id: invoiceId } });
+      }
+      await deleteMembershipPlan(plan.id);
+    }
+  });
 });

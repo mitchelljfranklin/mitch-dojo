@@ -4,7 +4,22 @@ import {
   appearanceSettingsSchema,
   communicationsSettingsSchema,
   emailTemplateSchema,
+  membershipsSettingsSchema,
 } from "./schema";
+
+describe("membershipsSettingsSchema", () => {
+  it("defaults tax settings when unset", () => {
+    const settings = membershipsSettingsSchema.parse({});
+    expect(settings.taxRatePercent).toBe(0);
+    expect(settings.taxLabel).toBe("Tax");
+  });
+
+  it("rejects an out-of-range tax rate", () => {
+    expect(() =>
+      membershipsSettingsSchema.parse({ taxRatePercent: 150 }),
+    ).toThrow();
+  });
+});
 
 describe("appearanceSettingsSchema", () => {
   it("defaults the booking copy when unset", () => {

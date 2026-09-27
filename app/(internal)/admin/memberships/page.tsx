@@ -44,6 +44,8 @@ export default async function AdminMembershipsPage() {
               membershipsSettings.suspendAfterOverdueDays
             }
             autoGenerateInvoices={membershipsSettings.autoGenerateInvoices}
+            taxRatePercent={membershipsSettings.taxRatePercent}
+            taxLabel={membershipsSettings.taxLabel}
           />
         </CardContent>
       </Card>
