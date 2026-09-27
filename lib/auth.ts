@@ -117,7 +117,10 @@ export async function buildSsoProviders(): Promise<Provider[]> {
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   return {
-    trustHost: true,
+    // Defaults true (AUTH_URL is derived from APP_URL, so it is normally
+    // safe); set AUTH_TRUST_HOST=false to reject Host-header-derived URLs in
+    // setups that terminate TLS in a way that rewrites Host.
+    trustHost: process.env.AUTH_TRUST_HOST !== "false",
     session: { strategy: "jwt" },
     pages: { signIn: "/login" },
     providers: [

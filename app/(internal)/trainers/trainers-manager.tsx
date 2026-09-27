@@ -304,17 +304,9 @@ export function TrainersManager({
         </p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
-          {filtered.map((trainer) => (
-            <div
-              key={trainer.id}
-              className="flex flex-wrap items-center justify-between gap-2 p-3"
-            >
-              <button
-                type="button"
-                onClick={() => openEditor(trainer)}
-                disabled={!canEdit}
-                className="flex flex-1 flex-col items-start text-left disabled:cursor-default"
-              >
+          {filtered.map((trainer) => {
+            const identity = (
+              <>
                 <span className="text-sm font-medium">
                   {trainer.name}
                   {trainer.userName ? (
@@ -327,25 +319,45 @@ export function TrainersManager({
                 <span className="text-muted-foreground text-xs">
                   {trainer.email || "No email"}
                 </span>
-              </button>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge variant="secondary" className="text-xs">
-                  {trainer.courseCount}{" "}
-                  {trainer.courseCount === 1 ? "course" : "courses"}
-                </Badge>
-                {trainer.userId ? (
-                  <Badge variant="outline" className="text-xs">
-                    Has account
-                  </Badge>
-                ) : null}
-                {trainer.isActive ? null : (
-                  <Badge variant="outline" className="text-xs">
-                    Inactive
-                  </Badge>
+              </>
+            );
+            return (
+              <div
+                key={trainer.id}
+                className="flex flex-wrap items-center justify-between gap-2 p-3"
+              >
+                {canEdit ? (
+                  <button
+                    type="button"
+                    onClick={() => openEditor(trainer)}
+                    className="flex flex-1 flex-col items-start text-left"
+                  >
+                    {identity}
+                  </button>
+                ) : (
+                  <div className="flex flex-1 flex-col items-start text-left">
+                    {identity}
+                  </div>
                 )}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge variant="secondary" className="text-xs">
+                    {trainer.courseCount}{" "}
+                    {trainer.courseCount === 1 ? "course" : "courses"}
+                  </Badge>
+                  {trainer.userId ? (
+                    <Badge variant="outline" className="text-xs">
+                      Has account
+                    </Badge>
+                  ) : null}
+                  {trainer.isActive ? null : (
+                    <Badge variant="outline" className="text-xs">
+                      Inactive
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

@@ -284,33 +284,47 @@ export function BeltLadderManager({
         </p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
-          {belts.map((belt) => (
-            <button
-              key={belt.id}
-              type="button"
-              onClick={() => canEdit && setEditing(belt)}
-              disabled={!canEdit}
-              className="hover:bg-muted/50 flex items-center justify-between gap-3 p-3 text-left"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className="h-4 w-8 shrink-0 rounded-full border border-black/20"
-                  style={{ backgroundColor: belt.colorHex }}
-                />
-                <span className="truncate text-sm font-medium">
-                  {belt.name}
-                </span>
-                <span className="text-muted-foreground text-xs">
-                  order {belt.order}
-                </span>
+          {belts.map((belt) => {
+            const rowContent = (
+              <>
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="h-4 w-8 shrink-0 rounded-full border border-black/20"
+                    style={{ backgroundColor: belt.colorHex }}
+                  />
+                  <span className="truncate text-sm font-medium">
+                    {belt.name}
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    order {belt.order}
+                  </span>
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {belt.requiredTrainings} training
+                  {belt.requiredTrainings === 1 ? "" : "s"}
+                </Badge>
+              </>
+            );
+            const rowClass =
+              "flex items-center justify-between gap-3 p-3 text-left";
+            // Read-only roles get a static row, not a disabled button
+            // (hidden, never greyed — see AGENTS.md).
+            return canEdit ? (
+              <button
+                key={belt.id}
+                type="button"
+                onClick={() => setEditing(belt)}
+                className={`hover:bg-muted/50 ${rowClass}`}
+              >
+                {rowContent}
+              </button>
+            ) : (
+              <div key={belt.id} className={rowClass}>
+                {rowContent}
               </div>
-              <Badge variant="secondary" className="text-xs">
-                {belt.requiredTrainings} training
-                {belt.requiredTrainings === 1 ? "" : "s"}
-              </Badge>
-            </button>
-          ))}
+            );
+          })}
         </div>
       )}
 

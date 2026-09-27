@@ -104,6 +104,11 @@ export function EnrollStudentSheet({
                 required
                 defaultValue={todayIsoDate()}
               />
+              <p className="text-muted-foreground text-xs">
+                Recurring plans bill from this date — a backdated start
+                generates the missed cycles (immediately due) on the next
+                scheduler run.
+              </p>
             </div>
             {state && "error" in state ? (
               <p className="text-destructive text-sm" role="alert">

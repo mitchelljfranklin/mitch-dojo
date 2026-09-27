@@ -35,8 +35,14 @@ export async function getAnalyticsOverview(
 ): Promise<AnalyticsOverview> {
   const monthStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
   const monthEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
+  // Payment dates are stored at the deployment-local midnight of the chosen
+  // day, so a payment on the 1st sits just before the UTC month bounds east
+  // of UTC. Widen the fetch by a day and bucket by each payment's LOCAL
+  // calendar date (utcMidnightOf) so it lands in the right month.
+  const queryStart = new Date(monthStart.getTime() - 86_400_000);
+  const queryEnd = new Date(monthEnd.getTime() + 86_400_000);
 
-  const [activeStudents, trialStudents, activeEnrollments, paymentAggregate] =
+  const [activeStudents, trialStudents, activeEnrollments, monthPayments] =
     await Promise.all([
       prisma.student.count({ where: { status: "ACTIVE" } }),
       prisma.student.count({ where: { status: "TRIAL" } }),
@@ -46,19 +52,26 @@ export async function getAnalyticsOverview(
           student: { status: { in: ["ACTIVE", "TRIAL"] } },
         },
       }),
-      prisma.payment.aggregate({
-        where: { paidAt: { gte: monthStart, lt: monthEnd } },
-        _sum: { amountCents: true },
-        _count: true,
+      prisma.payment.findMany({
+        where: { paidAt: { gte: queryStart, lt: queryEnd } },
+        select: { amountCents: true, paidAt: true },
       }),
     ]);
+
+  const inMonth = monthPayments.filter((payment) => {
+    const day = utcMidnightOf(payment.paidAt).getTime();
+    return day >= monthStart.getTime() && day < monthEnd.getTime();
+  });
 
   return {
     activeStudents,
     trialStudents,
     activeEnrollments,
-    revenueThisMonthCents: paymentAggregate._sum.amountCents ?? 0,
-    paymentsThisMonth: paymentAggregate._count,
+    revenueThisMonthCents: inMonth.reduce(
+      (sum, payment) => sum + payment.amountCents,
+      0,
+    ),
+    paymentsThisMonth: inMonth.length,
   };
 }
 
@@ -149,10 +162,14 @@ export async function getRevenueTrend(
     Date.UTC(now.getFullYear(), now.getMonth() - (months - 1), 1),
   );
   const rangeEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
+  // Widen by a day, then bucket by each payment's LOCAL calendar date — see
+  // getAnalyticsOverview (payment dates are stored at local midnight).
+  const queryStart = new Date(rangeStart.getTime() - 86_400_000);
+  const queryEnd = new Date(rangeEnd.getTime() + 86_400_000);
 
   const payments = await prisma.payment.findMany({
     where: {
-      paidAt: { gte: rangeStart, lt: rangeEnd },
+      paidAt: { gte: queryStart, lt: queryEnd },
       invoice: {
         // Null-location invoices (school-wide memberships) only count
         // towards "All locations" — a filter excludes them by design.
@@ -170,11 +187,10 @@ export async function getRevenueTrend(
     const bucketEnd = new Date(
       Date.UTC(now.getFullYear(), now.getMonth() - index + 1, 1),
     );
-    const monthPayments = payments.filter(
-      (payment) =>
-        payment.paidAt.getTime() >= bucketStart.getTime() &&
-        payment.paidAt.getTime() < bucketEnd.getTime(),
-    );
+    const monthPayments = payments.filter((payment) => {
+      const day = utcMidnightOf(payment.paidAt).getTime();
+      return day >= bucketStart.getTime() && day < bucketEnd.getTime();
+    });
 
     buckets.push({
       month: bucketStart.toISOString().slice(0, 7),

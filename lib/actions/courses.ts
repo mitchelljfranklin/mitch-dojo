@@ -154,10 +154,16 @@ export async function setSessionStatusAction(formData: FormData) {
 
   const user = await getCurrentUser();
   if (user) {
-    await logAudit(user.id, AUDIT_ACTIONS.UPDATE_COURSE, "Course", courseId, {
-      sessionId,
-      status,
-    });
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.UPDATE_SESSION_STATUS,
+      "Course",
+      courseId,
+      {
+        sessionId,
+        status,
+      },
+    );
   }
   revalidatePath(`/classes/${courseId}`);
 }

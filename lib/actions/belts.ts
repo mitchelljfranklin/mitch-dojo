@@ -62,7 +62,7 @@ export async function createDisciplineAction(
   if (user) {
     await logAudit(
       user.id,
-      AUDIT_ACTIONS.CREATE_BELT_LEVEL,
+      AUDIT_ACTIONS.CREATE_DISCIPLINE,
       "Discipline",
       name,
     );
@@ -90,7 +90,7 @@ export async function deleteDisciplineAction(formData: FormData) {
   if (user) {
     await logAudit(
       user.id,
-      AUDIT_ACTIONS.DELETE_BELT_LEVEL,
+      AUDIT_ACTIONS.DELETE_DISCIPLINE,
       "Discipline",
       disciplineId,
     );
