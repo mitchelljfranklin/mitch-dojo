@@ -190,11 +190,18 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
             </span>
           </div>
         </div>
-        <form action={portalSignOutAction}>
-          <Button type="submit" variant="outline" size="sm">
-            Sign out
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href="/portal/calendar" download>
+              Add classes to calendar
+            </a>
           </Button>
-        </form>
+          <form action={portalSignOutAction}>
+            <Button type="submit" variant="outline" size="sm">
+              Sign out
+            </Button>
+          </form>
+        </div>
       </div>
 
       {children.length > 1 ? (

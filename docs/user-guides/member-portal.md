@@ -20,7 +20,7 @@ Anyone with the link can see that student's data. Tokens are scoped to one stude
 | Section | Contents |
 |---|---|
 | **Progress** | Current belt per discipline, promotion history, next-belt eligibility |
-| **Upcoming classes** | Their courses' next sessions |
+| **Upcoming classes** | Their courses' next sessions, plus an **Add classes to calendar** `.ics` download |
 | **Attendance** | Recent attendance history |
 | **Invoices & balance** | Their invoices and current balance |
 | **Documents & consent** | Read and digitally sign the school's agreements ([Compliance](./compliance)) |
