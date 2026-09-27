@@ -1,8 +1,8 @@
 # RBAC & Roles
 
-Mitch‑Dojo uses **permission-based** access control, not "is authenticated" gating. Three system roles are built in, and admins can create custom roles with any combination of the 22 fine-grained permissions.
+Mitch‑Dojo uses **permission-based** access control, not "is authenticated" gating. Three system roles are built in, and admins can create custom roles with any combination of the 24 fine-grained permissions.
 
-## Permission Catalog (22 Permissions)
+## Permission Catalog (24 Permissions)
 
 ### Students (5)
 
@@ -19,6 +19,13 @@ Mitch‑Dojo uses **permission-based** access control, not "is authenticated" ga
 | Permission Key | Description |
 |---------------|-------------|
 | `locations:edit` | Create, edit, and deactivate dojo locations; rotate check-in tokens |
+
+### Safety & Incidents (2)
+
+| Permission Key | Description |
+|---------------|-------------|
+| `incidents:view` | View the accident book and incident reports |
+| `incidents:manage` | Log, edit, close, and delete incident reports |
 
 ### Classes & Schedule (2)
 
@@ -80,9 +87,9 @@ Mitch‑Dojo uses **permission-based** access control, not "is authenticated" ga
 
 | Role | Permissions | Who It's For |
 |------|:----------:|--------------|
-| **Admin** | 21 (all) | Full platform control. Locked — cannot be deleted or edited. |
-| **Trainer** | 12 | Floor operations: students (no delete) incl. medical visibility, classes, attendance, belts, analytics. No administration. |
-| **Viewer** | 7 | Read-only across students, classes, attendance, belts, memberships, analytics. |
+| **Admin** | 24 (all) | Full platform control. Locked — cannot be deleted or edited. |
+| **Trainer** | 14 | Floor operations: students (no delete) incl. medical visibility, incidents, classes, attendance, belts, analytics. No administration. |
+| **Viewer** | 8 | Read-only across students, incidents, classes, attendance, belts, memberships, analytics. |
 
 System roles are seeded on first run and cannot be deleted.
 
@@ -117,12 +124,14 @@ Access control is enforced at every layer:
 | Action | Admin | Trainer | Viewer |
 |--------|:-----:|:-------:|:------:|
 | View students | Yes | Yes | Yes |
+| View incidents | Yes | Yes | Yes |
 | Create/import students | Yes | Yes | No |
 | Delete students | Yes | No | No |
 | Manage locations | Yes | No | No |
 | View schedule | Yes | Yes | Yes |
 | Edit courses & times | Yes | No | No |
 | Mark attendance | Yes | Yes | No |
+| Log/close incident reports | Yes | Yes | No |
 | Record promotions | Yes | Yes | No |
 | Record payments | Yes | No | No |
 | View analytics | Yes | Yes | Yes |

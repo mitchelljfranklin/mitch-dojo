@@ -89,4 +89,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   CREATE_CAMPAIGN: "Queued email campaign",
   SEND_CAMPAIGN: "Sent email campaign",
   RECORD_AGREEMENT: "Recorded agreement signature",
+  CREATE_INCIDENT: "Logged incident report",
+  UPDATE_INCIDENT: "Updated incident report",
+  CLOSE_INCIDENT: "Closed incident report",
+  DELETE_INCIDENT: "Deleted incident report",
 };

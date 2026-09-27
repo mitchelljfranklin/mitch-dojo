@@ -71,12 +71,13 @@
 - Digital signing through the member portal (confirmation + typed name, date recorded) with a staff-recorded paper fallback and printable branded forms
 - **Compliance page** listing every member with an outstanding signature, plus optional scheduler reminders and an optional check-in gate
 - Health & medical section on the student record (medications, conditions, injuries) gated by a dedicated PHI permission
+- **Incident reports / accident book** — dated, severity-rated incidents optionally linked to a student and location, with open/closed tracking and a per-student history
 
 ## Platform
 
 - **White-label** — your org name and logo on the booking page, member portal, check-in screens, login screens, and every email; separate light/dark logo variants so single-colour badges stay visible everywhere, with a choice of logo for emails; editable booking-page copy
 - **Single sign-on** — Microsoft Entra ID, Google, or any OpenID Connect provider; first sign-ins auto-provision passwordless accounts; SSO-only mode with a single-use break-glass URL for emergencies
-- **RBAC** — three seeded system roles (Admin, Trainer, Viewer) plus custom roles over 22 fine-grained permissions (incl. PHI-gated medical visibility); gated controls are hidden, never greyed out
+- **RBAC** — three seeded system roles (Admin, Trainer, Viewer) plus custom roles over 24 fine-grained permissions (incl. PHI-gated medical visibility); gated controls are hidden, never greyed out
 - **Audit log** — every state-changing admin action logged, with retention pruning
 - **Dual-mode database** — PostgreSQL server or embedded PGlite; one schema, one migration set, a single environment variable to switch
 - **Scheduler** — built-in 5-minute job runner (reminders, pruning, orphan-file sweep) or trigger it externally via a secured cron endpoint

@@ -32,20 +32,21 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  auditLogs            AuditLog[]
-  passwordResetTokens  PasswordResetToken[]
-  sentNotificationLogs NotificationLog[]    @relation("NotificationSentBy")
-  trainerProfile       Trainer?
-  markedAttendance     Attendance[]         @relation("AttendanceMarkedBy")
-  awardedBelts         StudentBelt[]        @relation("BeltAwardedBy")
-  createdInvoices      Invoice[]            @relation("InvoiceCreatedBy")
-  recordedPayments     Payment[]            @relation("PaymentRecordedBy")
-  ssoIdentities        SsoIdentity[]
-  createdAgreementDocs AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
-  createdCampaigns    EmailCampaign[]       @relation("CampaignCreatedBy")
-  createdGradingEvents GradingEvent[]       @relation("GradingEventCreatedBy")
-  createdAgreementVersions AgreementVersion[] @relation("AgreementVersionCreatedBy")
-  recordedAgreements   StudentAgreement[]   @relation("AgreementRecordedBy")
+  auditLogs                AuditLog[]
+  passwordResetTokens      PasswordResetToken[]
+  sentNotificationLogs     NotificationLog[]    @relation("NotificationSentBy")
+  trainerProfile           Trainer?
+  markedAttendance         Attendance[]         @relation("AttendanceMarkedBy")
+  awardedBelts             StudentBelt[]        @relation("BeltAwardedBy")
+  createdInvoices          Invoice[]            @relation("InvoiceCreatedBy")
+  recordedPayments         Payment[]            @relation("PaymentRecordedBy")
+  ssoIdentities            SsoIdentity[]
+  createdAgreementDocs     AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
+  createdCampaigns         EmailCampaign[]      @relation("CampaignCreatedBy")
+  createdGradingEvents     GradingEvent[]       @relation("GradingEventCreatedBy")
+  createdAgreementVersions AgreementVersion[]   @relation("AgreementVersionCreatedBy")
+  recordedAgreements       StudentAgreement[]   @relation("AgreementRecordedBy")
+  reportedIncidents        Incident[]           @relation("IncidentReportedBy")
 
   @@index([roleId])
   @@map("users")
@@ -223,6 +224,7 @@ model Location {
   sessions         ClassSession[]
   invoices         Invoice[]
   gradingEvents    GradingEvent[]
+  incidents        Incident[]
 
   @@map("locations")
 }
@@ -268,20 +270,22 @@ model Student {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  locations   StudentLocation[]
-  disciplines StudentDiscipline[]
-  attendance  Attendance[]
-  belts       StudentBelt[]
-  enrollments Enrollment[]
-  invoices    Invoice[]
-  portalTokens PortalToken[]
-  agreements  StudentAgreement[]
+  locations     StudentLocation[]
+  disciplines   StudentDiscipline[]
+  attendance    Attendance[]
+  belts         StudentBelt[]
+  enrollments   Enrollment[]
+  invoices      Invoice[]
+  portalTokens  PortalToken[]
+  agreements    StudentAgreement[]
   gradingEvents GradingEventStudent[]
-  householdId String?
-  household   Household?  @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  incidents     Incident[]
+  householdId   String?
+  household     Household?            @relation(fields: [householdId], references: [id], onDelete: SetNull)
 
   @@index([lastName, firstName])
   @@index([status])
+  @@index([householdId])
   @@map("students")
 }
 
@@ -293,23 +297,24 @@ model Student {
 // they signed, and the compliance surface reports "re-sign required" when a
 // document's version moves past a signature.
 model AgreementDocument {
-  id           String   @id @default(cuid())
+  id           String             @id @default(cuid())
   title        String
   bodyMarkdown String
   // Disabled documents disappear from the portal and the compliance card
   // (prior signatures stay in the database).
-  enabled      Boolean  @default(true)
+  enabled      Boolean            @default(true)
   // Current version number; a fresh/seeded document starts at 0 so the
   // school's first edit reads as version 1.
-  version      Int      @default(0)
-  sortOrder    Int      @default(0)
+  version      Int                @default(0)
+  sortOrder    Int                @default(0)
   createdById  String?
-  createdBy    User?    @relation("AgreementDocumentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdBy    User?              @relation("AgreementDocumentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
   versions     AgreementVersion[]
   signatures   StudentAgreement[]
 
+  @@index([sortOrder])
   @@map("agreement_documents")
 }
 
@@ -317,17 +322,18 @@ model AgreementDocument {
 // current version number and content; version rows preserve what was
 // previously signed.
 model AgreementVersion {
-  id           String           @id @default(cuid())
+  id           String            @id @default(cuid())
   documentId   String
   document     AgreementDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
   version      Int
   title        String
   bodyMarkdown String
   createdById  String?
-  createdBy    User?            @relation("AgreementVersionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt    DateTime         @default(now())
+  createdBy    User?             @relation("AgreementVersionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime          @default(now())
 
   @@unique([documentId, version])
+  @@index([documentId])
   @@map("agreement_document_versions")
 }
 
@@ -335,19 +341,19 @@ model AgreementVersion {
 // field records which document version was signed so stale signatures are
 // detectable.
 model StudentAgreement {
-  id           String           @id @default(cuid())
+  id           String                   @id @default(cuid())
   studentId    String
-  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student      Student                  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   documentId   String
-  document     AgreementDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document     AgreementDocument        @relation(fields: [documentId], references: [id], onDelete: Cascade)
   version      Int
-  signedAt     DateTime         @default(now())
+  signedAt     DateTime                 @default(now())
   // Name the signer typed (the student, or the guardian for minors).
   signedByName String
   method       AgreementSignatureMethod @default(PORTAL)
   recordedById String?
-  recordedBy   User?            @relation("AgreementRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
-  createdAt    DateTime         @default(now())
+  recordedBy   User?                    @relation("AgreementRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime                 @default(now())
 
   @@unique([studentId, documentId])
   @@index([documentId])
@@ -364,14 +370,14 @@ enum AgreementSignatureMethod {
 // teach Karate and Jujitsu); drives which progression tables the student
 // appears in. Rank itself is per discipline (StudentBelt).
 model StudentDiscipline {
-  studentId    String
-  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  disciplineId String
-  discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  disciplineId    String
+  discipline      Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
   // Prior trainings credited when a transferring student's first belt is
   // recorded (their history lives outside this system). Counts on top of
   // locally recorded attendance in every eligibility calculation.
-  trainingsCredit Int @default(0)
+  trainingsCredit Int        @default(0)
 
   @@id([studentId, disciplineId])
   @@index([disciplineId])
@@ -477,7 +483,7 @@ model BeltRangeEntry {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
-  studentBelts StudentBelt[]
+  studentBelts   StudentBelt[]
   gradingTargets GradingEventStudent[]
 
   @@unique([disciplineId, name])
@@ -577,19 +583,19 @@ model Attendance {
 // ITEM plans are one-off billables (grading fees, gear) invoiced manually.
 // Money is stored as integer cents to avoid float rounding.
 model MembershipPlan {
-  id            String         @id @default(cuid())
-  name          String         @unique
-  description   String?
-  planType      PlanType       @default(RECURRING)
-  billingPeriod BillingPeriod?
-  priceCents    Int
-  isActive      Boolean        @default(true)
+  id                       String         @id @default(cuid())
+  name                     String         @unique
+  description              String?
+  planType                 PlanType       @default(RECURRING)
+  billingPeriod            BillingPeriod?
+  priceCents               Int
+  isActive                 Boolean        @default(true)
   // When true, recurring invoices are generated only if the member has at
   // least one trained session (Present/Late) since the previous invoice.
   // The enrollment's first invoice always bills (in-advance billing).
-  chargeOnlyWithAttendance Boolean @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  chargeOnlyWithAttendance Boolean        @default(false)
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
 
   enrollments Enrollment[]
 
@@ -600,11 +606,11 @@ model MembershipPlan {
 // nextInvoiceDate — the scheduler generates an invoice when it passes.
 // ITEM enrollments are billed manually (no cycle).
 model Enrollment {
-  id              String          @id @default(cuid())
+  id              String           @id @default(cuid())
   studentId       String
-  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student         Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   planId          String
-  plan            MembershipPlan  @relation(fields: [planId], references: [id], onDelete: Restrict)
+  plan            MembershipPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
   status          EnrollmentStatus @default(ACTIVE)
   startDate       DateTime
   endDate         DateTime?
@@ -614,8 +620,8 @@ model Enrollment {
   pausedAt        DateTime?
   pauseReason     String?
   resumeAt        DateTime?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   invoices Invoice[]
 
@@ -656,13 +662,13 @@ model Invoice {
   items    InvoiceItem[]
   payments Payment[]
 
-  @@index([studentId])
-  @@index([status, dueDate])
-  @@index([locationId])
   // One recurring invoice per enrollment cycle. NULL enrollmentId (manual
   // invoices) is unaffected by Postgres unique semantics. This is the hard
   // backstop against duplicate generation on a crash or concurrent run.
   @@unique([enrollmentId, issueDate])
+  @@index([studentId])
+  @@index([status, dueDate])
+  @@index([locationId])
   @@map("invoices")
 }
 
@@ -773,14 +779,14 @@ model GradingEvent {
 }
 
 model GradingEventStudent {
-  id                    String          @id @default(cuid())
-  eventId               String
-  event                 GradingEvent    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  studentId             String
-  student               Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                     String          @id @default(cuid())
+  eventId                String
+  event                  GradingEvent    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  studentId              String
+  student                Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
   targetBeltRangeEntryId String?
-  targetBeltRangeEntry  BeltRangeEntry? @relation(fields: [targetBeltRangeEntryId], references: [id], onDelete: SetNull)
-  outcome               GradingOutcome  @default(PENDING)
+  targetBeltRangeEntry   BeltRangeEntry? @relation(fields: [targetBeltRangeEntryId], references: [id], onDelete: SetNull)
+  outcome                GradingOutcome  @default(PENDING)
 
   @@unique([eventId, studentId])
   @@index([studentId])
@@ -800,8 +806,50 @@ model Household {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  students Student[]
+  students     Student[]
   portalTokens PortalToken[]
 
   @@map("households")
+}
+
+enum IncidentSeverity {
+  MINOR
+  MODERATE
+  SERIOUS
+}
+
+enum IncidentStatus {
+  OPEN
+  CLOSED
+}
+
+// Accident book: one row per incident or injury, optionally tied to a student
+// and/or a location (a visitor or a facility issue has no student). Injury
+// detail is PHI-adjacent, so the whole feature is gated by incidents:view /
+// incidents:manage rather than the general student permissions.
+model Incident {
+  id                       String           @id @default(cuid())
+  studentId                String?
+  student                  Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  locationId               String?
+  location                 Location?        @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  occurredAt               DateTime
+  title                    String
+  description              String
+  injuryDescription        String?
+  severity                 IncidentSeverity @default(MINOR)
+  treatmentGiven           String?
+  medicalAttentionRequired Boolean          @default(false)
+  actionsTaken             String?
+  status                   IncidentStatus   @default(OPEN)
+  closedAt                 DateTime?
+  reportedById             String?
+  reportedBy               User?            @relation("IncidentReportedBy", fields: [reportedById], references: [id], onDelete: SetNull)
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+
+  @@index([studentId])
+  @@index([status])
+  @@index([occurredAt])
+  @@map("incidents")
 }

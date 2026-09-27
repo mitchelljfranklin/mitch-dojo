@@ -23,6 +23,7 @@ import {
   ScrollText,
   Scroll,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   UserCheck,
   UserPlus,
@@ -182,6 +183,7 @@ type NavGroup = {
 function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
   const canManage = hasAnyPermission(permissions, MANAGE_PERMISSIONS);
   const canStudents = hasPermission(permissions, PERMISSIONS.STUDENTS_VIEW);
+  const canIncidents = hasPermission(permissions, PERMISSIONS.INCIDENTS_VIEW);
   const canClasses = hasPermission(permissions, PERMISSIONS.CLASSES_VIEW);
   const canAttendance = hasPermission(permissions, PERMISSIONS.ATTENDANCE_VIEW);
   const canBelts = hasPermission(permissions, PERMISSIONS.BELTS_VIEW);
@@ -257,6 +259,12 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
           href: "/compliance",
           icon: ShieldCheck,
           visible: canStudents,
+        },
+        {
+          title: "Incidents",
+          href: "/incidents",
+          icon: ShieldAlert,
+          visible: canIncidents,
         },
         {
           title: "Trainers",

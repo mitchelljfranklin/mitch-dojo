@@ -59,6 +59,8 @@ Two optional helpers keep it moving:
 - **Agreement reminders** ([Communication settings](../configuration/communication)) — the scheduler emails each member once per outstanding document version. Because the reminder is keyed to the document's version, bumping the document re-arms it automatically; there is no separate renewal date.
 - **Check-in gate** ([Memberships settings](../configuration/memberships)) — when on, QR check-in is refused while a member has an outstanding agreement, mirroring the overdue-balance suspension. Staff marking attendance manually are never blocked.
 
+Injuries and incidents are recorded separately in the [accident book](./incidents).
+
 ## Permissions at a glance
 
 | Action | Permission |

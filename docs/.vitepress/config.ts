@@ -24,6 +24,7 @@ const sidebar = [
       { text: "Belts & Gradings", link: "/user-guides/belts" },
       { text: "Importing History", link: "/user-guides/importing-history" },
       { text: "Documents & Consent", link: "/user-guides/compliance" },
+      { text: "Incident Reports", link: "/user-guides/incidents" },
       { text: "Memberships & Payments", link: "/user-guides/memberships" },
       { text: "Communication", link: "/user-guides/communication" },
       { text: "Trials & Leads", link: "/user-guides/trials" },

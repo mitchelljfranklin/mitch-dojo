@@ -4,6 +4,8 @@ export const PERMISSIONS = {
   STUDENTS_EDIT: "students:edit",
   STUDENTS_DELETE: "students:delete",
   STUDENTS_MEDICAL: "students:medical",
+  INCIDENTS_VIEW: "incidents:view",
+  INCIDENTS_MANAGE: "incidents:manage",
   LOCATIONS_EDIT: "locations:edit",
   CLASSES_VIEW: "classes:view",
   CLASSES_EDIT: "classes:edit",
@@ -46,6 +48,17 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       {
         key: PERMISSIONS.STUDENTS_MEDICAL,
         label: "View medical & health information",
+      },
+    ],
+  },
+  {
+    resource: "incidents",
+    label: "Safety & incidents",
+    permissions: [
+      { key: PERMISSIONS.INCIDENTS_VIEW, label: "View incident reports" },
+      {
+        key: PERMISSIONS.INCIDENTS_MANAGE,
+        label: "Record & manage incident reports",
       },
     ],
   },
@@ -145,6 +158,8 @@ const TRAINER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.STUDENTS_CREATE,
   PERMISSIONS.STUDENTS_EDIT,
   PERMISSIONS.STUDENTS_MEDICAL,
+  PERMISSIONS.INCIDENTS_VIEW,
+  PERMISSIONS.INCIDENTS_MANAGE,
   PERMISSIONS.CLASSES_VIEW,
   PERMISSIONS.ATTENDANCE_VIEW,
   PERMISSIONS.ATTENDANCE_MARK,
@@ -157,6 +172,7 @@ const TRAINER_PERMISSIONS: readonly Permission[] = [
 
 const VIEWER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.STUDENTS_VIEW,
+  PERMISSIONS.INCIDENTS_VIEW,
   PERMISSIONS.CLASSES_VIEW,
   PERMISSIONS.ATTENDANCE_VIEW,
   PERMISSIONS.BELTS_VIEW,

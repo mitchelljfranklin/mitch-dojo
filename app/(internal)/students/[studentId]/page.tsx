@@ -18,6 +18,8 @@ import { PastAttendanceSheet } from "@/components/past-attendance-sheet";
 import { deleteStudentAction } from "@/lib/actions/students";
 import { deletePromotionAction } from "@/lib/actions/belts";
 import { getStudentAgreementStatuses } from "@/lib/db/agreements";
+import { listStudentIncidents } from "@/lib/db/incidents";
+import { INCIDENT_SEVERITY_LABELS } from "@/lib/schemas/incident";
 import { RecordSignatureSheet } from "./record-signature-sheet";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -95,6 +97,10 @@ export default async function StudentDetailPage({
     user.permissions,
     PERMISSIONS.MEMBERSHIPS_EDIT,
   );
+  const canViewIncidents = hasPermission(
+    user.permissions,
+    PERMISSIONS.INCIDENTS_VIEW,
+  );
 
   const { studentId } = await params;
   const sp = await searchParams;
@@ -106,6 +112,7 @@ export default async function StudentDetailPage({
     backfillCourses,
     agreementStatuses,
     household,
+    incidents,
   ] = await Promise.all([
     getStudent(studentId),
     prisma.attachment.findMany({
@@ -117,6 +124,7 @@ export default async function StudentDetailPage({
     canMarkAttendance ? listCoursesForStudent(studentId) : Promise.resolve([]),
     getStudentAgreementStatuses(studentId),
     getStudentHousehold(studentId),
+    canViewIncidents ? listStudentIncidents(studentId) : Promise.resolve([]),
   ]);
   if (!student) {
     notFound();
@@ -465,6 +473,54 @@ export default async function StudentDetailPage({
           ))}
         </CardContent>
       </Card>
+
+      {canViewIncidents ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Incident reports</CardTitle>
+            <CardDescription>
+              Injuries and incidents logged against this student in the accident
+              book.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            {incidents.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No incidents recorded.
+              </p>
+            ) : (
+              incidents.map((incident) => (
+                <Link
+                  key={incident.id}
+                  href={`/incidents/${incident.id}`}
+                  className="hover:bg-accent flex flex-wrap items-center justify-between gap-2 rounded-md border p-3 text-sm"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">{incident.title}</span>
+                    <Badge
+                      variant={
+                        incident.severity === "SERIOUS"
+                          ? "destructive"
+                          : incident.severity === "MODERATE"
+                            ? "secondary"
+                            : "outline"
+                      }
+                    >
+                      {INCIDENT_SEVERITY_LABELS[incident.severity]}
+                    </Badge>
+                    {incident.status === "CLOSED" ? (
+                      <Badge variant="outline">Closed</Badge>
+                    ) : null}
+                  </div>
+                  <span className="text-muted-foreground text-xs">
+                    {formatDateUtc(incident.occurredAt)}
+                  </span>
+                </Link>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {membershipsEnabled ? (
         <Card>
