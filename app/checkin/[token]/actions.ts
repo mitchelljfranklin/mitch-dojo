@@ -31,5 +31,8 @@ export async function checkInAction(formData: FormData): Promise<void> {
   if (outcome === "suspended") {
     redirect(`/checkin/${token}?error=suspended`);
   }
+  if (outcome === "agreements") {
+    redirect(`/checkin/${token}?error=agreements`);
+  }
   revalidatePath(`/checkin/${token}`);
 }

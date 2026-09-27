@@ -53,6 +53,8 @@ export default async function AdminTemplatesPage() {
               gradingInviteBody: emailTemplates.gradingInviteBody,
               trialFollowUpSubject: emailTemplates.trialFollowUpSubject,
               trialFollowUpBody: emailTemplates.trialFollowUpBody,
+              agreementReminderSubject: emailTemplates.agreementReminderSubject,
+              agreementReminderBody: emailTemplates.agreementReminderBody,
             }}
           />
         </CardContent>

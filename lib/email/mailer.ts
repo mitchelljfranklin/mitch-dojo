@@ -116,6 +116,7 @@ type TemplateType =
   | "gradingInvite"
   | "trialFollowUp"
   | "portalLink"
+  | "agreementReminder"
   | "reset";
 
 export type SendEmailResult = {
@@ -202,6 +203,7 @@ export async function sendEmail(
     gradingInvite: templates.gradingInviteSubject,
     trialFollowUp: templates.trialFollowUpSubject,
     portalLink: templates.portalLinkSubject,
+    agreementReminder: templates.agreementReminderSubject,
     reset: templates.resetSubject,
   };
   const bodyByType: Record<TemplateType, string> = {
@@ -215,6 +217,7 @@ export async function sendEmail(
     gradingInvite: templates.gradingInviteBody,
     trialFollowUp: templates.trialFollowUpBody,
     portalLink: templates.portalLinkBody,
+    agreementReminder: templates.agreementReminderBody,
     reset: templates.resetBody,
   };
 

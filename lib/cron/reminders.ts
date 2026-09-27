@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email/mailer";
+import { listDocuments } from "@/lib/db/agreements";
 import {
   getCommunicationsSettings,
   getEmailSettings,
@@ -18,6 +19,7 @@ export type ReminderResults = {
   paymentRemindersSent: number;
   birthdayEmailsSent: number;
   trialFollowUpsSent: number;
+  agreementRemindersSent: number;
 };
 
 function utcMidnightOf(date: Date): Date {
@@ -317,8 +319,63 @@ export async function sendTrialFollowUps(
   return sent;
 }
 
-// --------------- scheduler entry point ---------------
+// --------------- agreement reminders ---------------
 
+// One reminder per student per outstanding enabled document. "Outstanding"
+// means unsigned, or signed against an older version (re-sign required), so
+// bumping a document's version re-arms the reminder for everyone. Version
+// based only — no time-based expiry.
+export async function sendAgreementReminders(): Promise<number> {
+  const settings = await getCommunicationsSettings();
+  if (!settings.agreementRemindersEnabled) return 0;
+
+  const documents = await listDocuments(true);
+  if (documents.length === 0) return 0;
+
+  const { name: appName } = await getOrganizationSettings();
+  const students = await prisma.student.findMany({
+    where: { status: { in: ["ACTIVE", "TRIAL"] } },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      guardianEmail: true,
+      agreements: { select: { documentId: true, version: true } },
+    },
+  });
+
+  let sent = 0;
+  for (const student of students) {
+    for (const document of documents) {
+      const signature = student.agreements.find(
+        (row) => row.documentId === document.id,
+      );
+      if (signature && signature.version === document.version) continue;
+
+      const dedupKey = `agreement-reminder:${student.id}:${document.id}:${document.version}`;
+      if (!(await notYetSent(dedupKey))) continue;
+
+      const recipient = resolveRecipient(student);
+      if (!recipient) continue;
+
+      const result = await sendEmail(
+        recipient,
+        "agreementReminder",
+        {
+          studentName: `${student.firstName} ${student.lastName}`,
+          documentTitle: document.title,
+          appName,
+        },
+        { assessmentId: dedupKey },
+      );
+      if (result.ok) sent++;
+    }
+  }
+  return sent;
+}
+
+// --------------- scheduler entry point ---------------
 // SMTP not configured → skip silently (each job would otherwise create
 // FAILED notification rows every tick).
 export async function runReminderJobs(
@@ -329,6 +386,7 @@ export async function runReminderJobs(
     paymentRemindersSent: 0,
     birthdayEmailsSent: 0,
     trialFollowUpsSent: 0,
+    agreementRemindersSent: 0,
   };
   // Without SMTP there is nothing to do — and bailing here keeps failed-send
   // log rows (which carry the dedup keys) from being created on every tick.
@@ -339,6 +397,7 @@ export async function runReminderJobs(
     results.paymentRemindersSent = await sendPaymentReminders(now);
     results.birthdayEmailsSent = await sendBirthdayEmails(now);
     results.trialFollowUpsSent = await sendTrialFollowUps(now);
+    results.agreementRemindersSent = await sendAgreementReminders();
   } catch (error: unknown) {
     console.error(
       "[cron] reminder jobs failed:",

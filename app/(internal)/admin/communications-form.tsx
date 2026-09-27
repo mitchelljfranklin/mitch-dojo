@@ -22,6 +22,7 @@ type CommunicationsFormProps = {
   bookingConfirmationsEnabled: boolean;
   bookingStaffAlertsEnabled: boolean;
   bookingStaffAlertRecipients: string[];
+  agreementRemindersEnabled: boolean;
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -43,6 +44,7 @@ function CommunicationsFormInner({
   bookingConfirmationsEnabled,
   bookingStaffAlertsEnabled,
   bookingStaffAlertRecipients,
+  agreementRemindersEnabled,
 }: CommunicationsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -210,6 +212,24 @@ function CommunicationsFormInner({
             Alerts start once at least one address is saved.
           </p>
         </div>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-2">
+        <Label>Agreement reminders</Label>
+        <p className="text-muted-foreground text-xs">
+          One email per student per unsigned or out-of-date agreement. Bumping a
+          document&apos;s version re-arms the reminder. Template editable under
+          Admin → Templates.
+        </p>
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <Checkbox
+            name="agreementRemindersEnabled"
+            defaultChecked={agreementRemindersEnabled}
+          />
+          Enable agreement reminder emails
+        </label>
       </div>
 
       {state && !state.ok ? (

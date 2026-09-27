@@ -12,6 +12,7 @@ Billing rules for invoices and overdue handling. Plan/enrollment management live
 | **Suspend check-in after overdue** | 30 days | 0–365 | Days overdue before QR check-in is refused; **0 disables suspension** |
 | **Tax / GST rate** | 0% | 0–100 | Percentage added to invoices when they are created |
 | **Tax label** | Tax | max 20 chars | Shown as the tax line on invoices (e.g. "GST", "VAT") |
+| **Block check-in until agreements signed** | off | — | Refuses QR check-in while a member has an unsigned/out-of-date agreement (staff marking is never blocked) |
 
 The tax rate is applied at **invoice creation** and stored on the invoice (`taxCents` + `taxLabel`), so changing the rate later never rewrites issued invoices. Existing invoices keep the tax captured when they were raised.
 
@@ -21,6 +22,7 @@ The tax rate is applied at **invoice creation** and stored on the invoice (`taxC
 2. A payment reminder fires once when the invoice enters the due-soon window ([Communication](./communication)).
 3. Another reminder fires once it's been overdue for the configured days.
 4. Past the suspension threshold, the student's QR check-in refuses until the balance is cleared — the attendance sheet still works for staff.
+5. If **Block check-in until agreements signed** is on, QR check-in also refuses while the member has an outstanding [agreement signature](../user-guides/compliance) (unsigned or out-of-date).
 
 Set suspension to 0 if you never want the front door to refuse anyone.
 

@@ -459,6 +459,8 @@ export async function saveMembershipsSettings(
     autoGenerateInvoices: formData.get("autoGenerateInvoices") === "on",
     taxRatePercent: formData.get("taxRatePercent") ?? 0,
     taxLabel: formData.get("taxLabel") ?? "Tax",
+    blockCheckinOnOutstandingAgreements:
+      formData.get("blockCheckinOnOutstandingAgreements") === "on",
   });
   if (!parsed.success) {
     return {
@@ -505,6 +507,8 @@ export async function saveCommunicationsSettings(
       .split(",")
       .map((entry) => entry.trim())
       .filter((entry) => entry.length > 0),
+    agreementRemindersEnabled:
+      formData.get("agreementRemindersEnabled") === "on",
   });
   if (!parsed.success) {
     return {
@@ -549,6 +553,10 @@ export async function saveEmailTemplatesAction(
     gradingInviteBody: String(formData.get("gradingInviteBody") ?? ""),
     trialFollowUpSubject: String(formData.get("trialFollowUpSubject") ?? ""),
     trialFollowUpBody: String(formData.get("trialFollowUpBody") ?? ""),
+    agreementReminderSubject: String(
+      formData.get("agreementReminderSubject") ?? "",
+    ),
+    agreementReminderBody: String(formData.get("agreementReminderBody") ?? ""),
   };
 
   // An empty subject or body would be sent as a blank email — reject it.

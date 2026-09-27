@@ -16,6 +16,7 @@ type MembershipsFormProps = {
   autoGenerateInvoices: boolean;
   taxRatePercent: number;
   taxLabel: string;
+  blockCheckinOnOutstandingAgreements: boolean;
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -32,6 +33,7 @@ function MembershipsFormInner({
   autoGenerateInvoices,
   taxRatePercent,
   taxLabel,
+  blockCheckinOnOutstandingAgreements,
 }: MembershipsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -97,6 +99,19 @@ function MembershipsFormInner({
           />
           Generate recurring invoices automatically
         </label>
+      </div>
+      <div className="grid gap-2">
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <Checkbox
+            name="blockCheckinOnOutstandingAgreements"
+            defaultChecked={blockCheckinOnOutstandingAgreements}
+          />
+          Block QR check-in until agreements are signed
+        </label>
+        <p className="text-muted-foreground text-xs">
+          When on, members with an unsigned or out-of-date agreement are asked
+          to sign before checking in. Staff can always mark attendance manually.
+        </p>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="taxRatePercent">Tax / GST rate (%)</Label>

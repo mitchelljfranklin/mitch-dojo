@@ -69,6 +69,7 @@
   add/rename/disable/delete documents under Admin → Documents. Saving an
   edit creates a new version and requires members to re-sign
 - Digital signing through the member portal (confirmation + typed name, date recorded) with a staff-recorded paper fallback and printable branded forms
+- **Compliance page** listing every member with an outstanding signature, plus optional scheduler reminders and an optional check-in gate
 - Health & medical section on the student record (medications, conditions, injuries) gated by a dedicated PHI permission
 
 ## Platform

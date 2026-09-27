@@ -29,6 +29,7 @@ export type ScheduledJobsResult = {
   paymentRemindersSent?: number;
   birthdayEmailsSent?: number;
   trialFollowUpsSent?: number;
+  agreementRemindersSent?: number;
   prunedPortalTokens?: number;
 };
 
@@ -206,6 +207,12 @@ export async function runScheduledJobs(
     result.trialFollowUpsSent = reminders.trialFollowUpsSent;
     console.log(
       `[cron] sent ${reminders.trialFollowUpsSent} trial follow-up(s)`,
+    );
+  }
+  if (reminders.agreementRemindersSent > 0) {
+    result.agreementRemindersSent = reminders.agreementRemindersSent;
+    console.log(
+      `[cron] sent ${reminders.agreementRemindersSent} agreement reminder(s)`,
     );
   }
 

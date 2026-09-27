@@ -50,6 +50,15 @@ Two paths, both recorded against the document version:
 
 The student record's **Agreements & consent** card shows, per document: the active version, signed state ("Signed \<date\> by \<name\>"), "Not signed", or **"Re-sign required"** when a signature exists against an older version.
 
+## Keeping track
+
+The **Compliance** page (sidebar → People) is the school-wide view: every active/trial member with at least one **outstanding** signature — either never signed, or signed before a document's latest version — with a count of students and signatures to chase. Open a student to record a paper signature or send them to the portal.
+
+Two optional helpers keep it moving:
+
+- **Agreement reminders** ([Communication settings](../configuration/communication)) — the scheduler emails each member once per outstanding document version. Because the reminder is keyed to the document's version, bumping the document re-arms it automatically; there is no separate renewal date.
+- **Check-in gate** ([Memberships settings](../configuration/memberships)) — when on, QR check-in is refused while a member has an outstanding agreement, mirroring the overdue-balance suspension. Staff marking attendance manually are never blocked.
+
 ## Permissions at a glance
 
 | Action | Permission |
@@ -57,4 +66,5 @@ The student record's **Agreements & consent** card shows, per document: the acti
 | View medical & health information | `students:medical` |
 | Edit medical fields, record signatures | `students:edit` (+ medical to see the section) |
 | Edit document templates | `settings:manage` |
+| View the outstanding-signature report | `students:view` |
 | Digital signing | The member's own portal link |

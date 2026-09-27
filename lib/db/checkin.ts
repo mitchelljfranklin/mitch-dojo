@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getStudentSuspension } from "@/lib/db/memberships";
+import { hasOutstandingAgreements } from "@/lib/db/agreements";
+import { getMembershipsSettings } from "@/lib/settings";
 import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 
 // Raw check-in capability token stored per location (like mitch-risk portal
@@ -143,7 +145,7 @@ export async function checkInStudent(
   locationId: string,
   sessionId: string,
   studentId: string,
-): Promise<"ok" | "not_found" | "suspended"> {
+): Promise<"ok" | "not_found" | "suspended" | "agreements"> {
   const session = await prisma.classSession.findUnique({
     where: { id: sessionId },
     select: {
@@ -176,6 +178,17 @@ export async function checkInStudent(
   // sets the threshold; 0 disables). Staff can still mark attendance manually.
   const suspension = await getStudentSuspension(studentId);
   if (suspension.suspended) return "suspended";
+
+  // Optional agreement gate (Settings → Memberships): when on, an unsigned or
+  // stale enabled agreement refuses self-service check-in. Staff marking
+  // attendance manually is never gated.
+  const memberships = await getMembershipsSettings();
+  if (
+    memberships.blockCheckinOnOutstandingAgreements &&
+    (await hasOutstandingAgreements(studentId))
+  ) {
+    return "agreements";
+  }
 
   await prisma.attendance.upsert({
     where: {

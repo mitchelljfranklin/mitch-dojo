@@ -66,6 +66,9 @@ export default async function AdminCommunicationsPage() {
             bookingStaffAlertRecipients={
               communicationsSettings.bookingStaffAlertRecipients
             }
+            agreementRemindersEnabled={
+              communicationsSettings.agreementRemindersEnabled
+            }
           />
         </CardContent>
       </Card>

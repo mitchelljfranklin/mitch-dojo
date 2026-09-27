@@ -127,6 +127,14 @@ export const emailTemplateSchema = z.object({
     .default(
       "Hi {{studentName}},\n\nHere is your personal member portal link — view your classes, attendance, progress, and balance any time:\n\n{{portalUrl}}\n\nThe link works for {{expiryDays}} days. Ask us for a new one any time.\n\n— {{appName}}",
     ),
+  agreementReminderSubject: z
+    .string()
+    .default("Action needed: {{documentTitle}} — {{appName}}"),
+  agreementReminderBody: z
+    .string()
+    .default(
+      "Hi {{studentName}},\n\nOur {{documentTitle}} still needs your signature. Please sign it in your member portal, or ask the front desk for a paper form.\n\n— {{appName}}",
+    ),
   testSubject: z.string().default("{{appName}} — SMTP test"),
   testBody: z.string().default("Your SMTP settings are working correctly."),
 });
@@ -203,6 +211,10 @@ export const membershipsSettingsSchema = z.object({
   // at issue time so later rate changes never rewrite history.
   taxRatePercent: z.coerce.number().min(0).max(100).default(0),
   taxLabel: z.string().trim().max(20).default("Tax"),
+  // Optional front-door gate: when on, QR check-in is refused while any
+  // enabled agreement is unsigned or signed against an older version. Staff
+  // attendance marking is never gated.
+  blockCheckinOnOutstandingAgreements: z.boolean().default(false),
 });
 
 export type MembershipsSettings = z.infer<typeof membershipsSettingsSchema>;
@@ -229,6 +241,9 @@ export const communicationsSettingsSchema = z.object({
   // Booking confirmation: one email to the prospect the moment their public
   // /book submission creates a trial. Deduped per booking.
   bookingConfirmationsEnabled: z.boolean().default(true),
+  // Agreement reminders: one email per student per outstanding document
+  // version (unsigned or re-sign required). Deduped per document version.
+  agreementRemindersEnabled: z.boolean().default(true),
   // New-booking alert: one email per listed staff recipient when a public
   // booking lands. Recipients start empty — alerts begin once at least one
   // address is entered.

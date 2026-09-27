@@ -6,6 +6,9 @@ import {
   createDocumentVersion,
   getStudentAgreementStatuses,
   getStudentAgreementSummary,
+  hasOutstandingAgreements,
+  listDocuments,
+  listOutstandingAgreements,
   recordStudentSignature,
   setDocumentEnabled,
   signAgreementViaPortal,
@@ -196,5 +199,62 @@ describe.skipIf(!hasTestDatabase)("agreements", () => {
 
     const summary = await getStudentAgreementSummary(studentId);
     expect(summary.reSignRequired).toBe(true);
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("outstanding agreements", () => {
+  it("lists students with signatures to chase, then clears them", async () => {
+    const chaseId = await createStudent({
+      firstName: "Chase",
+      lastName: `Me${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      notes: null,
+      status: "ACTIVE",
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [],
+    });
+    try {
+      const enabled = await listDocuments(true);
+      expect(enabled.length).toBeGreaterThan(0);
+
+      const report = await listOutstandingAgreements();
+      const mine = report.find((row) => row.studentId === chaseId);
+      expect(mine).toBeDefined();
+      expect(mine!.outstanding).toHaveLength(enabled.length);
+      expect(await hasOutstandingAgreements(chaseId)).toBe(true);
+
+      for (const document of enabled) {
+        await recordStudentSignature({
+          studentId: chaseId,
+          documentId: document.id,
+          signedAt: new Date(),
+          signedByName: "Chase Me",
+          recordedById: null,
+        });
+      }
+
+      const after = await listOutstandingAgreements();
+      expect(after.find((row) => row.studentId === chaseId)).toBeUndefined();
+      expect(await hasOutstandingAgreements(chaseId)).toBe(false);
+    } finally {
+      await deleteStudent(chaseId).catch(() => undefined);
+    }
   });
 });

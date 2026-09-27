@@ -253,6 +253,12 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
           badge: newTrialsCount > 0 ? newTrialsCount : null,
         },
         {
+          title: "Compliance",
+          href: "/compliance",
+          icon: ShieldCheck,
+          visible: canStudents,
+        },
+        {
           title: "Trainers",
           href: "/trainers",
           icon: UserCheck,

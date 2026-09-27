@@ -8,11 +8,13 @@ import { createMembershipPlan } from "@/lib/db/memberships";
 import { updateCommunicationsSettings } from "@/lib/settings";
 import {
   resolveRecipient,
+  sendAgreementReminders,
   sendBirthdayEmails,
   sendClassReminders,
   sendPaymentReminders,
   sessionStartDateTime,
 } from "@/lib/cron/reminders";
+import { createDocument, createDocumentVersion } from "@/lib/db/agreements";
 
 // Integration suite: requires TEST_DATABASE_URL (see vitest.setup.ts).
 // No SMTP is configured on the test database, so sendEmail() attempts fail
@@ -405,5 +407,60 @@ describe.skipIf(!hasTestDatabase)("birthday emails", () => {
       where: { id: studentId },
       data: { dateOfBirth: null },
     });
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("agreement reminders", () => {
+  it("logs one reminder per outstanding document version and re-arms on bump", async () => {
+    await updateCommunicationsSettings({ agreementRemindersEnabled: true });
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { email: `agreement-${suffix}@example.com` },
+    });
+
+    const document = await createDocument({
+      title: `Reminder Agreement ${suffix}`,
+      bodyMarkdown: "Please sign.",
+      createdById: null,
+    });
+
+    await sendAgreementReminders();
+    const firstKey = `agreement-reminder:${studentId}:${document.id}:0`;
+    const firstLogs = await prisma.notificationLog.findMany({
+      where: { assessmentId: firstKey },
+    });
+    expect(firstLogs).toHaveLength(1);
+    expect(firstLogs[0]!.type).toBe("AGREEMENTREMINDER");
+
+    // Second tick: the dedup key exists → no new row.
+    await sendAgreementReminders();
+    expect(
+      (
+        await prisma.notificationLog.findMany({
+          where: { assessmentId: firstKey },
+        })
+      ).length,
+    ).toBe(1);
+
+    // Editing the document bumps the version, re-arming the reminder.
+    await createDocumentVersion({
+      documentId: document.id,
+      title: `Reminder Agreement ${suffix}`,
+      bodyMarkdown: "Please sign the updated version.",
+      createdById: null,
+    });
+    await sendAgreementReminders();
+    const bumpedKey = `agreement-reminder:${studentId}:${document.id}:1`;
+    expect(
+      (
+        await prisma.notificationLog.findMany({
+          where: { assessmentId: bumpedKey },
+        })
+      ).length,
+    ).toBe(1);
+
+    await prisma.agreementDocument
+      .delete({ where: { id: document.id } })
+      .catch(() => undefined);
   });
 });

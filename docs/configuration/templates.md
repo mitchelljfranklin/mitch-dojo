@@ -14,6 +14,7 @@ Every automated email's subject and body, editable with tokens. Also home of the
 | **Grading invitation** | Staff sends invites for a grading event |
 | **Trial follow-up** | Open trial past the follow-up window |
 | **Portal link** | Staff sends a member-portal magic link |
+| **Agreement reminder** | Scheduler, per outstanding agreement version |
 | **Password reset** | Staff user requests a reset |
 | **Welcome** | Reserved welcome email |
 | **Test** | The sample-send |
@@ -37,6 +38,7 @@ Tokens work in both subjects and bodies and are replaced at send time:
 | `{{trialDays}}` | Trial follow-up | Days in the pipeline |
 | `{{portalUrl}}` | Portal link | One-time magic link |
 | `{{expiryDays}}` | Portal link | Days until the link expires |
+| `{{documentTitle}}` | Agreement reminder | The agreement needing a signature |
 | `{{resetUrl}}` | Password reset | One-time reset link |
 | `{{expiresIn}}` | Password reset | Link validity window |
 

@@ -103,6 +103,20 @@ export default async function CheckinPage({
         </Card>
       ) : null}
 
+      {sp.error === "agreements" ? (
+        <Card className="border-destructive/40 mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-destructive text-base">
+              Agreement signature required
+            </CardTitle>
+            <CardDescription>
+              Please sign your outstanding agreement before training — check
+              your member portal or speak to staff.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       {sessions.length === 0 ? (
         <Card>
           <CardHeader>

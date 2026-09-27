@@ -19,6 +19,11 @@ describe("membershipsSettingsSchema", () => {
       membershipsSettingsSchema.parse({ taxRatePercent: 150 }),
     ).toThrow();
   });
+
+  it("defaults the agreement check-in gate off", () => {
+    const settings = membershipsSettingsSchema.parse({});
+    expect(settings.blockCheckinOnOutstandingAgreements).toBe(false);
+  });
 });
 
 describe("appearanceSettingsSchema", () => {
@@ -104,6 +109,11 @@ describe("communicationsSettingsSchema", () => {
       bookingStaffAlertRecipients: ["not-an-email"],
     });
     expect(result.success).toBe(false);
+  });
+
+  it("defaults agreement reminders to enabled", () => {
+    const settings = communicationsSettingsSchema.parse({});
+    expect(settings.agreementRemindersEnabled).toBe(true);
   });
 });
 

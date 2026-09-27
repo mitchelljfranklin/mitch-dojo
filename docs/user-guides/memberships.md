@@ -50,6 +50,7 @@ Record multiple payments against one invoice — a deposit now, the rest next we
 | Payment reminders | on, 3 days before due | One email when the invoice enters the due-soon window |
 | Overdue reminder | after 7 days overdue | One more email past the threshold |
 | Check-in suspension | after 30 days overdue | Refuses QR check-in until the balance is cleared (0 disables) |
+| Agreement gate | off | When on, QR check-in is also refused while an agreement is outstanding (staff marking is never blocked) |
 
 Every generated invoice is also visible to the student in their [member portal](./member-portal) with the current balance.
 

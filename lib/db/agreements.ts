@@ -228,6 +228,88 @@ export async function getStudentAgreementSummary(studentId: string): Promise<{
   };
 }
 
+// True when any enabled document is unsigned or signed against an older
+// version — used by the optional check-in gate. Reads only the current
+// version of each enabled document and the student's signatures, so it stays
+// cheap enough for the public kiosk path.
+export async function hasOutstandingAgreements(
+  studentId: string,
+): Promise<boolean> {
+  const statuses = await getStudentAgreementStatuses(studentId);
+  return statuses.some((status) => !status.signed);
+}
+
+export type OutstandingAgreementDocument = {
+  documentId: string;
+  title: string;
+  activeVersion: number;
+  // True when a signature exists but against an older version.
+  reSignRequired: boolean;
+  signedAt: Date | null;
+};
+
+export type StudentOutstandingAgreements = {
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  guardianEmail: string | null;
+  outstanding: OutstandingAgreementDocument[];
+};
+
+// School-wide outstanding-signature report: ACTIVE/TRIAL students who still
+// owe at least one signature (unsigned or re-sign required) for an enabled
+// document. Students with nothing outstanding are omitted.
+export async function listOutstandingAgreements(): Promise<
+  StudentOutstandingAgreements[]
+> {
+  const [documents, students] = await Promise.all([
+    listDocuments(true),
+    prisma.student.findMany({
+      where: { status: { in: ["ACTIVE", "TRIAL"] } },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        guardianEmail: true,
+        agreements: {
+          select: { documentId: true, version: true, signedAt: true },
+        },
+      },
+    }),
+  ]);
+
+  const result: StudentOutstandingAgreements[] = [];
+  for (const student of students) {
+    const outstanding: OutstandingAgreementDocument[] = [];
+    for (const document of documents) {
+      const signature = student.agreements.find(
+        (row) => row.documentId === document.id,
+      );
+      if (signature && signature.version === document.version) continue;
+      outstanding.push({
+        documentId: document.id,
+        title: document.title,
+        activeVersion: document.version,
+        reSignRequired: Boolean(signature),
+        signedAt: signature?.signedAt ?? null,
+      });
+    }
+    if (outstanding.length === 0) continue;
+    result.push({
+      studentId: student.id,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      email: student.email,
+      guardianEmail: student.guardianEmail,
+      outstanding,
+    });
+  }
+  return result;
+}
+
 // Records a signature (staff-recorded paper signing). Upsert semantics per
 // (student, document) so re-recording overwrites the same version's row.
 export async function recordStudentSignature(input: {

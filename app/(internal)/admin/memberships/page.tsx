@@ -46,6 +46,9 @@ export default async function AdminMembershipsPage() {
             autoGenerateInvoices={membershipsSettings.autoGenerateInvoices}
             taxRatePercent={membershipsSettings.taxRatePercent}
             taxLabel={membershipsSettings.taxLabel}
+            blockCheckinOnOutstandingAgreements={
+              membershipsSettings.blockCheckinOnOutstandingAgreements
+            }
           />
         </CardContent>
       </Card>

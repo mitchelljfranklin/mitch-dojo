@@ -29,6 +29,8 @@ type EmailTemplatesFormProps = {
     gradingInviteBody: string;
     trialFollowUpSubject: string;
     trialFollowUpBody: string;
+    agreementReminderSubject: string;
+    agreementReminderBody: string;
   };
 };
 
@@ -194,6 +196,29 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
             />
             <p className="text-muted-foreground text-xs">
               Placeholders: {"{{studentName}}"}, {"{{trialDays}}"},
+              {" {{appName}}"}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="agreementReminderSubject">
+              Agreement reminder subject
+            </Label>
+            <Input
+              id="agreementReminderSubject"
+              name="agreementReminderSubject"
+              defaultValue={templates.agreementReminderSubject}
+            />
+            <Label htmlFor="agreementReminderBody">
+              Agreement reminder body
+            </Label>
+            <Textarea
+              id="agreementReminderBody"
+              name="agreementReminderBody"
+              rows={4}
+              defaultValue={templates.agreementReminderBody}
+            />
+            <p className="text-muted-foreground text-xs">
+              Placeholders: {"{{studentName}}"}, {"{{documentTitle}}"},
               {" {{appName}}"}
             </p>
           </div>
