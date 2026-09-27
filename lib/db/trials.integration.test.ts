@@ -11,6 +11,7 @@ import {
   listTrials,
   setTrialStage,
 } from "@/lib/db/trials";
+import { createCourse } from "@/lib/db/courses";
 import { sendTrialFollowUps } from "@/lib/cron/reminders";
 
 // Integration suite: requires TEST_DATABASE_URL (see vitest.setup.ts).
@@ -441,5 +442,82 @@ describe.skipIf(!hasTestDatabase)("trial follow-up emails", () => {
     expect(ours).toBeDefined();
     expect(ours?.stage).toBe("FIRST_CLASS");
     expect(ours?.locationNames).toContain(`Trial Dojo ${suffix}`);
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("trial slot capacity", () => {
+  let capacityCourseId: string;
+
+  afterAll(async () => {
+    if (capacityCourseId) {
+      await prisma.classSession.deleteMany({
+        where: { courseId: capacityCourseId },
+      });
+      await prisma.course
+        .delete({ where: { id: capacityCourseId } })
+        .catch(() => undefined);
+    }
+  });
+
+  async function book(sessionId: string, email: string) {
+    return createTrialBooking({
+      bookingFor: "adult",
+      firstName: "Capacity",
+      lastName: `Prospect${suffix}`,
+      guardianName: null,
+      guardianRelationship: null,
+      email,
+      phone: null,
+      locationId,
+      disciplineId,
+      sessionDate: null,
+      sessionCourseName: null,
+      sessionId,
+    });
+  }
+
+  it("refuses a booking once the weekly slot is full", async () => {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const weekday = today.getUTCDay();
+
+    capacityCourseId = await createCourse({
+      name: `Capacity Course ${suffix}`,
+      description: null,
+      locationId,
+      disciplineId,
+      trainerId: null,
+      isActive: true,
+      trainingTimes: [
+        {
+          weekday,
+          startTime: "07:00",
+          endTime: "08:00",
+          trialBookable: true,
+          capacity: 1,
+        },
+      ],
+    });
+
+    const session = await prisma.classSession.create({
+      data: {
+        courseId: capacityCourseId,
+        locationId,
+        date: today,
+        startTime: "07:00",
+        endTime: "08:00",
+      },
+    });
+
+    const first = await book(session.id, `cap-1-${suffix}@example.com`);
+    expect(first.outcome).toBe("created");
+
+    // The slot now reports full to the booking page.
+    const bookable = await listBookableSessions();
+    const ours = bookable.find((entry) => entry.id === session.id);
+    expect(ours?.full).toBe(true);
+
+    const second = await book(session.id, `cap-2-${suffix}@example.com`);
+    expect(second.outcome).toBe("full");
   });
 });

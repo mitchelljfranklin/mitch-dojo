@@ -182,10 +182,12 @@ export function BookingForm({
             {matchingSessions.map((session) => (
               <SelectItem
                 key={session.id}
-                value={`${session.courseName}|${session.date}`}
+                value={`${session.id}|${session.courseName}|${session.date}`}
+                disabled={session.full}
               >
                 {session.courseName} — {formatDateLabel(session.date)} at{" "}
                 {session.startTime}
+                {session.full ? " (full)" : ""}
               </SelectItem>
             ))}
           </SelectContent>

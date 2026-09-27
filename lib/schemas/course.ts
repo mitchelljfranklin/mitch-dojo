@@ -33,6 +33,12 @@ export const trainingTimeSchema = z.object({
   endTime: z.string().regex(TIME_PATTERN, "End time must be HH:MM (24-hour)"),
   // Unchecked boxes are absent from FormData — absent means opted out.
   trialBookable: z.boolean().default(true),
+  // Optional trial cap (null = unlimited). Blank input → null.
+  capacity: z
+    .union([z.literal(""), z.coerce.number().int().min(0).max(9999)])
+    .optional()
+    .default("")
+    .transform((value) => (value === "" ? null : value)),
 });
 
 export type TrainingTimeInput = z.infer<typeof trainingTimeSchema>;

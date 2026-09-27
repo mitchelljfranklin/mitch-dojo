@@ -29,6 +29,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   contact: "Please leave an email address or a phone number.",
   exists:
     "We already have a booking for that student — contact us and we will sort it out.",
+  full: "That class is fully booked — please pick another time or contact us.",
 };
 
 type BookPageProps = {

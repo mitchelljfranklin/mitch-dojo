@@ -30,6 +30,7 @@ export type CourseFormValues = {
     startTime: string;
     endTime: string;
     trialBookable: boolean;
+    capacity: number | null;
   }[];
 };
 
@@ -56,6 +57,7 @@ type SlotRow = {
   startTime: string;
   endTime: string;
   trialBookable: boolean;
+  capacity: number | null;
 };
 
 const initialSlot: SlotRow = {
@@ -63,6 +65,7 @@ const initialSlot: SlotRow = {
   startTime: "18:00",
   endTime: "19:00",
   trialBookable: true,
+  capacity: null,
 };
 
 // Keying the inner form on a fingerprint of the server data remounts it when
@@ -275,6 +278,26 @@ function CourseFormInner({
                   }
                 />
                 Trial bookable
+              </label>
+              <label className="flex items-center gap-1.5 text-xs">
+                Capacity
+                <Input
+                  aria-label={`Slot ${index + 1} trial capacity`}
+                  name="slotCapacity"
+                  type="number"
+                  min={0}
+                  placeholder="∞"
+                  value={slot.capacity ?? ""}
+                  onChange={(event) =>
+                    updateSlot(index, {
+                      capacity:
+                        event.target.value === ""
+                          ? null
+                          : Math.max(0, Number(event.target.value)),
+                    })
+                  }
+                  className="h-9 w-20"
+                />
               </label>
               <Button
                 type="button"

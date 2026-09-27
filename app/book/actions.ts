@@ -77,10 +77,11 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     redirect("/book?error=contact");
   }
 
-  // session is "<courseName>|<date>" chosen from the bookable list; free-text
-  // safe because both parts are re-displayed only as notes, never executed.
-  const [sessionCourseName, sessionDate] = (
-    parsed.data.session ? parsed.data.session.split("|") : ["", ""]
+  // session is "<classSessionId>|<courseName>|<date>" chosen from the
+  // bookable list; the name/date parts are re-displayed only as notes, never
+  // executed.
+  const [sessionId, sessionCourseName, sessionDate] = (
+    parsed.data.session ? parsed.data.session.split("|") : ["", "", ""]
   ).map((part) => part.trim().slice(0, 120));
 
   const result = await createTrialBooking({
@@ -99,11 +100,16 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     disciplineId: parsed.data.disciplineId,
     sessionDate: sessionDate || null,
     sessionCourseName: sessionCourseName || null,
+    sessionId: sessionId || null,
   }).catch(() => null);
   if (result === null) {
     // Inactive class/discipline or a duplicate race — a friendly error,
     // never an unhandled 500 on a public page.
     redirect("/book?error=invalid");
+  }
+
+  if (result.outcome === "full") {
+    redirect("/book?error=full");
   }
 
   if (result.outcome === "duplicate") {

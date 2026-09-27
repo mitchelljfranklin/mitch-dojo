@@ -193,6 +193,7 @@ describe.skipIf(!hasTestDatabase)("attendance data layer", () => {
           startTime: "06:00",
           endTime: "07:00",
           trialBookable: true,
+          capacity: null,
         },
       ],
     });

@@ -19,7 +19,7 @@ Each course belongs to **exactly one location** and teaches **exactly one discip
 | Location | One dojo site |
 | Discipline | Which belt ladder it feeds |
 | Trainer | Who teaches it |
-| Weekly times | Recurring slots, e.g. Tue 16:00, Thu 16:30. Each slot has a **Trial bookable** checkbox (on by default) — untick it to keep the class off the [public trial-booking page](./trials) (senior-only sessions, for example) |
+| Weekly times | Recurring slots, e.g. Tue 16:00, Thu 16:30. Each slot has a **Trial bookable** checkbox (on by default) — untick it to keep the class off the [public trial-booking page](./trials) (senior-only sessions, for example) - and an optional **Capacity** (max trial bookings for that weekly slot; blank = unlimited) |
 
 A discipline taught at multiple locations means one course per location, each with its own schedule and attendance.
 

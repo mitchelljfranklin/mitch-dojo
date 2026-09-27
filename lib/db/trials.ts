@@ -186,10 +186,13 @@ export type BookingInput = {
   disciplineId: string;
   sessionDate: string | null;
   sessionCourseName: string | null;
+  sessionId?: string | null;
 };
 
 export type BookingResult =
-  { outcome: "created"; studentId: string } | { outcome: "duplicate" };
+  | { outcome: "created"; studentId: string }
+  | { outcome: "duplicate" }
+  | { outcome: "full" };
 
 // Creates a TRIAL student from a public website booking. The chosen class is
 // recorded in the notes — the student joins the location + discipline rosters
@@ -249,6 +252,38 @@ export async function createTrialBooking(
     throw new Error("A child booking needs guardian contact details.");
   }
 
+  // Per-slot trial capacity: resolve the weekly TrainingTime behind the
+  // chosen session and refuse when the slot is full. TRIAL students bound to
+  // that slot are what count (converting/rejecting frees the spot).
+  let trialTrainingTimeId: string | null = null;
+  if (input.sessionId) {
+    const session = await prisma.classSession.findUnique({
+      where: { id: input.sessionId },
+      select: { courseId: true, date: true, startTime: true },
+    });
+    if (session) {
+      const slot = await prisma.trainingTime.findFirst({
+        where: {
+          courseId: session.courseId,
+          weekday: session.date.getUTCDay(),
+          startTime: session.startTime,
+        },
+        select: { id: true, capacity: true },
+      });
+      if (slot) {
+        trialTrainingTimeId = slot.id;
+        if (slot.capacity !== null) {
+          const booked = await prisma.student.count({
+            where: { status: "TRIAL", trialTrainingTimeId: slot.id },
+          });
+          if (booked >= slot.capacity) {
+            return { outcome: "full" };
+          }
+        }
+      }
+    }
+  }
+
   const student = await prisma.student.create({
     data: {
       firstName: input.firstName.trim(),
@@ -269,6 +304,7 @@ export async function createTrialBooking(
       country: defaultCountry || null,
       status: "TRIAL",
       trialStage: "NEW",
+      trialTrainingTimeId,
       notes: isChild ? `${classNote} Booked by the guardian.` : classNote,
       locations: {
         create: { locationId: input.locationId, isPrimary: true },
@@ -309,11 +345,14 @@ export async function listBookableOptions() {
 
 export type BookableSession = {
   id: string;
+  trainingTimeId: string;
   courseName: string;
   date: string;
   startTime: string;
   locationId: string;
   disciplineId: string;
+  // True when the weekly slot is at capacity for trial bookings.
+  full: boolean;
 };
 
 // Upcoming scheduled sessions across active courses — the slots a prospect
@@ -328,10 +367,16 @@ export async function listBookableSessions(
   const horizon = new Date(today);
   horizon.setUTCDate(horizon.getUTCDate() + 14);
 
-  const [bookableSlots, sessions] = await Promise.all([
+  const [bookableSlots, sessions, bookedCounts] = await Promise.all([
     prisma.trainingTime.findMany({
       where: { trialBookable: true, course: { isActive: true } },
-      select: { courseId: true, weekday: true, startTime: true },
+      select: {
+        id: true,
+        courseId: true,
+        weekday: true,
+        startTime: true,
+        capacity: true,
+      },
     }),
     prisma.classSession.findMany({
       where: {
@@ -347,26 +392,42 @@ export async function listBookableSessions(
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
       take: 200,
     }),
+    prisma.student.groupBy({
+      by: ["trialTrainingTimeId"],
+      where: { status: "TRIAL", trialTrainingTimeId: { not: null } },
+      _count: { _all: true },
+    }),
   ]);
 
-  const bookableKeys = new Set(
-    bookableSlots.map(
-      (slot) => `${slot.courseId}|${slot.weekday}|${slot.startTime}`,
-    ),
+  const bookedBySlot = new Map(
+    bookedCounts.map((row) => [row.trialTrainingTimeId, row._count._all]),
+  );
+  const slotByKey = new Map(
+    bookableSlots.map((slot) => [
+      `${slot.courseId}|${slot.weekday}|${slot.startTime}`,
+      slot,
+    ]),
   );
 
-  return sessions
-    .filter((session) =>
-      bookableKeys.has(
-        `${session.courseId}|${session.date.getUTCDay()}|${session.startTime}`,
-      ),
-    )
-    .map((session) => ({
+  const result: BookableSession[] = [];
+  for (const session of sessions) {
+    const slot = slotByKey.get(
+      `${session.courseId}|${session.date.getUTCDay()}|${session.startTime}`,
+    );
+    if (!slot) continue;
+    const full =
+      slot.capacity !== null &&
+      (bookedBySlot.get(slot.id) ?? 0) >= slot.capacity;
+    result.push({
       id: session.id,
+      trainingTimeId: slot.id,
       courseName: session.course.name,
       date: session.date.toISOString().slice(0, 10),
       startTime: session.startTime,
       locationId: session.course.locationId,
       disciplineId: session.course.disciplineId,
-    }));
+      full,
+    });
+  }
+  return result;
 }

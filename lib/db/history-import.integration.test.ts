@@ -100,7 +100,13 @@ beforeAll(async () => {
     trainerId: null,
     isActive: true,
     trainingTimes: [
-      { weekday: 3, startTime: "17:30", endTime: "18:30", trialBookable: true },
+      {
+        weekday: 3,
+        startTime: "17:30",
+        endTime: "18:30",
+        trialBookable: true,
+        capacity: null,
+      },
     ],
   });
 

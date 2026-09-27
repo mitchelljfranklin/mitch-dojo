@@ -83,6 +83,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
                 startTime: slot.startTime,
                 endTime: slot.endTime,
                 trialBookable: slot.trialBookable,
+                capacity: slot.capacity,
               })),
             }}
           />

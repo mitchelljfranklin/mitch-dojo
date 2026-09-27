@@ -21,11 +21,13 @@ function parseCourseInput(formData: FormData) {
     startTime: string;
     endTime: string;
     trialBookable: boolean;
+    capacity: string;
   }[] = [];
   const weekdays = formData.getAll("slotWeekday").map(String);
   const starts = formData.getAll("slotStartTime").map(String);
   const ends = formData.getAll("slotEndTime").map(String);
   const trialBookable = formData.getAll("slotTrialBookable").map(String);
+  const capacities = formData.getAll("slotCapacity").map(String);
   for (let i = 0; i < Math.min(starts.length, ends.length); i++) {
     if (!starts[i] && !ends[i]) continue;
     rawSlots.push({
@@ -35,6 +37,7 @@ function parseCourseInput(formData: FormData) {
       // Radix checkboxes post no native value; the hidden twin posts
       // "on"/"off" per row. "off" (or absent) means opted out.
       trialBookable: trialBookable[i] === "on",
+      capacity: capacities[i] ?? "",
     });
   }
 

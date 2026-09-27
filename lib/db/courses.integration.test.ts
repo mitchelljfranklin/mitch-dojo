@@ -49,8 +49,20 @@ function courseInput(overrides?: Partial<CourseFormInput>): CourseFormInput {
     trainerId: null,
     isActive: true,
     trainingTimes: [
-      { weekday: 1, startTime: "17:00", endTime: "18:00", trialBookable: true },
-      { weekday: 3, startTime: "17:00", endTime: "18:00", trialBookable: true },
+      {
+        weekday: 1,
+        startTime: "17:00",
+        endTime: "18:00",
+        trialBookable: true,
+        capacity: null,
+      },
+      {
+        weekday: 3,
+        startTime: "17:00",
+        endTime: "18:00",
+        trialBookable: true,
+        capacity: null,
+      },
     ],
     ...overrides,
   };
@@ -165,6 +177,7 @@ describe.skipIf(!hasTestDatabase)("courses data layer", () => {
             startTime: "18:30",
             endTime: "19:30",
             trialBookable: true,
+            capacity: null,
           },
         ],
       }),

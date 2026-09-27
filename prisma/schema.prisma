@@ -274,18 +274,22 @@ model Student {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  locations     StudentLocation[]
-  disciplines   StudentDiscipline[]
-  attendance    Attendance[]
-  belts         StudentBelt[]
-  enrollments   Enrollment[]
-  invoices      Invoice[]
-  portalTokens  PortalToken[]
-  agreements    StudentAgreement[]
-  gradingEvents GradingEventStudent[]
-  incidents     Incident[]
-  householdId   String?
-  household     Household?            @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  locations           StudentLocation[]
+  disciplines         StudentDiscipline[]
+  attendance          Attendance[]
+  belts               StudentBelt[]
+  enrollments         Enrollment[]
+  invoices            Invoice[]
+  portalTokens        PortalToken[]
+  agreements          StudentAgreement[]
+  gradingEvents       GradingEventStudent[]
+  incidents           Incident[]
+  // Trial slot this lead booked (null unless they came from the public
+  // booking page); powers the per-slot trial capacity cap.
+  trialTrainingTimeId String?
+  trialTrainingTime   TrainingTime?         @relation(fields: [trialTrainingTimeId], references: [id], onDelete: SetNull)
+  householdId         String?
+  household           Household?            @relation(fields: [householdId], references: [id], onDelete: SetNull)
 
   @@index([lastName, firstName])
   @@index([status])
@@ -531,8 +535,12 @@ model TrainingTime {
   startTime     String
   endTime       String
   trialBookable Boolean  @default(true)
+  // Optional cap on trial bookings for this weekly slot (null = unlimited).
+  capacity      Int?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  trialBookings Student[]
 
   @@unique([courseId, weekday, startTime])
   @@map("training_times")
