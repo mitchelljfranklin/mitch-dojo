@@ -26,11 +26,13 @@ const suffix = Date.now().toString(36);
 
 let locationId: string;
 let disciplineId: string;
+let otherDisciplineId: string;
 let courseId: string;
 let sessionTodayId: string;
 let studentAId: string;
 let studentBId: string;
 let studentCId: string;
+let studentDId: string;
 
 beforeAll(async () => {
   const location = await createLocation({
@@ -45,6 +47,8 @@ beforeAll(async () => {
 
   const discipline = await createDiscipline(`Attend Disc ${suffix}`);
   disciplineId = discipline.id;
+  const otherDiscipline = await createDiscipline(`Attend Other ${suffix}`);
+  otherDisciplineId = otherDiscipline.id;
 
   studentAId = await createStudent({
     firstName: "Roster",
@@ -70,7 +74,7 @@ beforeAll(async () => {
     notes: null,
     locationIds: [locationId],
     primaryLocationId: locationId,
-    disciplineIds: [],
+    disciplineIds: [disciplineId],
   });
   studentBId = await createStudent({
     firstName: "Trial",
@@ -96,7 +100,7 @@ beforeAll(async () => {
     notes: null,
     locationIds: [locationId],
     primaryLocationId: locationId,
-    disciplineIds: [],
+    disciplineIds: [disciplineId],
   });
   studentCId = await createStudent({
     firstName: "Elsewhere",
@@ -122,7 +126,36 @@ beforeAll(async () => {
     notes: null,
     locationIds: [],
     primaryLocationId: "",
-    disciplineIds: [],
+    disciplineIds: [disciplineId],
+  });
+
+  // Same location, DIFFERENT discipline — excluded from the discipline-scoped
+  // roster but present under includeAll.
+  studentDId = await createStudent({
+    firstName: "Other",
+    lastName: `Delta${suffix}`,
+    email: null,
+    phone: null,
+    dateOfBirth: null,
+    emergencyContactName: null,
+    emergencyContactPhone: null,
+    guardianName: null,
+    guardianEmail: null,
+    guardianPhone: null,
+    guardianRelationship: null,
+    medicalMedications: null,
+    medicalConditions: null,
+    medicalInjuries: null,
+    addressLine: null,
+    city: null,
+    state: null,
+    postcode: null,
+    country: null,
+    status: "ACTIVE",
+    notes: null,
+    locationIds: [locationId],
+    primaryLocationId: locationId,
+    disciplineIds: [otherDisciplineId],
   });
 });
 
@@ -133,9 +166,13 @@ afterAll(async () => {
   if (studentAId) await deleteStudent(studentAId).catch(() => undefined);
   if (studentBId) await deleteStudent(studentBId).catch(() => undefined);
   if (studentCId) await deleteStudent(studentCId).catch(() => undefined);
+  if (studentDId) await deleteStudent(studentDId).catch(() => undefined);
   await prisma.classSession.deleteMany({ where: { locationId } });
   await prisma.course.deleteMany({ where: { locationId } });
   await prisma.location.deleteMany({ where: { id: locationId } });
+  await prisma.discipline
+    .deleteMany({ where: { name: { contains: suffix } } })
+    .catch(() => undefined);
   await prisma.$disconnect();
 });
 
@@ -178,9 +215,20 @@ describe.skipIf(!hasTestDatabase)("attendance data layer", () => {
 
     const { roster } = await getSessionRoster(sessionTodayId!);
     const ids = roster.map((entry) => entry.studentId);
+    // Discipline-scoped by default: the course's discipline students appear,
+    // a different-discipline student at the same location does not.
     expect(ids).toContain(studentAId);
     expect(ids).toContain(studentBId);
     expect(ids).not.toContain(studentCId);
+    expect(ids).not.toContain(studentDId);
+
+    // The drop-in toggle widens to everyone at the location.
+    const { roster: all } = await getSessionRoster(sessionTodayId!, {
+      includeAll: true,
+    });
+    const allIds = all.map((entry) => entry.studentId);
+    expect(allIds).toContain(studentDId);
+    expect(allIds).not.toContain(studentCId);
   });
 
   it("upserts attendance and reports trained counts", async () => {
@@ -249,6 +297,8 @@ describe.skipIf(!hasTestDatabase)("public check-in", () => {
     expect(data.sessions).toHaveLength(1);
     const names = data.sessions[0]?.students.map((student) => student.name);
     expect(names?.some((name) => name.includes(`Alpha${suffix}`))).toBe(true);
+    // A different-discipline student at the same location is not listed.
+    expect(names?.some((name) => name.includes(`Delta${suffix}`))).toBe(false);
   });
 
   it("rejects check-ins for other locations, other days, and non-roster students", async () => {
@@ -260,6 +310,10 @@ describe.skipIf(!hasTestDatabase)("public check-in", () => {
     expect(
       await checkInStudent(locationId, sessionTodayId!, "missing-student"),
     ).toBe("not_found");
+    // Student at this location but in a different discipline
+    expect(await checkInStudent(locationId, sessionTodayId!, studentDId)).toBe(
+      "not_found",
+    );
 
     const ok = await checkInStudent(locationId, sessionTodayId!, studentAId);
     expect(ok).toBe("ok");

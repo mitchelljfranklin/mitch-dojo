@@ -98,7 +98,10 @@ export type RosterEntry = {
 // Students eligible for a session's attendance sheet: everyone training at
 // the session's location with status ACTIVE or TRIAL (trials attend classes
 // too), plus their existing attendance record if any.
-export async function getSessionRoster(sessionId: string): Promise<{
+export async function getSessionRoster(
+  sessionId: string,
+  options: { includeAll?: boolean } = {},
+): Promise<{
   session: {
     id: string;
     date: Date;
@@ -107,6 +110,7 @@ export async function getSessionRoster(sessionId: string): Promise<{
     status: string;
     courseName: string;
     courseId: string;
+    disciplineName: string;
     locationName: string;
     locationId: string;
     trainerName: string | null;
@@ -117,17 +121,33 @@ export async function getSessionRoster(sessionId: string): Promise<{
     where: { id: sessionId },
     include: {
       course: {
-        select: { id: true, name: true, trainer: { select: { name: true } } },
+        select: {
+          id: true,
+          name: true,
+          disciplineId: true,
+          discipline: { select: { name: true } },
+          trainer: { select: { name: true } },
+        },
       },
       location: { select: { id: true, name: true } },
     },
   });
   if (!session) return { session: null, roster: [] };
 
+  // The roster is scoped to the course's discipline (a Judo sheet does not
+  // list the Karate kids). `includeAll` is the drop-in escape hatch: show
+  // every active/trial student at the location instead.
   const rosterStudents = await prisma.student.findMany({
     where: {
       status: { in: ["ACTIVE", "TRIAL"] },
       locations: { some: { locationId: session.locationId } },
+      ...(options.includeAll
+        ? {}
+        : {
+            disciplines: {
+              some: { disciplineId: session.course.disciplineId },
+            },
+          }),
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: { id: true, firstName: true, lastName: true, photoKey: true },
@@ -155,6 +175,7 @@ export async function getSessionRoster(sessionId: string): Promise<{
       id: session.id,
       courseId: session.course.id,
       courseName: session.course.name,
+      disciplineName: session.course.discipline.name,
       locationId: session.location.id,
       locationName: session.location.name,
       trainerName: session.course.trainer?.name ?? null,

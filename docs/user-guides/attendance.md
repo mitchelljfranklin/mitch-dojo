@@ -10,7 +10,9 @@ Each row shows the date, time, course, location, trainer, status, and how many s
 
 ## Taking attendance
 
-Open a session from the timetable or a course page. The sheet lists the course's enrolled students with four statuses:
+Open a session from the timetable or a course page. The sheet lists the students training that **course's discipline** — a Judo class does not show the Karate kids. Use **Show everyone here** to widen the roster to every active/trial student at the location for drop-ins (the toggle carries through to the PDF).
+
+The sheet offers four statuses:
 
 | Status | Meaning | Counts toward belts? |
 |---|---|---|
@@ -25,7 +27,7 @@ Open a session from the timetable or a course page. The sheet lists the course's
 
 ## QR check-in
 
-Each location has a **public, no-login check-in page**. Students (or parents) scan the QR code on arrival, pick themselves from the list, and are marked Present.
+Each location has a **public, no-login check-in page**. Students (or parents) scan the QR code on arrival, pick themselves from the list, and are marked Present. A class lists only the students training that class's discipline.
 
 - The page is secured by a **revocable token** — rotate it from the location page if the QR leaks (a poster in a shared hallway, for example).
 - Check-ins record `Present` with source `CHECKIN`. Staff can overwrite afterwards; the source becomes `MANUAL`.

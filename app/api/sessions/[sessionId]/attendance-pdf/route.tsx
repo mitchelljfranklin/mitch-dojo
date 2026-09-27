@@ -12,13 +12,17 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ sessionId: string }> },
 ) {
   await requirePermission(PERMISSIONS.ATTENDANCE_VIEW);
   const { sessionId } = await params;
 
-  const { session, roster } = await getSessionRoster(sessionId);
+  // Mirror the sheet's scope so the printed record matches what was on screen.
+  const includeAll = new URL(request.url).searchParams.get("scope") === "all";
+  const { session, roster } = await getSessionRoster(sessionId, {
+    includeAll,
+  });
   if (!session) {
     return new Response("Session not found", { status: 404 });
   }

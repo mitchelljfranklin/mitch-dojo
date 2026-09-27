@@ -23,16 +23,24 @@ export const metadata = { title: "Attendance" };
 
 type SessionAttendancePageProps = {
   params: Promise<{ sessionId: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 };
 
 export default async function SessionAttendancePage({
   params,
+  searchParams,
 }: SessionAttendancePageProps) {
   const user = await requirePermission(PERMISSIONS.ATTENDANCE_VIEW);
   const canMark = hasPermission(user.permissions, PERMISSIONS.ATTENDANCE_MARK);
 
   const { sessionId } = await params;
-  const { session, roster } = await getSessionRoster(sessionId);
+  const sp = await searchParams;
+  // Default: only students training this course's discipline. `?scope=all`
+  // widens to everyone at the location for drop-ins.
+  const includeAll = sp.scope === "all";
+  const { session, roster } = await getSessionRoster(sessionId, {
+    includeAll,
+  });
   if (!session) {
     notFound();
   }
@@ -54,6 +62,7 @@ export default async function SessionAttendancePage({
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             <Badge variant="outline">{session.locationName}</Badge>
+            <Badge variant="secondary">{session.disciplineName}</Badge>
             <span className="text-muted-foreground font-mono text-xs">
               {session.startTime}–{session.endTime}
             </span>
@@ -69,7 +78,21 @@ export default async function SessionAttendancePage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
-            <a href={`/api/sessions/${session.id}/attendance-pdf`} download>
+            <Link
+              href={
+                includeAll
+                  ? `/sessions/${session.id}`
+                  : `/sessions/${session.id}?scope=all`
+              }
+            >
+              {includeAll ? "Show discipline only" : "Show everyone here"}
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <a
+              href={`/api/sessions/${session.id}/attendance-pdf${includeAll ? "?scope=all" : ""}`}
+              download
+            >
               Download PDF
             </a>
           </Button>
@@ -84,9 +107,11 @@ export default async function SessionAttendancePage({
           <CardTitle>Attendance</CardTitle>
           <CardDescription>
             {roster.length === 0
-              ? "No students are assigned to this location yet."
+              ? `No ${includeAll ? "students" : `${session.disciplineName} students`} at ${session.locationName} yet.`
               : canMark
-                ? "Mark each student and save. Students at this location (active and trial) are listed."
+                ? includeAll
+                  ? "Mark each student and save. Showing everyone at this location."
+                  : `Mark each student and save. Showing ${session.disciplineName} students (use “Show everyone here” for drop-ins).`
                 : "Read-only view. You need the attendance marking permission to record attendance."}
           </CardDescription>
         </CardHeader>
@@ -105,8 +130,8 @@ export default async function SessionAttendancePage({
             />
           ) : (
             <p className="text-muted-foreground text-sm">
-              Assign students to {session.locationName} to take their
-              attendance.
+              Assign students to {session.disciplineName} at{" "}
+              {session.locationName} to take their attendance.
             </p>
           )}
         </CardContent>

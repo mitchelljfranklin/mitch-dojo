@@ -76,17 +76,30 @@ export async function getCheckinPageData(
     where: { locationId, date: today, status: "SCHEDULED" },
     orderBy: { startTime: "asc" },
     include: {
-      course: { select: { name: true, trainer: { select: { name: true } } } },
+      course: {
+        select: {
+          name: true,
+          disciplineId: true,
+          trainer: { select: { name: true } },
+        },
+      },
     },
   });
 
+  // Roster scoped to each session's course discipline (same rule as the
+  // attendance sheet) — a member only taps in under a class they train.
   const rosterStudents = await prisma.student.findMany({
     where: {
       status: { in: ["ACTIVE", "TRIAL"] },
       locations: { some: { locationId } },
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-    select: { id: true, firstName: true, lastName: true },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      disciplines: { select: { disciplineId: true } },
+    },
   });
 
   const attendanceRows = await prisma.attendance.findMany({
@@ -108,11 +121,17 @@ export async function getCheckinPageData(
       trainerName: session.course.trainer?.name ?? null,
       startTime: session.startTime,
       endTime: session.endTime,
-      students: rosterStudents.map((student) => ({
-        studentId: student.id,
-        name: `${student.firstName} ${student.lastName}`,
-        checkedIn: checkedInKeys.has(`${session.id}|${student.id}`),
-      })),
+      students: rosterStudents
+        .filter((student) =>
+          student.disciplines.some(
+            (link) => link.disciplineId === session.course.disciplineId,
+          ),
+        )
+        .map((student) => ({
+          studentId: student.id,
+          name: `${student.firstName} ${student.lastName}`,
+          checkedIn: checkedInKeys.has(`${session.id}|${student.id}`),
+        })),
     })),
   };
 }
@@ -127,7 +146,12 @@ export async function checkInStudent(
 ): Promise<"ok" | "not_found" | "suspended"> {
   const session = await prisma.classSession.findUnique({
     where: { id: sessionId },
-    select: { locationId: true, status: true, date: true },
+    select: {
+      locationId: true,
+      status: true,
+      date: true,
+      course: { select: { disciplineId: true } },
+    },
   });
   if (!session || session.locationId !== locationId) return "not_found";
   // A cancelled session isn't held — refuse a stale form or crafted POST.
@@ -141,6 +165,8 @@ export async function checkInStudent(
       id: studentId,
       status: { in: ["ACTIVE", "TRIAL"] },
       locations: { some: { locationId } },
+      // Roster scope: the session's discipline only (matches the kiosk list).
+      disciplines: { some: { disciplineId: session.course.disciplineId } },
     },
     select: { id: true },
   });
