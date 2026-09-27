@@ -270,7 +270,10 @@ export async function getPortalStudent(studentId: string) {
       locations: { include: { location: { select: { name: true } } } },
       disciplines: { include: { discipline: { select: { name: true } } } },
       belts: {
-        orderBy: { awardedAt: "desc" },
+        // Newest award first; when dates tie (e.g. backfilled history all
+        // recorded on one day) fall back to the higher ladder rank so the
+        // "current belt" is deterministic and matches the staff record.
+        orderBy: [{ awardedAt: "desc" }, { beltRangeEntry: { order: "desc" } }],
         select: {
           id: true,
           beltName: true,

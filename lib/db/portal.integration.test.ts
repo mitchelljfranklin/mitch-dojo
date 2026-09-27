@@ -10,6 +10,7 @@ import {
   getPortalAttendance,
   getPortalContact,
   getPortalInvoices,
+  getPortalStudent,
   getPortalUpcomingSessions,
   portalHasStudent,
   updatePortalContact,
@@ -405,6 +406,60 @@ describe.skipIf(!hasTestDatabase)("portal self-service", () => {
         data: { householdId: null },
       });
       await deleteHousehold(householdId).catch(() => undefined);
+    }
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("portal belt ordering", () => {
+  it("shows the highest-ranked belt when award dates tie", async () => {
+    const white = await prisma.beltRangeEntry.create({
+      data: {
+        disciplineId,
+        name: `White ${suffix}`,
+        colorHex: "#FFFFFF",
+        order: 1,
+      },
+    });
+    const black = await prisma.beltRangeEntry.create({
+      data: {
+        disciplineId,
+        name: `Black ${suffix}`,
+        colorHex: "#000000",
+        order: 2,
+      },
+    });
+    const tiedDate = new Date("2026-09-25T00:00:00.000Z");
+    // Insert the lower rank first so a naive awardedAt-only sort surfaces it.
+    await prisma.studentBelt.create({
+      data: {
+        studentId,
+        beltRangeEntryId: white.id,
+        beltName: white.name,
+        colorHex: white.colorHex,
+        awardedAt: tiedDate,
+      },
+    });
+    await prisma.studentBelt.create({
+      data: {
+        studentId,
+        beltRangeEntryId: black.id,
+        beltName: black.name,
+        colorHex: black.colorHex,
+        awardedAt: tiedDate,
+      },
+    });
+
+    try {
+      const student = await getPortalStudent(studentId);
+      expect(student?.belts[0]?.beltName).toBe(black.name);
+    } finally {
+      await prisma.studentBelt.deleteMany({ where: { studentId } });
+      await prisma.beltRangeEntry
+        .delete({ where: { id: white.id } })
+        .catch(() => undefined);
+      await prisma.beltRangeEntry
+        .delete({ where: { id: black.id } })
+        .catch(() => undefined);
     }
   });
 });
