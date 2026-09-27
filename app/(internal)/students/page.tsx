@@ -69,6 +69,9 @@ export default async function StudentsPage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
+            <Link href="/students/households">Households</Link>
+          </Button>
+          <Button asChild variant="outline">
             <a href="/api/students/export">Export CSV</a>
           </Button>
           {canCreateStudent ? (

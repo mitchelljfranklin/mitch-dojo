@@ -55,6 +55,7 @@ export type StudentFormValues = {
   locationIds: string[];
   primaryLocationId: string | null;
   disciplineIds: string[];
+  householdId?: string | null;
 };
 
 export type StudentFormState =
@@ -70,6 +71,7 @@ type StudentFormProps = {
   values?: StudentFormValues;
   locations: StudentFormLocation[];
   disciplines: StudentFormDiscipline[];
+  households: { id: string; name: string }[];
   defaultCountry: string;
   submitLabel: string;
   studentId?: string;
@@ -86,6 +88,7 @@ export function StudentForm(props: StudentFormProps) {
     props.values,
     props.locations,
     props.disciplines,
+    props.households,
     props.defaultCountry,
     props.canViewMedical,
   ]);
@@ -97,6 +100,7 @@ function StudentFormInner({
   values,
   locations,
   disciplines,
+  households,
   defaultCountry,
   submitLabel,
   studentId,
@@ -478,6 +482,29 @@ function StudentFormInner({
           </p>
         ) : null}
       </div>
+
+      {households.length > 0 ? (
+        <div className="border-t pt-4">
+          <h3 className="mb-2 text-sm font-medium">Household</h3>
+          <p className="text-muted-foreground mb-2 text-xs">
+            Group siblings under one family contact (optional). Blank guardian
+            details are inherited from the household.
+          </p>
+          <select
+            id="householdId"
+            name="householdId"
+            defaultValue={values?.householdId ?? ""}
+            className="border-input bg-background h-9 w-full max-w-xs rounded-md border px-3 text-sm"
+          >
+            <option value="">No household</option>
+            {households.map((household) => (
+              <option key={household.id} value={household.id}>
+                {household.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
 
       <div className="border-t pt-4">
         <h3 className="mb-2 text-sm font-medium">Photo</h3>

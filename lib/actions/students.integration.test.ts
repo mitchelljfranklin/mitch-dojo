@@ -159,4 +159,34 @@ describe.skipIf(!hasTestDatabase)("student action medical-PHI gate", () => {
     expect(after?.medicalMedications).toBe("epipen");
     expect(after?.medicalConditions).toBe("allergy");
   });
+
+  it("inherits blank guardian contact from the household on create", async () => {
+    mocks.permissions = [PERMISSIONS.STUDENTS_CREATE];
+    const household = await prisma.household.create({
+      data: {
+        name: `Action Household ${suffix}`,
+        contactName: "Pat Guardian",
+        contactEmail: `action-house-${suffix}@example.com`,
+        contactPhone: "0400 999 000",
+      },
+    });
+
+    const fields = baseFields();
+    fields.firstName = "Sibling";
+    fields.guardianName = "";
+    fields.guardianEmail = "";
+    fields.guardianPhone = "";
+    const form = toFormData(fields);
+    form.append("householdId", household.id);
+    await runAction(createStudentAction, form);
+
+    const student = await prisma.student.findFirst({
+      where: { firstName: "Sibling", lastName: `Kid${suffix}` },
+    });
+    expect(student?.householdId).toBe(household.id);
+    expect(student?.guardianName).toBe("Pat Guardian");
+    expect(student?.guardianEmail).toBe(`action-house-${suffix}@example.com`);
+
+    await prisma.household.delete({ where: { id: household.id } });
+  });
 });

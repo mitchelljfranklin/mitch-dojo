@@ -12,6 +12,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { listHouseholdOptions } from "@/lib/db/households";
 import { prisma } from "@/lib/prisma";
 import { getOrganizationSettings } from "@/lib/settings";
 import { notFound } from "next/navigation";
@@ -29,15 +30,17 @@ export default async function EditStudentPage({
 }: EditStudentPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const { studentId } = await params;
-  const [student, locations, disciplines, organization] = await Promise.all([
-    getStudent(studentId),
-    listAssignableLocations(),
-    prisma.discipline.findMany({
-      select: { id: true, name: true, isActive: true },
-      orderBy: { name: "asc" },
-    }),
-    getOrganizationSettings(),
-  ]);
+  const [student, locations, disciplines, households, organization] =
+    await Promise.all([
+      getStudent(studentId),
+      listAssignableLocations(),
+      prisma.discipline.findMany({
+        select: { id: true, name: true, isActive: true },
+        orderBy: { name: "asc" },
+      }),
+      listHouseholdOptions(),
+      getOrganizationSettings(),
+    ]);
   if (!student) {
     notFound();
   }
@@ -66,6 +69,7 @@ export default async function EditStudentPage({
             studentId={student.id}
             locations={locations}
             disciplines={disciplines}
+            households={households}
             defaultCountry={organization.defaultCountry}
             submitLabel="Save changes"
             canViewMedical={hasPermission(
@@ -105,6 +109,7 @@ export default async function EditStudentPage({
               disciplineIds: student.disciplines.map(
                 (link) => link.disciplineId,
               ),
+              householdId: student.householdId ?? "",
             }}
           />
         </CardContent>

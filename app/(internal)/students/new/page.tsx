@@ -11,6 +11,7 @@ import { createStudentAction } from "@/lib/actions/students";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { listAssignableLocations } from "@/lib/db/locations";
+import { listHouseholdOptions } from "@/lib/db/households";
 import { prisma } from "@/lib/prisma";
 import { getOrganizationSettings } from "@/lib/settings";
 
@@ -20,13 +21,14 @@ export const metadata = { title: "New student" };
 
 export default async function NewStudentPage() {
   const user = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const [locations, disciplines, organization] = await Promise.all([
+  const [locations, disciplines, households, organization] = await Promise.all([
     listAssignableLocations(),
     prisma.discipline.findMany({
       where: { isActive: true },
       select: { id: true, name: true, isActive: true },
       orderBy: { name: "asc" },
     }),
+    listHouseholdOptions(),
     getOrganizationSettings(),
   ]);
 
@@ -48,6 +50,7 @@ export default async function NewStudentPage() {
             action={createStudentAction}
             locations={locations}
             disciplines={disciplines}
+            households={households}
             defaultCountry={organization.defaultCountry}
             submitLabel="Create student"
             canViewMedical={hasPermission(

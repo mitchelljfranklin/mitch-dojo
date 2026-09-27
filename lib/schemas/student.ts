@@ -79,6 +79,8 @@ export const studentSchema = z
     guardianEmail: optionalEmail,
     guardianPhone: optionalString,
     guardianRelationship: optionalString,
+    // Optional family grouping (undefined = not provided).
+    householdId: z.string().trim().optional(),
     // PHI — free text per prompt. Visibility is permission-gated upstream.
     medicalMedications: optionalString,
     medicalConditions: optionalString,

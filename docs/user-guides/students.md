@@ -47,6 +47,12 @@ Bulk onboarding: see [Importing History](./importing-history) for the CSV import
 Deleting a student removes their photo and attachments from the storage backend — no orphans left behind. A scheduled sweep catches anything that slips through.
 :::
 
+## Households
+
+**Students → Households** groups siblings under one family contact (name, email, phone). Assign a student to a household from their **Edit** form; when you do, any **blank** guardian details are inherited from the household, so a new sibling picks up the family contact automatically. The student record shows the household and its other members. Deleting a household leaves the student records intact (they simply become unassigned).
+
+Family-level invoicing and a single portal login for all children are planned follow-ups; today invoices and the portal remain per student.
+
 ## CSV import & export
 
 - **Export** — download the current list as CSV (all fields, including address and disciplines).

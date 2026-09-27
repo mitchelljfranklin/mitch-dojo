@@ -62,6 +62,7 @@ function parseStudentInput(formData: FormData) {
     guardianEmail: getField(formData, "guardianEmail"),
     guardianPhone: getField(formData, "guardianPhone"),
     guardianRelationship: getField(formData, "guardianRelationship"),
+    householdId: getField(formData, "householdId") || undefined,
     medicalMedications: getField(formData, "medicalMedications"),
     medicalConditions: getField(formData, "medicalConditions"),
     medicalInjuries: getField(formData, "medicalInjuries"),
@@ -89,6 +90,25 @@ function isDuplicateEmailError(error: unknown): boolean {
     error instanceof Prisma.PrismaClientKnownRequestError &&
     error.code === "P2002"
   );
+}
+
+// Fills blank guardian contact from the household the student joins, so a
+// sibling inherits the family contact.
+async function inheritHouseholdContact(
+  data: StudentInput,
+): Promise<StudentInput> {
+  if (!data.householdId) return data;
+  const household = await prisma.household.findUnique({
+    where: { id: data.householdId },
+    select: { contactName: true, contactEmail: true, contactPhone: true },
+  });
+  if (!household) return data;
+  return {
+    ...data,
+    guardianName: data.guardianName ?? household.contactName,
+    guardianEmail: data.guardianEmail ?? household.contactEmail,
+    guardianPhone: data.guardianPhone ?? household.contactPhone,
+  };
 }
 
 async function handlePhotoUpload(
@@ -148,10 +168,12 @@ export async function createStudentAction(
   // Medical PHI is gated by students:medical on the WRITE side too: without
   // it the fields are never rendered, so anything submitted (including a
   // crafted request) must be ignored rather than stored.
-  const data = applyMedicalPermission(
-    parsed.data,
-    null,
-    hasPermission(actor.permissions, PERMISSIONS.STUDENTS_MEDICAL),
+  const data = await inheritHouseholdContact(
+    applyMedicalPermission(
+      parsed.data,
+      null,
+      hasPermission(actor.permissions, PERMISSIONS.STUDENTS_MEDICAL),
+    ),
   );
 
   let studentId: string;
@@ -201,10 +223,12 @@ export async function updateStudentAction(
   // Without students:medical the medical inputs are absent from the form —
   // writing the parsed (empty → null) values would erase the student's PHI.
   // Preserve the stored values (and ignore any crafted submission) instead.
-  const data = applyMedicalPermission(
-    parsed.data,
-    existing,
-    hasPermission(actor.permissions, PERMISSIONS.STUDENTS_MEDICAL),
+  const data = await inheritHouseholdContact(
+    applyMedicalPermission(
+      parsed.data,
+      existing,
+      hasPermission(actor.permissions, PERMISSIONS.STUDENTS_MEDICAL),
+    ),
   );
 
   try {

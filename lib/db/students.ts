@@ -183,6 +183,7 @@ export async function createStudent(input: StudentInput): Promise<string> {
       guardianEmail: input.guardianEmail,
       guardianPhone: input.guardianPhone,
       guardianRelationship: input.guardianRelationship ?? null,
+      householdId: input.householdId ?? null,
       medicalMedications: input.medicalMedications,
       medicalConditions: input.medicalConditions,
       medicalInjuries: input.medicalInjuries,
@@ -209,10 +210,19 @@ export async function updateStudent(
   studentId: string,
   input: StudentInput,
 ): Promise<void> {
-  const { locationIds, primaryLocationId, disciplineIds, ...fields } = input;
+  const {
+    locationIds,
+    primaryLocationId,
+    disciplineIds,
+    householdId,
+    ...fields
+  } = input;
 
   await prisma.$transaction(async (tx) => {
-    await tx.student.update({ where: { id: studentId }, data: fields });
+    await tx.student.update({
+      where: { id: studentId },
+      data: { ...fields, householdId: householdId ?? null },
+    });
     await tx.studentLocation.deleteMany({ where: { studentId } });
     await tx.studentLocation.createMany({
       data: locationIds.map((locationId) => ({

@@ -22,6 +22,7 @@ import { RecordSignatureSheet } from "./record-signature-sheet";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getStudent } from "@/lib/db/students";
+import { getStudentHousehold } from "@/lib/db/households";
 import { getStudentRecentAttendance } from "@/lib/db/attendance";
 import { getStudentBeltHistory } from "@/lib/db/belts";
 import { listCoursesForStudent } from "@/lib/db/courses";
@@ -104,6 +105,7 @@ export default async function StudentDetailPage({
     beltHistory,
     backfillCourses,
     agreementStatuses,
+    household,
   ] = await Promise.all([
     getStudent(studentId),
     prisma.attachment.findMany({
@@ -114,6 +116,7 @@ export default async function StudentDetailPage({
     getStudentBeltHistory(studentId),
     canMarkAttendance ? listCoursesForStudent(studentId) : Promise.resolve([]),
     getStudentAgreementStatuses(studentId),
+    getStudentHousehold(studentId),
   ]);
   if (!student) {
     notFound();
@@ -326,6 +329,57 @@ export default async function StudentDetailPage({
                 No locations assigned yet.
               </p>
             ) : null}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Household</CardTitle>
+            <CardDescription>
+              Family group for sibling contact and (later) a shared portal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            {household ? (
+              <>
+                <span className="font-medium">{household.name}</span>
+                <span className="text-muted-foreground text-xs">
+                  {[
+                    household.contactName,
+                    household.contactEmail,
+                    household.contactPhone,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "No contact details"}
+                </span>
+                {household.students.filter((member) => member.id !== student.id)
+                  .length > 0 ? (
+                  <span className="text-muted-foreground text-xs">
+                    Siblings:{" "}
+                    {household.students
+                      .filter((member) => member.id !== student.id)
+                      .map((member) => `${member.firstName} ${member.lastName}`)
+                      .join(", ")}
+                  </span>
+                ) : null}
+                <Link
+                  href="/students/households"
+                  className="text-primary text-xs hover:underline"
+                >
+                  Manage households →
+                </Link>
+              </>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Not in a household — assign one on the Edit form.{" "}
+                <Link
+                  href="/students/households"
+                  className="text-primary hover:underline"
+                >
+                  Manage households
+                </Link>
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
