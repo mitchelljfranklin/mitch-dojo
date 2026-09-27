@@ -248,3 +248,62 @@ describe.skipIf(!hasTestDatabase)("portal data", () => {
     await prisma.membershipPlan.delete({ where: { id: plan.id } });
   });
 });
+
+describe.skipIf(!hasTestDatabase)("household portal tokens", () => {
+  let householdId: string;
+
+  beforeAll(async () => {
+    const { createHousehold } = await import("@/lib/db/households");
+    householdId = await createHousehold({
+      name: `Portal Family ${suffix}`,
+      contactName: "Pat Family",
+      contactEmail: `family-${suffix}@example.com`,
+      contactPhone: null,
+      notes: null,
+    });
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { householdId },
+    });
+  });
+
+  afterAll(async () => {
+    const { deleteHousehold } = await import("@/lib/db/households");
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { householdId: null },
+    });
+    await deleteHousehold(householdId).catch(() => undefined);
+  });
+
+  it("issues a household link and resolves access to the whole family", async () => {
+    const {
+      createHouseholdPortalLink,
+      resolvePortalToken,
+      getHouseholdPortalChildren,
+    } = await import("@/lib/db/portal");
+
+    const link = await createHouseholdPortalLink(householdId, APP_URL);
+    expect(link.outcome).toBe("sent");
+    if (link.outcome !== "sent") throw new Error("expected sent");
+    expect(link.recipient).toBe(`family-${suffix}@example.com`);
+
+    const token = new URL(link.url).searchParams.get("token") ?? "";
+    const access = await resolvePortalToken(token);
+    expect(access?.householdId).toBe(householdId);
+    expect(access?.studentId).toBeNull();
+
+    const children = await getHouseholdPortalChildren(householdId);
+    expect(children.some((child) => child.id === studentId)).toBe(true);
+  });
+
+  it("does not expose a student id for a household token", async () => {
+    const { createHouseholdPortalLink, verifyPortalToken } =
+      await import("@/lib/db/portal");
+    const link = await createHouseholdPortalLink(householdId, APP_URL);
+    if (link.outcome !== "sent") throw new Error("expected sent");
+    const token = new URL(link.url).searchParams.get("token") ?? "";
+    // The legacy student-only verifier returns null for a household token.
+    expect(await verifyPortalToken(token)).toBeNull();
+  });
+});

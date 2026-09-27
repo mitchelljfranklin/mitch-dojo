@@ -16,6 +16,7 @@ import { deleteHouseholdAction } from "@/lib/actions/households";
 import { listHouseholds } from "@/lib/db/households";
 
 import { CreateHouseholdForm } from "./create-household-form";
+import { SendPortalLinkButton } from "./send-portal-link-button";
 
 export const dynamic = "force-dynamic";
 
@@ -89,31 +90,34 @@ export default async function HouseholdsPage() {
                   </span>
                 </div>
                 {canEdit ? (
-                  <form
-                    id={`delete-household-${household.id}`}
-                    action={deleteHouseholdAction}
-                  >
-                    <input
-                      type="hidden"
-                      name="householdId"
-                      value={household.id}
-                    />
-                    <ConfirmDialog
-                      title="Delete household?"
-                      description={`${household.name} will be removed. Members keep their student records.`}
-                      confirmLabel="Delete"
-                      formId={`delete-household-${household.id}`}
+                  <div className="flex items-center gap-2">
+                    <SendPortalLinkButton householdId={household.id} />
+                    <form
+                      id={`delete-household-${household.id}`}
+                      action={deleteHouseholdAction}
                     >
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive"
+                      <input
+                        type="hidden"
+                        name="householdId"
+                        value={household.id}
+                      />
+                      <ConfirmDialog
+                        title="Delete household?"
+                        description={`${household.name} will be removed. Members keep their student records.`}
+                        confirmLabel="Delete"
+                        formId={`delete-household-${household.id}`}
                       >
-                        Delete
-                      </Button>
-                    </ConfirmDialog>
-                  </form>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                        >
+                          Delete
+                        </Button>
+                      </ConfirmDialog>
+                    </form>
+                  </div>
                 ) : null}
               </div>
             ))

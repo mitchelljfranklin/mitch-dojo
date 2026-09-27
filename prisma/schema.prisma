@@ -113,14 +113,17 @@ model PasswordResetToken {
 // first visit. Regenerating a link does not revoke previously issued ones
 // that are still unexpired.
 model PortalToken {
-  id        String   @id @default(cuid())
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id          String     @id @default(cuid())
+  studentId   String?
+  student     Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  householdId String?
+  household   Household? @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  tokenHash   String     @unique
+  expiresAt   DateTime
+  createdAt   DateTime   @default(now())
 
   @@index([studentId])
+  @@index([householdId])
   @@index([expiresAt])
   @@map("portal_tokens")
 }
@@ -794,6 +797,7 @@ model Household {
   updatedAt    DateTime @updatedAt
 
   students Student[]
+  portalTokens PortalToken[]
 
   @@map("households")
 }

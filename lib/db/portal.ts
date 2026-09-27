@@ -66,6 +66,73 @@ export async function verifyPortalToken(
   return record.studentId;
 }
 
+// --------------- household tokens ---------------
+
+export type PortalAccess = {
+  studentId: string | null;
+  householdId: string | null;
+};
+
+// A portal token may target a single student or a whole household.
+export async function resolvePortalToken(
+  rawToken: string,
+  now: Date = new Date(),
+): Promise<PortalAccess | null> {
+  if (!rawToken) return null;
+  const record = await prisma.portalToken.findUnique({
+    where: { tokenHash: hashToken(rawToken) },
+    select: { studentId: true, householdId: true, expiresAt: true },
+  });
+  if (!record || record.expiresAt < now) return null;
+  return { studentId: record.studentId, householdId: record.householdId };
+}
+
+export async function createHouseholdPortalLink(
+  householdId: string,
+  appUrl: string,
+  now: Date = new Date(),
+): Promise<PortalLinkResult> {
+  const household = await prisma.household.findUnique({
+    where: { id: householdId },
+    select: {
+      contactEmail: true,
+      students: { select: { email: true, guardianEmail: true } },
+    },
+  });
+  if (!household) throw new Error("Household not found.");
+
+  const recipient =
+    household.contactEmail?.trim() ||
+    household.students
+      .map((student) => student.email?.trim() || student.guardianEmail?.trim())
+      .find((email): email is string => Boolean(email)) ||
+    null;
+  if (!recipient) {
+    return { outcome: "no_recipient" };
+  }
+
+  const rawToken = generateAccessToken();
+  const expiresAt = expiryFromNow(PORTAL_TOKEN_TTL_DAYS, now);
+  await prisma.portalToken.create({
+    data: { householdId, tokenHash: hashToken(rawToken), expiresAt },
+  });
+
+  return {
+    outcome: "sent",
+    recipient,
+    expiresAt,
+    url: `${appUrl}/portal/welcome?token=${encodeURIComponent(rawToken)}`,
+  };
+}
+
+export async function getHouseholdPortalChildren(householdId: string) {
+  return prisma.student.findMany({
+    where: { householdId },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    select: { id: true, firstName: true, lastName: true },
+  });
+}
+
 // --------------- portal data ---------------
 
 export type PortalStudent = NonNullable<

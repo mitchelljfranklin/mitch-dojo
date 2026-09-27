@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies, headers } from "next/headers";
 
 import { BrandMark } from "@/components/brand-mark";
@@ -13,11 +14,12 @@ import {
 import { getClientIp } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
 import {
+  getHouseholdPortalChildren,
   getPortalAttendance,
   getPortalInvoices,
   getPortalStudent,
   getPortalUpcomingSessions,
-  verifyPortalToken,
+  resolvePortalToken,
 } from "@/lib/db/portal";
 import { getStudentAgreementStatuses } from "@/lib/db/agreements";
 import ReactMarkdown from "react-markdown";
@@ -68,9 +70,9 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
   const cookieStore = await cookies();
   const rawToken = cookieStore.get(PORTAL_COOKIE)?.value ?? "";
-  const studentId = await verifyPortalToken(rawToken);
+  const access = await resolvePortalToken(rawToken);
 
-  if (!studentId) {
+  if (!access) {
     return (
       <PortalShell>
         <Card>
@@ -87,6 +89,37 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     );
   }
 
+  // A household token shows all of a family's children; one child is selected
+  // at a time via ?child=. A student token has a single child.
+  const children = access.householdId
+    ? await getHouseholdPortalChildren(access.householdId)
+    : [];
+  const studentId = access.studentId ?? children[0]?.id ?? null;
+
+  if (!studentId) {
+    return (
+      <PortalShell>
+        <BrandMark />
+        <Card>
+          <CardHeader>
+            <CardTitle>No members yet</CardTitle>
+            <CardDescription>
+              This household has no students to show. Ask us at the dojo for a
+              fresh link.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </PortalShell>
+    );
+  }
+
+  const activeChildId =
+    access.householdId &&
+    sp.child &&
+    children.some((child) => child.id === sp.child)
+      ? sp.child
+      : studentId;
+
   const [
     student,
     upcoming,
@@ -95,11 +128,11 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     agreementStatuses,
     { currency },
   ] = await Promise.all([
-    getPortalStudent(studentId),
-    getPortalUpcomingSessions(studentId),
-    getPortalAttendance(studentId),
-    getPortalInvoices(studentId),
-    getStudentAgreementStatuses(studentId),
+    getPortalStudent(activeChildId),
+    getPortalUpcomingSessions(activeChildId),
+    getPortalAttendance(activeChildId),
+    getPortalInvoices(activeChildId),
+    getStudentAgreementStatuses(activeChildId),
     getMembershipsSettings(),
   ]);
 
@@ -159,6 +192,23 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
           </Button>
         </form>
       </div>
+
+      {children.length > 1 ? (
+        <div className="mb-6 flex flex-wrap gap-2">
+          {children.map((child) => (
+            <Button
+              key={child.id}
+              asChild
+              size="sm"
+              variant={child.id === activeChildId ? "default" : "outline"}
+            >
+              <Link href={`/portal?child=${child.id}`}>
+                {child.firstName} {child.lastName}
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

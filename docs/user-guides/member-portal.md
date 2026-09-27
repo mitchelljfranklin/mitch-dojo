@@ -9,8 +9,10 @@ A read-only portal where students and parents check their own progress — no lo
 3. The link opens `/portal` — no login. Tokens are **hashed in the database** and expire after **30 days**.
 4. Ask for a new link any time — staff can send a fresh one; expired tokens are pruned automatically by the scheduler.
 
+A **household** can also be sent one link (Students → Households → *Email portal link*): it shows **every child** in the family, with a switcher between them.
+
 ::: warning Links are secrets
-Anyone with the link can see that student's data. Tokens are single-student, expire after 30 days, and are stored hashed so they can't be recovered from a database dump — only re-issued.
+Anyone with the link can see that student's data. Tokens are scoped to one student (or a household's children), expire after 30 days, and are stored hashed so they can't be recovered from a database dump — only re-issued.
 :::
 
 ## What students see
