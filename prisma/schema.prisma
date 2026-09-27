@@ -266,6 +266,10 @@ model Student {
   medicalInjuries       String?
   notes                 String?
   photoKey              String?
+  // Member-portal email preference: when true, non-essential automated
+  // emails (class/birthday/trial/agreement reminders) are skipped. Payment
+  // reminders are transactional and always sent.
+  emailOptOut           Boolean       @default(false)
   joinedAt              DateTime      @default(now())
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt

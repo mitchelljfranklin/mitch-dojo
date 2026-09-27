@@ -54,7 +54,7 @@
 
 - Public trial-booking page at `/book` — rate-limited and honeypot-protected, creates a trial student with a chosen class
 - A lead pipeline (New → Contacted → First class → Converted/Lost) with guarded stage transitions and conversion stats
-- Staff-emailed magic links (hashed tokens, 30-day expiry) to a read-only member portal: progress, belts, upcoming classes, attendance, invoices, and balance
+- Staff-emailed magic links (hashed tokens, 30-day expiry) to a member portal: progress, belts, upcoming classes, attendance, invoices, and balance — plus digital signing, PDF downloads, self-service contact updates, and email preferences
 
 ## Analytics
 

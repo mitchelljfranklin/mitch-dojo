@@ -463,4 +463,31 @@ describe.skipIf(!hasTestDatabase)("agreement reminders", () => {
       .delete({ where: { id: document.id } })
       .catch(() => undefined);
   });
+
+  it("skips students who opted out of non-essential emails", async () => {
+    await updateCommunicationsSettings({ agreementRemindersEnabled: true });
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { email: `optout-${suffix}@example.com`, emailOptOut: true },
+    });
+    await prisma.notificationLog.deleteMany({
+      where: {
+        assessmentId: { startsWith: `agreement-reminder:${studentId}:` },
+      },
+    });
+
+    await sendAgreementReminders();
+
+    const logs = await prisma.notificationLog.findMany({
+      where: {
+        assessmentId: { startsWith: `agreement-reminder:${studentId}:` },
+      },
+    });
+    expect(logs).toHaveLength(0);
+
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { emailOptOut: false },
+    });
+  });
 });

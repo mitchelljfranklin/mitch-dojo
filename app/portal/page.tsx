@@ -16,6 +16,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import {
   getHouseholdPortalChildren,
   getPortalAttendance,
+  getPortalContact,
   getPortalInvoices,
   getPortalStudent,
   getPortalUpcomingSessions,
@@ -24,6 +25,7 @@ import {
 import { getStudentAgreementStatuses } from "@/lib/db/agreements";
 import ReactMarkdown from "react-markdown";
 import { PortalAgreementSignForm } from "./agreement-sign-form";
+import { PortalContactForm, PortalPreferencesForm } from "./contact-form";
 import { getMembershipsSettings } from "@/lib/settings";
 import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 import { portalSignOutAction } from "./sign-out";
@@ -126,6 +128,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     attendance,
     invoices,
     agreementStatuses,
+    contact,
     { currency },
   ] = await Promise.all([
     getPortalStudent(activeChildId),
@@ -133,6 +136,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
     getPortalAttendance(activeChildId),
     getPortalInvoices(activeChildId),
     getStudentAgreementStatuses(activeChildId),
+    getPortalContact(activeChildId),
     getMembershipsSettings(),
   ]);
 
@@ -328,6 +332,13 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                     className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm"
                   >
                     <span className="font-mono text-xs">#{invoice.number}</span>
+                    <a
+                      href={`/portal/invoice/${invoice.id}`}
+                      className="text-xs underline"
+                      download
+                    >
+                      PDF
+                    </a>
                     <span className="text-muted-foreground text-xs">
                       due {formatDate(invoice.dueDate)}
                     </span>
@@ -355,13 +366,31 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                 ) : null}
               </>
             )}
-            <p className="text-muted-foreground mt-2 text-xs">
-              Contact details on file: {student.email ?? "no email"} ·{" "}
-              {student.phone ?? "no phone"}. Ask us at the dojo to update them.
-            </p>
           </CardContent>
         </Card>
       </div>
+
+      {contact ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your details</CardTitle>
+            <CardDescription>
+              Keep your contact details up to date — we use them for class
+              reminders and in an emergency.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-8">
+            <PortalContactForm contact={contact} />
+            <div className="border-t pt-6">
+              <h3 className="mb-2 text-sm font-medium">Email preferences</h3>
+              <PortalPreferencesForm
+                studentId={contact.studentId}
+                emailOptOut={contact.emailOptOut}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -412,6 +441,13 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                       documentLabel={status.title}
                     />
                   )}
+                  <a
+                    href={`/portal/agreement/${status.documentId}?studentId=${activeChildId}`}
+                    className="w-fit text-xs underline"
+                    download
+                  >
+                    Download PDF
+                  </a>
                 </div>
               </details>
             ))

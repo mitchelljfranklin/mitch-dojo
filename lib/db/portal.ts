@@ -133,6 +133,123 @@ export async function getHouseholdPortalChildren(householdId: string) {
   });
 }
 
+// True when the token grants access to this student — either a direct student
+// token, or a household token whose household contains the student.
+export async function portalHasStudent(
+  rawToken: string,
+  studentId: string,
+  now: Date = new Date(),
+): Promise<boolean> {
+  const access = await resolvePortalToken(rawToken, now);
+  if (!access) return false;
+  if (access.studentId) return access.studentId === studentId;
+  if (access.householdId) {
+    const student = await prisma.student.findFirst({
+      where: { id: studentId, householdId: access.householdId },
+      select: { id: true },
+    });
+    return Boolean(student);
+  }
+  return false;
+}
+
+// --------------- portal self-service ---------------
+
+export type PortalContact = {
+  studentId: string;
+  email: string | null;
+  phone: string | null;
+  addressLine: string | null;
+  city: string | null;
+  state: string | null;
+  postcode: string | null;
+  country: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  guardianName: string | null;
+  guardianEmail: string | null;
+  guardianPhone: string | null;
+  guardianRelationship: string | null;
+  emailOptOut: boolean;
+};
+
+export async function getPortalContact(
+  studentId: string,
+): Promise<PortalContact | null> {
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: {
+      id: true,
+      email: true,
+      phone: true,
+      addressLine: true,
+      city: true,
+      state: true,
+      postcode: true,
+      country: true,
+      emergencyContactName: true,
+      emergencyContactPhone: true,
+      guardianName: true,
+      guardianEmail: true,
+      guardianPhone: true,
+      guardianRelationship: true,
+      emailOptOut: true,
+    },
+  });
+  if (!student) return null;
+  return { studentId: student.id, ...student };
+}
+
+// Writes only the member-editable contact fields; identity/medical/status are
+// untouched even if a crafted submission includes them.
+export async function updatePortalContact(
+  studentId: string,
+  input: {
+    email: string | null;
+    phone: string | null;
+    addressLine: string | null;
+    city: string | null;
+    state: string | null;
+    postcode: string | null;
+    country: string | null;
+    emergencyContactName: string | null;
+    emergencyContactPhone: string | null;
+    guardianName: string | null;
+    guardianEmail: string | null;
+    guardianPhone: string | null;
+    guardianRelationship: string | null;
+  },
+): Promise<void> {
+  await prisma.student.update({
+    where: { id: studentId },
+    data: {
+      email: input.email,
+      phone: input.phone,
+      addressLine: input.addressLine,
+      city: input.city,
+      state: input.state,
+      postcode: input.postcode,
+      country: input.country,
+      emergencyContactName: input.emergencyContactName,
+      emergencyContactPhone: input.emergencyContactPhone,
+      guardianName: input.guardianName,
+      guardianEmail: input.guardianEmail,
+      guardianPhone: input.guardianPhone,
+      guardianRelationship: input.guardianRelationship,
+    },
+  });
+}
+
+export async function updatePortalEmailPreference(
+  studentId: string,
+  emailOptOut: boolean,
+): Promise<void> {
+  await prisma.student.update({
+    where: { id: studentId },
+    data: { emailOptOut },
+  });
+}
+
 // --------------- portal data ---------------
 
 export type PortalStudent = NonNullable<

@@ -1,6 +1,6 @@
 # Member Portal
 
-A read-only portal where students and parents check their own progress — no login, no password to forget.
+A self-service portal where students and parents check their own progress — no login, no password to forget. They can sign agreements, download documents, and keep their contact details current.
 
 ## How access works
 
@@ -24,8 +24,15 @@ Anyone with the link can see that student's data. Tokens are scoped to one stude
 | **Attendance** | Recent attendance history |
 | **Invoices & balance** | Their invoices and current balance |
 | **Documents & consent** | Read and digitally sign the school's agreements ([Compliance](./compliance)) |
+| **Your details** | Update their own contact details and email preferences (see below) |
 
-The portal is read-only except for document signing — the member's typed name and the date are recorded; everything else (progress, invoices) cannot be edited. The page is white-labelled with your org name and logo.
+The portal lets the member edit only their **own contact details** — email, phone, address, emergency contact, and guardian details — plus their **email preference**. Identity fields (name, date of birth, status, photo, medical) and everything else (progress, invoices) stay staff-managed. Contact edits and preference changes are **audit-logged** and rate-limited; the portal token is re-checked server-side on every write.
+
+Members can also **download PDFs** of their own invoices and agreements from the portal. Downloads are token-authorized: a token can only fetch documents belonging to a student it grants.
+
+## Email preferences
+
+Members can tick **Pause non-essential emails** to opt out of class reminders, birthday emails, trial follow-ups, and agreement reminders. **Payment reminders and account emails are always sent** (they're transactional), and staff-side notifications (e.g. new-booking alerts) are unaffected.
 
 ## White-labeling
 

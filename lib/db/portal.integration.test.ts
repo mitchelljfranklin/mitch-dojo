@@ -8,8 +8,12 @@ import { createMembershipPlan } from "@/lib/db/memberships";
 import {
   createPortalLink,
   getPortalAttendance,
+  getPortalContact,
   getPortalInvoices,
   getPortalUpcomingSessions,
+  portalHasStudent,
+  updatePortalContact,
+  updatePortalEmailPreference,
   verifyPortalToken,
 } from "@/lib/db/portal";
 
@@ -305,5 +309,102 @@ describe.skipIf(!hasTestDatabase)("household portal tokens", () => {
     const token = new URL(link.url).searchParams.get("token") ?? "";
     // The legacy student-only verifier returns null for a household token.
     expect(await verifyPortalToken(token)).toBeNull();
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("portal self-service", () => {
+  it("reads and updates the member's contact details", async () => {
+    const link = await createPortalLink(studentId!, APP_URL);
+    if (link.outcome !== "sent") throw new Error("expected sent");
+
+    const before = await getPortalContact(studentId!);
+    expect(before?.studentId).toBe(studentId);
+    expect(before?.email).toBe(`portal-${suffix}@example.com`);
+
+    await updatePortalContact(studentId!, {
+      email: `updated-${suffix}@example.com`,
+      phone: "0400 000 000",
+      addressLine: "1 Mat Street",
+      city: "Brisbane",
+      state: "QLD",
+      postcode: "4000",
+      country: "AU",
+      emergencyContactName: "Emergency Contact",
+      emergencyContactPhone: "0400 111 111",
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+    });
+
+    const after = await getPortalContact(studentId!);
+    expect(after?.email).toBe(`updated-${suffix}@example.com`);
+    expect(after?.addressLine).toBe("1 Mat Street");
+    expect(after?.country).toBe("AU");
+
+    // Restore the original email for later runs.
+    await updatePortalContact(studentId!, {
+      email: `portal-${suffix}@example.com`,
+      phone: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+    });
+  });
+
+  it("toggles the email opt-out preference", async () => {
+    await updatePortalEmailPreference(studentId!, true);
+    expect((await getPortalContact(studentId!))?.emailOptOut).toBe(true);
+    await updatePortalEmailPreference(studentId!, false);
+    expect((await getPortalContact(studentId!))?.emailOptOut).toBe(false);
+  });
+
+  it("authorizes only the students the token grants", async () => {
+    const link = await createPortalLink(studentId!, APP_URL);
+    if (link.outcome !== "sent") throw new Error("expected sent");
+    const token = new URL(link.url).searchParams.get("token") ?? "";
+
+    expect(await portalHasStudent(token, studentId!)).toBe(true);
+    // A different student is out of scope for a student token.
+    expect(await portalHasStudent(token, guardianOnlyId!)).toBe(false);
+    expect(await portalHasStudent("garbage", studentId!)).toBe(false);
+  });
+
+  it("lets a household token reach its children", async () => {
+    const { createHousehold, deleteHousehold } =
+      await import("@/lib/db/households");
+    const { createHouseholdPortalLink } = await import("@/lib/db/portal");
+    const householdId = await createHousehold({
+      name: `Self-serve Family ${suffix}`,
+      contactName: "Pat Family",
+      contactEmail: `self-family-${suffix}@example.com`,
+      contactPhone: null,
+      notes: null,
+    });
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { householdId },
+    });
+    try {
+      const link = await createHouseholdPortalLink(householdId, APP_URL);
+      if (link.outcome !== "sent") throw new Error("expected sent");
+      const token = new URL(link.url).searchParams.get("token") ?? "";
+      expect(await portalHasStudent(token, studentId!)).toBe(true);
+      expect(await portalHasStudent(token, guardianOnlyId!)).toBe(false);
+    } finally {
+      await prisma.student.update({
+        where: { id: studentId },
+        data: { householdId: null },
+      });
+      await deleteHousehold(householdId).catch(() => undefined);
+    }
   });
 });

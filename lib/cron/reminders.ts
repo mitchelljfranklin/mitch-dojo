@@ -119,12 +119,14 @@ export async function sendClassReminders(
         lastName: true,
         email: true,
         guardianEmail: true,
+        emailOptOut: true,
       },
     });
 
     for (const student of students) {
       const dedupKey = `class-reminder:${session.id}:${student.id}`;
       if (!(await notYetSent(dedupKey))) continue;
+      if (student.emailOptOut) continue;
 
       const recipient = resolveRecipient(student);
       if (!recipient) continue;
@@ -231,6 +233,7 @@ export async function sendBirthdayEmails(
       dateOfBirth: true,
       email: true,
       guardianEmail: true,
+      emailOptOut: true,
     },
   });
 
@@ -238,6 +241,7 @@ export async function sendBirthdayEmails(
   for (const student of birthdays) {
     const dob = student.dateOfBirth!;
     if (dob.getUTCMonth() !== month || dob.getUTCDate() !== day) continue;
+    if (student.emailOptOut) continue;
 
     const dedupKey = `birthday:${student.id}:${year}`;
     if (!(await notYetSent(dedupKey))) continue;
@@ -286,6 +290,7 @@ export async function sendTrialFollowUps(
       joinedAt: true,
       email: true,
       guardianEmail: true,
+      emailOptOut: true,
     },
   });
 
@@ -293,6 +298,7 @@ export async function sendTrialFollowUps(
   for (const trial of trials) {
     const dedupKey = `trial-followup:${trial.id}`;
     if (!(await notYetSent(dedupKey))) continue;
+    if (trial.emailOptOut) continue;
 
     const recipient = resolveRecipient(trial);
     if (!recipient) continue;
@@ -341,12 +347,14 @@ export async function sendAgreementReminders(): Promise<number> {
       lastName: true,
       email: true,
       guardianEmail: true,
+      emailOptOut: true,
       agreements: { select: { documentId: true, version: true } },
     },
   });
 
   let sent = 0;
   for (const student of students) {
+    if (student.emailOptOut) continue;
     for (const document of documents) {
       const signature = student.agreements.find(
         (row) => row.documentId === document.id,

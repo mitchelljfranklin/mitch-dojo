@@ -15,7 +15,7 @@ Yes — each location gets a no-login QR check-in page. Tokens are revocable if 
 No, deliberately. Email only — see the out-of-scope list in the [introduction](./welcome/introduction).
 
 **Can parents see progress?**
-Yes — send a [member portal](./user-guides/member-portal) magic link (30-day expiry, hashed tokens). The portal shows belts, upcoming classes, attendance, balance, and their consent documents — read-only.
+Yes — send a [member portal](./user-guides/member-portal) magic link (30-day expiry, hashed tokens). The portal shows belts, upcoming classes, attendance, balance, and their consent documents, and lets them sign agreements, download invoices/agreements, update their contact details, and set email preferences.
 
 **Do you handle waivers, consent forms, and medical info?**
 Yes — the school's agreement documents (privacy notice, informed consent, safety expectations, or your own set) are versioned in Admin → Documents and signed digitally through the portal or recorded from paper. Health/medical notes live on the student record behind a dedicated PHI permission — see [Documents & Consent](./user-guides/compliance).
