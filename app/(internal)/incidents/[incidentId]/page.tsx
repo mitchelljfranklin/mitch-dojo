@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { FlashToast } from "@/components/flash-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +27,6 @@ export const dynamic = "force-dynamic";
 
 type IncidentDetailPageProps = {
   params: Promise<{ incidentId: string }>;
-  searchParams: Promise<Record<string, string | undefined>>;
 };
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -42,7 +40,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default async function IncidentDetailPage({
   params,
-  searchParams,
 }: IncidentDetailPageProps) {
   const user = await requirePermission(PERMISSIONS.INCIDENTS_VIEW);
   const canManage = hasPermission(
@@ -50,7 +47,6 @@ export default async function IncidentDetailPage({
     PERMISSIONS.INCIDENTS_MANAGE,
   );
   const { incidentId } = await params;
-  const sp = await searchParams;
 
   const incident = await getIncidentDetail(incidentId);
   if (!incident) notFound();
@@ -59,10 +55,6 @@ export default async function IncidentDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.created === "1" ? (
-        <FlashToast message="Incident logged." variant="success" />
-      ) : null}
-
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">

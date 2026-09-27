@@ -15,7 +15,7 @@ import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { deleteHouseholdAction } from "@/lib/actions/households";
 import { listHouseholds } from "@/lib/db/households";
 
-import { CreateHouseholdForm } from "./create-household-form";
+import { CreateHouseholdSheet } from "./create-household-form";
 import { SendPortalLinkButton } from "./send-portal-link-button";
 
 export const dynamic = "force-dynamic";
@@ -35,24 +35,16 @@ export default async function HouseholdsPage() {
           { label: "Households" },
         ]}
       />
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Households</h1>
-        <p className="text-muted-foreground text-sm">
-          Group siblings under one family contact. Assign a student to a
-          household from their record (edit form).
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Households</h1>
+          <p className="text-muted-foreground text-sm">
+            Group siblings under one family contact. Assign a student to a
+            household from their record (edit form).
+          </p>
+        </div>
+        {canEdit ? <CreateHouseholdSheet /> : null}
       </div>
-
-      {canEdit ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>New household</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CreateHouseholdForm />
-          </CardContent>
-        </Card>
-      ) : null}
 
       <Card>
         <CardHeader>

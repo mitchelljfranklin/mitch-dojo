@@ -537,6 +537,51 @@ export async function recordPayment(input: {
   });
 }
 
+// Records the full outstanding balance of each OPEN invoice in the set with a
+// single shared method/date — the "a batch of members paid in cash" flow.
+// Invoices that are already settled (or VOID/missing) are skipped. Sequential
+// because recordPayment locks each invoice row.
+export async function recordBulkPayments(input: {
+  invoiceIds: string[];
+  method: PaymentMethodValue;
+  paidAt: Date;
+  reference: string | null;
+  recordedById: string | null;
+}): Promise<{
+  recorded: number;
+  skipped: number;
+  recordedInvoiceIds: string[];
+}> {
+  const invoices = await prisma.invoice.findMany({
+    where: { id: { in: input.invoiceIds }, status: "OPEN" },
+    include: {
+      items: { select: { quantity: true, unitPriceCents: true } },
+      payments: { select: { amountCents: true } },
+    },
+  });
+
+  const recordedInvoiceIds: string[] = [];
+  for (const invoice of invoices) {
+    const { balanceCents } = computeInvoiceFinancials(invoice);
+    if (balanceCents <= 0) continue;
+    await recordPayment({
+      invoiceId: invoice.id,
+      amountCents: balanceCents,
+      method: input.method,
+      paidAt: input.paidAt,
+      reference: input.reference,
+      recordedById: input.recordedById,
+    });
+    recordedInvoiceIds.push(invoice.id);
+  }
+
+  return {
+    recorded: recordedInvoiceIds.length,
+    skipped: input.invoiceIds.length - recordedInvoiceIds.length,
+    recordedInvoiceIds,
+  };
+}
+
 export async function deletePayment(paymentId: string): Promise<void> {
   const payment = await prisma.payment.findUnique({
     where: { id: paymentId },

@@ -1,22 +1,11 @@
-import Link from "next/link";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { FlashToast } from "@/components/flash-toast";
 import { Pagination } from "@/components/pagination";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { SearchInput } from "@/components/search-input";
 import { NewInvoiceSheet } from "./new-invoice-sheet";
+import { InvoicesTable, type InvoiceRowView } from "./invoices-table";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import {
@@ -25,27 +14,14 @@ import {
 } from "@/lib/db/memberships";
 import { prisma } from "@/lib/prisma";
 import { getMembershipsSettings } from "@/lib/settings";
-import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Invoices" };
 
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: "Open",
-  PAID: "Paid",
-  VOID: "Void",
-};
-
 type InvoicesPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
 };
-
-function statusBadgeVariant(status: string) {
-  if (status === "PAID") return "secondary" as const;
-  if (status === "VOID") return "outline" as const;
-  return "default" as const;
-}
 
 export default async function InvoicesPage({
   searchParams,
@@ -75,6 +51,20 @@ export default async function InvoicesPage({
     },
     page,
   );
+
+  const rowsView: InvoiceRowView[] = rows.map((invoice) => ({
+    id: invoice.id,
+    number: invoice.number,
+    studentId: invoice.student.id,
+    studentName: `${invoice.student.firstName} ${invoice.student.lastName}`,
+    locationName: invoice.location?.name ?? null,
+    issueDate: invoice.issueDate.toISOString(),
+    dueDate: invoice.dueDate.toISOString(),
+    status: invoice.status,
+    isOverdue: invoice.isOverdue,
+    totalCents: invoice.financials.totalCents,
+    balanceCents: invoice.financials.balanceCents,
+  }));
 
   const [invoiceStudents, invoicePlans, invoiceLocations] = await Promise.all([
     canEdit
@@ -161,63 +151,11 @@ export default async function InvoicesPage({
       ) : (
         <Card>
           <CardContent className="px-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-20">#</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Issued</TableHead>
-                  <TableHead>Due</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        href={`/memberships/invoices/${invoice.id}`}
-                        className="hover:underline"
-                      >
-                        #{invoice.number}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/students/${invoice.student.id}`}
-                        className="hover:underline"
-                      >
-                        {invoice.student.firstName} {invoice.student.lastName}
-                      </Link>
-                      {invoice.location ? (
-                        <span className="text-muted-foreground ml-2 text-xs">
-                          {invoice.location.name}
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>{formatDateUtc(invoice.issueDate)}</TableCell>
-                    <TableCell>{formatDate(invoice.dueDate)}</TableCell>
-                    <TableCell>
-                      {invoice.isOverdue ? (
-                        <Badge variant="destructive">Overdue</Badge>
-                      ) : (
-                        <Badge variant={statusBadgeVariant(invoice.status)}>
-                          {STATUS_LABELS[invoice.status] ?? invoice.status}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatMoney(invoice.financials.totalCents, currency)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatMoney(invoice.financials.balanceCents, currency)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <InvoicesTable
+              rows={rowsView}
+              currency={currency}
+              canEdit={canEdit}
+            />
           </CardContent>
         </Card>
       )}

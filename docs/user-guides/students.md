@@ -49,7 +49,7 @@ Deleting a student removes their photo and attachments from the storage backend 
 
 ## Households
 
-**Students → Households** groups siblings under one family contact (name, email, phone). Assign a student to a household from their **Edit** form; when you do, any **blank** guardian details are inherited from the household, so a new sibling picks up the family contact automatically. The student record shows the household and its other members. Deleting a household leaves the student records intact (they simply become unassigned).
+**Households** (sidebar → People, under Students) groups siblings under one family contact (name, email, phone). Click **New household** to add one. Assign a student to a household from their **Edit** form; when you do, any **blank** guardian details are inherited from the household, so a new sibling picks up the family contact automatically. The student record shows the household and its other members. Deleting a household leaves the student records intact (they simply become unassigned).
 
 **Email portal link** on a household sends one login that shows **every child** in the family (switch between them in the portal). Family-level invoicing remains per student for now.
 

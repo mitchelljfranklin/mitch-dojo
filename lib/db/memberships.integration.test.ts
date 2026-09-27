@@ -16,8 +16,10 @@ import {
   resumeDueEnrollments,
   resumeEnrollment,
   getStudentSuspension,
+  getInvoiceDetail,
   listInvoices,
   listOverdueStudents,
+  recordBulkPayments,
   recordPayment,
   voidInvoice,
 } from "@/lib/db/memberships";
@@ -1033,5 +1035,76 @@ describe.skipIf(!hasTestDatabase)("invoice tax", () => {
       }
       await deleteMembershipPlan(plan.id);
     }
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("bulk payments", () => {
+  it("settles the full balance of several invoices in one pass", async () => {
+    const plan = await createMembershipPlan({
+      name: `Bulk Plan ${suffix}`,
+      description: null,
+      planType: "ITEM",
+      billingPeriod: null,
+      priceCents: 4000,
+    });
+    const first = await createInvoice({
+      studentId,
+      planId: plan.id,
+      issueDate: daysFromNow(0),
+      dueDate: daysFromNow(7),
+      notes: null,
+    });
+    const second = await createInvoice({
+      studentId,
+      planId: plan.id,
+      issueDate: daysFromNow(0),
+      dueDate: daysFromNow(7),
+      notes: null,
+    });
+    // Part-pay the second so the bulk pass tops up only the remainder.
+    await recordPayment({
+      invoiceId: second.id,
+      amountCents: 1000,
+      method: "CASH",
+      paidAt: daysFromNow(0),
+      reference: null,
+      recordedById: null,
+    });
+
+    const result = await recordBulkPayments({
+      invoiceIds: [first.id, second.id],
+      method: "CASH",
+      paidAt: daysFromNow(0),
+      reference: "BULK",
+      recordedById: null,
+    });
+    expect(result.recorded).toBe(2);
+    expect(result.skipped).toBe(0);
+
+    const firstAfter = await getInvoiceDetail(first.id);
+    expect(firstAfter?.financials.balanceCents).toBe(0);
+    expect(firstAfter?.status).toBe("PAID");
+    const secondAfter = await getInvoiceDetail(second.id);
+    expect(secondAfter?.financials.balanceCents).toBe(0);
+    expect(secondAfter?.status).toBe("PAID");
+
+    // A repeat pass has nothing left to settle.
+    const repeat = await recordBulkPayments({
+      invoiceIds: [first.id, second.id],
+      method: "CASH",
+      paidAt: daysFromNow(0),
+      reference: null,
+      recordedById: null,
+    });
+    expect(repeat.recorded).toBe(0);
+    expect(repeat.skipped).toBe(2);
+
+    await prisma.payment.deleteMany({
+      where: { invoiceId: { in: [first.id, second.id] } },
+    });
+    await prisma.invoice.deleteMany({
+      where: { id: { in: [first.id, second.id] } },
+    });
+    await deleteMembershipPlan(plan.id);
   });
 });

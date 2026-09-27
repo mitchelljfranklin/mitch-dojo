@@ -20,11 +20,10 @@ import {
   updateIncidentAction,
 } from "@/lib/actions/incidents";
 import {
+  INCIDENT_NONE,
   INCIDENT_SEVERITIES,
   INCIDENT_SEVERITY_LABELS,
 } from "@/lib/schemas/incident";
-
-import { INCIDENT_NONE } from "../new-incident-form";
 
 type Option = { id: string; name: string };
 

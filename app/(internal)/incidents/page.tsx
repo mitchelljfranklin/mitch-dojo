@@ -1,15 +1,8 @@
 import Link from "next/link";
 
-import { FlashToast } from "@/components/flash-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -28,7 +21,7 @@ import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { INCIDENT_SEVERITY_LABELS } from "@/lib/schemas/incident";
 import { formatDate } from "@/lib/utils";
 
-import { NewIncidentForm } from "./new-incident-form";
+import { NewIncidentSheet } from "./new-incident-sheet";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +55,6 @@ export default async function IncidentsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.error ? <FlashToast message={sp.error} variant="error" /> : null}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Incidents</h1>
@@ -87,26 +79,14 @@ export default async function IncidentsPage({
           <Button asChild variant={statusFilter ? "outline" : "default"}>
             <Link href="/incidents">All</Link>
           </Button>
-        </div>
-      </div>
-
-      {canManage && options ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Log an incident</CardTitle>
-            <CardDescription>
-              Record what happened while it is fresh. Open incidents stay on the
-              list until you close them.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <NewIncidentForm
+          {canManage && options ? (
+            <NewIncidentSheet
               students={options.students}
               locations={options.locations}
             />
-          </CardContent>
-        </Card>
-      ) : null}
+          ) : null}
+        </div>
+      </div>
 
       <Card>
         <CardHeader>

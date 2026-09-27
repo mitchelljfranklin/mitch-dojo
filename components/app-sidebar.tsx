@@ -16,6 +16,7 @@ import {
   GraduationCap,
   HardDrive,
   HeartPulse,
+  House,
   Inbox,
   KeyRound,
   LayoutDashboard,
@@ -252,6 +253,12 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
           title: "Students",
           href: "/students",
           icon: Users,
+          visible: canStudents,
+        },
+        {
+          title: "Households",
+          href: "/students/households",
+          icon: House,
           visible: canStudents,
         },
         {

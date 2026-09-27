@@ -4,7 +4,7 @@ The accident book: a dated record of injuries and incidents on the mats, optiona
 
 ## Logging an incident
 
-Open **Incidents** (sidebar → People) and fill in the **Log an incident** form:
+Open **Incidents** (sidebar → People) to see the accident book, then click **Log incident** to open the report form:
 
 | Field | Notes |
 |---|---|

@@ -13,6 +13,7 @@ import {
   generateDueInvoices,
   listMembershipPlans,
   pauseEnrollment,
+  recordBulkPayments,
   recordPayment,
   resumeEnrollment,
   setMembershipPlanActive,
@@ -34,6 +35,8 @@ import {
   invoiceSchema,
   membershipPlanSchema,
   paymentSchema,
+  PAYMENT_METHODS,
+  type PaymentMethod,
 } from "@/lib/schemas/membership";
 
 export type MembershipActionState =
@@ -604,4 +607,63 @@ export async function importEnrollmentsAction(
     };
   }
   return { ok: true, message: summary };
+}
+
+// --------------- bulk payment recording ---------------
+
+// Records the full outstanding balance of each selected OPEN invoice with one
+// shared method/date — for "a batch of members paid their fees in cash".
+export async function recordBulkPaymentsAction(
+  _previousState: MembershipActionState,
+  formData: FormData,
+): Promise<MembershipActionState> {
+  const actor = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+
+  const invoiceIds = formData.getAll("invoiceIds").map(String).filter(Boolean);
+  if (invoiceIds.length === 0) {
+    return { error: "Select at least one invoice." };
+  }
+
+  const methodRaw = getField(formData, "method");
+  if (!(PAYMENT_METHODS as readonly string[]).includes(methodRaw)) {
+    return { error: "Choose a payment method." };
+  }
+  const method = methodRaw as PaymentMethod;
+
+  const paidAtRaw = getField(formData, "paidAt");
+  if (!isValidIsoDateString(paidAtRaw)) {
+    return { error: "Enter a valid payment date." };
+  }
+  const paidAt = new Date(`${paidAtRaw}T00:00:00.000Z`);
+  const reference = getField(formData, "reference").trim() || null;
+
+  const result = await recordBulkPayments({
+    invoiceIds,
+    method,
+    paidAt,
+    reference,
+    recordedById: actor.id,
+  });
+
+  for (const invoiceId of result.recordedInvoiceIds) {
+    await logAudit(
+      actor.id,
+      AUDIT_ACTIONS.RECORD_PAYMENT,
+      "Invoice",
+      invoiceId,
+      { method, bulk: true },
+    );
+  }
+
+  if (result.recorded === 0) {
+    return {
+      error: "Nothing to record — those invoices are already settled.",
+    };
+  }
+  return {
+    ok: true,
+    message: `Recorded ${result.recorded} payment(s)${
+      result.skipped > 0 ? `; ${result.skipped} skipped` : ""
+    }.`,
+  };
 }

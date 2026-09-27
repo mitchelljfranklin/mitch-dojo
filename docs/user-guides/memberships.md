@@ -47,7 +47,17 @@ Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry 
 
 ## Recording payments
 
-Open an invoice and record a payment: amount, date, and method (cash, transfer, terminal). The invoice's balance updates and its status reflects paid/partial/overdue. Full payment history is kept on the invoice, and **Download PDF** produces a branded, printable invoice (line items, payment history, balance due).
+Open an invoice (click its **#** or the **Open** button on the list) and record a payment: amount, date, and method (cash, transfer, terminal). The invoice's balance updates and its status reflects paid/partial/overdue. Full payment history is kept on the invoice, and **Download PDF** produces a branded, printable invoice (line items, payment history, balance due).
+
+### Recording several at once
+
+When a batch of members pays the same way (e.g. ten people paid cash at the desk), use **bulk payment**:
+
+1. On **Invoices**, tick the checkboxes of the open invoices (use the header checkbox to select all on the page).
+2. Click **Record payment**.
+3. Choose the method and date, then confirm.
+
+Each selected invoice is settled for its **full outstanding balance** — a part-paid invoice is topped up to zero. Already-settled invoices are skipped. Every payment is audit-logged individually.
 
 ::: tip Partial payments
 Record multiple payments against one invoice — a deposit now, the rest next week. The balance and status track each one.

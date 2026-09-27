@@ -36,16 +36,15 @@ function parseIncidentInput(formData: FormData) {
   });
 }
 
-export async function createIncidentAction(formData: FormData): Promise<void> {
+export async function createIncidentAction(
+  _previousState: IncidentActionState,
+  formData: FormData,
+): Promise<IncidentActionState> {
   await requirePermission(PERMISSIONS.INCIDENTS_MANAGE);
 
   const parsed = parseIncidentInput(formData);
   if (!parsed.success) {
-    redirect(
-      `/incidents?error=${encodeURIComponent(
-        parsed.error.issues[0]?.message ?? "Invalid input.",
-      )}`,
-    );
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
   const user = await getCurrentUser();
@@ -64,9 +63,9 @@ export async function createIncidentAction(formData: FormData): Promise<void> {
       { title: parsed.data.title },
     );
   }
-  // Create flows that navigate end with a redirect; the target page shows a
-  // FlashToast from the search param.
-  redirect(`/incidents/${incident.id}?created=1`);
+  // State-fed action (stay-open sheet) — must not revalidatePath; the client
+  // refreshes via useActionFeedback.
+  return { ok: true, message: "Incident logged." };
 }
 
 export async function updateIncidentAction(

@@ -103,6 +103,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Configurable **tax / GST** rate on new invoices, captured at issue time
 - Membership **hold** (pause/resume) with an optional auto-resume date
 - Manual payment recording (cash, transfer, terminal) with partial payments and full history
+- **Bulk payment** — select several open invoices and settle them in one pass
 - Bulk **enrollment CSV import** matching students and plans
 - Printable branded invoice PDF; overdue tracking with configurable windows and automatic check-in suspension
 

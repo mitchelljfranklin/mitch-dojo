@@ -15,6 +15,10 @@ export const INCIDENT_SEVERITY_LABELS: Record<
 
 export const INCIDENT_STATUSES = ["OPEN", "CLOSED"] as const;
 
+// Sentinel used by the create/edit selects for "no student/location" (Radix
+// Select cannot use an empty string value).
+export const INCIDENT_NONE = "none";
+
 const optionalString = z
   .string()
   .trim()
