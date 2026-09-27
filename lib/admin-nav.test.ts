@@ -23,6 +23,7 @@ describe("admin nav definition", () => {
       "/admin/documents",
       "/admin/email",
       "/admin/templates",
+      "/admin/campaigns",
       "/admin/email-log",
       "/admin/locations",
       "/admin/users",

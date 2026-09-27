@@ -17,6 +17,7 @@ export const EMAIL_LOG_TYPES = [
   "BIRTHDAY",
   "BOOKING",
   "BOOKINGSTAFF",
+  "CAMPAIGN",
   "RESET",
   "TEST",
 ] as const;
@@ -32,6 +33,7 @@ export const EMAIL_TYPE_LABELS: Record<EmailLogType, string> = {
   BIRTHDAY: "Birthday",
   BOOKING: "Booking confirmation",
   BOOKINGSTAFF: "New-booking alert (staff)",
+  CAMPAIGN: "Campaign",
   RESET: "Password reset",
   TEST: "SMTP test",
 };

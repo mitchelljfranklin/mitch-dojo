@@ -283,6 +283,83 @@ export async function sendEmail(
   }
 }
 
+// One-off group email (announcements/campaigns): the branded shell and
+// delivery logging of the template path, but the subject/body are composed
+// directly (no template/token layer). Deduped per recipient by the caller's
+// assessmentId so a batch retry never double-sends.
+export async function sendBulkEmail(
+  to: string,
+  subject: string,
+  body: string,
+  options?: { assessmentId?: string; sentById?: string },
+): Promise<SendEmailResult> {
+  const [emailSettings, appearance] = await Promise.all([
+    getEmailSettings(),
+    getAppearanceSettings(),
+  ]);
+
+  const useDarkLogo =
+    appearance.emailLogoVariant === "dark" && Boolean(appearance.logoDarkKey);
+  const logoUrl = appearance.logoKey
+    ? useDarkLogo
+      ? `${env.APP_URL}/api/brand/logo?variant=dark&v=${encodeURIComponent(appearance.logoDarkKey)}`
+      : `${env.APP_URL}/api/brand/logo?v=${encodeURIComponent(appearance.logoKey)}`
+    : undefined;
+  const logoVariant: "primary" | "dark" = useDarkLogo ? "dark" : "primary";
+
+  const htmlBody = await marked.parse(body);
+
+  const notificationLogId = await createNotificationLog({
+    assessmentId: options?.assessmentId,
+    type: "CAMPAIGN",
+    sentTo: to,
+    subject,
+    status: "FAILED",
+    sentBy: options?.sentById
+      ? { connect: { id: options.sentById } }
+      : undefined,
+  });
+
+  const transport = await getTransporter();
+  if (!transport) {
+    await updateNotificationLogStatus(
+      notificationLogId,
+      "FAILED",
+      "SMTP is not configured.",
+    );
+    return { ok: false, subject, notificationLogId };
+  }
+
+  const emailFrom =
+    emailSettings.fromAddress ||
+    emailSettings.smtpUser ||
+    "noreply@mitch-dojo.local";
+
+  try {
+    const html = await render(
+      DynamicEmail({ heading: subject, body, htmlBody, logoUrl, logoVariant }),
+    );
+    await transport.sendMail({
+      from: `${emailSettings.fromName} <${emailFrom}>`,
+      to,
+      subject,
+      html,
+    });
+    await updateNotificationLogStatus(notificationLogId, "SENT", null);
+    return { ok: true, subject, notificationLogId };
+  } catch (sendError: unknown) {
+    const errorMessage =
+      sendError instanceof Error ? sendError.message : "unknown error";
+    console.error("Failed to send campaign email:", errorMessage);
+    await updateNotificationLogStatus(
+      notificationLogId,
+      "FAILED",
+      errorMessage,
+    );
+    return { ok: false, subject, notificationLogId };
+  }
+}
+
 export async function sendTestEmail(
   to: string,
   sentById?: string,

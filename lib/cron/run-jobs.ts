@@ -11,6 +11,7 @@ import {
   generateDueInvoices,
   resumeDueEnrollments,
 } from "@/lib/db/memberships";
+import { processCampaigns } from "@/lib/db/campaigns";
 import { runReminderJobs } from "@/lib/cron/reminders";
 
 export type ScheduledJobsResult = {
@@ -22,6 +23,7 @@ export type ScheduledJobsResult = {
   generatedInvoices?: number;
   skippedInvoices?: number;
   resumedEnrollments?: number;
+  campaignsSent?: number;
   generatedSessions?: number;
   classRemindersSent?: number;
   paymentRemindersSent?: number;
@@ -205,6 +207,15 @@ export async function runScheduledJobs(
     console.log(
       `[cron] sent ${reminders.trialFollowUpsSent} trial follow-up(s)`,
     );
+  }
+
+  // --- queued email campaigns ---
+  // Drained in batches here rather than in the request that queued them, so a
+  // large list can't time out a server action.
+  const campaignsSent = await processCampaigns();
+  if (campaignsSent > 0) {
+    result.campaignsSent = campaignsSent;
+    console.log(`[cron] sent ${campaignsSent} campaign email(s)`);
   }
 
   await prisma.appSetting.upsert({

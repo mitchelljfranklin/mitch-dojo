@@ -29,6 +29,7 @@ import {
   Users,
   Wallet,
   MailOpen,
+  Megaphone,
   Palette,
 } from "lucide-react";
 import Link from "next/link";
@@ -64,6 +65,7 @@ const SECTION_ICONS: Record<string, ComponentType> = {
   "/admin/documents": FileCheck2,
   "/admin/email": MailOpen,
   "/admin/templates": FileText,
+  "/admin/campaigns": Megaphone,
   "/admin/email-log": Inbox,
   "/admin/locations": CalendarDays,
   "/admin/users": Users,

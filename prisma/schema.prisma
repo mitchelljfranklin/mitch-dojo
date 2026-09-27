@@ -42,6 +42,7 @@ model User {
   recordedPayments     Payment[]            @relation("PaymentRecordedBy")
   ssoIdentities        SsoIdentity[]
   createdAgreementDocs AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
+  createdCampaigns    EmailCampaign[]       @relation("CampaignCreatedBy")
   createdAgreementVersions AgreementVersion[] @relation("AgreementVersionCreatedBy")
   recordedAgreements   StudentAgreement[]   @relation("AgreementRecordedBy")
 
@@ -683,4 +684,43 @@ model Payment {
   @@index([invoiceId])
   @@index([paidAt])
   @@map("payments")
+}
+
+// A one-off email sent to a group (announcements/campaigns). Recipients are
+// resolved and frozen at queue time; the scheduler drains them in batches and
+// per-recipient delivery is logged via NotificationLog (dedup key
+// campaign:{id}:{email}), so a retry never double-sends.
+enum CampaignAudience {
+  ALL
+  LOCATION
+  DISCIPLINE
+  COURSE
+  OVERDUE
+}
+
+enum CampaignStatus {
+  QUEUED
+  SENDING
+  SENT
+}
+
+model EmailCampaign {
+  id             String           @id @default(cuid())
+  subject        String
+  body           String
+  audienceType   CampaignAudience
+  audienceRefId  String?
+  audienceLabel  String
+  recipients     Json
+  recipientCount Int              @default(0)
+  sentCount      Int              @default(0)
+  failedCount    Int              @default(0)
+  status         CampaignStatus   @default(QUEUED)
+  createdById    String?
+  createdBy      User?            @relation("CampaignCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime         @default(now())
+  sentAt         DateTime?
+
+  @@index([status])
+  @@map("email_campaigns")
 }

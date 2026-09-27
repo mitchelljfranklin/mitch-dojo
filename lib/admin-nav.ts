@@ -79,6 +79,11 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
         permission: PERMISSIONS.COMMUNICATIONS_EDIT,
       },
       {
+        label: "Campaigns",
+        href: "/admin/campaigns",
+        permission: PERMISSIONS.COMMUNICATIONS_EDIT,
+      },
+      {
         label: "Email log",
         href: "/admin/email-log",
         permission: PERMISSIONS.AUDIT_VIEW,

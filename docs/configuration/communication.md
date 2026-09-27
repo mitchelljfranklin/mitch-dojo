@@ -2,6 +2,14 @@
 
 Reminder timing and toggles. Subjects/bodies live on the [Templates](./templates) page; the results on the [Email log](./email-log).
 
+## Campaigns (bulk email)
+
+**Admin → Email → Campaigns** sends a one-off message to a group — dojo closures, grading notices, event reminders. Compose a subject and a Markdown message, choose an audience (**all active members**, a **location**, a **discipline**, a **course**, or members with an **overdue balance**), and queue it.
+
+- The recipient list is resolved with the student → guardian email fallback and **deduplicated**, so siblings sharing a guardian address get one copy.
+- Campaigns are **queued** and delivered by the scheduler in batches (within a few minutes), so a large list never blocks the app. Per-recipient delivery and failures show in the [Email log](./email-log).
+- Requires `communications:edit`. Queuing is audited.
+
 ## Reminder settings
 
 | Setting | Default | Range |
