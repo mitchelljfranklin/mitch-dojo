@@ -67,9 +67,9 @@
       Admin → Storage, but only local disk is covered by automated
       tests. Run once against real buckets/containers before pointing a
       production deployment at cloud storage.
-- [ ] **"Test connection" button** on the Admin → Storage page — saves
-      admins discovering a bad connection string only when the first
-      upload fails. Small: initialise the client, do a HEAD/ping, report.
+- [x] **"Test connection" button** on the Admin → Storage page — writes,
+      reads back, and deletes a probe file using the saved configuration.
+      Done (`testStorageConnectionAction` + the Storage form).
 - [ ] **Provider migration note/tooling** — switching providers does not
       move existing files (stated in UI copy). Could add a one-click
       "copy all objects to the new provider" tool, or simply document the

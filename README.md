@@ -71,11 +71,13 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Multi-location enrolment with exactly one **primary (home) dojo** per student
 - Photos, attachments, guardian contacts (with relationship) and emergency contacts, structured addresses
 - Disciplines assignment — a student's rank is per discipline, global across all locations teaching it
+- **Households** grouping siblings under one family contact, with guardian-detail inheritance
 - Full lifecycle statuses (trial, active, inactive, alumni) and CSV import/export
 
 ### Classes & Schedule
 - Trainer roster with optional login accounts — guest instructors never need one
 - Courses tied to exactly one location and one discipline, with recurring weekly times
+- Per-slot **trial capacity** limiting public bookings onto a weekly class
 - Sessions auto-generated two weeks ahead, idempotently; weekly timetable view per location
 - Location moves keep attendance history intact
 
@@ -91,43 +93,53 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Per-discipline belt ladders — Karate and Jujitsu students progress independently
 - Cumulative eligibility: every trained session across all courses of a discipline counts toward the next rank
 - Threshold per belt with instructor override for make-up gradings
+- **Grading events** — snapshot the eligible students, run the day, record outcomes and send invites
 - Full promotion history that stays readable through ladder reorganisations
 - Printable student report card (rank, training summary, balance) for parents
 
 ### Memberships & Payments
 - Plan builder with billing periods and pricing
 - Auto-generated recurring invoices, optionally tagged to a location for per-location revenue
+- Configurable **tax / GST** rate on new invoices, captured at issue time
+- Membership **hold** (pause/resume) with an optional auto-resume date
 - Manual payment recording (cash, transfer, terminal) with partial payments and full history
+- Bulk **enrollment CSV import** matching students and plans
 - Printable branded invoice PDF; overdue tracking with configurable windows and automatic check-in suspension
 
 ### Communication
-- Scheduler-driven reminders: upcoming class, payment due/overdue, birthdays, trial follow-ups
+- Scheduler-driven reminders: upcoming class, payment due/overdue, birthdays, trial follow-ups, agreement reminders
 - Every reminder individually toggleable with its own timing window
+- **Bulk email campaigns** to an audience (all/location/discipline/course/overdue), queued and drained by the scheduler
 - Editable subject/body templates with tokens and a sample-send to test delivery
 - Email log with statuses, failure errors, and one-click retry
 
 ### Trials & Leads
-- Public trial-booking page at `/book` — for yourself or a child (guardian contact captured), rate-limited, honeypot-protected, branded
+- Public trial-booking page at `/book` — for yourself or a child (guardian contact captured), rate-limited, honeypot-protected, branded; respects per-slot capacity
 - Lead pipeline (New → Contacted → First class → Converted/Lost) with guarded stage transitions; the convert sheet can enroll and create the first invoice in one step
 - Automated follow-up emails for trials that sit too long without converting; booking confirmations to prospects
 - Conversion stats and one-click conversion to an active student
 
 ### Member Portal
-- Staff-emailed magic links (hashed tokens, 30-day expiry, single-student)
-- Read-only portal: progress and belts, upcoming classes, recent attendance, invoices and balance
+- Staff-emailed magic links (hashed tokens, 30-day expiry); single-student or whole-household links
+- Progress and belts, upcoming classes, recent attendance, invoices and balance
 - Documents & consent — members read and digitally sign the school's agreements
+- **Self-service**: update their own contact details and email preferences (audit-logged)
+- **Downloads**: their own invoice and agreement PDFs, plus an `.ics` calendar of upcoming classes
 - Student → guardian recipient fallback for links and all communications
 
-### Analytics
+### Analytics & Reports
 - Overview counters, weekly attendance trend with location filter, monthly recorded revenue
 - At-risk retention list surfacing students whose training has lapsed
 - Members-per-location breakdown
+- **Reports**: per-student attendance rate, birthdays & training anniversaries, revenue by plan with an estimated monthly recurring revenue — each exportable to CSV
 
 ### Compliance
 - Health & medical section on the student record (medications, conditions, injuries), permission-gated as PHI
 - School-managed agreement documents (privacy notice, informed consent, safety expectations, or your own) — versioned, disable/delete freely
 - Digital signing through the member portal; staff-recorded paper fallback; printable branded forms
 - Re-sign required automatically whenever a document's version moves past a signature
+- **Compliance page** listing every member with an outstanding signature, plus optional scheduler reminders and an optional check-in gate
+- **Incident reports / accident book** — dated, severity-rated incidents linked to a student and/or location, with open/closed tracking
 
 ### White-label
 - Org name and logo on the booking page, member portal, check-in screens, and every email
@@ -137,7 +149,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 ### Access Control
 - 3 system roles (Admin, Trainer, Viewer) + custom roles
-- 22 granular `resource:action` permissions
+- 24 granular `resource:action` permissions
 - UI controls hidden (not greyed) — a Viewer sees a clean read-only screen
 - Single sign-on via Microsoft Entra ID, Google, or any OpenID Connect provider, with just-in-time provisioning
 - SSO-only mode with anti-lock-out and a single-use **break-glass** URL for emergencies
@@ -229,7 +241,7 @@ Jobs run inside the app by default — every five minutes, no external scheduler
 curl -H "x-cron-secret: <your CRON_SECRET from the compose file>" http://localhost:3000/api/cron/run
 ```
 
-Triggers: class/payment/birthday/trial follow-up reminders, recurring invoice generation, audit log pruning, email log pruning, password-reset and portal-token pruning, and the orphaned file sweep.
+Triggers: class/payment/birthday/trial follow-up/agreement reminders, queued email campaigns, membership-hold auto-resume, recurring invoice generation, session generation, audit log pruning, email log pruning, password-reset and portal-token pruning, and the orphaned file sweep.
 
 ### Testing
 
