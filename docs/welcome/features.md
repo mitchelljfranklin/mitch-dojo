@@ -61,6 +61,7 @@
 - Overview counters, weekly attendance trend with location filter, and monthly recorded revenue
 - At-risk retention list surfacing students whose training has lapsed
 - Members-per-location breakdown
+- **Reports** — per-student attendance rate, birthdays & training anniversaries, revenue by plan with an estimated monthly recurring revenue, each exportable to CSV
 
 ## Documents & consent
 

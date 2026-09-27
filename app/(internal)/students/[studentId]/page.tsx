@@ -20,6 +20,7 @@ import { deletePromotionAction } from "@/lib/actions/belts";
 import { getStudentAgreementStatuses } from "@/lib/db/agreements";
 import { listStudentIncidents } from "@/lib/db/incidents";
 import { INCIDENT_SEVERITY_LABELS } from "@/lib/schemas/incident";
+import { getStudentAttendanceRate } from "@/lib/db/reports";
 import { RecordSignatureSheet } from "./record-signature-sheet";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -48,7 +49,12 @@ import {
   STUDENT_STATUS_LABELS,
   type StudentStatus,
 } from "@/lib/schemas/student";
-import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
+import {
+  formatDate,
+  formatDateUtc,
+  formatMoney,
+  formatPercent,
+} from "@/lib/utils";
 
 import { EnrollStudentSheet } from "./enroll-student-sheet";
 import { PauseEnrollmentSheet } from "./pause-enrollment-sheet";
@@ -101,6 +107,10 @@ export default async function StudentDetailPage({
     user.permissions,
     PERMISSIONS.INCIDENTS_VIEW,
   );
+  const canViewAnalytics = hasPermission(
+    user.permissions,
+    PERMISSIONS.ANALYTICS_VIEW,
+  );
 
   const { studentId } = await params;
   const sp = await searchParams;
@@ -113,6 +123,7 @@ export default async function StudentDetailPage({
     agreementStatuses,
     household,
     incidents,
+    attendanceRate,
   ] = await Promise.all([
     getStudent(studentId),
     prisma.attachment.findMany({
@@ -125,6 +136,9 @@ export default async function StudentDetailPage({
     getStudentAgreementStatuses(studentId),
     getStudentHousehold(studentId),
     canViewIncidents ? listStudentIncidents(studentId) : Promise.resolve([]),
+    canViewAnalytics
+      ? getStudentAttendanceRate(studentId, 90)
+      : Promise.resolve(null),
   ]);
   if (!student) {
     notFound();
@@ -796,6 +810,11 @@ export default async function StudentDetailPage({
               <CardTitle>Recent attendance</CardTitle>
               <CardDescription>
                 Last {recentAttendance.length} recorded classes.
+                {attendanceRate !== null
+                  ? ` 90-day attendance rate ${formatPercent(
+                      attendanceRate / 100,
+                    )}.`
+                  : ""}
               </CardDescription>
             </div>
             <PastAttendanceSheet
