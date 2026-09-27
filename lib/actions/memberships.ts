@@ -25,8 +25,11 @@ import {
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { getMembershipsSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
-import { getField } from "@/lib/utils";
+import { getField, isValidIsoDateString } from "@/lib/utils";
+import { parseCsvWithHeaders } from "@/lib/csv-parser";
+import { findStudentForImport } from "@/lib/db/students";
 import {
+  enrollmentCsvRowSchema,
   enrollmentSchema,
   invoiceSchema,
   membershipPlanSchema,
@@ -487,4 +490,118 @@ export async function generateInvoicesNowAction(
     );
   }
   return { ok: true, message: `${parts.join("; ")}.` };
+}
+
+// --------------- enrollment import ---------------
+
+// Bulk-enroll from CSV. The student is matched by email (or first + last
+// name) and the plan by exact name; blank start dates default to today.
+export async function importEnrollmentsAction(
+  _previousState: MembershipActionState,
+  formData: FormData,
+): Promise<MembershipActionState> {
+  const actor = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "No file selected." };
+  }
+  if (file.size > 1_000_000) {
+    return { error: "File is too large (max 1 MB)." };
+  }
+
+  const rows = parseCsvWithHeaders(await file.text());
+  if (rows.length === 0) {
+    return {
+      error: "No rows found in CSV. The first row must be a header.",
+    };
+  }
+
+  const plans = await listMembershipPlans();
+  const planIdByName = new Map(
+    plans.map((plan) => [plan.name.toLowerCase(), plan.id]),
+  );
+  const today = startOfToday();
+
+  let created = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (let index = 0; index < rows.length; index++) {
+    const raw = rows[index];
+    const parsed = enrollmentCsvRowSchema.safeParse({
+      email: raw.email ?? "",
+      firstName: raw.firstname ?? raw.firstName ?? "",
+      lastName: raw.lastname ?? raw.lastName ?? "",
+      plan: raw.plan ?? raw.planname ?? raw.planName ?? "",
+      startDate: raw.startdate ?? raw.startDate ?? "",
+    });
+    const rowLabel = index + 2;
+    if (!parsed.success) {
+      errors.push(
+        `Row ${rowLabel}: ${parsed.error.issues[0]?.message ?? "invalid"}`,
+      );
+      continue;
+    }
+
+    const planId = planIdByName.get(parsed.data.plan.toLowerCase());
+    if (!planId) {
+      errors.push(`Row ${rowLabel}: no plan named "${parsed.data.plan}"`);
+      continue;
+    }
+
+    const match = await findStudentForImport({
+      email: parsed.data.email || undefined,
+      firstName: parsed.data.firstName || undefined,
+      lastName: parsed.data.lastName || undefined,
+    });
+    if (match.status !== "found") {
+      errors.push(
+        `Row ${rowLabel}: student ${
+          match.status === "ambiguous" ? "match is ambiguous" : "not found"
+        }`,
+      );
+      continue;
+    }
+
+    const startDate =
+      parsed.data.startDate && isValidIsoDateString(parsed.data.startDate)
+        ? new Date(`${parsed.data.startDate}T00:00:00.000Z`)
+        : today;
+
+    try {
+      const result = await enrollStudent({
+        studentId: match.studentId,
+        planId,
+        startDate,
+      });
+      if (result.outcome === "created") created++;
+      else skipped++;
+    } catch (error: unknown) {
+      errors.push(
+        `Row ${rowLabel}: ${
+          error instanceof Error ? error.message : "could not enroll"
+        }`,
+      );
+    }
+  }
+
+  await logAudit(
+    actor.id,
+    AUDIT_ACTIONS.IMPORT_ENROLLMENT,
+    "Enrollment",
+    undefined,
+    { created, skipped, errors: errors.length },
+  );
+
+  const summary = `Imported ${created} enrollment(s); ${skipped} already enrolled.`;
+  if (errors.length > 0) {
+    const preview = errors.slice(0, 3).join("; ");
+    return {
+      error: `${summary} ${errors.length} row(s) had problems — ${preview}${
+        errors.length > 3 ? " …" : ""
+      }`,
+    };
+  }
+  return { ok: true, message: summary };
 }

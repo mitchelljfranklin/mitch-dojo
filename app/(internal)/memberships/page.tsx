@@ -70,6 +70,11 @@ export default async function MembershipsPage({
           <Button asChild variant="outline">
             <Link href="/memberships/invoices">Invoices</Link>
           </Button>
+          {canEdit ? (
+            <Button asChild variant="outline">
+              <Link href="/memberships/import">Import</Link>
+            </Button>
+          ) : null}
           {canEdit ? <PlanFormSheet mode="create" currency={currency} /> : null}
         </div>
       </div>

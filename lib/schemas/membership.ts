@@ -89,3 +89,21 @@ export const paymentSchema = z.object({
 });
 
 export type PaymentInput = z.infer<typeof paymentSchema>;
+
+// CSV row for the enrollment import. The student is matched by email (or
+// first + last name) and the plan by exact name; the start date defaults to
+// today when left blank.
+export const enrollmentCsvRowSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .default("")
+    .transform((value) => value.toLowerCase()),
+  firstName: z.string().trim().optional().default(""),
+  lastName: z.string().trim().optional().default(""),
+  plan: z.string().trim().min(1, "Plan is required"),
+  startDate: z.string().trim().optional().default(""),
+});
+
+export type EnrollmentCsvRow = z.infer<typeof enrollmentCsvRowSchema>;

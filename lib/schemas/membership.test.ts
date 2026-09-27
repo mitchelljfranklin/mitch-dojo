@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  enrollmentCsvRowSchema,
   membershipPlanSchema,
   paymentSchema,
   priceInputSchema,
@@ -93,5 +94,23 @@ describe("paymentSchema", () => {
       expect(result.data.amount).toBe(5000);
       expect(result.data.reference).toBe("TRX-1");
     }
+  });
+});
+
+describe("enrollmentCsvRowSchema", () => {
+  it("lowercases the email and defaults optional fields", () => {
+    const parsed = enrollmentCsvRowSchema.parse({
+      email: " Jane@Example.COM ",
+      plan: "Adult monthly",
+    });
+    expect(parsed.email).toBe("jane@example.com");
+    expect(parsed.startDate).toBe("");
+    expect(parsed.firstName).toBe("");
+  });
+
+  it("requires a plan name", () => {
+    expect(
+      enrollmentCsvRowSchema.safeParse({ email: "a@b.c", plan: "  " }).success,
+    ).toBe(false);
   });
 });

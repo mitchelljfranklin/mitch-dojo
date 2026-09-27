@@ -26,6 +26,16 @@ Injured, travelling, or taking a break? **Pause** an enrollment from the student
 - Can carry an optional **reason** and a **resume date**; when that date arrives the scheduler resumes it automatically, or you can **Resume** manually.
 - **Never back-bills** — resuming moves the next invoice to the resume date (a hold that spanned a due date simply skips that cycle).
 
+## Importing enrollments
+
+**Memberships → Import** bulk-enrolls existing students from a CSV (requires `memberships:edit`). Columns: `Email, FirstName, LastName, Plan, StartDate`:
+
+- Match the student by **Email**, or by **FirstName + LastName** when no email is given.
+- **Plan** must match an existing plan name exactly.
+- **StartDate** is optional (YYYY-MM-DD); blank = today.
+- Students already enrolled on that plan are skipped — the import never duplicates.
+- The result reports how many were created and lists the first few rows that had problems.
+
 ## Invoices
 
 Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry in the sidebar's Management group. With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:

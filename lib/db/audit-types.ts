@@ -95,4 +95,5 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   DELETE_INCIDENT: "Deleted incident report",
   UPDATE_PORTAL_CONTACT: "Updated contact details via portal",
   UPDATE_EMAIL_PREFERENCE: "Updated email preferences via portal",
+  IMPORT_ENROLLMENT: "Imported enrollments from CSV",
 };
