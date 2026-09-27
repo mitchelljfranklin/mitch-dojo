@@ -12,7 +12,9 @@ import {
   endEnrollment,
   generateDueInvoices,
   listMembershipPlans,
+  pauseEnrollment,
   recordPayment,
+  resumeEnrollment,
   setMembershipPlanActive,
   startOfToday,
   updateMembershipPlan,
@@ -252,6 +254,52 @@ export async function endEnrollmentAction(formData: FormData) {
   }
   revalidatePath("/students");
   revalidatePath("/memberships/invoices");
+}
+
+// Plain form actions (no previousState) — revalidatePath is expected.
+export async function pauseEnrollmentAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const enrollmentId = getField(formData, "enrollmentId");
+  const studentId = getField(formData, "studentId");
+  const reason = getField(formData, "pauseReason").trim();
+  const resumeAtRaw = getField(formData, "resumeAt").trim();
+  const resumeAt = resumeAtRaw ? new Date(`${resumeAtRaw}T00:00:00`) : null;
+
+  await pauseEnrollment(enrollmentId, {
+    reason: reason.length > 0 ? reason : null,
+    resumeAt,
+  });
+
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.PAUSE_ENROLLMENT,
+      "Enrollment",
+      enrollmentId,
+      { resumeAt: resumeAtRaw || null },
+    );
+  }
+  revalidatePath(`/students/${studentId}`);
+}
+
+export async function resumeEnrollmentAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const enrollmentId = getField(formData, "enrollmentId");
+  const studentId = getField(formData, "studentId");
+
+  await resumeEnrollment(enrollmentId, startOfToday());
+
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit(
+      user.id,
+      AUDIT_ACTIONS.RESUME_ENROLLMENT,
+      "Enrollment",
+      enrollmentId,
+    );
+  }
+  revalidatePath(`/students/${studentId}`);
 }
 
 // --------------- invoices ---------------

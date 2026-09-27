@@ -18,6 +18,14 @@ Some plans bill whether the member trains or not; others should only charge when
 
 When a cycle is skipped, nothing is charged for it and no invoice exists to pay; the manual **Generate now** button reports how many cycles were skipped, and the scheduler logs the same.
 
+## Pausing a membership (hold)
+
+Injured, travelling, or taking a break? **Pause** an enrollment from the student's record instead of ending it. A paused membership:
+
+- **Stops billing** — no invoices are generated while it's on hold.
+- Can carry an optional **reason** and a **resume date**; when that date arrives the scheduler resumes it automatically, or you can **Resume** manually.
+- **Never back-bills** — resuming moves the next invoice to the resume date (a hold that spanned a due date simply skips that cycle).
+
 ## Invoices
 
 Invoices live at **Memberships → Invoices**, with a direct **Invoices** entry in the sidebar's Management group. With auto-generation on ([Memberships settings](../configuration/memberships)), the scheduler generates invoices for active enrollments on each billing cycle:

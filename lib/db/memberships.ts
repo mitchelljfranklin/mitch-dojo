@@ -222,6 +222,71 @@ export async function enrollStudent(input: {
   return { outcome: "created" };
 }
 
+// Membership hold. A paused enrollment is not billed (invoice generation only
+// processes ACTIVE). nextInvoiceDate is left untouched while paused; resume
+// moves it forward so the hold never back-bills.
+export async function pauseEnrollment(
+  enrollmentId: string,
+  input: { reason: string | null; resumeAt: Date | null },
+): Promise<void> {
+  await prisma.enrollment.update({
+    where: { id: enrollmentId },
+    data: {
+      status: "PAUSED",
+      pausedAt: new Date(),
+      pauseReason: input.reason,
+      resumeAt: input.resumeAt,
+    },
+  });
+}
+
+export async function resumeEnrollment(
+  enrollmentId: string,
+  resumeDate: Date = new Date(),
+): Promise<void> {
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { id: enrollmentId },
+    select: { nextInvoiceDate: true, plan: { select: { planType: true } } },
+  });
+  if (!enrollment) throw new Error("Enrollment not found.");
+
+  const today = startOfToday(resumeDate);
+  // No back-billing: the next cycle is the later of the saved date and the
+  // resume date (a hold that spanned a due date simply skips that cycle).
+  const nextInvoiceDate =
+    enrollment.nextInvoiceDate && enrollment.nextInvoiceDate > today
+      ? enrollment.nextInvoiceDate
+      : today;
+
+  await prisma.enrollment.update({
+    where: { id: enrollmentId },
+    data: {
+      status: "ACTIVE",
+      pausedAt: null,
+      pauseReason: null,
+      resumeAt: null,
+      nextInvoiceDate:
+        enrollment.plan.planType === "RECURRING" ? nextInvoiceDate : null,
+    },
+  });
+}
+
+// Auto-resumes holds whose scheduled resume date has arrived. Called by the
+// scheduler.
+export async function resumeDueEnrollments(
+  now: Date = new Date(),
+): Promise<number> {
+  const today = startOfToday(now);
+  const due = await prisma.enrollment.findMany({
+    where: { status: "PAUSED", resumeAt: { lte: today } },
+    select: { id: true },
+  });
+  for (const enrollment of due) {
+    await resumeEnrollment(enrollment.id, now);
+  }
+  return due.length;
+}
+
 export async function endEnrollment(enrollmentId: string, endDate: Date) {
   await prisma.enrollment.update({
     where: { id: enrollmentId },

@@ -26,7 +26,10 @@ import { getStudentRecentAttendance } from "@/lib/db/attendance";
 import { getStudentBeltHistory } from "@/lib/db/belts";
 import { listCoursesForStudent } from "@/lib/db/courses";
 import { countryName } from "@/lib/countries";
-import { endEnrollmentAction } from "@/lib/actions/memberships";
+import {
+  endEnrollmentAction,
+  resumeEnrollmentAction,
+} from "@/lib/actions/memberships";
 import {
   getStudentSuspension,
   listActivePlansForSelection,
@@ -45,6 +48,7 @@ import {
 import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 import { EnrollStudentSheet } from "./enroll-student-sheet";
+import { PauseEnrollmentSheet } from "./pause-enrollment-sheet";
 import { PortalLinkButton } from "./portal-link-button";
 
 export const dynamic = "force-dynamic";
@@ -452,7 +456,9 @@ export default async function StudentDetailPage({
                                 ? ` · next invoice ${formatDateUtc(enrollment.nextInvoiceDate)}`
                                 : ""
                             }`
-                          : `Ended ${enrollment.endDate ? formatDate(enrollment.endDate) : ""}`}
+                          : enrollment.status === "PAUSED"
+                            ? `On hold since ${formatDate(enrollment.pausedAt ?? enrollment.startDate)}${enrollment.resumeAt ? ` · resumes ${formatDateUtc(enrollment.resumeAt)}` : ""}${enrollment.pauseReason ? ` · ${enrollment.pauseReason}` : ""}`
+                            : `Ended ${enrollment.endDate ? formatDate(enrollment.endDate) : ""}`}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -473,10 +479,39 @@ export default async function StudentDetailPage({
                             : "outline"
                         }
                       >
-                        {enrollment.status === "ACTIVE" ? "Active" : "Ended"}
+                        {enrollment.status === "ACTIVE"
+                          ? "Active"
+                          : enrollment.status === "PAUSED"
+                            ? "On hold"
+                            : "Ended"}
                       </Badge>
                       {canManageMemberships &&
                       enrollment.status === "ACTIVE" ? (
+                        <PauseEnrollmentSheet
+                          enrollmentId={enrollment.id}
+                          studentId={student.id}
+                          planName={enrollment.plan.name}
+                        />
+                      ) : null}
+                      {canManageMemberships &&
+                      enrollment.status === "PAUSED" ? (
+                        <form action={resumeEnrollmentAction}>
+                          <input
+                            type="hidden"
+                            name="enrollmentId"
+                            value={enrollment.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="studentId"
+                            value={student.id}
+                          />
+                          <Button type="submit" size="sm" variant="ghost">
+                            Resume
+                          </Button>
+                        </form>
+                      ) : null}
+                      {canManageMemberships && enrollment.status !== "ENDED" ? (
                         <form
                           id={`end-enrollment-${enrollment.id}`}
                           action={endEnrollmentAction}

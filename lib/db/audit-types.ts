@@ -72,6 +72,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   DELETE_MEMBERSHIP_PLAN: "Deleted membership plan",
   CREATE_ENROLLMENT: "Enrolled member",
   END_ENROLLMENT: "Ended enrollment",
+  PAUSE_ENROLLMENT: "Paused enrollment",
+  RESUME_ENROLLMENT: "Resumed enrollment",
   CREATE_INVOICE: "Created invoice",
   VOID_INVOICE: "Voided invoice",
   RECORD_PAYMENT: "Recorded payment",

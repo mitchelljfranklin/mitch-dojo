@@ -12,6 +12,9 @@ import {
   enrollStudent,
   endEnrollment,
   generateDueInvoices,
+  pauseEnrollment,
+  resumeDueEnrollments,
+  resumeEnrollment,
   getStudentSuspension,
   listInvoices,
   listOverdueStudents,
@@ -833,6 +836,121 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       select: { chargeOnlyWithAttendance: true },
     });
     expect(gated?.chargeOnlyWithAttendance).toBe(true);
+  });
+});
+
+describe.skipIf(!hasTestDatabase)("membership hold", () => {
+  let holdStudentId: string;
+  let holdPlanId: string;
+  let holdEnrollmentId: string;
+
+  beforeAll(async () => {
+    holdStudentId = await createStudent({
+      firstName: "Hold",
+      lastName: `Member${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [],
+      primaryLocationId: "",
+      disciplineIds: [],
+    });
+    const plan = await createMembershipPlan({
+      name: `Hold Plan ${suffix}`,
+      description: null,
+      planType: "RECURRING",
+      billingPeriod: "MONTHLY",
+      priceCents: 4000,
+    });
+    holdPlanId = plan.id;
+    await enrollStudent({
+      studentId: holdStudentId,
+      planId: holdPlanId,
+      startDate: daysFromNow(-40),
+    });
+    const enrollment = await prisma.enrollment.findFirst({
+      where: { studentId: holdStudentId, planId: holdPlanId },
+    });
+    holdEnrollmentId = enrollment!.id;
+  });
+
+  afterAll(async () => {
+    if (!hasTestDatabase) return;
+    await deleteStudent(holdStudentId).catch(() => undefined);
+    await deleteMembershipPlan(holdPlanId).catch(() => undefined);
+  });
+
+  it("paused enrollments are not billed", async () => {
+    await prisma.enrollment.update({
+      where: { id: holdEnrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-40) },
+    });
+    await pauseEnrollment(holdEnrollmentId, {
+      reason: "injury",
+      resumeAt: null,
+    });
+
+    await generateDueInvoices(new Date(), 14);
+
+    expect(
+      await prisma.invoice.count({ where: { enrollmentId: holdEnrollmentId } }),
+    ).toBe(0);
+    const paused = await prisma.enrollment.findUnique({
+      where: { id: holdEnrollmentId },
+    });
+    expect(paused?.status).toBe("PAUSED");
+    expect(paused?.pauseReason).toBe("injury");
+  });
+
+  it("resuming does not back-bill the held period", async () => {
+    await resumeEnrollment(holdEnrollmentId, new Date());
+
+    const resumed = await prisma.enrollment.findUnique({
+      where: { id: holdEnrollmentId },
+    });
+    expect(resumed?.status).toBe("ACTIVE");
+    expect(resumed?.pausedAt).toBeNull();
+    // The stale -40 nextInvoiceDate was pushed forward to today (no catch-up).
+    expect(resumed!.nextInvoiceDate!.getTime()).toBe(daysFromNow(0).getTime());
+
+    await generateDueInvoices(new Date(), 14);
+    expect(
+      await prisma.invoice.count({ where: { enrollmentId: holdEnrollmentId } }),
+    ).toBe(1);
+  });
+
+  it("auto-resumes a hold whose resume date has arrived", async () => {
+    await prisma.enrollment.update({
+      where: { id: holdEnrollmentId },
+      data: { nextInvoiceDate: daysFromNow(20) },
+    });
+    await pauseEnrollment(holdEnrollmentId, {
+      reason: null,
+      resumeAt: daysFromNow(-1),
+    });
+
+    const resumed = await resumeDueEnrollments(new Date());
+    expect(resumed).toBeGreaterThanOrEqual(1);
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { id: holdEnrollmentId },
+    });
+    expect(enrollment?.status).toBe("ACTIVE");
   });
 });
 

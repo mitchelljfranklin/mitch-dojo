@@ -184,6 +184,7 @@ enum BillingPeriod {
 
 enum EnrollmentStatus {
   ACTIVE
+  PAUSED
   ENDED
 }
 
@@ -597,6 +598,11 @@ model Enrollment {
   startDate       DateTime
   endDate         DateTime?
   nextInvoiceDate DateTime?
+  // Membership hold: a paused enrollment is not billed; resumeAt schedules
+  // an automatic resume (processed by the scheduler).
+  pausedAt        DateTime?
+  pauseReason     String?
+  resumeAt        DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 

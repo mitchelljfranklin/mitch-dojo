@@ -7,7 +7,10 @@ import {
 import { storage } from "@/lib/storage";
 import { findOrphanFileKeys } from "@/lib/storage/orphan-sweep";
 import { ensureUpcomingSessions } from "@/lib/db/sessions";
-import { generateDueInvoices } from "@/lib/db/memberships";
+import {
+  generateDueInvoices,
+  resumeDueEnrollments,
+} from "@/lib/db/memberships";
 import { runReminderJobs } from "@/lib/cron/reminders";
 
 export type ScheduledJobsResult = {
@@ -18,6 +21,7 @@ export type ScheduledJobsResult = {
   prunedFileKeys?: string[];
   generatedInvoices?: number;
   skippedInvoices?: number;
+  resumedEnrollments?: number;
   generatedSessions?: number;
   classRemindersSent?: number;
   paymentRemindersSent?: number;
@@ -137,6 +141,14 @@ export async function runScheduledJobs(
   if (generatedSessions > 0) {
     result.generatedSessions = generatedSessions;
     console.log(`[cron] generated ${generatedSessions} class session(s)`);
+  }
+
+  // Auto-resume membership holds whose scheduled date has arrived, before
+  // invoice generation so a resumed enrollment can bill in the same tick.
+  const resumedEnrollments = await resumeDueEnrollments(now);
+  if (resumedEnrollments > 0) {
+    result.resumedEnrollments = resumedEnrollments;
+    console.log(`[cron] resumed ${resumedEnrollments} paused enrollment(s)`);
   }
 
   // --- recurring invoice generation ---
