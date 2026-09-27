@@ -113,6 +113,14 @@ export const emailTemplateSchema = z.object({
     .default(
       "Hi {{studentName}},\n\nIt has been {{trialDays}} days since you started your trial with us. We would love to see you back on the mats — reply to this email or drop in for your next class!\n\n— {{appName}}",
     ),
+  gradingInviteSubject: z
+    .string()
+    .default("Grading invitation — {{eventName}} — {{appName}}"),
+  gradingInviteBody: z
+    .string()
+    .default(
+      "Hi {{studentName}},\n\n{{eventName}} for {{disciplineName}} is on {{eventDate}}. We would love to see you there — please let your instructor know if you can't make it.\n\n— {{appName}}",
+    ),
   portalLinkSubject: z.string().default("Your {{appName}} member portal link"),
   portalLinkBody: z
     .string()

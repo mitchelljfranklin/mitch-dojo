@@ -54,6 +54,15 @@ Grading a student past one belt (e.g. Yellow straight to Black) works the same w
 
 Skipped belts are **recorded automatically**: promoting straight to Green (from nothing, or two levels up) also writes the earlier rungs into the student's grading history, marked "Backfilled", so the record always shows a complete ladder view.
 
+## Grading events
+
+A **grading day** for a discipline is scheduled from **Belts → Gradings**:
+
+1. **New grading** — name, date, and an optional location. Every student currently eligible for their next belt is added automatically, with that belt as the target.
+2. **Email invitations** to the guardians of the pending invitees (template under Templates).
+3. On the day, record each outcome: **Promote** awards the belt on the grading date (reusing the normal promotion rules — counter and history update), **Absent** marks a no-show, **Reset** returns a row to pending. Promotions are recorded once each.
+4. **Close grading** when done.
+
 ## Permissions
 
 | Action | Permission |

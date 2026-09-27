@@ -43,6 +43,7 @@ model User {
   ssoIdentities        SsoIdentity[]
   createdAgreementDocs AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
   createdCampaigns    EmailCampaign[]       @relation("CampaignCreatedBy")
+  createdGradingEvents GradingEvent[]       @relation("GradingEventCreatedBy")
   createdAgreementVersions AgreementVersion[] @relation("AgreementVersionCreatedBy")
   recordedAgreements   StudentAgreement[]   @relation("AgreementRecordedBy")
 
@@ -218,6 +219,7 @@ model Location {
   courses          Course[]
   sessions         ClassSession[]
   invoices         Invoice[]
+  gradingEvents    GradingEvent[]
 
   @@map("locations")
 }
@@ -271,6 +273,7 @@ model Student {
   invoices    Invoice[]
   portalTokens PortalToken[]
   agreements  StudentAgreement[]
+  gradingEvents GradingEventStudent[]
 
   @@index([lastName, firstName])
   @@index([status])
@@ -449,6 +452,7 @@ model Discipline {
   beltRangeEntries BeltRangeEntry[]
   courses          Course[]
   students         StudentDiscipline[]
+  gradingEvents    GradingEvent[]
 
   @@map("disciplines")
 }
@@ -469,6 +473,7 @@ model BeltRangeEntry {
   updatedAt         DateTime   @updatedAt
 
   studentBelts StudentBelt[]
+  gradingTargets GradingEventStudent[]
 
   @@unique([disciplineId, name])
   @@index([disciplineId, order])
@@ -723,4 +728,52 @@ model EmailCampaign {
 
   @@index([status])
   @@map("email_campaigns")
+}
+
+enum GradingEventStatus {
+  OPEN
+  CLOSED
+}
+
+enum GradingOutcome {
+  PENDING
+  PROMOTED
+  ABSENT
+}
+
+// A grading day for a discipline: the eligible students are snapshotted when
+// the event is created, then outcomes are recorded in bulk.
+model GradingEvent {
+  id           String             @id @default(cuid())
+  disciplineId String
+  discipline   Discipline         @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  name         String
+  date         DateTime
+  locationId   String?
+  location     Location?          @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  status       GradingEventStatus @default(OPEN)
+  notes        String?
+  createdById  String?
+  createdBy    User?              @relation("GradingEventCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
+
+  students GradingEventStudent[]
+
+  @@index([disciplineId])
+  @@map("grading_events")
+}
+
+model GradingEventStudent {
+  id                    String          @id @default(cuid())
+  eventId               String
+  event                 GradingEvent    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  studentId             String
+  student               Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  targetBeltRangeEntryId String?
+  targetBeltRangeEntry  BeltRangeEntry? @relation(fields: [targetBeltRangeEntryId], references: [id], onDelete: SetNull)
+  outcome               GradingOutcome  @default(PENDING)
+
+  @@unique([eventId, studentId])
+  @@index([studentId])
+  @@map("grading_event_students")
 }

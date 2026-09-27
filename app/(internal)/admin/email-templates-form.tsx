@@ -25,6 +25,8 @@ type EmailTemplatesFormProps = {
     bookingBody: string;
     bookingStaffSubject: string;
     bookingStaffBody: string;
+    gradingInviteSubject: string;
+    gradingInviteBody: string;
     trialFollowUpSubject: string;
     trialFollowUpBody: string;
   };
@@ -151,6 +153,27 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               Placeholders: {"{{studentName}}"}, {"{{bookingFor}}"},
               {" {{contact}}"}, {"{{className}}"}, {"{{classTime}}"},
               {" {{appName}}"}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="gradingInviteSubject">
+              Grading invitation subject
+            </Label>
+            <Input
+              id="gradingInviteSubject"
+              name="gradingInviteSubject"
+              defaultValue={templates.gradingInviteSubject}
+            />
+            <Label htmlFor="gradingInviteBody">Grading invitation body</Label>
+            <Textarea
+              id="gradingInviteBody"
+              name="gradingInviteBody"
+              rows={4}
+              defaultValue={templates.gradingInviteBody}
+            />
+            <p className="text-muted-foreground text-xs">
+              Placeholders: {"{{studentName}}"}, {"{{disciplineName}}"},
+              {" {{eventName}}"}, {"{{eventDate}}"}, {"{{appName}}"}
             </p>
           </div>
           <div className="grid gap-2">

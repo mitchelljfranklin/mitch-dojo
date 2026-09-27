@@ -543,6 +543,8 @@ export async function saveEmailTemplatesAction(
     bookingBody: String(formData.get("bookingBody") ?? ""),
     bookingStaffSubject: String(formData.get("bookingStaffSubject") ?? ""),
     bookingStaffBody: String(formData.get("bookingStaffBody") ?? ""),
+    gradingInviteSubject: String(formData.get("gradingInviteSubject") ?? ""),
+    gradingInviteBody: String(formData.get("gradingInviteBody") ?? ""),
     trialFollowUpSubject: String(formData.get("trialFollowUpSubject") ?? ""),
     trialFollowUpBody: String(formData.get("trialFollowUpBody") ?? ""),
   };

@@ -49,6 +49,8 @@ export default async function AdminTemplatesPage() {
               bookingBody: emailTemplates.bookingBody,
               bookingStaffSubject: emailTemplates.bookingStaffSubject,
               bookingStaffBody: emailTemplates.bookingStaffBody,
+              gradingInviteSubject: emailTemplates.gradingInviteSubject,
+              gradingInviteBody: emailTemplates.gradingInviteBody,
               trialFollowUpSubject: emailTemplates.trialFollowUpSubject,
               trialFollowUpBody: emailTemplates.trialFollowUpBody,
             }}

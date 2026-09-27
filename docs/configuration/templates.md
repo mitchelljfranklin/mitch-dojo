@@ -11,6 +11,7 @@ Every automated email's subject and body, editable with tokens. Also home of the
 | **Birthday** | On the student's birthday |
 | **Booking confirmation** | Public booking page submission (to the prospect) |
 | **New-booking alert** | Public booking page submission (to staff recipients) |
+| **Grading invitation** | Staff sends invites for a grading event |
 | **Trial follow-up** | Open trial past the follow-up window |
 | **Portal link** | Staff sends a member-portal magic link |
 | **Password reset** | Staff user requests a reset |
@@ -30,6 +31,9 @@ Tokens work in both subjects and bodies and are replaced at send time:
 | `{{dueDate}}` | Payment reminder | Invoice due date |
 | `{{bookingFor}}` | New-booking alert | "Adult" or "Child (guardian: …)" |
 | `{{contact}}` | New-booking alert | Email and/or phone the prospect left |
+| `{{disciplineName}}` | Grading invitation | The discipline being graded |
+| `{{eventName}}` | Grading invitation | The grading event's name |
+| `{{eventDate}}` | Grading invitation | The grading date |
 | `{{trialDays}}` | Trial follow-up | Days in the pipeline |
 | `{{portalUrl}}` | Portal link | One-time magic link |
 | `{{expiryDays}}` | Portal link | Days until the link expires |
