@@ -50,11 +50,19 @@ export async function createHouseholdAction(
   return { ok: true, message: "Household created." };
 }
 
-export async function updateHouseholdAction(formData: FormData) {
+export async function updateHouseholdAction(
+  _previousState: HouseholdActionState,
+  formData: FormData,
+): Promise<HouseholdActionState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const householdId = getField(formData, "householdId");
+  if (!householdId) {
+    return { error: "Household not found." };
+  }
   const input = parseHousehold(formData);
-  if (!input) return;
+  if (!input) {
+    return { error: "Enter a household name and a valid contact email." };
+  }
 
   await updateHousehold(householdId, input);
   await logAudit(
@@ -63,8 +71,8 @@ export async function updateHouseholdAction(formData: FormData) {
     "Household",
     householdId,
   );
-
-  revalidatePath("/students/households");
+  // State-fed action — must not revalidatePath (see AGENTS.md).
+  return { ok: true, message: "Household updated." };
 }
 
 export async function deleteHouseholdAction(formData: FormData) {

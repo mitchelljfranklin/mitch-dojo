@@ -16,6 +16,7 @@ import { deleteHouseholdAction } from "@/lib/actions/households";
 import { listHouseholds } from "@/lib/db/households";
 
 import { CreateHouseholdSheet } from "./create-household-form";
+import { EditHouseholdSheet } from "./edit-household-sheet";
 import { SendPortalLinkButton } from "./send-portal-link-button";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +84,15 @@ export default async function HouseholdsPage() {
                 </div>
                 {canEdit ? (
                   <div className="flex items-center gap-2">
+                    <EditHouseholdSheet
+                      household={{
+                        id: household.id,
+                        name: household.name,
+                        contactName: household.contactName,
+                        contactEmail: household.contactEmail,
+                        contactPhone: household.contactPhone,
+                      }}
+                    />
                     <SendPortalLinkButton householdId={household.id} />
                     <form
                       id={`delete-household-${household.id}`}

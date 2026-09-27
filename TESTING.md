@@ -198,6 +198,8 @@ Students → Households → **Email portal link**), then open it.
 - [ ] Open **Households** from the sidebar (People group).
 - [ ] Click **New household**, enter a name and contact details, and create it.
       Close the form; the household appears in the list.
+- [ ] Click **Edit** on a household, change the contact details, and save;
+      reopen Edit to confirm the changes persisted.
 - [ ] Edit a student and assign them to the household; blank guardian fields
       inherit the household contact.
 - [ ] Use **Email portal link** on the household and confirm the portal shows a
