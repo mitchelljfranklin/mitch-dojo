@@ -88,7 +88,8 @@ const MANAGE_PERMISSIONS: Permission[] = [
   PERMISSIONS.USERS_MANAGE,
   PERMISSIONS.ROLES_MANAGE,
   PERMISSIONS.SETTINGS_MANAGE,
-  PERMISSIONS.API_MANAGE,
+  // api:manage is deliberately absent: there is no API admin section yet, so
+  // including it would show an Admin link that /admin then denies.
 ];
 
 export function AppSidebar({

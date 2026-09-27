@@ -122,6 +122,16 @@ function loadEnvironment(): Environment {
     parsed.data.APP_URL,
   );
 
+  // The whole app keys "today" off the server's local calendar day
+  // (check-in, reminders, analytics, session generation). A container with
+  // no TZ runs in UTC, which silently shifts the day for most dojos — warn
+  // loudly rather than let it surprise someone at the front desk.
+  if (!process.env.TZ) {
+    console.warn(
+      "[env] TZ is not set — the server will use UTC for calendar days. Set TZ to your dojo's IANA zone (e.g. Australia/Brisbane) in the container/compose environment.",
+    );
+  }
+
   return parsed.data;
 }
 

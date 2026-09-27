@@ -133,12 +133,19 @@ export async function createUser(input: {
   });
 }
 
+// A fixed bcrypt hash (of an arbitrary throwaway string) compared against
+// when no user matches, so an unknown account costs about the same time as a
+// wrong password and can't be enumerated by response timing.
+const DUMMY_PASSWORD_HASH =
+  "$2b$12$iIIOOjp9GGWAgglEGtVJBOhQmPdNs1ftN248IlXiiyu6rIU979Owq";
+
 export async function verifyUserCredentials(
   email: string,
   password: string,
 ): Promise<User | null> {
   const user = await findUserByEmail(email);
   if (!user) {
+    await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
     return null;
   }
 
