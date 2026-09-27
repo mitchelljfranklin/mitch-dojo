@@ -34,8 +34,8 @@ There are no public file URLs. Photos, attachments, and the logo are served thro
 - **Deleting a student** deletes their photo and attachments from storage immediately.
 - **Orphan sweep** — the scheduler collects every referenced storage key and deletes unreferenced files, so a crashed upload or a missed cleanup can't leak disk space.
 
-## Known gap
+## Test connection
 
-There is no "test connection" button yet — a bad connection string surfaces on the first upload. Listed in [phasereview](https://github.com/mitchelljfranklin/mitch-dojo) as a candidate improvement.
+The **Test storage connection** button writes, reads back, and deletes a small probe file using the **saved** configuration — save your changes first. It confirms credentials and container/bucket access before you rely on them for real uploads.
 
 Requires `settings:manage`. Changes are audited.

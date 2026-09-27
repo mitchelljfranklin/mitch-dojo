@@ -710,6 +710,39 @@ export async function deleteAgreementDocumentAction(formData: FormData) {
   revalidatePath("/admin/documents");
 }
 
+export async function testStorageConnectionAction(
+  _previousState: { ok: boolean; message: string } | undefined,
+  _formData: FormData,
+): Promise<{ ok: boolean; message: string }> {
+  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+
+  // Probes the SAVED storage configuration (save before testing): write a
+  // small file, read it back, compare, then delete it.
+  try {
+    const { getStorage } = await import("@/lib/storage");
+    const storage = await getStorage();
+    const key = `healthcheck/probe-${Date.now()}.txt`;
+    const payload = Buffer.from("mitch-dojo storage probe");
+    await storage.save(key, payload);
+    const readBack = Buffer.from(await storage.read(key));
+    await storage.delete(key).catch(() => undefined);
+    if (!readBack.equals(payload)) {
+      return {
+        ok: false,
+        message: "Storage test failed: the file did not read back correctly.",
+      };
+    }
+    return { ok: true, message: "Storage connection OK." };
+  } catch (error: unknown) {
+    return {
+      ok: false,
+      message: `Storage test failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    };
+  }
+}
+
 export async function saveStorageSettings(
   _previousState: { ok: boolean; message: string } | undefined,
   formData: FormData,
