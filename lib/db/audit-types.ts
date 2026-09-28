@@ -96,4 +96,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   UPDATE_PORTAL_CONTACT: "Updated contact details via portal",
   UPDATE_EMAIL_PREFERENCE: "Updated email preferences via portal",
   IMPORT_ENROLLMENT: "Imported enrollments from CSV",
+  CREATE_VERIFICATION_TYPE: "Created verification type",
+  UPDATE_VERIFICATION_TYPE: "Updated verification type",
+  DELETE_VERIFICATION_TYPE: "Deleted verification type",
+  RECORD_VERIFICATION: "Recorded trainer verification",
+  DELETE_VERIFICATION: "Deleted trainer verification",
 };

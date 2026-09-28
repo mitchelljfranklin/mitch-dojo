@@ -32,6 +32,7 @@ import {
   type TrainerActionState,
 } from "@/lib/actions/trainers";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
+import { TrainerVerifications } from "./trainer-verifications";
 
 export type TrainerView = {
   id: string;
@@ -43,6 +44,7 @@ export type TrainerView = {
   userId: string | null;
   userName: string | null;
   courseCount: number;
+  verifications: { expired: number; expiring: number; missing: number };
 };
 
 export type LinkableUser = {
@@ -220,6 +222,11 @@ function EditTrainerForm({
         </p>
       ) : null}
 
+      <div className="grid gap-3 border-t pt-4">
+        <Label>Verifications</Label>
+        <TrainerVerifications trainerId={trainer.id} />
+      </div>
+
       <div className="mt-auto grid gap-2 border-t pt-4">
         <Label>Danger zone</Label>
         <form id={`delete-trainer-${trainer.id}`} action={deleteTrainerAction}>
@@ -353,6 +360,19 @@ export function TrainersManager({
                     {trainer.courseCount}{" "}
                     {trainer.courseCount === 1 ? "course" : "courses"}
                   </Badge>
+                  {trainer.verifications.expired > 0 ? (
+                    <Badge variant="destructive" className="text-xs">
+                      {trainer.verifications.expired} expired
+                    </Badge>
+                  ) : trainer.verifications.expiring > 0 ? (
+                    <Badge variant="secondary" className="text-xs">
+                      {trainer.verifications.expiring} expiring
+                    </Badge>
+                  ) : trainer.verifications.missing > 0 ? (
+                    <Badge variant="outline" className="text-xs">
+                      {trainer.verifications.missing} missing
+                    </Badge>
+                  ) : null}
                   {trainer.userId ? (
                     <Badge variant="outline" className="text-xs">
                       Has account

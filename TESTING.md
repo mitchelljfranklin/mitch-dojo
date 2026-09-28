@@ -247,6 +247,29 @@ Students → Households → **Email portal link**), then open it.
 
 ---
 
+## 10. Trainer verifications
+
+- [ ] **Admin → Verifications**: click **New type**, create one (e.g. "Working
+      with Children Check"), tick **Required** and **Records should carry an
+      expiry date**. It appears in the list.
+- [ ] Add a second type without those flags. Edit the first, then **Disable**
+      and **Enable** it.
+- [ ] Open **Trainers**, click a trainer — the **Verifications** section lists
+      the active types as **Not recorded**.
+- [ ] **Record** the required one with a number and a past expiry date; the
+      status becomes **Expired** and the trainer's list row shows an **expired**
+      badge.
+- [ ] Edit it with a future expiry (or blank); the status becomes **Valid** and
+      the badge clears. Attach a PDF/PNG card on the record.
+- [ ] **Remove** the record — it disappears (and the stored file is cleaned up).
+- [ ] Try to **Delete** a type that has a record — it is refused (disable
+      instead).
+- [ ] (Optional, needs SMTP) **Admin → Communication**: enable **Verification
+      reminders**, then the next scheduler tick emails the trainer about an
+      expiring credential; check **Admin → Email log**.
+
+---
+
 ## Sign-off
 
 | Area | Pass? | Notes |
@@ -256,6 +279,7 @@ Students → Households → **Email portal link**), then open it.
 | Incident reports | ☐ | |
 | Reports (+ CSV) | ☐ | |
 | Portal self-service (contact, prefs, PDFs, calendar) | ☐ | |
+| Trainer verifications | ☐ | |
 | Storage test connection | ☐ | |
 | Trial capacity | ☐ | |
 | Membership CSV import | ☐ | |

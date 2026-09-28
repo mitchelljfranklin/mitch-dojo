@@ -135,6 +135,14 @@ export const emailTemplateSchema = z.object({
     .default(
       "Hi {{studentName}},\n\nOur {{documentTitle}} still needs your signature. Please sign it in your member portal, or ask the front desk for a paper form.\n\n— {{appName}}",
     ),
+  verificationReminderSubject: z
+    .string()
+    .default("Verification expiring: {{verificationName}} — {{appName}}"),
+  verificationReminderBody: z
+    .string()
+    .default(
+      "Hi {{trainerName}},\n\nYour {{verificationName}} expires on {{expiryDate}}. Please renew it and give us the updated details.\n\n— {{appName}}",
+    ),
   testSubject: z.string().default("{{appName}} — SMTP test"),
   testBody: z.string().default("Your SMTP settings are working correctly."),
 });
@@ -244,6 +252,15 @@ export const communicationsSettingsSchema = z.object({
   // Agreement reminders: one email per student per outstanding document
   // version (unsigned or re-sign required). Deduped per document version.
   agreementRemindersEnabled: z.boolean().default(true),
+  // Verification reminders: one email per trainer per expiring/expired
+  // credential, once per expiry date (re-arms when a renewal is recorded).
+  verificationRemindersEnabled: z.boolean().default(true),
+  verificationReminderDaysBefore: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(365)
+    .default(60),
   // New-booking alert: one email per listed staff recipient when a public
   // booking lands. Recipients start empty — alerts begin once at least one
   // address is entered.

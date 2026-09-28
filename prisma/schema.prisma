@@ -34,19 +34,20 @@ model User {
 
   auditLogs                AuditLog[]
   passwordResetTokens      PasswordResetToken[]
-  sentNotificationLogs     NotificationLog[]    @relation("NotificationSentBy")
+  sentNotificationLogs     NotificationLog[]     @relation("NotificationSentBy")
   trainerProfile           Trainer?
-  markedAttendance         Attendance[]         @relation("AttendanceMarkedBy")
-  awardedBelts             StudentBelt[]        @relation("BeltAwardedBy")
-  createdInvoices          Invoice[]            @relation("InvoiceCreatedBy")
-  recordedPayments         Payment[]            @relation("PaymentRecordedBy")
+  markedAttendance         Attendance[]          @relation("AttendanceMarkedBy")
+  awardedBelts             StudentBelt[]         @relation("BeltAwardedBy")
+  createdInvoices          Invoice[]             @relation("InvoiceCreatedBy")
+  recordedPayments         Payment[]             @relation("PaymentRecordedBy")
   ssoIdentities            SsoIdentity[]
-  createdAgreementDocs     AgreementDocument[]  @relation("AgreementDocumentCreatedBy")
-  createdCampaigns         EmailCampaign[]      @relation("CampaignCreatedBy")
-  createdGradingEvents     GradingEvent[]       @relation("GradingEventCreatedBy")
-  createdAgreementVersions AgreementVersion[]   @relation("AgreementVersionCreatedBy")
-  recordedAgreements       StudentAgreement[]   @relation("AgreementRecordedBy")
-  reportedIncidents        Incident[]           @relation("IncidentReportedBy")
+  createdAgreementDocs     AgreementDocument[]   @relation("AgreementDocumentCreatedBy")
+  createdCampaigns         EmailCampaign[]       @relation("CampaignCreatedBy")
+  createdGradingEvents     GradingEvent[]        @relation("GradingEventCreatedBy")
+  createdAgreementVersions AgreementVersion[]    @relation("AgreementVersionCreatedBy")
+  recordedAgreements       StudentAgreement[]    @relation("AgreementRecordedBy")
+  reportedIncidents        Incident[]            @relation("IncidentReportedBy")
+  recordedVerifications    TrainerVerification[] @relation("VerificationRecordedBy")
 
   @@index([roleId])
   @@map("users")
@@ -433,9 +434,58 @@ model Trainer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  courses Course[]
+  courses       Course[]
+  verifications TrainerVerification[]
 
   @@map("trainers")
+}
+
+// A school-owned category of credential a trainer may need — a working-with-
+// children check, first-aid certificate, insurance, coaching accreditation…
+// The list is fully admin-managed (nothing region-specific is hardcoded), so
+// the same feature covers any state/country.
+model VerificationType {
+  id                    String   @id @default(cuid())
+  name                  String   @unique
+  description           String?
+  // Required types count towards "missing" compliance for every trainer.
+  required              Boolean  @default(false)
+  // When true the recorded record should carry an expiry date.
+  requiresExpiry        Boolean  @default(false)
+  // Optional helper: pre-fill the expiry when recording (issued + N months).
+  defaultValidityMonths Int?
+  isActive              Boolean  @default(true)
+  sortOrder             Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  verifications TrainerVerification[]
+
+  @@map("verification_types")
+}
+
+// One current verification per (trainer, type); renewing overwrites the row
+// and the audit log preserves the history. Status is computed from expiresAt,
+// never stored, so it can't drift.
+model TrainerVerification {
+  id              String           @id @default(cuid())
+  trainerId       String
+  trainer         Trainer          @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  typeId          String
+  type            VerificationType @relation(fields: [typeId], references: [id])
+  referenceNumber String?
+  issuedAt        DateTime?
+  expiresAt       DateTime?
+  documentKey     String?
+  notes           String?
+  recordedById    String?
+  recordedBy      User?            @relation("VerificationRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([trainerId, typeId])
+  @@index([typeId])
+  @@map("trainer_verifications")
 }
 
 model Course {

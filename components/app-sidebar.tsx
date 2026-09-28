@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import {
   ArrowLeft,
+  BadgeCheck,
   BarChart3,
   Building2,
   CalendarDays,
@@ -66,6 +67,7 @@ const SECTION_ICONS: Record<string, ComponentType> = {
   "/admin/memberships": Wallet,
   "/admin/communications": Mail,
   "/admin/documents": FileCheck2,
+  "/admin/verifications": BadgeCheck,
   "/admin/email": MailOpen,
   "/admin/templates": FileText,
   "/admin/campaigns": Megaphone,

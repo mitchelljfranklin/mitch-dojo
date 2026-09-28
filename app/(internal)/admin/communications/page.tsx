@@ -69,6 +69,12 @@ export default async function AdminCommunicationsPage() {
             agreementRemindersEnabled={
               communicationsSettings.agreementRemindersEnabled
             }
+            verificationRemindersEnabled={
+              communicationsSettings.verificationRemindersEnabled
+            }
+            verificationReminderDaysBefore={
+              communicationsSettings.verificationReminderDaysBefore
+            }
           />
         </CardContent>
       </Card>

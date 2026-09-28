@@ -509,6 +509,10 @@ export async function saveCommunicationsSettings(
       .filter((entry) => entry.length > 0),
     agreementRemindersEnabled:
       formData.get("agreementRemindersEnabled") === "on",
+    verificationRemindersEnabled:
+      formData.get("verificationRemindersEnabled") === "on",
+    verificationReminderDaysBefore:
+      formData.get("verificationReminderDaysBefore") ?? 60,
   });
   if (!parsed.success) {
     return {
@@ -557,6 +561,12 @@ export async function saveEmailTemplatesAction(
       formData.get("agreementReminderSubject") ?? "",
     ),
     agreementReminderBody: String(formData.get("agreementReminderBody") ?? ""),
+    verificationReminderSubject: String(
+      formData.get("verificationReminderSubject") ?? "",
+    ),
+    verificationReminderBody: String(
+      formData.get("verificationReminderBody") ?? "",
+    ),
   };
 
   // An empty subject or body would be sent as a blank email — reject it.

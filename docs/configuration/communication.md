@@ -21,6 +21,7 @@ Reminder timing and toggles. Subjects/bodies live on the [Templates](./templates
 | **Booking confirmations** | on | Sent the moment a public booking creates a trial |
 | **New booking alerts (staff)** | on | One alert per listed recipient; recipients start empty |
 | **Agreement reminders** | on | One email per student per unsigned or out-of-date agreement (version-keyed) |
+| **Verification reminders** | on | One email per trainer per expiring/expired credential; days before expiry: 60 (1–365) |
 
 ## Behaviour notes
 

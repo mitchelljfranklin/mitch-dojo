@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { listTrainers } from "@/lib/db/trainers";
+import { getVerificationSummaries } from "@/lib/db/verifications";
 
 import { TrainersManager } from "./trainers-manager";
 
@@ -15,7 +16,15 @@ export default async function TrainersPage() {
   const user = await requirePermission(PERMISSIONS.CLASSES_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.CLASSES_EDIT);
 
-  const trainers = await listTrainers();
+  const [trainers, summaries] = await Promise.all([
+    listTrainers(),
+    getVerificationSummaries(),
+  ]);
+  const empty = { expired: 0, expiring: 0, missing: 0 };
+  const trainersWithVerifications = trainers.map((trainer) => ({
+    ...trainer,
+    verifications: summaries.get(trainer.id) ?? empty,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,7 +45,7 @@ export default async function TrainersPage() {
         </div>
       </div>
 
-      <TrainersManager trainers={trainers} canEdit={canEdit} />
+      <TrainersManager trainers={trainersWithVerifications} canEdit={canEdit} />
     </div>
   );
 }

@@ -31,6 +31,8 @@ type EmailTemplatesFormProps = {
     trialFollowUpBody: string;
     agreementReminderSubject: string;
     agreementReminderBody: string;
+    verificationReminderSubject: string;
+    verificationReminderBody: string;
   };
 };
 
@@ -220,6 +222,29 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
             <p className="text-muted-foreground text-xs">
               Placeholders: {"{{studentName}}"}, {"{{documentTitle}}"},
               {" {{appName}}"}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="verificationReminderSubject">
+              Verification reminder subject
+            </Label>
+            <Input
+              id="verificationReminderSubject"
+              name="verificationReminderSubject"
+              defaultValue={templates.verificationReminderSubject}
+            />
+            <Label htmlFor="verificationReminderBody">
+              Verification reminder body
+            </Label>
+            <Textarea
+              id="verificationReminderBody"
+              name="verificationReminderBody"
+              rows={4}
+              defaultValue={templates.verificationReminderBody}
+            />
+            <p className="text-muted-foreground text-xs">
+              Placeholders: {"{{trainerName}}"}, {"{{verificationName}}"},
+              {" {{expiryDate}}"}, {"{{appName}}"}
             </p>
           </div>
         </div>

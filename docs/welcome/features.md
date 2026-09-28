@@ -10,6 +10,7 @@
 ## Classes & schedule
 
 - Trainer roster with optional login accounts — guest instructors never need one
+- **Trainer verifications** — school-defined credential types (working-with-children checks, first aid, insurance…) with numbers, expiry dates, scanned documents, status badges, and expiry reminders
 - Courses tied to exactly one location and one discipline, with recurring weekly training times
 - Sessions auto-generated two weeks ahead, idempotently; a weekly timetable view per location
 - Location moves keep attendance history intact (the location is stamped on each session)

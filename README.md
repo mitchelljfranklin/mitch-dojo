@@ -76,6 +76,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 ### Classes & Schedule
 - Trainer roster with optional login accounts — guest instructors never need one
+- **Trainer verifications** — school-defined credential types (e.g. working-with-children checks, first aid, insurance) with numbers, expiry tracking, document scans, status badges, and expiry reminders
 - Courses tied to exactly one location and one discipline, with recurring weekly times
 - Per-slot **trial capacity** limiting public bookings onto a weekly class
 - Sessions auto-generated two weeks ahead, idempotently; weekly timetable view per location

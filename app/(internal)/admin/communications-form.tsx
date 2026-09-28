@@ -23,6 +23,8 @@ type CommunicationsFormProps = {
   bookingStaffAlertsEnabled: boolean;
   bookingStaffAlertRecipients: string[];
   agreementRemindersEnabled: boolean;
+  verificationRemindersEnabled: boolean;
+  verificationReminderDaysBefore: number;
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -45,6 +47,8 @@ function CommunicationsFormInner({
   bookingStaffAlertsEnabled,
   bookingStaffAlertRecipients,
   agreementRemindersEnabled,
+  verificationRemindersEnabled,
+  verificationReminderDaysBefore,
 }: CommunicationsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -230,6 +234,36 @@ function CommunicationsFormInner({
           />
           Enable agreement reminder emails
         </label>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-2">
+        <Label>Verification reminders</Label>
+        <p className="text-muted-foreground text-xs">
+          One email per trainer per expiring or expired credential (e.g. a
+          working-with-children check). Renewing the record re-arms it.
+        </p>
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <Checkbox
+            name="verificationRemindersEnabled"
+            defaultChecked={verificationRemindersEnabled}
+          />
+          Enable verification reminder emails
+        </label>
+        <div className="grid max-w-xs gap-2">
+          <Label htmlFor="verificationReminderDaysBefore">
+            Days before expiry to remind
+          </Label>
+          <Input
+            id="verificationReminderDaysBefore"
+            name="verificationReminderDaysBefore"
+            type="number"
+            min={1}
+            max={365}
+            defaultValue={verificationReminderDaysBefore}
+          />
+        </div>
       </div>
 
       {state && !state.ok ? (

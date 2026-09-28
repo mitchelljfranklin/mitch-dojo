@@ -23,6 +23,7 @@ const sidebar = [
       { text: "Classes & Schedule", link: "/user-guides/classes" },
       { text: "Attendance & Check-in", link: "/user-guides/attendance" },
       { text: "Belts & Gradings", link: "/user-guides/belts" },
+      { text: "Trainer Verifications", link: "/user-guides/verifications" },
       { text: "Importing History", link: "/user-guides/importing-history" },
       { text: "Documents & Consent", link: "/user-guides/compliance" },
       { text: "Incident Reports", link: "/user-guides/incidents" },

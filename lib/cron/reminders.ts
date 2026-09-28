@@ -6,7 +6,7 @@ import {
   getEmailSettings,
   getOrganizationSettings,
 } from "@/lib/settings";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateUtc } from "@/lib/utils";
 
 // Reminder jobs for the scheduler. Each job is idempotent via NotificationLog
 // dedup keys stored in the assessmentId column: once a key has ANY log row
@@ -20,6 +20,7 @@ export type ReminderResults = {
   birthdayEmailsSent: number;
   trialFollowUpsSent: number;
   agreementRemindersSent: number;
+  verificationRemindersSent: number;
 };
 
 function utcMidnightOf(date: Date): Date {
@@ -383,8 +384,61 @@ export async function sendAgreementReminders(): Promise<number> {
   return sent;
 }
 
-// --------------- scheduler entry point ---------------
-// SMTP not configured → skip silently (each job would otherwise create
+// --------------- verification reminders ---------------
+
+// One reminder per trainer per expiring/expired credential, once per expiry
+// date — renewing the record (new expiry) re-arms it.
+export async function sendVerificationReminders(
+  now: Date = new Date(),
+): Promise<number> {
+  const settings = await getCommunicationsSettings();
+  if (!settings.verificationRemindersEnabled) return 0;
+
+  const { name: appName } = await getOrganizationSettings();
+  const windowEnd = addDays(
+    startOfToday(now),
+    settings.verificationReminderDaysBefore,
+  );
+
+  const records = await prisma.trainerVerification.findMany({
+    where: {
+      expiresAt: { not: null, lte: windowEnd },
+      trainer: { isActive: true },
+    },
+    include: {
+      type: { select: { name: true } },
+      trainer: { select: { name: true, email: true } },
+    },
+  });
+
+  let sent = 0;
+  for (const record of records) {
+    if (!record.expiresAt) continue;
+    const recipient = record.trainer.email?.trim();
+    if (!recipient) continue;
+
+    const dedupKey = `verification-reminder:${record.id}:${record.expiresAt
+      .toISOString()
+      .slice(0, 10)}`;
+    if (!(await notYetSent(dedupKey))) continue;
+
+    const result = await sendEmail(
+      recipient,
+      "verificationReminder",
+      {
+        trainerName: record.trainer.name,
+        verificationName: record.type.name,
+        expiryDate: formatDateUtc(record.expiresAt),
+        appName,
+      },
+      { assessmentId: dedupKey },
+    );
+    if (result.ok) sent++;
+  }
+  return sent;
+}
+
+// --------------- scheduler entry point ---------------// SMTP not configured → skip silently (each job would otherwise create
 // FAILED notification rows every tick).
 export async function runReminderJobs(
   now: Date = new Date(),
@@ -395,6 +449,7 @@ export async function runReminderJobs(
     birthdayEmailsSent: 0,
     trialFollowUpsSent: 0,
     agreementRemindersSent: 0,
+    verificationRemindersSent: 0,
   };
   // Without SMTP there is nothing to do — and bailing here keeps failed-send
   // log rows (which carry the dedup keys) from being created on every tick.
@@ -406,6 +461,7 @@ export async function runReminderJobs(
     results.birthdayEmailsSent = await sendBirthdayEmails(now);
     results.trialFollowUpsSent = await sendTrialFollowUps(now);
     results.agreementRemindersSent = await sendAgreementReminders();
+    results.verificationRemindersSent = await sendVerificationReminders(now);
   } catch (error: unknown) {
     console.error(
       "[cron] reminder jobs failed:",

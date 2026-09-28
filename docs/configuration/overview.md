@@ -2,13 +2,13 @@
 
 Everything runtime-configurable lives in the **Admin area**, reached via the gear button in the header (visible only to roles with any admin-area permission). The URL prefix is `/admin/*`; old `/settings` links redirect.
 
-## The 17 sections, in 7 groups
+## The 18 sections, in 7 groups
 
 | Group | Sections |
 |---|---|
 | **Workspace** | [General](./general) · [Appearance](./appearance) |
 | **Storage** | [Storage](./storage) |
-| **Programs** | [Memberships](./memberships) · [Communication](./communication) · [Documents](./documents) |
+| **Programs** | [Memberships](./memberships) · [Communication](./communication) · [Documents](./documents) · Verifications (see [User guide](../user-guides/verifications)) |
 | **Email** | [Email](./email) · [Templates](./templates) · [Campaigns](./communication#campaigns-bulk-email) · [Email log](./email-log) |
 | **Locations** | Locations (see [User guide](../user-guides/locations)) |
 | **Access & security** | [Users & Roles](./users-roles) · [Sign-in & SSO](./sso) |

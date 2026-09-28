@@ -30,6 +30,7 @@ export type ScheduledJobsResult = {
   birthdayEmailsSent?: number;
   trialFollowUpsSent?: number;
   agreementRemindersSent?: number;
+  verificationRemindersSent?: number;
   prunedPortalTokens?: number;
 };
 
@@ -91,16 +92,23 @@ export async function runScheduledJobs(
   // Every storage writer must be reflected here (AGENTS.md storage-writer
   // rule): brand logos (primary + dark variant), student photos, and student
   // attachments.
-  const [storedFiles, appearance, darkAppearance, students, attachments] =
-    await Promise.all([
-      storage.list(),
-      prisma.appSetting.findUnique({ where: { key: "appearance.logoKey" } }),
-      prisma.appSetting.findUnique({
-        where: { key: "appearance.logoDarkKey" },
-      }),
-      prisma.student.findMany({ select: { photoKey: true } }),
-      prisma.attachment.findMany({ select: { storageKey: true } }),
-    ]);
+  const [
+    storedFiles,
+    appearance,
+    darkAppearance,
+    students,
+    attachments,
+    trainerVerifications,
+  ] = await Promise.all([
+    storage.list(),
+    prisma.appSetting.findUnique({ where: { key: "appearance.logoKey" } }),
+    prisma.appSetting.findUnique({
+      where: { key: "appearance.logoDarkKey" },
+    }),
+    prisma.student.findMany({ select: { photoKey: true } }),
+    prisma.attachment.findMany({ select: { storageKey: true } }),
+    prisma.trainerVerification.findMany({ select: { documentKey: true } }),
+  ]);
   const referencedKeys = new Set<string>();
   const logoKey = appearance?.value;
   if (typeof logoKey === "string" && logoKey.length > 0) {
@@ -115,6 +123,9 @@ export async function runScheduledJobs(
   }
   for (const attachment of attachments) {
     referencedKeys.add(attachment.storageKey);
+  }
+  for (const verification of trainerVerifications) {
+    if (verification.documentKey) referencedKeys.add(verification.documentKey);
   }
   const orphanKeys = findOrphanFileKeys({ storedFiles, referencedKeys, now });
   const deletedFileKeys: string[] = [];
@@ -213,6 +224,12 @@ export async function runScheduledJobs(
     result.agreementRemindersSent = reminders.agreementRemindersSent;
     console.log(
       `[cron] sent ${reminders.agreementRemindersSent} agreement reminder(s)`,
+    );
+  }
+  if (reminders.verificationRemindersSent > 0) {
+    result.verificationRemindersSent = reminders.verificationRemindersSent;
+    console.log(
+      `[cron] sent ${reminders.verificationRemindersSent} verification reminder(s)`,
     );
   }
 

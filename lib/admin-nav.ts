@@ -63,6 +63,11 @@ export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
         href: "/admin/documents",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
+      {
+        label: "Verifications",
+        href: "/admin/verifications",
+        permission: PERMISSIONS.SETTINGS_MANAGE,
+      },
     ],
   },
   {

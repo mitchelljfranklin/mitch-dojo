@@ -53,7 +53,7 @@ app/                 # Next.js App Router
   (internal)/        # authenticated dashboard
     dashboard/       #   landing page
     profile/         #   own profile
-    admin/           # the Admin area — 17 sections across 7 groups at
+    admin/           # the Admin area — 18 sections across 7 groups at
                      #   /admin/* (general, appearance, storage, memberships,
                      #   communications, documents, email, templates, email-
                      #   log, locations, users, roles, sign-in, audit,

@@ -55,6 +55,9 @@ export default async function AdminTemplatesPage() {
               trialFollowUpBody: emailTemplates.trialFollowUpBody,
               agreementReminderSubject: emailTemplates.agreementReminderSubject,
               agreementReminderBody: emailTemplates.agreementReminderBody,
+              verificationReminderSubject:
+                emailTemplates.verificationReminderSubject,
+              verificationReminderBody: emailTemplates.verificationReminderBody,
             }}
           />
         </CardContent>

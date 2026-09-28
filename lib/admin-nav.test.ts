@@ -21,6 +21,7 @@ describe("admin nav definition", () => {
       "/admin/memberships",
       "/admin/communications",
       "/admin/documents",
+      "/admin/verifications",
       "/admin/email",
       "/admin/templates",
       "/admin/campaigns",
