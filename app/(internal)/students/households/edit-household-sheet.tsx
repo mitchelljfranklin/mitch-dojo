@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
 
@@ -59,7 +60,7 @@ export function EditHouseholdSheet({
               inherited from here.
             </SheetDescription>
           </SheetHeader>
-          <form
+          <ActionForm
             key={open ? "open" : "closed"}
             action={formAction}
             className="flex flex-1 flex-col gap-4 px-4"
@@ -136,7 +137,7 @@ export function EditHouseholdSheet({
                 Cancel
               </Button>
             </SheetFooter>
-          </form>
+          </ActionForm>
         </SheetContent>
       </Sheet>
     </>

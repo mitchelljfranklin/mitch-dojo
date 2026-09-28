@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,7 @@ export type LinkableUser = {
   id: string;
   name: string;
   email: string;
+  linkedTrainerId: string | null;
 };
 
 type EditorTarget = TrainerView | "new";
@@ -61,6 +63,13 @@ function TrainerFields({
   trainer?: TrainerView;
   linkableUsers: LinkableUser[];
 }) {
+  // Include unlinked users, plus the account already linked to this trainer
+  // (so editing shows it rather than blanking it).
+  const userOptions = linkableUsers.filter(
+    (user) =>
+      user.linkedTrainerId === null || user.linkedTrainerId === trainer?.id,
+  );
+
   return (
     <>
       <div className="grid gap-2">
@@ -112,7 +121,7 @@ function TrainerFields({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">No account</SelectItem>
-            {linkableUsers.map((user) => (
+            {userOptions.map((user) => (
               <SelectItem key={user.id} value={user.id}>
                 {user.name} ({user.email})
               </SelectItem>
@@ -155,7 +164,7 @@ function NewTrainerForm({
   }, [state, onClose]);
 
   return (
-    <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
+    <ActionForm action={formAction} className="flex flex-1 flex-col gap-4 px-4">
       <TrainerFields linkableUsers={linkableUsers} />
       {state && "error" in state ? (
         <p className="text-destructive px-4 text-sm" role="alert">
@@ -170,7 +179,7 @@ function NewTrainerForm({
           Cancel
         </Button>
       </SheetFooter>
-    </form>
+    </ActionForm>
   );
 }
 
@@ -197,14 +206,14 @@ function EditTrainerForm({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4">
-      <form
+      <ActionForm
         id={`edit-trainer-${trainer.id}`}
         action={formAction}
         className="flex flex-col gap-4"
       >
         <input type="hidden" name="trainerId" value={trainer.id} />
         <TrainerFields trainer={trainer} linkableUsers={linkableUsers} />
-      </form>
+      </ActionForm>
       {state && "error" in state ? (
         <p className="text-destructive text-sm" role="alert">
           {state.error}

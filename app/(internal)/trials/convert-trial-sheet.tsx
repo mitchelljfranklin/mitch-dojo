@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
 
@@ -89,7 +90,7 @@ export function ConvertTrialSheet({
               plan and create the first invoice in the same step.
             </SheetDescription>
           </SheetHeader>
-          <form action={formAction} className="flex flex-col gap-5">
+          <ActionForm action={formAction} className="flex flex-col gap-5">
             <input type="hidden" name="studentId" value={studentId} />
 
             {canBill && plans.length > 0 ? (
@@ -143,7 +144,7 @@ export function ConvertTrialSheet({
                 {isPending ? "Converting…" : "Convert trial"}
               </Button>
             </SheetFooter>
-          </form>
+          </ActionForm>
         </SheetContent>
       </Sheet>
     </>

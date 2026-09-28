@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/components/action-form";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,7 @@ export function IncidentEditForm({
   useActionFeedback(state);
 
   return (
-    <form action={formAction} className="grid gap-4">
+    <ActionForm action={formAction} className="grid gap-4">
       <input type="hidden" name="incidentId" value={incidentId} />
       <div className="grid gap-2">
         <Label htmlFor="title">Title</Label>
@@ -186,6 +187,6 @@ export function IncidentEditForm({
           {isPending ? "Saving..." : "Save changes"}
         </Button>
       </div>
-    </form>
+    </ActionForm>
   );
 }

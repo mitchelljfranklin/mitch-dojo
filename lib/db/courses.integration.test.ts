@@ -134,9 +134,11 @@ describe.skipIf(!hasTestDatabase)("trainers data layer", () => {
     });
     expect(updated.userId).toBe(user.id);
 
-    // The linked user disappears from the linkable list.
+    // The linked user is returned with its trainer id so the edit picker can
+    // show it; the UI hides users linked to *other* trainers.
     const linkable = await listLinkableUsers();
-    expect(linkable.some((candidate) => candidate.id === user.id)).toBe(false);
+    const entry = linkable.find((candidate) => candidate.id === user.id);
+    expect(entry?.linkedTrainerId).toBe(trainer.id);
 
     // Deleting the trainer keeps the user (SetNull).
     await deleteTrainer(trainer.id);

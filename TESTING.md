@@ -39,6 +39,9 @@ see**. Tick the box when it behaves.
       **Compliance**, **Incidents**, Trainers, Memberships, Invoices, Admin.
 - [ ] **Admin → Storage** loads; **Admin → Documents** loads; **Admin →
       Memberships** loads; **Admin → Communication** loads.
+- [ ] **Failed-save retention** — on **Students → New student**, type a first
+      name but leave last name blank and submit; the error appears **and your
+      typed first name is still there** (the form no longer resets).
 - [ ] Open a student record — you can see the **Agreements & consent**,
       **Incident reports**, and **Memberships** cards.
 

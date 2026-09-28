@@ -60,7 +60,7 @@ export async function deleteTrainer(id: string): Promise<void> {
 }
 
 export async function listLinkableUsers(): Promise<
-  { id: string; name: string; email: string }[]
+  { id: string; name: string; email: string; linkedTrainerId: string | null }[]
 > {
   const users = await prisma.user.findMany({
     orderBy: { name: "asc" },
@@ -71,10 +71,15 @@ export async function listLinkableUsers(): Promise<
       trainerProfile: { select: { id: true } },
     },
   });
-  // Users already linked to another trainer are excluded from the picker.
-  return users
-    .filter((user) => user.trainerProfile === null)
-    .map((user) => ({ id: user.id, name: user.name, email: user.email }));
+  // Return every user with their linked trainer (if any); the picker includes
+  // a user when they are unlinked OR linked to the trainer being edited, so
+  // an already-linked account shows (and stays linked) rather than blanking.
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    linkedTrainerId: user.trainerProfile?.id ?? null,
+  }));
 }
 
 export function buildTrainerNameMap(

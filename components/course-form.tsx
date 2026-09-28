@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/components/action-form";
 import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -122,7 +123,7 @@ function CourseFormInner({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <ActionForm action={formAction} className="flex flex-col gap-6">
       {courseId ? (
         <input type="hidden" name="courseId" value={courseId} />
       ) : null}
@@ -331,6 +332,6 @@ function CourseFormInner({
           {isPending ? "Saving..." : submitLabel}
         </Button>
       </div>
-    </form>
+    </ActionForm>
   );
 }

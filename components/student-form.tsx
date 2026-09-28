@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -141,7 +142,7 @@ function StudentFormInner({
   const dateValue = values?.dateOfBirth ?? "";
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <ActionForm action={formAction} className="flex flex-col gap-6">
       {studentId ? (
         <input type="hidden" name="studentId" value={studentId} />
       ) : null}
@@ -567,6 +568,6 @@ function StudentFormInner({
           {isPending ? "Saving..." : submitLabel}
         </Button>
       </div>
-    </form>
+    </ActionForm>
   );
 }

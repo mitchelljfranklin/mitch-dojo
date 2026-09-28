@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
 
@@ -76,7 +77,7 @@ export function NewIncidentSheet({
               list until you close them.
             </SheetDescription>
           </SheetHeader>
-          <form
+          <ActionForm
             key={open ? "open" : "closed"}
             action={formAction}
             className="flex flex-1 flex-col gap-4 px-4"
@@ -213,7 +214,7 @@ export function NewIncidentSheet({
                 Cancel
               </Button>
             </SheetFooter>
-          </form>
+          </ActionForm>
         </SheetContent>
       </Sheet>
     </>

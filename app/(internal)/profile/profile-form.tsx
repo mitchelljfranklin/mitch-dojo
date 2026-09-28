@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/components/action-form";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
   useActionFeedback(state);
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <ActionForm action={formAction} className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Account details</CardTitle>
@@ -131,6 +132,6 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
           {isPending ? "Saving..." : "Save changes"}
         </Button>
       </div>
-    </form>
+    </ActionForm>
   );
 }
