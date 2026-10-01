@@ -3,6 +3,7 @@ import {
   getCommunicationsSettings,
   getOrganizationSettings,
 } from "@/lib/settings";
+import { formatClassTime } from "@/lib/utils";
 
 // One branded alert per staff recipient when a public /book submission
 // creates a trial. Best-effort: sendEmail already logs failures to the
@@ -18,6 +19,7 @@ export async function sendBookingStaffAlert(booking: {
   phone: string | null;
   sessionCourseName: string | null;
   sessionDate: string | null;
+  sessionStartTime: string | null;
 }): Promise<void> {
   const [communications, organization] = await Promise.all([
     getCommunicationsSettings(),
@@ -36,11 +38,9 @@ export async function sendBookingStaffAlert(booking: {
         : "Child"
       : "Adult";
   const studentName = `${booking.firstName} ${booking.lastName}`.trim();
-  const classTime = booking.sessionDate
-    ? booking.sessionCourseName
-      ? `${booking.sessionCourseName} on ${booking.sessionDate}`
-      : booking.sessionDate
-    : booking.sessionCourseName || "no preference";
+  const classTime =
+    formatClassTime(booking.sessionDate, booking.sessionStartTime) ??
+    "no preference";
 
   for (const recipient of communications.bookingStaffAlertRecipients) {
     try {

@@ -28,6 +28,7 @@ function bookingInput() {
     phone: "0412 345 678",
     sessionCourseName: "Kids Karate",
     sessionDate: "2026-10-01",
+    sessionStartTime: "18:00",
   };
 }
 

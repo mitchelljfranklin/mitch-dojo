@@ -35,10 +35,12 @@ let itemPlanId: string;
 let testInvoiceId: string;
 
 function daysFromNow(days: number): Date {
-  const date = new Date();
-  date.setUTCHours(0, 0, 0, 0);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date;
+  // Match the product's local-calendar-day convention (utcMidnightOf): the
+  // day is taken from local parts, stored as a UTC-midnight instant.
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + days),
+  );
 }
 
 beforeAll(async () => {

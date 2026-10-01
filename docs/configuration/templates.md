@@ -29,7 +29,7 @@ Tokens work in both subjects and bodies and are replaced at send time:
 | `{{appName}}` | All | Organization name |
 | `{{studentName}}` | All student emails | First + last name |
 | `{{className}}` | Class reminder | Course name |
-| `{{classTime}}` | Class reminder | Date and start time |
+| `{{classTime}}` | Class reminder, Booking confirmation, New-booking alert | Date and start time (no course name) |
 | `{{dueDate}}` | Payment reminder | Invoice due date |
 | `{{bookingFor}}` | New-booking alert | "Adult" or "Child (guardian: …)" |
 | `{{contact}}` | New-booking alert | Email and/or phone the prospect left |

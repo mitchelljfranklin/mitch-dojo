@@ -8,6 +8,7 @@ import { getClientIp } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
 import { createTrialBooking } from "@/lib/db/trials";
 import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
+import { formatClassTime } from "@/lib/utils";
 
 const BOOKINGS_PER_HOUR = 5;
 
@@ -77,11 +78,11 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     redirect("/book?error=contact");
   }
 
-  // session is "<classSessionId>|<courseName>|<date>" chosen from the
-  // bookable list; the name/date parts are re-displayed only as notes, never
-  // executed.
-  const [sessionId, sessionCourseName, sessionDate] = (
-    parsed.data.session ? parsed.data.session.split("|") : ["", "", ""]
+  // session is "<classSessionId>|<courseName>|<date>|<startTime>" chosen from
+  // the bookable list; the name/date/time parts are re-displayed only as
+  // notes, never executed.
+  const [sessionId, sessionCourseName, sessionDate, sessionStartTime] = (
+    parsed.data.session ? parsed.data.session.split("|") : ["", "", "", ""]
   ).map((part) => part.trim().slice(0, 120));
 
   const result = await createTrialBooking({
@@ -145,11 +146,9 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     getOrganizationSettings(),
   ]);
   if (communications.bookingConfirmationsEnabled && parsed.data.email) {
-    const classTime = sessionDate
-      ? sessionCourseName
-        ? `${sessionCourseName} on ${sessionDate}`
-        : sessionDate
-      : sessionCourseName || "your chosen class";
+    const classTime =
+      formatClassTime(sessionDate || null, sessionStartTime || null) ??
+      "your chosen class";
     try {
       await sendEmail(
         parsed.data.email,
@@ -183,6 +182,7 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     phone: parsed.data.phone || null,
     sessionCourseName: sessionCourseName || null,
     sessionDate: sessionDate || null,
+    sessionStartTime: sessionStartTime || null,
   });
 
   redirect("/book?booked=1");

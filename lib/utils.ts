@@ -59,6 +59,17 @@ export function formatDateUtc(value: Date | string | number): string {
   return utcDateFormatter.format(date);
 }
 
+// Booking emails: the schedule part of a class (calendar day + start time),
+// with no course name — the template already prints {{className}} separately.
+export function formatClassTime(
+  isoDate: string | null,
+  startTime: string | null,
+): string | null {
+  if (!isoDate) return null;
+  const day = formatDateUtc(`${isoDate}T00:00:00.000Z`);
+  return startTime ? `${day} at ${startTime}` : day;
+}
+
 // Money is stored as integer cents; currency is an ISO 4217 code from
 // Settings → Memberships. Invalid codes fall back to plain formatting rather
 // than throwing in the render path.
