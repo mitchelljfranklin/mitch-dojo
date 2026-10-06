@@ -251,6 +251,11 @@ model Student {
   // managed trial lead; convertedAt records when they became a member.
   trialStage            TrialStage?
   convertedAt           DateTime?
+  // The class a prospect picked on the public booking page (UTC midnight of
+  // the session date). Null for walk-ins and manually created trials. Anchors
+  // the trial follow-up so "how was your trial?" lands after the booked
+  // class, not merely N days after the booking was submitted.
+  trialBookedFor        DateTime?
   // Postal address (optional, Phase 11 follow-up) — structured for CSV
   // round-trips and labels. state is a catch-all (state/region/province);
   // country is an ISO 3166-1 alpha-2 code.

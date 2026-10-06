@@ -711,10 +711,16 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
 
   it("bills only the catch-up cycles whose window contains training", async () => {
     const { studentId, enrollmentId } = await createGatedMember("Jump", -95);
+    // Derive the cycle dates with the same calendar-month arithmetic the
+    // generator uses. Periods are calendar months, not fixed 30-day spans, so
+    // the second cycle is NOT daysFromNow(-65) in general.
+    const cycle1 = daysFromNow(-95);
+    const cycle2 = advanceBillingDate(cycle1, "MONTHLY");
+    const cycle3 = advanceBillingDate(cycle2, "MONTHLY");
     // Three monthly cycles are due.
     await prisma.enrollment.update({
       where: { id: enrollmentId },
-      data: { nextInvoiceDate: daysFromNow(-95) },
+      data: { nextInvoiceDate: cycle1 },
     });
 
     // No attendance: the first cycle bills (exempt), the other three skip.
@@ -725,10 +731,11 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       orderBy: { issueDate: "asc" },
     });
     expect(afterFirst).toHaveLength(1);
-    expect(afterFirst[0]!.issueDate.getTime()).toBe(daysFromNow(-95).getTime());
+    expect(afterFirst[0]!.issueDate.getTime()).toBe(cycle1.getTime());
 
     // One late session 50 days ago falls inside the second cycle's window
-    // [-95, -35) but not the first [-95, -65). Replay the catch-up.
+    // [cycle2, cycle3) but not the first [cycle1, cycle2). Replay the catch-up
+    // from cycle2 so the generator bills that cycle and skips the next.
     const session = await prisma.classSession.create({
       data: {
         courseId,
@@ -743,7 +750,7 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
     });
     await prisma.enrollment.update({
       where: { id: enrollmentId },
-      data: { nextInvoiceDate: daysFromNow(-65) },
+      data: { nextInvoiceDate: cycle2 },
     });
     await generateDueInvoices(new Date(), 14);
 
@@ -752,11 +759,7 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       orderBy: { issueDate: "asc" },
     });
     // The cycle whose window contains the training bills; the next skips
-    // ([that cycle, next) has no training). Expected issue dates are derived
-    // with the same calendar-month arithmetic the generator uses.
-    const cycle1 = daysFromNow(-95);
-    const cycle2 = advanceBillingDate(cycle1, "MONTHLY");
-    const cycle3 = advanceBillingDate(cycle2, "MONTHLY");
+    // ([that cycle, next) has no training).
     expect(afterSecond.map((i) => i.issueDate.getTime())).toEqual([
       cycle1.getTime(),
       cycle3.getTime(),

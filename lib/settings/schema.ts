@@ -242,8 +242,9 @@ export const communicationsSettingsSchema = z.object({
     .default(3),
   paymentReminderOverdueDays: z.coerce.number().int().min(1).max(90).default(7),
   birthdayEmailsEnabled: z.boolean().default(true),
-  // Trial follow-up: one email per open trial once it has sat in the
-  // pipeline this many days without converting.
+  // Trial follow-up: one email per open trial this many days after the class
+  // the prospect booked (or after they joined the pipeline for walk-ins),
+  // once the trial has not converted.
   trialFollowUpsEnabled: z.boolean().default(true),
   trialFollowUpDaysAfterJoin: z.coerce.number().int().min(1).max(60).default(3),
   // Booking confirmation: one email to the prospect the moment their public

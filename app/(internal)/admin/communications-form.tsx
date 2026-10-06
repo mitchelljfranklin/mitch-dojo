@@ -143,8 +143,9 @@ function CommunicationsFormInner({
       <div className="flex flex-col gap-2">
         <Label>Trial follow-ups</Label>
         <p className="text-muted-foreground text-xs">
-          One email per open trial once it has sat in the pipeline this many
-          days without converting.
+          One email per open trial, this many days after the class the prospect
+          booked (or after they joined the pipeline for walk-ins), if they have
+          not converted.
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
@@ -155,7 +156,7 @@ function CommunicationsFormInner({
         </label>
         <div className="grid max-w-xs gap-2">
           <Label htmlFor="trialFollowUpDaysAfterJoin">
-            Days in pipeline before follow-up
+            Days after the trial date before follow-up
           </Label>
           <Input
             id="trialFollowUpDaysAfterJoin"

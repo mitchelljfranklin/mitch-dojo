@@ -303,6 +303,64 @@ describe.skipIf(!hasTestDatabase)("website booking", () => {
     });
     expect(result.outcome).toBe("duplicate");
   });
+
+  it("records the booked class date as the follow-up anchor", async () => {
+    const bookedFor = new Date();
+    bookedFor.setUTCHours(0, 0, 0, 0);
+    const anchorCourse = await prisma.course.create({
+      data: { name: `Anchor Course ${suffix}`, locationId, disciplineId },
+    });
+    await prisma.trainingTime.create({
+      data: {
+        courseId: anchorCourse.id,
+        weekday: bookedFor.getUTCDay(),
+        startTime: "06:00",
+        endTime: "07:00",
+        trialBookable: true,
+      },
+    });
+    const session = await prisma.classSession.create({
+      data: {
+        courseId: anchorCourse.id,
+        locationId,
+        date: bookedFor,
+        startTime: "06:00",
+        endTime: "07:00",
+      },
+    });
+
+    const result = await createTrialBooking({
+      bookingFor: "adult",
+      firstName: "Anchor",
+      lastName: `Lead${suffix}`,
+      guardianName: null,
+      guardianRelationship: null,
+      email: `anchor-${suffix}@example.com`,
+      phone: null,
+      locationId,
+      disciplineId,
+      sessionDate: "future",
+      sessionCourseName: `Anchor Course ${suffix}`,
+      sessionId: session.id,
+    });
+    expect(result.outcome).toBe("created");
+    if (result.outcome !== "created") throw new Error("expected created");
+
+    const student = await prisma.student.findUnique({
+      where: { id: result.studentId },
+      select: { trialBookedFor: true },
+    });
+    expect(student?.trialBookedFor?.getTime()).toBe(bookedFor.getTime());
+
+    await prisma.classSession.deleteMany({
+      where: { courseId: anchorCourse.id },
+    });
+    await prisma.trainingTime.deleteMany({
+      where: { courseId: anchorCourse.id },
+    });
+    await prisma.course.delete({ where: { id: anchorCourse.id } });
+    await prisma.student.delete({ where: { id: result.studentId } });
+  });
 });
 
 describe.skipIf(!hasTestDatabase)("bookable sessions", () => {
@@ -434,6 +492,62 @@ describe.skipIf(!hasTestDatabase)("trial follow-up emails", () => {
     expect(logs).toHaveLength(0);
 
     await prisma.student.delete({ where: { id: fresh.id } });
+  });
+
+  it("anchors the window on the booked class date, not the join date", async () => {
+    const booked = new Date();
+    booked.setDate(booked.getDate() - 5);
+
+    const student = await prisma.student.create({
+      data: {
+        firstName: "Booked",
+        lastName: `Trial${suffix}`,
+        status: "TRIAL",
+        trialStage: "NEW",
+        email: `booked-${suffix}@example.com`,
+        joinedAt: new Date(),
+        trialBookedFor: booked,
+        locations: { create: { locationId, isPrimary: true } },
+      },
+      select: { id: true },
+    });
+
+    await sendTrialFollowUps(new Date());
+    const logs = await prisma.notificationLog.findMany({
+      where: { assessmentId: `trial-followup:${student.id}` },
+    });
+    expect(logs).toHaveLength(1);
+
+    await prisma.student.delete({ where: { id: student.id } });
+  });
+
+  it("never follows up before a future booked class", async () => {
+    const joinedLongAgo = new Date();
+    joinedLongAgo.setDate(joinedLongAgo.getDate() - 10);
+    const bookedInFuture = new Date();
+    bookedInFuture.setDate(bookedInFuture.getDate() + 5);
+
+    const student = await prisma.student.create({
+      data: {
+        firstName: "Upcoming",
+        lastName: `Trial${suffix}`,
+        status: "TRIAL",
+        trialStage: "NEW",
+        email: `upcoming-${suffix}@example.com`,
+        joinedAt: joinedLongAgo,
+        trialBookedFor: bookedInFuture,
+        locations: { create: { locationId, isPrimary: true } },
+      },
+      select: { id: true },
+    });
+
+    await sendTrialFollowUps(new Date());
+    const logs = await prisma.notificationLog.findMany({
+      where: { assessmentId: `trial-followup:${student.id}` },
+    });
+    expect(logs).toHaveLength(0);
+
+    await prisma.student.delete({ where: { id: student.id } });
   });
 
   it("shows pipeline stats via listTrials", async () => {

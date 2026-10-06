@@ -256,12 +256,17 @@ export async function createTrialBooking(
   // chosen session and refuse when the slot is full. TRIAL students bound to
   // that slot are what count (converting/rejecting frees the spot).
   let trialTrainingTimeId: string | null = null;
+  // The concrete class date the prospect picked — persisted so the trial
+  // follow-up can anchor on the session they booked rather than the booking
+  // submission instant. Stays null when no session resolved.
+  let trialBookedFor: Date | null = null;
   if (input.sessionId) {
     const session = await prisma.classSession.findUnique({
       where: { id: input.sessionId },
       select: { courseId: true, date: true, startTime: true },
     });
     if (session) {
+      trialBookedFor = session.date;
       const slot = await prisma.trainingTime.findFirst({
         where: {
           courseId: session.courseId,
@@ -305,6 +310,7 @@ export async function createTrialBooking(
       status: "TRIAL",
       trialStage: "NEW",
       trialTrainingTimeId,
+      trialBookedFor,
       notes: isChild ? `${classNote} Booked by the guardian.` : classNote,
       locations: {
         create: { locationId: input.locationId, isPrimary: true },

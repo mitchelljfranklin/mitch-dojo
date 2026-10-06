@@ -30,7 +30,7 @@ New → Contacted → First class → Converted / Lost
 
 ## Follow-up emails
 
-Trials that sit too long without converting get one automated follow-up (default: after 3 days; toggle and window under [Communication settings](../configuration/communication), template under [Templates](../configuration/templates)).
+Trials that sit too long without converting get one automated follow-up (default: after 3 days; toggle and window under [Communication settings](../configuration/communication), template under [Templates](../configuration/templates)). The countdown starts from the **class the prospect booked** — so the email lands after their trial, not a few days after they submitted the booking. Walk-ins and manually created trials, which have no booked class, count from the day they joined the pipeline.
 
 ## From trial to member
 

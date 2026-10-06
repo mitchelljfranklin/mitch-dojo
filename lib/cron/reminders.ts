@@ -277,18 +277,24 @@ export async function sendTrialFollowUps(
   const cutoff = new Date(today);
   cutoff.setUTCDate(cutoff.getUTCDate() - settings.trialFollowUpDaysAfterJoin);
 
-  // Open trials that have sat in the pipeline past the follow-up window.
+  // Open trials whose follow-up anchor has passed the window. The anchor is
+  // the class the prospect booked (public booking page); walk-ins and
+  // manually created trials fall back to when they joined the pipeline.
   const trials = await prisma.student.findMany({
     where: {
       status: "TRIAL",
       trialStage: { in: ["NEW", "CONTACTED", "FIRST_CLASS"] },
-      joinedAt: { lte: cutoff },
+      OR: [
+        { trialBookedFor: { lte: cutoff } },
+        { trialBookedFor: null, joinedAt: { lte: cutoff } },
+      ],
     },
     select: {
       id: true,
       firstName: true,
       lastName: true,
       joinedAt: true,
+      trialBookedFor: true,
       email: true,
       guardianEmail: true,
       emailOptOut: true,
@@ -304,11 +310,11 @@ export async function sendTrialFollowUps(
     const recipient = resolveRecipient(trial);
     if (!recipient) continue;
 
+    const anchor = trial.trialBookedFor ?? trial.joinedAt;
     const trialDays = Math.max(
       1,
       Math.floor(
-        (today.getTime() - utcMidnightOf(trial.joinedAt).getTime()) /
-          86_400_000,
+        (today.getTime() - utcMidnightOf(anchor).getTime()) / 86_400_000,
       ),
     );
     const result = await sendEmail(
