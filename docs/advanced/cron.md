@@ -9,7 +9,7 @@ How background work gets done — the built-in runner, or your own cron.
 | **Built-in scheduler** (default) | `lib/scheduler.ts`, started by `instrumentation.ts` | Default; nothing to configure |
 | **External trigger** | `GET /api/cron/run` with `x-cron-secret` | Platforms that sleep/scale to zero, or centralised cron |
 
-Toggle under [Admin → Scheduling](../configuration/scheduling). Both modes run the identical job set.
+Toggle under [Admin → Scheduling](../configuration/scheduling). Both modes run the identical job set. The built-in scheduler runs once at boot and then every five minutes, so a restart doesn't wait a full interval for the first pass (set `SCHEDULER_RUN_ON_BOOT=false` to skip it).
 
 ## Job inventory (every 5 minutes)
 
@@ -18,7 +18,7 @@ Toggle under [Admin → Scheduling](../configuration/scheduling). Both modes run
 | **Reminder pass** | Class reminders (hours-before window), payment reminders (due-soon + overdue), birthday emails (day-of), trial follow-ups (after the booked class), agreement reminders (outstanding documents), verification reminders (expiring/expired credentials, weekly until renewed) |
 | **Invoice generation** | Recurring invoices for active enrollments, due date from settings. Attendance-gated plans (`chargeOnlyWithAttendance`) skip a cycle when the member hasn't trained since the previous invoice; the run result carries `generatedInvoices` and `skippedInvoices` |
 | **Membership hold auto-resume** | Paused enrollments whose resume date has arrived |
-| **Queued campaigns** | Drained in batches (25 recipients per campaign) |
+| **Queued campaigns** | Drained in batches (25 recipients per campaign, up to 500 per tick) |
 | **Audit-log pruning** | Entries older than the audit retention (default: keep forever) |
 | **Email-log pruning** | Rows older than the email-log retention (default 14 days) |
 | **Password-reset token pruning** | Expired single-use reset tokens |

@@ -210,13 +210,19 @@ export async function listCampaigns(limit = 50): Promise<CampaignRow[]> {
   });
 }
 
-// Sends the next batch of queued campaigns. Idempotent: each recipient has a
-// dedup key, so a replayed tick (or a crash that didn't persist sentCount)
-// never double-sends. Drained by the scheduler to avoid request timeouts.
-export async function processCampaigns(batchSize = 25): Promise<number> {
+// Sends queued campaigns. Idempotent: each recipient has a dedup key, so a
+// replayed tick (or a crash that didn't persist sentCount) never double-sends.
+// Drains multiple campaigns per call up to `maxRecipients` so a backlog clears
+// quickly while each tick stays bounded.
+export async function processCampaigns(
+  batchSize = 25,
+  maxRecipients = 500,
+): Promise<number> {
   let totalSent = 0;
+  let handled = 0;
 
   for (;;) {
+    if (handled >= maxRecipients) break;
     const campaign = await prisma.emailCampaign.findFirst({
       where: { status: { in: ["QUEUED", "SENDING"] } },
       orderBy: { createdAt: "asc" },
@@ -234,12 +240,14 @@ export async function processCampaigns(batchSize = 25): Promise<number> {
         where: { id: campaign.id },
         data: { status: "SENT", sentAt: campaign.sentAt ?? new Date() },
       });
-      break;
+      continue;
     }
 
     let sent = 0;
     let failed = 0;
     for (const recipient of slice) {
+      if (handled >= maxRecipients) break;
+      handled++;
       const assessmentId = `campaign:${campaign.id}:${recipient.email}`;
       const already = await prisma.notificationLog.findFirst({
         where: { assessmentId },
@@ -276,9 +284,8 @@ export async function processCampaigns(batchSize = 25): Promise<number> {
         sentAt: done ? new Date() : null,
       },
     });
-
-    // One campaign per tick keeps each run bounded; the next tick continues.
-    break;
+    // Keep draining: the next iteration continues this campaign if it isn't
+    // done, or moves on to the next queued one.
   }
 
   return totalSent;

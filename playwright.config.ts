@@ -98,6 +98,9 @@ export default defineConfig({
       DATABASE_URL: databaseUrl,
       DATABASE_PROVIDER: process.env.DATABASE_PROVIDER ?? "postgres",
       DATA_STORAGE_PATH: process.env.DATA_STORAGE_PATH,
+      // Keep the scheduler's boot-time pass out of the test run so specs see a
+      // deterministic state (the 5-minute interval still runs).
+      SCHEDULER_RUN_ON_BOOT: "false",
     },
   },
 });

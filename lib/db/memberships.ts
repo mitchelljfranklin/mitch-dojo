@@ -318,6 +318,38 @@ async function nextInvoiceNumber(): Promise<number> {
   return (aggregate._max.number ?? 0) + 1;
 }
 
+// A global max+1 can race two concurrent invoice creators. Retry with a fresh
+// number when the collision is on the `number` unique index; any other unique
+// conflict (e.g. enrollmentId+issueDate) propagates so callers can treat it as
+// "already invoiced".
+function isInvoiceNumberConflict(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  if (error.code !== "P2002") return false;
+  const target = error.meta?.target;
+  const fields = Array.isArray(target)
+    ? target
+    : typeof target === "string"
+      ? [target]
+      : [];
+  return fields.includes("number");
+}
+
+async function createInvoiceWithNumberRetry<T>(
+  build: (number: number) => Promise<T>,
+): Promise<T> {
+  const MAX_ATTEMPTS = 5;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const number = await nextInvoiceNumber();
+    try {
+      return await build(number);
+    } catch (error: unknown) {
+      if (isInvoiceNumberConflict(error)) continue;
+      throw error;
+    }
+  }
+  throw new Error("Could not allocate a unique invoice number.");
+}
+
 export type InvoiceFinancials = {
   totalCents: number;
   paidCents: number;
@@ -363,29 +395,30 @@ export async function createInvoice(input: CreateInvoiceInput) {
   const { taxRatePercent, taxLabel: label } = await getMembershipsSettings();
   const taxCents = Math.round(plan.priceCents * (taxRatePercent / 100));
 
-  const number = await nextInvoiceNumber();
-  return prisma.invoice.create({
-    data: {
-      number,
-      studentId: input.studentId,
-      enrollmentId: input.enrollmentId ?? null,
-      locationId: input.locationId ?? null,
-      status: "OPEN",
-      issueDate: input.issueDate,
-      dueDate: input.dueDate,
-      taxCents,
-      taxLabel: taxCents > 0 ? label : null,
-      notes: input.notes,
-      createdById: input.createdById ?? null,
-      items: {
-        create: {
-          description: plan.name,
-          quantity: 1,
-          unitPriceCents: plan.priceCents,
+  return createInvoiceWithNumberRetry((number) =>
+    prisma.invoice.create({
+      data: {
+        number,
+        studentId: input.studentId,
+        enrollmentId: input.enrollmentId ?? null,
+        locationId: input.locationId ?? null,
+        status: "OPEN",
+        issueDate: input.issueDate,
+        dueDate: input.dueDate,
+        taxCents,
+        taxLabel: taxCents > 0 ? label : null,
+        notes: input.notes,
+        createdById: input.createdById ?? null,
+        items: {
+          create: {
+            description: plan.name,
+            quantity: 1,
+            unitPriceCents: plan.priceCents,
+          },
         },
       },
-    },
-  });
+    }),
+  );
 }
 
 export type InvoiceListRow = Prisma.InvoiceGetPayload<{
@@ -719,30 +752,31 @@ export async function generateDueInvoices(
       });
       if (!alreadyInvoiced) {
         try {
-          const number = await nextInvoiceNumber();
           const taxCents = Math.round(
             enrollment.plan.priceCents * (taxRatePercent / 100),
           );
-          await prisma.invoice.create({
-            data: {
-              number,
-              studentId: enrollment.studentId,
-              enrollmentId: enrollment.id,
-              status: "OPEN",
-              issueDate: cycleDate,
-              dueDate: addDays(cycleDate, issueDueDays),
-              taxCents,
-              taxLabel: taxCents > 0 ? taxLabel : null,
-              notes: null,
-              items: {
-                create: {
-                  description: enrollment.plan.name,
-                  quantity: 1,
-                  unitPriceCents: enrollment.plan.priceCents,
+          await createInvoiceWithNumberRetry((number) =>
+            prisma.invoice.create({
+              data: {
+                number,
+                studentId: enrollment.studentId,
+                enrollmentId: enrollment.id,
+                status: "OPEN",
+                issueDate: cycleDate,
+                dueDate: addDays(cycleDate, issueDueDays),
+                taxCents,
+                taxLabel: taxCents > 0 ? taxLabel : null,
+                notes: null,
+                items: {
+                  create: {
+                    description: enrollment.plan.name,
+                    quantity: 1,
+                    unitPriceCents: enrollment.plan.priceCents,
+                  },
                 },
               },
-            },
-          });
+            }),
+          );
           generated++;
         } catch (error: unknown) {
           if (!isUniqueConstraintError(error)) throw error;

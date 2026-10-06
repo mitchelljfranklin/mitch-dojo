@@ -30,17 +30,25 @@ export async function runScheduledJobsOnce(): Promise<ScheduledRunResult> {
 
 function summariseRun(result: ScheduledJobsResult): string {
   const parts: string[] = [];
-  if (result.prunedAudit !== undefined)
-    parts.push(`auditPruned=${result.prunedAudit}`);
-  if (result.prunedResetTokens !== undefined) {
-    parts.push(`resetTokensPruned=${result.prunedResetTokens}`);
-  }
-  if (result.prunedEmails !== undefined) {
-    parts.push(`emailsPruned=${result.prunedEmails}`);
-  }
-  if (result.prunedFiles !== undefined) {
-    parts.push(`filesPruned=${result.prunedFiles}`);
-  }
+  const add = (label: string, value: number | undefined) => {
+    if (value !== undefined && value > 0) parts.push(`${label}=${value}`);
+  };
+  add("auditPruned", result.prunedAudit);
+  add("resetTokensPruned", result.prunedResetTokens);
+  add("portalTokensPruned", result.prunedPortalTokens);
+  add("emailsPruned", result.prunedEmails);
+  add("filesPruned", result.prunedFiles);
+  add("sessionsGenerated", result.generatedSessions);
+  add("invoicesGenerated", result.generatedInvoices);
+  add("invoicesSkipped", result.skippedInvoices);
+  add("holdsResumed", result.resumedEnrollments);
+  add("classReminders", result.classRemindersSent);
+  add("paymentReminders", result.paymentRemindersSent);
+  add("birthdayEmails", result.birthdayEmailsSent);
+  add("trialFollowUps", result.trialFollowUpsSent);
+  add("agreementReminders", result.agreementRemindersSent);
+  add("verificationReminders", result.verificationRemindersSent);
+  add("campaignEmails", result.campaignsSent);
   return parts.length > 0 ? parts.join(" ") : "no work";
 }
 
@@ -73,6 +81,13 @@ export function startScheduler(options?: { tickMs?: number }): void {
     () => void tick(),
     options?.tickMs ?? SCHEDULER_TICK_MS,
   );
+  // Run once at boot so a restart doesn't wait a full interval before the
+  // first pass (reminders, invoices, session generation). Disable with
+  // SCHEDULER_RUN_ON_BOOT=false (used by the e2e server so tests see a
+  // deterministic state).
+  if (process.env.SCHEDULER_RUN_ON_BOOT !== "false") {
+    void tick();
+  }
 }
 
 export function stopScheduler(): void {
