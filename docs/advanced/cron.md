@@ -15,8 +15,10 @@ Toggle under [Admin → Scheduling](../configuration/scheduling). Both modes run
 
 | Job | Detail |
 |---|---|
-| **Reminder pass** | Class reminders (hours-before window), payment reminders (due-soon + overdue), birthday emails (day-of), trial follow-ups (per open trial past the window) |
+| **Reminder pass** | Class reminders (hours-before window), payment reminders (due-soon + overdue), birthday emails (day-of), trial follow-ups (after the booked class), agreement reminders (outstanding documents), verification reminders (expiring/expired credentials, weekly until renewed) |
 | **Invoice generation** | Recurring invoices for active enrollments, due date from settings. Attendance-gated plans (`chargeOnlyWithAttendance`) skip a cycle when the member hasn't trained since the previous invoice; the run result carries `generatedInvoices` and `skippedInvoices` |
+| **Membership hold auto-resume** | Paused enrollments whose resume date has arrived |
+| **Queued campaigns** | Drained in batches (25 recipients per campaign) |
 | **Audit-log pruning** | Entries older than the audit retention (default: keep forever) |
 | **Email-log pruning** | Rows older than the email-log retention (default 14 days) |
 | **Password-reset token pruning** | Expired single-use reset tokens |
@@ -28,6 +30,8 @@ Session generation for the timetable runs **on the clock and on view**: the sche
 ## Deduplication contract
 
 Every email send writes a `NotificationLog` row with a dedup key. Repeated ticks, restarts, or overlapping triggers never re-send the same reminder — and when SMTP is unconfigured, the pass bails **before** sending, so keys are never burned by a broken configuration. Retries (from the email log) deliberately regenerate tokens and re-use the same log row.
+
+Each reminder job also caps how many emails it sends **per tick** (50), so a large dojo can't outrun the 5-minute interval; anything left carries no dedup row and is picked up on the next tick.
 
 ## External trigger details
 

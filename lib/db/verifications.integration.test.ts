@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { createTrainer, deleteTrainer } from "@/lib/db/trainers";
 import { sendVerificationReminders } from "@/lib/cron/reminders";
+import { updateCommunicationsSettings } from "@/lib/settings";
 import {
   createVerificationType,
   deleteTrainerVerification,
@@ -177,7 +178,7 @@ describe.skipIf(!hasTestDatabase)("trainer verification records", () => {
 });
 
 describe.skipIf(!hasTestDatabase)("verification reminders", () => {
-  it("logs one reminder per expiry and never repeats", async () => {
+  it("reminds weekly, re-arms next week, and falls back to staff recipients", async () => {
     await prisma.trainer.update({
       where: { id: trainerId },
       data: { email: `sensei-${suffix}@example.test`, isActive: true },
@@ -195,34 +196,71 @@ describe.skipIf(!hasTestDatabase)("verification reminders", () => {
       where: { assessmentId: { startsWith: "verification-reminder:" } },
     });
 
-    await sendVerificationReminders(new Date());
+    const now = new Date();
+    const bucket = Math.floor(now.getTime() / (7 * 86_400_000));
+    await sendVerificationReminders(now);
 
     const record = await prisma.trainerVerification.findUnique({
       where: { trainerId_typeId: { trainerId, typeId } },
     });
-    const dedupKey = `verification-reminder:${record!.id}:${record!
-      .expiresAt!.toISOString()
-      .slice(0, 10)}`;
+    const expiry = record!.expiresAt!.toISOString().slice(0, 10);
+    const trainerEmail = `sensei-${suffix}@example.test`;
+    const key = `verification-reminder:${record!.id}:${expiry}:${bucket}:${trainerEmail}`;
     expect(
       (
         await prisma.notificationLog.findMany({
-          where: { assessmentId: dedupKey },
+          where: { assessmentId: key },
         })
       ).length,
     ).toBe(1);
 
-    // Repeat tick: dedup holds.
-    await sendVerificationReminders(new Date());
+    // Same week: dedup holds.
+    await sendVerificationReminders(now);
     expect(
       (
         await prisma.notificationLog.findMany({
-          where: { assessmentId: dedupKey },
+          where: { assessmentId: key },
+        })
+      ).length,
+    ).toBe(1);
+
+    // Next week: a new bucket re-arms the reminder.
+    const nextWeek = new Date(now.getTime() + 7 * 86_400_000);
+    const nextBucket = Math.floor(nextWeek.getTime() / (7 * 86_400_000));
+    await sendVerificationReminders(nextWeek);
+    const nextKey = `verification-reminder:${record!.id}:${expiry}:${nextBucket}:${trainerEmail}`;
+    expect(
+      (
+        await prisma.notificationLog.findMany({
+          where: { assessmentId: nextKey },
+        })
+      ).length,
+    ).toBe(1);
+
+    // No trainer email → fall back to the configured staff recipients.
+    await updateCommunicationsSettings({
+      verificationReminderRecipients: [`office-${suffix}@example.test`],
+    });
+    await prisma.trainer.update({
+      where: { id: trainerId },
+      data: { email: null },
+    });
+    await prisma.notificationLog.deleteMany({
+      where: { assessmentId: { startsWith: "verification-reminder:" } },
+    });
+    await sendVerificationReminders(now);
+    const fallbackKey = `verification-reminder:${record!.id}:${expiry}:${bucket}:office-${suffix}@example.test`;
+    expect(
+      (
+        await prisma.notificationLog.findMany({
+          where: { assessmentId: fallbackKey },
         })
       ).length,
     ).toBe(1);
 
     await prisma.notificationLog.deleteMany({
-      where: { assessmentId: dedupKey },
+      where: { assessmentId: { startsWith: "verification-reminder:" } },
     });
+    await updateCommunicationsSettings({ verificationReminderRecipients: [] });
   });
 });

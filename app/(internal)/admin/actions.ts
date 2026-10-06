@@ -513,6 +513,12 @@ export async function saveCommunicationsSettings(
       formData.get("verificationRemindersEnabled") === "on",
     verificationReminderDaysBefore:
       formData.get("verificationReminderDaysBefore") ?? 60,
+    verificationReminderRecipients: String(
+      formData.get("verificationReminderRecipients") ?? "",
+    )
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0),
   });
   if (!parsed.success) {
     return {

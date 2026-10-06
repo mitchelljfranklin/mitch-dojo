@@ -388,12 +388,12 @@ export async function listBookableSessions(
       where: {
         status: "SCHEDULED",
         date: { gte: today, lte: horizon },
-        course: { isActive: true, location: { isActive: true } },
+        // The session's own (denormalised) location must be active.
+        location: { isActive: true },
+        course: { isActive: true },
       },
       include: {
-        course: {
-          select: { name: true, locationId: true, disciplineId: true },
-        },
+        course: { select: { name: true, disciplineId: true } },
       },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
       take: 200,
@@ -421,6 +421,8 @@ export async function listBookableSessions(
       `${session.courseId}|${session.date.getUTCDay()}|${session.startTime}`,
     );
     if (!slot) continue;
+    // Don't offer classes that have already started today.
+    if (sessionStartsAt(session.date, session.startTime) <= now) continue;
     const full =
       slot.capacity !== null &&
       (bookedBySlot.get(slot.id) ?? 0) >= slot.capacity;
@@ -430,10 +432,23 @@ export async function listBookableSessions(
       courseName: session.course.name,
       date: session.date.toISOString().slice(0, 10),
       startTime: session.startTime,
-      locationId: session.course.locationId,
+      locationId: session.locationId,
       disciplineId: session.course.disciplineId,
       full,
     });
   }
   return result;
+}
+
+// Local wall-clock start of a session (session.date is UTC midnight of the
+// local calendar day; startTime is a "HH:MM" string).
+function sessionStartsAt(date: Date, startTime: string): Date {
+  const [hours, minutes] = startTime.split(":").map(Number);
+  return new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    hours ?? 0,
+    minutes ?? 0,
+  );
 }

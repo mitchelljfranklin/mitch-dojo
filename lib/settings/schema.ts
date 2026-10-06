@@ -254,7 +254,8 @@ export const communicationsSettingsSchema = z.object({
   // version (unsigned or re-sign required). Deduped per document version.
   agreementRemindersEnabled: z.boolean().default(true),
   // Verification reminders: one email per trainer per expiring/expired
-  // credential, once per expiry date (re-arms when a renewal is recorded).
+  // credential, repeated weekly until renewed. A trainer with no email falls
+  // back to the staff recipients below.
   verificationRemindersEnabled: z.boolean().default(true),
   verificationReminderDaysBefore: z.coerce
     .number()
@@ -262,6 +263,10 @@ export const communicationsSettingsSchema = z.object({
     .min(1)
     .max(365)
     .default(60),
+  verificationReminderRecipients: z
+    .array(z.string().trim().pipe(z.email("Enter a valid email address")))
+    .max(20, "Keep the recipient list to 20 addresses or fewer")
+    .default([]),
   // New-booking alert: one email per listed staff recipient when a public
   // booking lands. Recipients start empty — alerts begin once at least one
   // address is entered.

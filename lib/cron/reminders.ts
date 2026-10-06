@@ -14,6 +14,11 @@ import { formatDate, formatDateUtc } from "@/lib/utils";
 // period", safe across scheduler restarts. Failed sends stay visible in the
 // audit/email log for manual follow-up.
 
+// Cap the number of sends (attempts) each reminder job performs per tick so a
+// large dojo can't outrun the 5-minute scheduler interval. Unhandled
+// candidates carry no dedup row, so the next tick picks them up.
+const MAX_REMINDER_SENDS_PER_TICK = 50;
+
 export type ReminderResults = {
   classRemindersSent: number;
   paymentRemindersSent: number;
@@ -92,9 +97,7 @@ export async function sendClassReminders(
   const candidates = await prisma.classSession.findMany({
     where: { status: "SCHEDULED" },
     include: {
-      course: {
-        select: { name: true, locationId: true, disciplineId: true },
-      },
+      course: { select: { name: true, disciplineId: true } },
     },
   });
 
@@ -105,13 +108,15 @@ export async function sendClassReminders(
   if (dueSessions.length === 0) return 0;
 
   let sent = 0;
+  let handled = 0;
   for (const session of dueSessions) {
-    // Audience: ACTIVE/TRIAL students at the session's location who train
-    // the course's discipline — the same population that can check in.
+    // Audience: ACTIVE/TRIAL students at the SESSION's location (denormalised
+    // at generation, so a later course move doesn't reassign old sessions) who
+    // train the course's discipline — the same population that can check in.
     const students = await prisma.student.findMany({
       where: {
         status: { in: ["ACTIVE", "TRIAL"] },
-        locations: { some: { locationId: session.course.locationId } },
+        locations: { some: { locationId: session.locationId } },
         disciplines: { some: { disciplineId: session.course.disciplineId } },
       },
       select: {
@@ -125,6 +130,7 @@ export async function sendClassReminders(
     });
 
     for (const student of students) {
+      if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
       const dedupKey = `class-reminder:${session.id}:${student.id}`;
       if (!(await notYetSent(dedupKey))) continue;
       if (student.emailOptOut) continue;
@@ -132,6 +138,7 @@ export async function sendClassReminders(
       const recipient = resolveRecipient(student);
       if (!recipient) continue;
 
+      handled++;
       const result = await sendEmail(
         recipient,
         "classReminder",
@@ -145,6 +152,7 @@ export async function sendClassReminders(
       );
       if (result.ok) sent++;
     }
+    if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
   }
   return sent;
 }
@@ -178,7 +186,9 @@ export async function sendPaymentReminders(
   });
 
   let sent = 0;
+  let handled = 0;
   for (const invoice of invoices) {
+    if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
     const dueSoon =
       invoice.dueDate >= today && invoice.dueDate <= dueSoonCutoff;
     const overdue = invoice.dueDate < overdueCutoff;
@@ -191,6 +201,7 @@ export async function sendPaymentReminders(
     const recipient = resolveRecipient(invoice.student);
     if (!recipient) continue;
 
+    handled++;
     const result = await sendEmail(
       recipient,
       "paymentReminder",
@@ -239,7 +250,9 @@ export async function sendBirthdayEmails(
   });
 
   let sent = 0;
+  let handled = 0;
   for (const student of birthdays) {
+    if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
     const dob = student.dateOfBirth!;
     if (dob.getUTCMonth() !== month || dob.getUTCDate() !== day) continue;
     if (student.emailOptOut) continue;
@@ -250,6 +263,7 @@ export async function sendBirthdayEmails(
     const recipient = resolveRecipient(student);
     if (!recipient) continue;
 
+    handled++;
     const result = await sendEmail(
       recipient,
       "birthday",
@@ -302,7 +316,9 @@ export async function sendTrialFollowUps(
   });
 
   let sent = 0;
+  let handled = 0;
   for (const trial of trials) {
+    if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
     const dedupKey = `trial-followup:${trial.id}`;
     if (!(await notYetSent(dedupKey))) continue;
     if (trial.emailOptOut) continue;
@@ -317,6 +333,7 @@ export async function sendTrialFollowUps(
         (today.getTime() - utcMidnightOf(anchor).getTime()) / 86_400_000,
       ),
     );
+    handled++;
     const result = await sendEmail(
       recipient,
       "trialFollowUp",
@@ -360,9 +377,11 @@ export async function sendAgreementReminders(): Promise<number> {
   });
 
   let sent = 0;
+  let handled = 0;
   for (const student of students) {
     if (student.emailOptOut) continue;
     for (const document of documents) {
+      if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
       const signature = student.agreements.find(
         (row) => row.documentId === document.id,
       );
@@ -374,6 +393,7 @@ export async function sendAgreementReminders(): Promise<number> {
       const recipient = resolveRecipient(student);
       if (!recipient) continue;
 
+      handled++;
       const result = await sendEmail(
         recipient,
         "agreementReminder",
@@ -386,14 +406,16 @@ export async function sendAgreementReminders(): Promise<number> {
       );
       if (result.ok) sent++;
     }
+    if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
   }
   return sent;
 }
 
 // --------------- verification reminders ---------------
 
-// One reminder per trainer per expiring/expired credential, once per expiry
-// date — renewing the record (new expiry) re-arms it.
+// One reminder per trainer per expiring/expired credential, repeated weekly
+// until the record is renewed (a new expiry re-arms the window). A trainer
+// with no email falls back to the configured staff recipients.
 export async function sendVerificationReminders(
   now: Date = new Date(),
 ): Promise<number> {
@@ -405,6 +427,8 @@ export async function sendVerificationReminders(
     startOfToday(now),
     settings.verificationReminderDaysBefore,
   );
+  // Weekly bucket keeps a reminder from repeating within the same week.
+  const weekBucket = Math.floor(now.getTime() / (7 * 86_400_000));
 
   const records = await prisma.trainerVerification.findMany({
     where: {
@@ -418,33 +442,43 @@ export async function sendVerificationReminders(
   });
 
   let sent = 0;
+  let handled = 0;
   for (const record of records) {
+    if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
     if (!record.expiresAt) continue;
-    const recipient = record.trainer.email?.trim();
-    if (!recipient) continue;
 
-    const dedupKey = `verification-reminder:${record.id}:${record.expiresAt
-      .toISOString()
-      .slice(0, 10)}`;
-    if (!(await notYetSent(dedupKey))) continue;
+    const trainerEmail = record.trainer.email?.trim();
+    const recipients = trainerEmail
+      ? [trainerEmail]
+      : settings.verificationReminderRecipients;
+    const expiry = record.expiresAt.toISOString().slice(0, 10);
 
-    const result = await sendEmail(
-      recipient,
-      "verificationReminder",
-      {
-        trainerName: record.trainer.name,
-        verificationName: record.type.name,
-        expiryDate: formatDateUtc(record.expiresAt),
-        appName,
-      },
-      { assessmentId: dedupKey },
-    );
-    if (result.ok) sent++;
+    for (const recipient of recipients) {
+      if (handled >= MAX_REMINDER_SENDS_PER_TICK) break;
+      const dedupKey = `verification-reminder:${record.id}:${expiry}:${weekBucket}:${recipient}`;
+      if (!(await notYetSent(dedupKey))) continue;
+
+      handled++;
+      const result = await sendEmail(
+        recipient,
+        "verificationReminder",
+        {
+          trainerName: record.trainer.name,
+          verificationName: record.type.name,
+          expiryDate: formatDateUtc(record.expiresAt),
+          appName,
+        },
+        { assessmentId: dedupKey },
+      );
+      if (result.ok) sent++;
+    }
   }
   return sent;
 }
 
-// --------------- scheduler entry point ---------------// SMTP not configured → skip silently (each job would otherwise create
+// --------------- scheduler entry point ---------------
+
+// SMTP not configured → skip silently (each job would otherwise create
 // FAILED notification rows every tick).
 export async function runReminderJobs(
   now: Date = new Date(),

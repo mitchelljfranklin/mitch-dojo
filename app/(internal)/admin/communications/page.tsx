@@ -75,6 +75,9 @@ export default async function AdminCommunicationsPage() {
             verificationReminderDaysBefore={
               communicationsSettings.verificationReminderDaysBefore
             }
+            verificationReminderRecipients={
+              communicationsSettings.verificationReminderRecipients
+            }
           />
         </CardContent>
       </Card>

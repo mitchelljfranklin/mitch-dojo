@@ -591,13 +591,14 @@ describe.skipIf(!hasTestDatabase)("trial slot capacity", () => {
   }
 
   it("refuses a booking once the weekly slot is full", async () => {
-    // Match the product's local-calendar-day convention: the session date is
-    // UTC midnight of the local calendar day (see utcMidnightOf).
+    // Use tomorrow so the class is always in the future (today's already-
+    // started slots are hidden from the booking list). Session dates are UTC
+    // midnight of the local calendar day (see utcMidnightOf).
     const now = new Date();
-    const today = new Date(
-      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+    const day = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1),
     );
-    const weekday = today.getUTCDay();
+    const weekday = day.getUTCDay();
 
     capacityCourseId = await createCourse({
       name: `Capacity Course ${suffix}`,
@@ -621,7 +622,7 @@ describe.skipIf(!hasTestDatabase)("trial slot capacity", () => {
       data: {
         courseId: capacityCourseId,
         locationId,
-        date: today,
+        date: day,
         startTime: "07:00",
         endTime: "08:00",
       },

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendBulkEmail } from "@/lib/email/mailer";
-import { startOfToday } from "@/lib/db/memberships";
+import { computeInvoiceFinancials, startOfToday } from "@/lib/db/memberships";
 
 export type CampaignAudienceType =
   "ALL" | "LOCATION" | "DISCIPLINE" | "COURSE" | "OVERDUE";
@@ -24,12 +24,18 @@ async function resolveRecipients(
     id: string;
     email: string | null;
     guardianEmail: string | null;
+    emailOptOut: boolean;
   }[] = [];
 
   if (audienceType === "ALL") {
     students = await prisma.student.findMany({
       where: { status: "ACTIVE" },
-      select: { id: true, email: true, guardianEmail: true },
+      select: {
+        id: true,
+        email: true,
+        guardianEmail: true,
+        emailOptOut: true,
+      },
     });
   } else if (audienceType === "LOCATION" && audienceRefId) {
     const location = await prisma.location.findUnique({
@@ -42,7 +48,12 @@ async function resolveRecipients(
         status: "ACTIVE",
         locations: { some: { locationId: audienceRefId } },
       },
-      select: { id: true, email: true, guardianEmail: true },
+      select: {
+        id: true,
+        email: true,
+        guardianEmail: true,
+        emailOptOut: true,
+      },
     });
   } else if (audienceType === "DISCIPLINE" && audienceRefId) {
     const discipline = await prisma.discipline.findUnique({
@@ -55,7 +66,12 @@ async function resolveRecipients(
         status: "ACTIVE",
         disciplines: { some: { disciplineId: audienceRefId } },
       },
-      select: { id: true, email: true, guardianEmail: true },
+      select: {
+        id: true,
+        email: true,
+        guardianEmail: true,
+        emailOptOut: true,
+      },
     });
   } else if (audienceType === "COURSE" && audienceRefId) {
     const course = await prisma.course.findUnique({
@@ -70,7 +86,12 @@ async function resolveRecipients(
           locations: { some: { locationId: course.locationId } },
           disciplines: { some: { disciplineId: course.disciplineId } },
         },
-        select: { id: true, email: true, guardianEmail: true },
+        select: {
+          id: true,
+          email: true,
+          guardianEmail: true,
+          emailOptOut: true,
+        },
       });
     }
   } else if (audienceType === "OVERDUE") {
@@ -79,9 +100,16 @@ async function resolveRecipients(
       where: { status: "OPEN", dueDate: { lt: startOfToday() } },
       select: {
         studentId: true,
+        taxCents: true,
         items: { select: { quantity: true, unitPriceCents: true } },
         payments: { select: { amountCents: true } },
-        student: { select: { email: true, guardianEmail: true } },
+        student: {
+          select: {
+            email: true,
+            guardianEmail: true,
+            emailOptOut: true,
+          },
+        },
       },
     });
     const seen = new Set<string>();
@@ -89,30 +117,27 @@ async function resolveRecipients(
       id: string;
       email: string | null;
       guardianEmail: string | null;
+      emailOptOut: boolean;
     }[] = [];
     for (const invoice of invoices) {
-      const total = invoice.items.reduce(
-        (sum, item) => sum + item.quantity * item.unitPriceCents,
-        0,
-      );
-      const paid = invoice.payments.reduce(
-        (sum, payment) => sum + payment.amountCents,
-        0,
-      );
-      if (total - paid <= 0 || seen.has(invoice.studentId)) continue;
+      if (seen.has(invoice.studentId)) continue;
+      if (computeInvoiceFinancials(invoice).balanceCents <= 0) continue;
       seen.add(invoice.studentId);
       overdue.push({
         id: invoice.studentId,
         email: invoice.student.email,
         guardianEmail: invoice.student.guardianEmail,
+        emailOptOut: invoice.student.emailOptOut,
       });
     }
     students = overdue;
   }
 
-  // Student → guardian email fallback, deduped by address.
+  // Student → guardian email fallback, deduped by address. Members who paused
+  // non-essential email are skipped (campaigns are marketing).
   const byEmail = new Map<string, CampaignRecipient>();
   for (const student of students) {
+    if (student.emailOptOut) continue;
     const email = (
       student.email?.trim() ||
       student.guardianEmail?.trim() ||

@@ -179,4 +179,70 @@ describe.skipIf(!hasTestDatabase)("campaigns", () => {
     });
     expect(after).toBe(before);
   });
+
+  it("skips opted-out members and includes tax in the overdue audience", async () => {
+    // An opted-out member is excluded from every audience.
+    const optedOutId = await makeStudent("Echo", {
+      email: `echo-${suffix}@example.com`,
+    });
+    await prisma.student.update({
+      where: { id: optedOutId },
+      data: { emailOptOut: true },
+    });
+    const all = await createCampaign({
+      subject: `Optout ${suffix}`,
+      body: "Hello",
+      audienceType: "ALL",
+      audienceRefId: null,
+      createdById: null,
+    });
+    const allRow = await prisma.emailCampaign.findUnique({
+      where: { id: all.id },
+      select: { recipients: true },
+    });
+    expect(
+      (allRow!.recipients as { email: string }[]).map((r) => r.email),
+    ).not.toContain(`echo-${suffix}@example.com`);
+
+    // Overdue audience is tax-aware: items cover the subtotal, tax remains.
+    const foxtrotId = await makeStudent("Foxtrot", {
+      email: `foxtrot-${suffix}@example.com`,
+    });
+    const now = new Date();
+    const due = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 5),
+    );
+    await prisma.invoice.create({
+      data: {
+        number: 950_000 + Math.floor(Math.random() * 40_000),
+        studentId: foxtrotId,
+        status: "OPEN",
+        issueDate: due,
+        dueDate: due,
+        taxCents: 100,
+        taxLabel: "GST",
+        items: {
+          create: { description: "Plan", quantity: 1, unitPriceCents: 1000 },
+        },
+        payments: {
+          create: { amountCents: 1000, method: "CASH", paidAt: due },
+        },
+      },
+    });
+
+    const overdue = await createCampaign({
+      subject: `Overdue ${suffix}`,
+      body: "Pay please",
+      audienceType: "OVERDUE",
+      audienceRefId: null,
+      createdById: null,
+    });
+    const overdueRow = await prisma.emailCampaign.findUnique({
+      where: { id: overdue.id },
+      select: { recipients: true },
+    });
+    expect(
+      (overdueRow!.recipients as { email: string }[]).map((r) => r.email),
+    ).toContain(`foxtrot-${suffix}@example.com`);
+  });
 });

@@ -6,7 +6,7 @@ Reminder timing and toggles. Subjects/bodies live on the [Templates](./templates
 
 **Admin → Email → Campaigns** sends a one-off message to a group — dojo closures, grading notices, event reminders. Compose a subject and a Markdown message, choose an audience (**all active members**, a **location**, a **discipline**, a **course**, or members with an **overdue balance**), and queue it.
 
-- The recipient list is resolved with the student → guardian email fallback and **deduplicated**, so siblings sharing a guardian address get one copy.
+- The recipient list is resolved with the student → guardian email fallback and **deduplicated**, so siblings sharing a guardian address get one copy. Members who **paused non-essential email** are skipped, and the **overdue** audience is tax-aware (an invoice with any outstanding tax still counts).
 - Campaigns are **queued** and delivered by the scheduler in batches (within a few minutes), so a large list never blocks the app. Per-recipient delivery and failures show in the [Email log](./email-log).
 - Requires `communications:edit`. Queuing is audited.
 
@@ -21,7 +21,7 @@ Reminder timing and toggles. Subjects/bodies live on the [Templates](./templates
 | **Booking confirmations** | on | Sent the moment a public booking creates a trial |
 | **New booking alerts (staff)** | on | One alert per listed recipient; recipients start empty |
 | **Agreement reminders** | on | One email per student per unsigned or out-of-date agreement (version-keyed) |
-| **Verification reminders** | on | One email per trainer per expiring/expired credential; days before expiry: 60 (1–365) |
+| **Verification reminders** | on | One email per trainer per expiring/expired credential; days before expiry: 60 (1–365); repeats weekly until renewed; falls back to configured staff recipients when a trainer has no email |
 
 ## Behaviour notes
 

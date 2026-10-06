@@ -41,7 +41,7 @@ Status is computed from the expiry date, never stored, so it can't drift:
 
 ## Reminders
 
-Under **Admin → Communication** enable **Verification reminders** and set how many days before expiry to remind. The scheduler emails the **trainer** (their Trainers-page email) once per credential per expiry date; recording a renewal with a new expiry re-arms it. The email copy is editable under [Admin → Templates](../configuration/templates) (`{{trainerName}}`, `{{verificationName}}`, `{{expiryDate}}`, `{{appName}}`).
+Under **Admin → Communication** enable **Verification reminders** and set how many days before expiry to remind. The scheduler emails the **trainer** (their Trainers-page email) about each expiring or expired credential, then **repeats weekly** until the record is renewed; recording a renewal with a new expiry restarts the window. When a trainer has no email, the reminder goes to the **fallback recipients** configured on the same page instead. The email copy is editable under [Admin → Templates](../configuration/templates) (`{{trainerName}}`, `{{verificationName}}`, `{{expiryDate}}`, `{{appName}}`).
 
 ## Permissions
 

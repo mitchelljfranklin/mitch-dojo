@@ -25,6 +25,7 @@ type CommunicationsFormProps = {
   agreementRemindersEnabled: boolean;
   verificationRemindersEnabled: boolean;
   verificationReminderDaysBefore: number;
+  verificationReminderRecipients: string[];
 };
 
 type SettingsActionState = { ok: boolean; message: string } | undefined;
@@ -49,6 +50,7 @@ function CommunicationsFormInner({
   agreementRemindersEnabled,
   verificationRemindersEnabled,
   verificationReminderDaysBefore,
+  verificationReminderRecipients,
 }: CommunicationsFormProps) {
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
@@ -264,6 +266,22 @@ function CommunicationsFormInner({
             max={365}
             defaultValue={verificationReminderDaysBefore}
           />
+        </div>
+        <div className="grid max-w-md gap-2">
+          <Label htmlFor="verificationReminderRecipients">
+            Fallback recipients (comma-separated emails)
+          </Label>
+          <Input
+            id="verificationReminderRecipients"
+            name="verificationReminderRecipients"
+            type="text"
+            placeholder="office@example.com"
+            defaultValue={verificationReminderRecipients.join(", ")}
+          />
+          <p className="text-muted-foreground text-xs">
+            Used when a trainer has no email on their record. Reminders repeat
+            weekly while a credential stays expired or expiring.
+          </p>
         </div>
       </div>
 

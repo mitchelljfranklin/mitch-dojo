@@ -12,6 +12,7 @@ Your school gets a public trial-booking page at `/book`:
 - **Protected** — rate-limited per IP with a honeypot field against bots.
 - **Only trial-bookable classes appear** — each weekly training slot on a course has a **Trial bookable** checkbox (on by default). Untick it for classes that shouldn't take new starters (senior-only sessions, for example) and they disappear from the booking page immediately.
 - **Capacity per slot** — a weekly slot can optionally cap how many trials may book onto it. Once full, the class shows as **(full)** and can't be selected; converting or rejecting a trial frees the spot. Leave the capacity blank for unlimited.
+- **Upcoming classes only** — the booking page lists sessions for the next two weeks and drops any of today's classes that have already started.
 - Booking creates a `TRIAL` student with the chosen class and lands in the pipeline.
 
 Staff see the booking; the prospect receives a [confirmation email](#booking-confirmations). Staff with configured addresses receive a **new-booking alert email** (toggle + recipients under [Communication settings](../configuration/communication), template under [Templates](../configuration/templates)) — and the **Trials sidebar item shows a badge** with the number of NEW-stage trials, so a fresh booking is visible from anywhere in the app. Follow up by phone or reply manually.
