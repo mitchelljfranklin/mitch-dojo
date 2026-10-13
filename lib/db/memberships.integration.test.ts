@@ -844,6 +844,27 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
     });
     expect(gated?.chargeOnlyWithAttendance).toBe(true);
   });
+
+  it("bills an active recurring enrollment whose nextInvoiceDate is null", async () => {
+    // e.g. an enrollment created while the plan was a one-off, later switched
+    // to recurring — it must self-heal rather than being skipped forever.
+    const { enrollmentId } = await createGatedMember("Null", -40);
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: null },
+    });
+
+    const run = await generateDueInvoices(new Date(), 14);
+    expect(run.generated).toBeGreaterThanOrEqual(1);
+    const invoices = await prisma.invoice.findMany({
+      where: { enrollmentId },
+    });
+    expect(invoices.length).toBeGreaterThanOrEqual(1);
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { id: enrollmentId },
+    });
+    expect(enrollment?.nextInvoiceDate).not.toBeNull();
+  });
 });
 
 describe.skipIf(!hasTestDatabase)("membership hold", () => {

@@ -692,7 +692,10 @@ export async function generateDueInvoices(
   const dueEnrollments = await prisma.enrollment.findMany({
     where: {
       status: "ACTIVE",
-      nextInvoiceDate: { lte: today },
+      // A missing nextInvoiceDate (e.g. an enrollment created while the plan
+      // was a one-off, then switched to recurring) must still bill — treat it
+      // as due now rather than skipping the member forever.
+      OR: [{ nextInvoiceDate: { lte: today } }, { nextInvoiceDate: null }],
       plan: { planType: "RECURRING", isActive: true },
     },
     include: { plan: true },
