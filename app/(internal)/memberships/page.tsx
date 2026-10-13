@@ -21,6 +21,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { FlashToast } from "@/components/flash-toast";
 import { PlanFormSheet } from "./plan-form-sheet";
+import { GenerateInvoicesButton } from "./generate-invoices-button";
 import {
   deleteMembershipPlanAction,
   toggleMembershipPlanActiveAction,
@@ -75,6 +76,7 @@ export default async function MembershipsPage({
               <Link href="/memberships/import">Import</Link>
             </Button>
           ) : null}
+          {canEdit ? <GenerateInvoicesButton /> : null}
           {canEdit ? <PlanFormSheet mode="create" currency={currency} /> : null}
         </div>
       </div>
