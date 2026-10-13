@@ -144,7 +144,12 @@ export async function updateMembershipPlan(
     chargeOnlyWithAttendance?: boolean;
   },
 ) {
-  return prisma.membershipPlan.update({
+  const existing = await prisma.membershipPlan.findUnique({
+    where: { id: planId },
+    select: { planType: true },
+  });
+
+  const updated = await prisma.membershipPlan.update({
     where: { id: planId },
     data: {
       name: input.name,
@@ -158,6 +163,24 @@ export async function updateMembershipPlan(
           : false,
     },
   });
+
+  // A plan switched to recurring gains billing for its already-active
+  // enrollments. Backfill the missing next invoice date, and anchor the gate
+  // at the switch so the first invoice after the switch is attendance-gated
+  // (rather than exempt, which would bill members who never trained).
+  if (
+    existing &&
+    existing.planType !== "RECURRING" &&
+    input.planType === "RECURRING"
+  ) {
+    const today = startOfToday();
+    await prisma.enrollment.updateMany({
+      where: { planId, status: "ACTIVE" },
+      data: { nextInvoiceDate: today, gateFrom: today },
+    });
+  }
+
+  return updated;
 }
 
 export async function setMembershipPlanActive(
@@ -710,28 +733,29 @@ export async function generateDueInvoices(
     let iterations = 0;
 
     // Attendance-gated plans bill only when the member trained since the
-    // last invoice. The window is [previous invoice issueDate, cycleDate):
-    // in-advance billing means each invoice covers the cycle it opens, so
-    // the observable check is "did they train during the period just
-    // billed?". The enrollment's FIRST invoice is exempt — there is no
-    // previous period, and the dojo chose to enroll the member.
+    // last invoice. The window is [gateAnchor, cycleDate): in-advance billing
+    // means each invoice covers the cycle it opens, so the observable check is
+    // "did they train during the period just billed?". A brand-new enrollment
+    // has no anchor (first invoice exempt — the dojo chose to enroll them);
+    // an enrollment whose plan was switched to recurring uses gateFrom so the
+    // first invoice after the switch is gated from that date.
     const gated = enrollment.plan.chargeOnlyWithAttendance;
     const lastInvoice = await prisma.invoice.findFirst({
       where: { enrollmentId: enrollment.id },
       orderBy: { issueDate: "desc" },
       select: { issueDate: true },
     });
-    let previousIssueDate = lastInvoice?.issueDate ?? null;
+    let gateAnchor = lastInvoice?.issueDate ?? enrollment.gateFrom ?? null;
 
     while (cycleDate <= today && iterations < MAX_CATCH_UP_INVOICES) {
-      if (gated && previousIssueDate !== null) {
+      if (gated && gateAnchor !== null) {
         const attended = await prisma.attendance.count({
           where: {
             studentId: enrollment.studentId,
             status: {
               in: TRAINED_STATUSES as unknown as AttendanceStatusValue[],
             },
-            session: { date: { gte: previousIssueDate, lt: cycleDate } },
+            session: { date: { gte: gateAnchor, lt: cycleDate } },
           },
         });
         if (attended === 0) {
@@ -786,7 +810,7 @@ export async function generateDueInvoices(
           // Another runner created this cycle first — no double-billing.
         }
       }
-      previousIssueDate = cycleDate;
+      gateAnchor = cycleDate;
       cycleDate = advanceBillingDate(cycleDate, period);
       iterations++;
     }

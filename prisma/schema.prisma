@@ -682,6 +682,11 @@ model Enrollment {
   startDate       DateTime
   endDate         DateTime?
   nextInvoiceDate DateTime?
+  // Set when an existing plan is switched to recurring (and for its active
+  // enrollments), so the first invoice after the switch is attendance-gated
+  // from this date rather than exempt. Null for brand-new enrollments, whose
+  // first invoice is exempt from the gate.
+  gateFrom        DateTime?
   // Membership hold: a paused enrollment is not billed; resumeAt schedules
   // an automatic resume (processed by the scheduler).
   pausedAt        DateTime?

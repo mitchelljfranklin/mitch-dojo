@@ -21,6 +21,7 @@ import {
   listOverdueStudents,
   recordBulkPayments,
   recordPayment,
+  updateMembershipPlan,
   voidInvoice,
 } from "@/lib/db/memberships";
 import { getRevenueTrend } from "@/lib/db/analytics";
@@ -864,6 +865,109 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
       where: { id: enrollmentId },
     });
     expect(enrollment?.nextInvoiceDate).not.toBeNull();
+  });
+
+  it("gates the first invoice of an enrollment converted to recurring", async () => {
+    // A gateFrom anchor stands in for the missing first invoice, so a member
+    // who never trained since the switch is NOT billed.
+    const { enrollmentId } = await createGatedMember("Anchored", -40);
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-40), gateFrom: daysFromNow(-40) },
+    });
+
+    await generateDueInvoices(new Date(), 14);
+    // The shared test DB holds other enrollments, so assert on this one.
+    expect(await prisma.invoice.count({ where: { enrollmentId } })).toBe(0);
+  });
+
+  it("bills a converted enrollment once it trains since the switch", async () => {
+    const { studentId, enrollmentId } = await createGatedMember(
+      "AnchoredB",
+      -40,
+    );
+    await prisma.enrollment.update({
+      where: { id: enrollmentId },
+      data: { nextInvoiceDate: daysFromNow(-40), gateFrom: daysFromNow(-40) },
+    });
+    const session = await prisma.classSession.create({
+      data: {
+        courseId,
+        locationId,
+        date: daysFromNow(-30),
+        startTime: "18:00",
+        endTime: "19:00",
+      },
+    });
+    await prisma.attendance.create({
+      data: { sessionId: session.id, studentId, status: "PRESENT" },
+    });
+
+    const run = await generateDueInvoices(new Date(), 14);
+    expect(run.generated).toBeGreaterThanOrEqual(1);
+    expect(
+      await prisma.invoice.count({ where: { enrollmentId } }),
+    ).toBeGreaterThanOrEqual(1);
+  });
+
+  it("anchors the gate when a one-off plan is switched to recurring", async () => {
+    const studentId = await createStudent({
+      firstName: "Convert",
+      lastName: `Plan${suffix}`,
+      email: null,
+      phone: null,
+      dateOfBirth: null,
+      emergencyContactName: null,
+      emergencyContactPhone: null,
+      guardianName: null,
+      guardianEmail: null,
+      guardianPhone: null,
+      guardianRelationship: null,
+      medicalMedications: null,
+      medicalConditions: null,
+      medicalInjuries: null,
+      addressLine: null,
+      city: null,
+      state: null,
+      postcode: null,
+      country: null,
+      status: "ACTIVE",
+      notes: null,
+      locationIds: [locationId],
+      primaryLocationId: locationId,
+      disciplineIds: [],
+    });
+    extraStudentIds.push(studentId);
+    const plan = await createMembershipPlan({
+      name: `Convert Item ${suffix}`,
+      description: null,
+      planType: "ITEM",
+      billingPeriod: null,
+      priceCents: 4000,
+    });
+    await enrollStudent({
+      studentId,
+      planId: plan.id,
+      startDate: daysFromNow(-30),
+    });
+
+    await updateMembershipPlan(plan.id, {
+      name: `Convert Item ${suffix}`,
+      description: null,
+      planType: "RECURRING",
+      billingPeriod: "WEEKLY",
+      priceCents: 4000,
+      chargeOnlyWithAttendance: true,
+    });
+
+    const enrollment = await prisma.enrollment.findFirst({
+      where: { studentId, planId: plan.id },
+    });
+    expect(enrollment?.gateFrom).not.toBeNull();
+    expect(enrollment?.nextInvoiceDate).not.toBeNull();
+
+    await prisma.enrollment.deleteMany({ where: { planId: plan.id } });
+    await deleteMembershipPlan(plan.id);
   });
 });
 
