@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
+import { updateQueryString } from "@/lib/query-string";
 
 type SearchInputProps = {
   placeholder?: string;
@@ -19,20 +20,27 @@ export function SearchInput({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [value, setValue] = useState(searchParams.get(paramName) ?? "");
+  const currentQuery = searchParams.toString();
+  const currentValue = searchParams.get(paramName) ?? "";
+  const [value, setValue] = useState(currentValue);
 
   useEffect(() => {
+    // The URL already carries this value (including on first mount), so there
+    // is nothing to navigate to. This is what previously wiped filters: the
+    // mount-time run rebuilt the query string from the search term alone.
+    if (value === currentValue) return;
+
     const timeout = setTimeout(() => {
-      const params = new URLSearchParams();
-      if (value) {
-        params.set(paramName, value);
-      }
-      const queryString = params.toString();
+      const queryString = updateQueryString(currentQuery, {
+        [paramName]: value,
+        // A new search always starts from the first page.
+        page: null,
+      });
       router.replace(queryString ? `${pathname}?${queryString}` : pathname);
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
-  }, [value, paramName, pathname, router]);
+  }, [value, currentValue, currentQuery, paramName, pathname, router]);
 
   return (
     <Input

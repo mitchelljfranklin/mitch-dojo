@@ -18,14 +18,12 @@ if (process.env.TEST_DATABASE_URL) {
   process.env.DATABASE_PROVIDER = "postgres";
 } else {
   // A bare `npm run test` has no database: drop any ambient DATABASE_URL (e.g.
-  // from .env) so integration suites skip and lib/env validates in PGlite mode.
+  // from .env) and switch to PGlite mode so integration suites skip and
+  // lib/env validates without a database server.
   delete process.env.DATABASE_URL;
+  process.env.DATABASE_PROVIDER = "pglite";
 }
 
-// Default the provider to PGlite so suites that import lib/prisma transitively
-// pass env validation without a database server; such suites make no queries
-// unless configured with TEST_DATABASE_URL above.
-process.env.DATABASE_PROVIDER ??= "pglite";
 process.env.DATABASE_DIR ??= "./.pglite-test";
 
 function redactDatabaseUrl(url: string): string {

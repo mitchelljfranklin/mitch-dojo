@@ -409,6 +409,52 @@ describe.skipIf(!hasTestDatabase)("invoice lifecycle", () => {
 
     await prisma.invoice.delete({ where: { id: invoice.id } });
   });
+
+  it("filters the invoice list by an explicit status", async () => {
+    const plan = await prisma.membershipPlan.findUnique({
+      where: { id: itemPlanId! },
+    });
+    const paid = await prisma.invoice.create({
+      data: {
+        number: 920_000 + Math.floor(Math.random() * 40_000),
+        studentId: studentId!,
+        status: "PAID",
+        issueDate: daysFromNow(-3),
+        dueDate: daysFromNow(0),
+        items: {
+          create: {
+            description: plan?.name ?? "test",
+            quantity: 1,
+            unitPriceCents: 4000,
+          },
+        },
+      },
+    });
+    const open = await prisma.invoice.create({
+      data: {
+        number: 960_000 + Math.floor(Math.random() * 40_000),
+        studentId: studentId!,
+        status: "OPEN",
+        issueDate: daysFromNow(-3),
+        dueDate: daysFromNow(11),
+        items: {
+          create: {
+            description: plan?.name ?? "test",
+            quantity: 1,
+            unitPriceCents: 4000,
+          },
+        },
+      },
+    });
+
+    const paidOnly = await listInvoices({ status: "PAID" });
+    expect(paidOnly.rows.some((row) => row.id === paid.id)).toBe(true);
+    expect(paidOnly.rows.some((row) => row.id === open.id)).toBe(false);
+
+    await prisma.invoice.deleteMany({
+      where: { id: { in: [paid.id, open.id] } },
+    });
+  });
 });
 
 describe.skipIf(!hasTestDatabase)("suspension", () => {

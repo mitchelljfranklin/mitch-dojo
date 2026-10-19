@@ -38,7 +38,8 @@ export default async function InvoicesPage({
   const overdueOnly = sp.status === "OVERDUE";
   const studentId = sp.studentId;
   const search = sp.q?.trim() ?? "";
-  const locationFilter = sp.location;
+  const locationFilter =
+    sp.location && sp.location !== "ALL" ? sp.location : undefined;
   const page = Math.max(1, Number(sp.page ?? "1") || 1);
 
   const { rows, total } = await listInvoices(
@@ -113,32 +114,38 @@ export default async function InvoicesPage({
 
       <div className="flex flex-wrap items-center gap-3">
         <SearchInput placeholder="Search student…" paramName="q" />
-        <form className="w-40">
+        <form className="flex flex-wrap items-center gap-3">
           {search ? <input type="hidden" name="q" value={search} /> : null}
-          <AutoSubmitSelect
-            name="status"
-            defaultValue={sp.status ?? "ALL"}
-            options={[
-              { value: "ALL", label: "All statuses" },
-              { value: "OPEN", label: "Open" },
-              { value: "OVERDUE", label: "Overdue" },
-              { value: "PAID", label: "Paid" },
-              { value: "VOID", label: "Void" },
-            ]}
-          />
-        </form>
-        <form className="w-44">
-          <AutoSubmitSelect
-            name="location"
-            defaultValue={locationFilter ?? "ALL"}
-            options={[
-              { value: "ALL", label: "All locations" },
-              ...invoiceLocations.map((location) => ({
-                value: location.id,
-                label: location.name,
-              })),
-            ]}
-          />
+          <div className="w-40">
+            <AutoSubmitSelect
+              key={`status-${sp.status ?? "ALL"}`}
+              name="status"
+              defaultValue={sp.status ?? "ALL"}
+              ariaLabel="Filter invoices by status"
+              options={[
+                { value: "ALL", label: "All statuses" },
+                { value: "OPEN", label: "Open" },
+                { value: "OVERDUE", label: "Overdue" },
+                { value: "PAID", label: "Paid" },
+                { value: "VOID", label: "Void" },
+              ]}
+            />
+          </div>
+          <div className="w-44">
+            <AutoSubmitSelect
+              key={`location-${locationFilter ?? "ALL"}`}
+              name="location"
+              defaultValue={locationFilter ?? "ALL"}
+              ariaLabel="Filter invoices by location"
+              options={[
+                { value: "ALL", label: "All locations" },
+                ...invoiceLocations.map((location) => ({
+                  value: location.id,
+                  label: location.name,
+                })),
+              ]}
+            />
+          </div>
         </form>
       </div>
 
