@@ -40,7 +40,9 @@ plan without asking.
   (`lib/storage/`; S3 and Azure Blob swappable in-app); files served only via
   authenticated routes
 - **Built-in scheduler (default) → `lib/scheduler.ts` via `instrumentation.ts`**
-  — every 5 minutes: audit/email-log pruning, reset-token pruning, orphaned-file
+  — every 5 minutes runs `lib/cron/run-jobs.ts`: session + recurring-invoice
+  generation, hold auto-resume, reminder emails (class/payment/birthday/trial/
+  agreement/verification), campaign drain, log + token pruning, orphaned-file
   sweep. Toggle in Admin → Scheduling; external trigger via secured
   `/api/cron/run`
 - **Docker Compose** (app + Postgres = `docker-compose.yml`; single container
@@ -50,81 +52,77 @@ plan without asking.
 
 ```
 app/                 # Next.js App Router
-  (internal)/        # authenticated dashboard
-    dashboard/       #   landing page
-    profile/         #   own profile
-    admin/           # the Admin area — 18 sections across 7 groups at
-                     #   /admin/* (general, appearance, storage, memberships,
-                     #   communications, documents, email, templates, email-
-                     #   log, locations, users, roles, sign-in, audit,
-                     #   scheduling, health) + shared forms/actions
-    students/        # list, new, edit, import, export; record pages carry
-                     #   attachments, agreements/consent card, medical section
-    classes/         # courses + weekly schedule; per-course sessions
-    sessions/        # per-session attendance sheets (+ attendance PDF)
-    attendance/      # attendance browser (all sessions, past + upcoming)
-    belts/           # disciplines, belt ladders, progression
-    memberships/     # plans + invoices (payments recorded per invoice)
-    trials/          # trial pipeline (convert sheet); /book is the public
-                     #   booking page (app/book)
-    analytics/       # dashboards (attendance/revenue/retention)
-    trainers/        # trainer roster
+  (internal)/        # authenticated dashboard: dashboard, students (with
+                     #   households/, import/, [studentId]/), classes, sessions,
+                     #   attendance, belts, memberships, trials, trainers,
+                     #   analytics, reports, compliance, incidents, profile,
+                     #   settings (compat shim for /admin)
+    admin/           # the Admin area — 18 sections in 7 groups; section
+                     #   list, grouping, and per-section permission come from
+                     #   lib/admin-nav.ts (source of truth for sidebar + guards)
   (auth)/            # login (+ SSO buttons, break glass), first-run setup,
                      #   forgot/reset password
   book/              # public trial-booking page (for-yourself or child)
   checkin/[token]/   # public QR check-in (kiosk mode)
-  portal/            # read-only member portal + documents & consent signing
+  portal/            # read-only member portal + document signing
   api/               # auth, health, cron trigger, csp-report, brand logo,
-                     #   student photo/export, invoices + report-card +
-                     #   attendance + agreement PDFs, session check-in QR
+                     #   student photo/export, invoice/report-card/attendance/
+                     #   agreement PDFs, session check-in QR, report CSVs,
+                     #   attachments, trainer verification docs
   style-guide/       # component showcase
-components/          # shadcn ui primitives + domain composites
-  ui/                # button, card, dialog, table, tabs, sidebar, etc.
+components/
+  ui/                # shadcn/ui primitives; domain composites sit flat in components/
 hooks/               # use-form-toast, use-action-feedback, use-mobile
 lib/                 # cross-cutting logic
-  actions/           # server actions (auth, profile, roles, users, students,
-                     #   trials, memberships, email-log, agreements)
+  actions/           # server actions
+  db/                # typed data-access layer (colocated *.integration.test.ts)
   cron/              # scheduled jobs (run-jobs.ts, reminders.ts)
-  db/                # typed data-access layer (audit, roles, users, students,
-                     #   sessions, attendance, belts, memberships, trials,
-                     #   portal, checkin, email-log, analytics, agreements)
-  email/             # Nodemailer mailer + token replacer
-  pdf/               # branded PDF shell + invoice/report-card/attendance/
-                     #   agreement documents (@react-pdf/renderer)
+  email/             # Nodemailer mailer + staff booking alert
+  pdf/               # @react-pdf/renderer docs (invoice, report card,
+                     #   attendance sheet, agreement) + branded shell
   schemas/           # shared zod schemas + inferred types
   settings/          # DB-backed operational config (schema, accessor)
   storage/           # file storage interface (local, s3, azure, orphan-sweep)
-  permissions.ts     # plus auth.ts, env.ts, prisma.ts, tokens.ts,
-                     #   rate-limit.ts, timing-safe.ts, session.ts, client-ip.ts,
-                     #   crypto.ts, nav.ts, utils.ts, theme-tokens.tsx,
-                     #   admin-nav.ts, break-glass.ts, countries.ts
+                     # plus permissions.ts, auth.ts, env.ts, prisma.ts,
+                     #   scheduler.ts, nav.ts, admin-nav.ts, break-glass.ts,
+                     #   timing-safe.ts, rate-limit.ts, ...
 emails/              # React Email template (dynamic.tsx)
-prisma/              # schema.prisma, migrations, seed.ts, seed-runner.cjs
-scripts/             # migrate-pglite.mjs, pglite-guard.mjs, pglite-safety.mjs
-                     # (pre-migrate backups + checksum-drift warning),
-                     # pglite-probe.mjs, prepare-standalone.mjs,
-                     # docs-sweep-admin.mjs, bump-version.mjs
-e2e/                 # Playwright end-to-end tests
-docs/                # VitePress-powered user documentation site
+prisma/              # schema.prisma, migrations/ (canonical DDL), seed.ts,
+                     #   seed-runner.cjs; generated/ (gitignored Prisma client)
+scripts/             # migrate-pglite.mjs, pglite-guard|safety|probe.mjs,
+                     #   docker-entrypoint.sh, prepare-standalone.mjs,
+                     #   bump-version.mjs, docs-sweep-admin.mjs
+e2e/                 # Playwright specs (chromium suite + sso-serial project)
+docs/                # VitePress user documentation site
 proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 ```
 
 ## Commands
 
-- `npm run dev` — local dev server
-- `npm run build` — production build (must pass before any gate sign-off)
+- `npm run dev` — local dev server (Node >= 22; `.nvmrc` pins 22)
+- `npm run build` — production build (must pass before any gate sign-off);
+  also copies `static`/`public` into `.next/standalone`
+  (`scripts/prepare-standalone.mjs`) so `npm run start` and e2e hydrate
 - `npm run lint` / `npm run typecheck` / `npm run format:check` — quality gates
 - `npm run precheck` — typecheck + lint + format:check in sequence
-- `npm run test` — Vitest. Integration tests refuse to run unless pointed at a
-  test database (`TEST_DATABASE_URL`, name must contain `test`).
-- `npm run test:e2e` — Playwright (runs against the production build; requires
-  `DATABASE_URL` pointing at a `*test*` database; `reuseExistingServer` off —
-  kill anything on :3000 first)
+- `npm run test` — Vitest. `*.integration.test.ts` suites skip themselves
+  unless `TEST_DATABASE_URL` is set (a bare `npm run test` = unit tests only);
+  when set, the URL must contain `test`. One file:
+  `npx vitest run lib/db/students.integration.test.ts`. Vitest runs files
+  **sequentially** (`fileParallelism: false` — they share one database).
+- `npm run test:e2e` — Playwright against the built app (`reuseExistingServer`
+  off — kill anything on :3000). Needs a fresh `npm run build` and
+  `DATABASE_URL` pointing at a `*test*` database (specs mutate/reset it). The
+  `sso-serial` project runs after the main chromium suite.
+- `npm run db:generate` — regenerate the Prisma client. Required after editing
+  `prisma/schema.prisma`; the client is generated to `prisma/generated/`
+  (gitignored) and `typecheck`/`build` fail if it is stale.
 - `npm run db:migrate` / `db:deploy` / `db:deploy:lite` / `db:seed`
 - `npm run bump -- X.Y.Z` — single command updates all 4 version spots
   (package.json, lockfile ×2, Dockerfile build-info, lib/build-info.ts
   fallback, ARCHITECTURE.md header). Transform-then-write with per-spot
   verification, explicit UTF-8 no-BOM writers, abort-on-mismatch.
+- `npm run docs:build` — build the VitePress site; fails on dead links
 - `docker compose up` — app + Postgres; `docker compose -f docker-compose.lite.yml up`
 
 ### Verification gotchas (inherited from mitch-risk — still apply)
@@ -138,6 +136,11 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   `ensureSystemRoles()`) still resets the system roles strictly.
 - **Apply new Prisma migrations to both dev and test databases** before
   running integration tests.
+- **The Prisma client lives at `prisma/generated/prisma`** (`generator client`
+  uses `provider = "prisma-client"` with a custom `output`; `lib/prisma.ts`
+  imports from there, not `@prisma/client`). It is gitignored — run
+  `npm run db:generate` after each schema change or `typecheck`/`build` fail
+  on a stale/missing client.
 - **Never edit an applied migration — always add a new one.** Editing a
   shipped migration file breaks the checksum ledger (Postgres demands a
   reset; the lite runner warns). If a migration needs correcting, create a
@@ -145,6 +148,14 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 - **Never point `TEST_DATABASE_URL` at the dev/prod database.**
 - **CI runs typecheck + lint + format:check + build on every push** —
   `npm run format` before pushing; Prettier failures are the top CI rejection.
+  `.prettierignore` excludes `*.md` and `docs/`, so `format:check` does **not**
+  cover markdown or the docs site.
+- **Container boot = migrate → seed once → serve** (`scripts/docker-entrypoint.sh`;
+  the seed marker is `/app/.storage/.seeded`, `SKIP_SEED=true` skips it). The
+  PGlite path runs `migrate-pglite.mjs` instead of `prisma migrate deploy`.
+- **Release flow:** CI (`.github/workflows/ci.yml`) runs on pushes/PRs to
+  `master`. Pushing a `v*` tag publishes the GHCR image
+  (`docker-publish.yml`); `docs.yml` is manual-only until the repo is public.
 - **Server Actions that feed `useActionState` must NOT call `revalidatePath`**
   (Node >= 23 aborts the response streaming). Let the client refresh via
   `useActionFeedback`. Actions also called from API/cron contexts may
@@ -189,6 +200,9 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 - PGlite's WASM/ESM assets must stay externalised in the Next standalone
   build (`serverExternalPackages` in `next.config.ts`) or the Docker runtime
   cannot resolve them.
+- `lib/prisma.ts` dedupes the client on `globalThis` unconditionally — keep it.
+  The standalone build duplicates `lib/prisma` across module graphs; a second
+  client over one PGlite data dir means split state and on-disk corruption.
 - The lite CI job runs `migrate-pglite.mjs` twice and seeds twice to prove
   idempotency — keep it that way.
 
@@ -268,11 +282,11 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 - **Data lifecycle.** Deleting a record removes associated storage files; the
   cron orphan sweep is the backstop. **Every storage writer must be reflected
   in the sweep's referenced-key set** (`lib/cron/run-jobs.ts` collects the
-  brand logo, student photo keys, and attachment storage keys) — new key
-  formats without registration there get deleted within an hour. Deleting a
-  user preserves audit history via nullable `SetNull` relations ("Deleted
-  user") — never cascade-delete audit trails. Deleting a student removes
-  their photo + attachments.
+  light + dark brand logos, student photo keys, attachment storage keys, and
+  trainer-verification document keys) — a new key format without registration
+  there is deleted within an hour. Deleting a user preserves audit history via
+  nullable `SetNull` relations ("Deleted user") — never cascade-delete audit
+  trails. Deleting a student removes their photo + attachments.
 - **Multi-location semantics.** The tenant is the school; `Location` rows are
   its dojo sites. Locations are organisational only (no per-location access
   scoping). Students may train at several locations with exactly one primary
@@ -315,8 +329,11 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 - **Compare secrets in constant time** (`lib/timing-safe.ts`, e.g.
   `CRON_SECRET`). Rate limiting is in-memory/per-process — correct for the
   single-container deployment.
-- **Deployment env musts:** `CRON_SECRET` required in production;
-  `TRUSTED_PROXY_COUNT` must match the real proxy hop count (default 0).
+- **Deployment env musts:** `CRON_SECRET` required in production (>= 32
+  chars); `TRUSTED_PROXY_COUNT` must match the real proxy hop count (default
+  0); set `TZ` to the dojo's IANA zone — calendar-day logic (check-in,
+  reminders, analytics, session generation) keys off server local time and
+  silently runs UTC without it.
 - **PGlite data directory** (`DATABASE_DIR`) must be a mounted volume in lite
   mode — backups are stop-copy-start of that directory.
 
