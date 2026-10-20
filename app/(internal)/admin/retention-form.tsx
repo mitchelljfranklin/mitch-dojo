@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ export function RetentionForm({
   help,
   value,
 }: RetentionFormProps) {
+  const translate = useTranslations("Common");
   const [state, formAction, isPending] = useActionState(action, undefined);
   useActionFeedback(state);
 
@@ -60,7 +62,7 @@ export function RetentionForm({
       ) : null}
       <div>
         <Button type="submit" disabled={isPending} size="sm">
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>

@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -13,29 +16,29 @@ import { CommunicationsForm } from "../communications-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Communication" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.communications");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminCommunicationsPage() {
   await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
+  const translate = await getTranslations("Admin.communications");
   const communicationsSettings = await getCommunicationsSettings();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Communication</h1>
-        <p className="text-muted-foreground text-sm">
-          Automated reminder timing and toggles.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Reminders</CardTitle>
-          <CardDescription>
-            Emails go to the student, falling back to their guardian; each
-            reminder is sent at most once. Template copy lives under the
-            Templates section; requires SMTP to be configured.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <CommunicationsForm

@@ -14,7 +14,6 @@ import {
 export {
   EMAIL_LOG_STATUSES,
   EMAIL_LOG_TYPES,
-  EMAIL_TYPE_LABELS,
   type EmailLogEntry,
   type EmailLogStatus,
   type EmailLogType,

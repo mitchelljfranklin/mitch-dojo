@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import {
   Card,
@@ -19,7 +21,10 @@ import { saveEmailLogRetentionSettings } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Email log" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.emailLog");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminEmailLogPage({
   searchParams,
@@ -28,6 +33,7 @@ export default async function AdminEmailLogPage({
 }) {
   const user = await requirePermission(PERMISSIONS.AUDIT_VIEW);
   const canRetry = hasPermission(user.permissions, PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.emailLog");
   const emailLogRetention = await getEmailLogRetention();
   const query = await searchParams;
 
@@ -37,18 +43,16 @@ export default async function AdminEmailLogPage({
         <FlashToast variant="error" message={query.emailError} />
       ) : null}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Email log</h1>
-        <p className="text-muted-foreground text-sm">
-          Every email the platform sent, with delivery status.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Email log</CardTitle>
-          <CardDescription>
-            Failed emails can be retried with the current templates.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* The log query is the slowest on this page — stream it so the
@@ -62,18 +66,18 @@ export default async function AdminEmailLogPage({
       {canRetry ? (
         <Card>
           <CardHeader>
-            <CardTitle>Retention</CardTitle>
+            <CardTitle>{translate("retention.title")}</CardTitle>
             <CardDescription>
-              Email log rows older than this are pruned by the scheduler. Set 0
-              to keep them forever.
+              {translate("retention.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <RetentionForm
+              key={emailLogRetention}
               action={saveEmailLogRetentionSettings}
               fieldName="emailLogRetention"
-              label="Keep email logs for (days)"
-              help="Default 14 days."
+              label={translate("retention.label")}
+              help={translate("retention.help")}
               value={emailLogRetention}
             />
           </CardContent>

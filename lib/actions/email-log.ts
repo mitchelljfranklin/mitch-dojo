@@ -10,6 +10,7 @@ import { createPortalLink } from "@/lib/db/portal";
 import { getOrganizationSettings } from "@/lib/settings";
 import { env } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 
 export type EmailRetryState =
   { error: string } | { ok: true; message: string } | undefined;
@@ -23,25 +24,24 @@ export async function retryEmailSendAction(
   formData: FormData,
 ): Promise<EmailRetryState> {
   const user = await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.emailLog.errors");
   const logId = String(formData.get("logId") ?? "");
 
   const log = await getEmailLogById(logId);
   if (!log) {
-    return { error: "That email log entry no longer exists." };
+    return { error: translate("missingLog") };
   }
   if (log.status !== "FAILED") {
-    return { error: "Only failed emails can be retried." };
+    return { error: translate("onlyFailed") };
   }
   if (log.type === "RESET") {
     return {
-      error:
-        "Reset links are single-use and cannot be resent. Ask the user to request a new reset.",
+      error: translate("reset"),
     };
   }
   if (log.type === "BOOKING") {
     return {
-      error:
-        "Booking confirmations cannot be resent — the class details only exist in the booking. Contact the prospect directly.",
+      error: translate("booking"),
     };
   }
 
@@ -56,16 +56,15 @@ export async function retryEmailSendAction(
       { emailed: result.ok },
     );
     return result.ok
-      ? { ok: true, message: "Test email retried." }
-      : { error: "The retry failed — check the error detail." };
+      ? { ok: true, message: translate("testSent") }
+      : { error: translate("retryFailed") };
   }
 
   const { name: appName } = await getOrganizationSettings();
   const tokens = await regenerateTokens(log.type, log.dedupKey, appName);
   if (!tokens) {
     return {
-      error:
-        "The original recipient or related record no longer exists — this email cannot be retried.",
+      error: translate("missingRecord"),
     };
   }
 
@@ -89,8 +88,8 @@ export async function retryEmailSendAction(
   );
 
   return result.ok
-    ? { ok: true, message: "Email retried successfully." }
-    : { error: "The retry failed — check the error detail." };
+    ? { ok: true, message: translate("retried") }
+    : { error: translate("retryFailed") };
 }
 
 // Rebuilds the token map for a retry from current data, using the dedup key

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ export function EmailTemplatesForm(props: EmailTemplatesFormProps) {
 }
 
 function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
+  const translate = useTranslations("Admin.templates");
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
     FormData
@@ -61,13 +63,17 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
       <form action={formAction} className="flex max-w-2xl flex-col gap-6">
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="classReminderSubject">Class reminder subject</Label>
+            <Label htmlFor="classReminderSubject">
+              {translate("labels.classReminderSubject")}
+            </Label>
             <Input
               id="classReminderSubject"
               name="classReminderSubject"
               defaultValue={templates.classReminderSubject}
             />
-            <Label htmlFor="classReminderBody">Class reminder body</Label>
+            <Label htmlFor="classReminderBody">
+              {translate("labels.classReminderBody")}
+            </Label>
             <Textarea
               id="classReminderBody"
               name="classReminderBody"
@@ -75,20 +81,24 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.classReminderBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{className}}"},
-              {" {{classTime}}"}, {"{{appName}}"}
+              {translate("placeholders", {
+                fields:
+                  "{{studentName}}, {{className}}, {{classTime}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="paymentReminderSubject">
-              Payment reminder subject
+              {translate("labels.paymentReminderSubject")}
             </Label>
             <Input
               id="paymentReminderSubject"
               name="paymentReminderSubject"
               defaultValue={templates.paymentReminderSubject}
             />
-            <Label htmlFor="paymentReminderBody">Payment reminder body</Label>
+            <Label htmlFor="paymentReminderBody">
+              {translate("labels.paymentReminderBody")}
+            </Label>
             <Textarea
               id="paymentReminderBody"
               name="paymentReminderBody"
@@ -96,18 +106,24 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.paymentReminderBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{invoiceNumber}}"},
-              {" {{dueDate}}"}, {"{{appName}}"}
+              {translate("placeholders", {
+                fields:
+                  "{{studentName}}, {{invoiceNumber}}, {{dueDate}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="birthdaySubject">Birthday subject</Label>
+            <Label htmlFor="birthdaySubject">
+              {translate("labels.birthdaySubject")}
+            </Label>
             <Input
               id="birthdaySubject"
               name="birthdaySubject"
               defaultValue={templates.birthdaySubject}
             />
-            <Label htmlFor="birthdayBody">Birthday body</Label>
+            <Label htmlFor="birthdayBody">
+              {translate("labels.birthdayBody")}
+            </Label>
             <Textarea
               id="birthdayBody"
               name="birthdayBody"
@@ -115,17 +131,23 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.birthdayBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{appName}}"}
+              {translate("placeholders", {
+                fields: "{{studentName}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="bookingSubject">Booking confirmation subject</Label>
+            <Label htmlFor="bookingSubject">
+              {translate("labels.bookingSubject")}
+            </Label>
             <Input
               id="bookingSubject"
               name="bookingSubject"
               defaultValue={templates.bookingSubject}
             />
-            <Label htmlFor="bookingBody">Booking confirmation body</Label>
+            <Label htmlFor="bookingBody">
+              {translate("labels.bookingBody")}
+            </Label>
             <Textarea
               id="bookingBody"
               name="bookingBody"
@@ -133,20 +155,24 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.bookingBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{className}}"},
-              {" {{classTime}}"}, {"{{appName}}"}
+              {translate("placeholders", {
+                fields:
+                  "{{studentName}}, {{className}}, {{classTime}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="bookingStaffSubject">
-              New-booking alert subject (staff)
+              {translate("labels.bookingStaffSubject")}
             </Label>
             <Input
               id="bookingStaffSubject"
               name="bookingStaffSubject"
               defaultValue={templates.bookingStaffSubject}
             />
-            <Label htmlFor="bookingStaffBody">New-booking alert body</Label>
+            <Label htmlFor="bookingStaffBody">
+              {translate("labels.bookingStaffBody")}
+            </Label>
             <Textarea
               id="bookingStaffBody"
               name="bookingStaffBody"
@@ -154,21 +180,24 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.bookingStaffBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{bookingFor}}"},
-              {" {{contact}}"}, {"{{className}}"}, {"{{classTime}}"},
-              {" {{appName}}"}
+              {translate("placeholders", {
+                fields:
+                  "{{studentName}}, {{bookingFor}}, {{contact}}, {{className}}, {{classTime}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="gradingInviteSubject">
-              Grading invitation subject
+              {translate("labels.gradingInviteSubject")}
             </Label>
             <Input
               id="gradingInviteSubject"
               name="gradingInviteSubject"
               defaultValue={templates.gradingInviteSubject}
             />
-            <Label htmlFor="gradingInviteBody">Grading invitation body</Label>
+            <Label htmlFor="gradingInviteBody">
+              {translate("labels.gradingInviteBody")}
+            </Label>
             <Textarea
               id="gradingInviteBody"
               name="gradingInviteBody"
@@ -176,20 +205,24 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.gradingInviteBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{disciplineName}}"},
-              {" {{eventName}}"}, {"{{eventDate}}"}, {"{{appName}}"}
+              {translate("placeholders", {
+                fields:
+                  "{{studentName}}, {{disciplineName}}, {{eventName}}, {{eventDate}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="trialFollowUpSubject">
-              Trial follow-up subject
+              {translate("labels.trialFollowUpSubject")}
             </Label>
             <Input
               id="trialFollowUpSubject"
               name="trialFollowUpSubject"
               defaultValue={templates.trialFollowUpSubject}
             />
-            <Label htmlFor="trialFollowUpBody">Trial follow-up body</Label>
+            <Label htmlFor="trialFollowUpBody">
+              {translate("labels.trialFollowUpBody")}
+            </Label>
             <Textarea
               id="trialFollowUpBody"
               name="trialFollowUpBody"
@@ -197,13 +230,14 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.trialFollowUpBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{trialDays}}"},
-              {" {{appName}}"}
+              {translate("placeholders", {
+                fields: "{{studentName}}, {{trialDays}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="agreementReminderSubject">
-              Agreement reminder subject
+              {translate("labels.agreementReminderSubject")}
             </Label>
             <Input
               id="agreementReminderSubject"
@@ -211,7 +245,7 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.agreementReminderSubject}
             />
             <Label htmlFor="agreementReminderBody">
-              Agreement reminder body
+              {translate("labels.agreementReminderBody")}
             </Label>
             <Textarea
               id="agreementReminderBody"
@@ -220,13 +254,14 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.agreementReminderBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{studentName}}"}, {"{{documentTitle}}"},
-              {" {{appName}}"}
+              {translate("placeholders", {
+                fields: "{{studentName}}, {{documentTitle}}, {{appName}}",
+              })}
             </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="verificationReminderSubject">
-              Verification reminder subject
+              {translate("labels.verificationReminderSubject")}
             </Label>
             <Input
               id="verificationReminderSubject"
@@ -234,7 +269,7 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.verificationReminderSubject}
             />
             <Label htmlFor="verificationReminderBody">
-              Verification reminder body
+              {translate("labels.verificationReminderBody")}
             </Label>
             <Textarea
               id="verificationReminderBody"
@@ -243,8 +278,10 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
               defaultValue={templates.verificationReminderBody}
             />
             <p className="text-muted-foreground text-xs">
-              Placeholders: {"{{trainerName}}"}, {"{{verificationName}}"},
-              {" {{expiryDate}}"}, {"{{appName}}"}
+              {translate("placeholders", {
+                fields:
+                  "{{trainerName}}, {{verificationName}}, {{expiryDate}}, {{appName}}",
+              })}
             </p>
           </div>
         </div>
@@ -261,7 +298,7 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
         ) : null}
         <div>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving..." : "Save email templates"}
+            {isPending ? translate("saving") : translate("save")}
           </Button>
         </div>
       </form>
@@ -270,25 +307,24 @@ function EmailTemplatesFormInner({ templates }: EmailTemplatesFormProps) {
 
       <form action={testAction} className="flex max-w-md flex-col gap-3">
         <div>
-          <Label>Send a sample reminder</Label>
+          <Label>{translate("sampleTitle")}</Label>
           <p className="text-muted-foreground text-xs">
-            Sends one sample class-reminder email through your configured SMTP
-            so you can check the templates render correctly.
+            {translate("sampleHint")}
           </p>
         </div>
         <div className="flex items-end gap-2">
           <div className="grid flex-1 gap-2">
-            <Label htmlFor="sample-recipient">Recipient</Label>
+            <Label htmlFor="sample-recipient">{translate("recipient")}</Label>
             <Input
               id="sample-recipient"
               name="recipient"
               type="email"
-              placeholder="[EMAIL]"
+              placeholder="office@example.com"
               required
             />
           </div>
           <Button type="submit" variant="outline" disabled={isTesting}>
-            {isTesting ? "Sending..." : "Send sample"}
+            {isTesting ? translate("sending") : translate("send")}
           </Button>
         </div>
         {testState && !testState.ok ? (

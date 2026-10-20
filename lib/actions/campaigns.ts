@@ -6,6 +6,7 @@ import { createCampaign } from "@/lib/db/campaigns";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { getField } from "@/lib/utils";
 import { campaignSchema } from "@/lib/schemas/campaign";
+import { getTranslations } from "next-intl/server";
 
 export type CampaignActionState =
   { error: string } | { ok: true; message: string } | undefined;
@@ -17,6 +18,7 @@ export async function createCampaignAction(
   formData: FormData,
 ): Promise<CampaignActionState> {
   const actor = await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
+  const translate = await getTranslations("Admin.campaigns.errors");
 
   const parsed = campaignSchema.safeParse({
     subject: getField(formData, "subject"),
@@ -25,7 +27,7 @@ export async function createCampaignAction(
     audienceRefId: getField(formData, "audienceRefId"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   const { audienceType } = parsed.data;
@@ -34,7 +36,7 @@ export async function createCampaignAction(
     audienceType === "DISCIPLINE" ||
     audienceType === "COURSE";
   if (needsRef && !parsed.data.audienceRefId) {
-    return { error: "Choose a target for this audience." };
+    return { error: translate("target") };
   }
 
   const { id, recipientCount, label } = await createCampaign({
@@ -53,11 +55,11 @@ export async function createCampaignAction(
   if (recipientCount === 0) {
     return {
       ok: true,
-      message: "Queued — but no reachable recipients matched that audience.",
+      message: translate("queuedNone"),
     };
   }
   return {
     ok: true,
-    message: `Queued to ${recipientCount} recipient(s) — sending within a few minutes.`,
+    message: translate("queued", { count: recipientCount }),
   };
 }

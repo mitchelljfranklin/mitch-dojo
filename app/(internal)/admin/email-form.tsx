@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ function EmailFormInner({
   smtpOAuth2ClientSecretConfigured,
   smtpOAuth2RefreshTokenConfigured,
 }: EmailFormProps) {
+  const translate = useTranslations("Admin.email.form");
   const [state, formAction, isPending] = useActionState(
     saveEmailSettings,
     initialState,
@@ -61,11 +63,11 @@ function EmailFormInner({
   return (
     <form action={formAction} className="grid max-w-md gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="smtp-host">SMTP host</Label>
+        <Label htmlFor="smtp-host">{translate("host")}</Label>
         <Input id="smtp-host" name="smtpHost" defaultValue={smtpHost} />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="smtp-port">SMTP port</Label>
+        <Label htmlFor="smtp-port">{translate("port")}</Label>
         <Input
           id="smtp-port"
           name="smtpPort"
@@ -76,15 +78,13 @@ function EmailFormInner({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="smtp-user">SMTP username</Label>
+        <Label htmlFor="smtp-user">{translate("user")}</Label>
         <Input id="smtp-user" name="smtpUser" defaultValue={smtpUser} />
-        <p className="text-muted-foreground text-xs">
-          The mailbox the messages send from — your address for both auth modes.
-        </p>
+        <p className="text-muted-foreground text-xs">{translate("userHint")}</p>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="smtp-auth-type">Authentication</Label>
+        <Label htmlFor="smtp-auth-type">{translate("auth")}</Label>
         <select
           id="smtp-auth-type"
           name="smtpAuthType"
@@ -92,15 +92,17 @@ function EmailFormInner({
           onChange={(event) => setAuthType(event.target.value)}
           className="border-input bg-background h-9 rounded-md border px-3 text-sm"
         >
-          <option value="basic">Username & password</option>
-          <option value="oauth2">OAuth2 (Gmail / Microsoft 365)</option>
+          <option value="basic">{translate("authBasic")}</option>
+          <option value="oauth2">{translate("authOAuth2")}</option>
         </select>
       </div>
 
       {isOauth2 ? (
         <>
           <div className="grid gap-2">
-            <Label htmlFor="smtp-oauth2-provider">OAuth2 provider</Label>
+            <Label htmlFor="smtp-oauth2-provider">
+              {translate("oauthProvider")}
+            </Label>
             <select
               id="smtp-oauth2-provider"
               name="smtpOAuth2Provider"
@@ -108,12 +110,14 @@ function EmailFormInner({
               onChange={(event) => setOauth2Provider(event.target.value)}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             >
-              <option value="google">Google</option>
-              <option value="microsoft">Microsoft (Entra ID)</option>
+              <option value="google">{translate("oauthGoogle")}</option>
+              <option value="microsoft">{translate("oauthMicrosoft")}</option>
             </select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="smtp-oauth2-client-id">OAuth2 client ID</Label>
+            <Label htmlFor="smtp-oauth2-client-id">
+              {translate("oauthClientId")}
+            </Label>
             <Input
               id="smtp-oauth2-client-id"
               name="smtpOAuth2ClientId"
@@ -123,23 +127,22 @@ function EmailFormInner({
           </div>
           {isMicrosoft ? (
             <div className="grid gap-2">
-              <Label htmlFor="smtp-oauth2-tenant">Entra ID tenant ID</Label>
+              <Label htmlFor="smtp-oauth2-tenant">{translate("tenant")}</Label>
               <Input
                 id="smtp-oauth2-tenant"
                 name="smtpOAuth2Tenant"
                 defaultValue={smtpOAuth2Tenant}
-                placeholder="Directory (tenant) ID"
+                placeholder={translate("tenantPlaceholder")}
                 autoComplete="off"
               />
               <p className="text-muted-foreground text-xs">
-                Builds the token endpoint
-                (login.microsoftonline.com/your-tenant-id) and the SMTP scope.
+                {translate("tenantHint")}
               </p>
             </div>
           ) : null}
           <div className="grid gap-2">
             <Label htmlFor="smtp-oauth2-client-secret">
-              OAuth2 client secret
+              {translate("clientSecret")}
             </Label>
             <Input
               id="smtp-oauth2-client-secret"
@@ -148,14 +151,14 @@ function EmailFormInner({
               autoComplete="off"
               placeholder={
                 smtpOAuth2ClientSecretConfigured
-                  ? "Leave blank to keep current secret"
-                  : "Client secret value"
+                  ? translate("clientSecretKeep")
+                  : translate("clientSecretPlaceholder")
               }
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="smtp-oauth2-refresh-token">
-              OAuth2 refresh token
+              {translate("refreshToken")}
             </Label>
             <Input
               id="smtp-oauth2-refresh-token"
@@ -164,15 +167,15 @@ function EmailFormInner({
               autoComplete="off"
               placeholder={
                 smtpOAuth2RefreshTokenConfigured
-                  ? "Leave blank to keep current token"
-                  : "Refresh token from the consent flow"
+                  ? translate("refreshTokenKeep")
+                  : translate("refreshTokenPlaceholder")
               }
             />
             <p className="text-muted-foreground text-xs">
               {isMicrosoft
-                ? "Delegated token with SMTP.Send scope, obtained offline (offline_access)."
-                : "Google refresh token with the https://mail.google.com/ scope."}{" "}
-              Stored encrypted at rest and never displayed.
+                ? translate("microsoftTokenHint")
+                : translate("googleTokenHint")}{" "}
+              {translate("tokenStored")}
             </p>
           </div>
         </>
@@ -196,7 +199,7 @@ function EmailFormInner({
             value={smtpOAuth2Tenant}
           />
           <div className="grid gap-2">
-            <Label htmlFor="smtp-password">SMTP password</Label>
+            <Label htmlFor="smtp-password">{translate("password")}</Label>
             <Input
               id="smtp-password"
               name="smtpPassword"
@@ -204,19 +207,19 @@ function EmailFormInner({
               autoComplete="off"
               placeholder={
                 smtpPasswordConfigured
-                  ? "Leave blank to keep current password"
-                  : "Enter SMTP password"
+                  ? translate("passwordKeep")
+                  : translate("passwordPlaceholder")
               }
             />
             <p className="text-muted-foreground text-xs">
-              Stored encrypted at rest and never displayed.
+              {translate("passwordStored")}
             </p>
           </div>
         </>
       )}
 
       <div className="grid gap-2">
-        <Label htmlFor="from-address">From address</Label>
+        <Label htmlFor="from-address">{translate("fromAddress")}</Label>
         <Input
           id="from-address"
           name="fromAddress"
@@ -225,12 +228,12 @@ function EmailFormInner({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="from-name">From name</Label>
+        <Label htmlFor="from-name">{translate("fromName")}</Label>
         <Input id="from-name" name="fromName" defaultValue={fromName} />
       </div>
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending} size="sm">
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>

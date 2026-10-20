@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,9 @@ import { useActionFeedback } from "@/hooks/use-action-feedback";
 import {
   EMAIL_LOG_STATUSES,
   EMAIL_LOG_TYPES,
-  EMAIL_TYPE_LABELS,
   type EmailLogEntry,
+  type EmailLogType,
 } from "@/lib/schemas/email-log";
-import { formatDate } from "@/lib/utils";
 
 const TYPE_VARIANTS: Record<
   string,
@@ -61,10 +61,6 @@ function isRetryable(log: EmailLogEntry): boolean {
   );
 }
 
-function timeLabel(date: Date): string {
-  return formatDate(date);
-}
-
 type EmailLogFormProps = {
   result: { rows: EmailLogEntry[]; total: number };
   filters: {
@@ -88,6 +84,8 @@ export function EmailLogForm({
   pageSize,
   canRetry,
 }: EmailLogFormProps) {
+  const translate = useTranslations("Admin.emailLog");
+  const translateCommon = useTranslations("Common");
   const totalPages = Math.max(1, Math.ceil(result.total / pageSize));
   const filterEntries = Object.entries(filters).filter(
     ([, value]) => value && value.length > 0,
@@ -107,47 +105,52 @@ export function EmailLogForm({
     <div className="flex flex-col gap-4">
       <form className="flex flex-wrap items-end gap-3">
         <div className="grid w-36 gap-2">
-          <Label htmlFor="email-status">Status</Label>
+          <Label htmlFor="email-status">{translate("filters.status")}</Label>
           <AutoSubmitSelect
             name="emailStatus"
             id="email-status"
             defaultValue={filters.emailStatus || "ALL"}
             options={[
-              { value: "ALL", label: "All statuses" },
+              { value: "ALL", label: translate("filters.allStatuses") },
               ...EMAIL_LOG_STATUSES.map((status) => ({
                 value: status,
-                label: status === "SENT" ? "Sent" : "Failed",
+                label:
+                  status === "SENT"
+                    ? translate("filters.sent")
+                    : translate("filters.failed"),
               })),
             ]}
           />
         </div>
         <div className="grid w-44 gap-2">
-          <Label htmlFor="email-type">Type</Label>
+          <Label htmlFor="email-type">{translate("filters.type")}</Label>
           <AutoSubmitSelect
             name="emailType"
             id="email-type"
             defaultValue={filters.emailType || "ALL"}
             options={[
-              { value: "ALL", label: "All types" },
+              { value: "ALL", label: translate("filters.allTypes") },
               ...EMAIL_LOG_TYPES.map((type) => ({
                 value: type,
-                label: EMAIL_TYPE_LABELS[type],
+                label: translate(`types.${type}`),
               })),
             ]}
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email-recipient">Recipient</Label>
+          <Label htmlFor="email-recipient">
+            {translate("filters.recipient")}
+          </Label>
           <Input
             id="email-recipient"
             name="emailRecipient"
             defaultValue={filters.emailRecipient}
-            placeholder="Search recipient"
+            placeholder={translate("filters.recipientPlaceholder")}
             className="w-44"
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email-from">From</Label>
+          <Label htmlFor="email-from">{translate("filters.from")}</Label>
           <Input
             id="email-from"
             name="emailFrom"
@@ -157,7 +160,7 @@ export function EmailLogForm({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email-to">To</Label>
+          <Label htmlFor="email-to">{translate("filters.to")}</Label>
           <Input
             id="email-to"
             name="emailTo"
@@ -167,33 +170,35 @@ export function EmailLogForm({
           />
         </div>
         <Button type="submit" size="sm" variant="outline">
-          Filter
+          {translate("filters.filter")}
         </Button>
         <Link
           href="/admin/email-log"
           className="text-muted-foreground pb-2 text-sm hover:underline"
         >
-          Clear
+          {translate("filters.clear")}
         </Link>
       </form>
 
       {result.rows.length === 0 ? (
         <p className="text-muted-foreground py-6 text-center text-sm">
-          No emails match these filters.
+          {translate("empty")}
         </p>
       ) : (
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Recipient</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Detail</TableHead>
-                <TableHead>Sent by</TableHead>
-                {canRetry ? <TableHead>Action</TableHead> : null}
+                <TableHead>{translate("columns.date")}</TableHead>
+                <TableHead>{translate("columns.recipient")}</TableHead>
+                <TableHead>{translate("columns.subject")}</TableHead>
+                <TableHead>{translate("columns.type")}</TableHead>
+                <TableHead>{translate("columns.status")}</TableHead>
+                <TableHead>{translate("columns.detail")}</TableHead>
+                <TableHead>{translate("columns.sentBy")}</TableHead>
+                {canRetry ? (
+                  <TableHead>{translate("columns.action")}</TableHead>
+                ) : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -206,30 +211,33 @@ export function EmailLogForm({
       )}
 
       <p className="text-muted-foreground text-xs" aria-live="polite">
-        Page {page} of {totalPages} · {result.total} email
-        {result.total === 1 ? "" : "s"}
+        {translate("page", {
+          page,
+          totalPages,
+          total: result.total,
+        })}
       </p>
       <div className="flex items-center gap-2">
         {page > 1 ? (
           <Button asChild variant="outline" size="sm">
             <Link href={pageHref(page - 1)} rel="prev">
-              Previous
+              {translateCommon("previous")}
             </Link>
           </Button>
         ) : (
           <Button variant="outline" size="sm" disabled>
-            Previous
+            {translateCommon("previous")}
           </Button>
         )}
         {page < totalPages ? (
           <Button asChild variant="outline" size="sm">
             <Link href={pageHref(page + 1)} rel="next">
-              Next
+              {translateCommon("next")}
             </Link>
           </Button>
         ) : (
           <Button variant="outline" size="sm" disabled>
-            Next
+            {translateCommon("next")}
           </Button>
         )}
       </div>
@@ -244,6 +252,8 @@ function EmailLogRow({
   log: EmailLogEntry;
   canRetry: boolean;
 }) {
+  const translate = useTranslations("Admin.emailLog");
+  const formatter = useFormatter();
   const [state, formAction, isPending] = useActionState<RetryState, FormData>(
     retryEmailSendAction,
     undefined,
@@ -252,10 +262,22 @@ function EmailLogRow({
   // the action — see AGENTS.md).
   useActionFeedback(state);
 
+  const typeLabel = EMAIL_LOG_TYPES.includes(log.type as EmailLogType)
+    ? translate(`types.${log.type as EmailLogType}`)
+    : log.type;
+  const statusLabel =
+    log.status === "SENT"
+      ? translate("filters.sent")
+      : translate("filters.failed");
+
   return (
     <TableRow>
       <TableCell className="text-xs whitespace-nowrap">
-        {timeLabel(log.sentAt)}
+        {formatter.dateTime(log.sentAt, {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}
       </TableCell>
       <TableCell
         className="max-w-48 truncate font-mono text-xs"
@@ -271,20 +293,19 @@ function EmailLogRow({
       </TableCell>
       <TableCell>
         <Badge variant={TYPE_VARIANTS[log.type] ?? "outline"}>
-          {EMAIL_TYPE_LABELS[log.type as keyof typeof EMAIL_TYPE_LABELS] ??
-            log.type}
+          {typeLabel}
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge variant={statusVariant(log.status)}>{log.status}</Badge>
+        <Badge variant={statusVariant(log.status)}>{statusLabel}</Badge>
       </TableCell>
       <TableCell
         className="max-w-56 truncate text-xs"
         title={log.errorMessage ?? ""}
       >
         {log.status === "FAILED"
-          ? (log.errorMessage ?? "Send failed")
-          : "Accepted by SMTP server"}
+          ? (log.errorMessage ?? translate("detail.sendFailed"))
+          : translate("detail.accepted")}
       </TableCell>
       <TableCell className="text-xs">{log.sentByName}</TableCell>
       {canRetry ? (
@@ -299,7 +320,7 @@ function EmailLogRow({
                 className="h-7 px-2 text-xs"
                 disabled={isPending}
               >
-                {isPending ? "Retrying…" : "Retry"}
+                {isPending ? translate("retrying") : translate("retry")}
               </Button>
             </form>
           ) : null}

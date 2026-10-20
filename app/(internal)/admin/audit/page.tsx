@@ -77,6 +77,7 @@ export default async function AdminAuditPage({
           </CardHeader>
           <CardContent>
             <RetentionForm
+              key={auditRetention}
               action={saveAuditRetentionSettings}
               fieldName="auditRetention"
               label="Keep audit logs for (days)"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,6 +53,7 @@ function CommunicationsFormInner({
   verificationReminderDaysBefore,
   verificationReminderRecipients,
 }: CommunicationsFormProps) {
+  const translate = useTranslations("Admin.communications.form");
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
     FormData
@@ -61,20 +63,21 @@ function CommunicationsFormInner({
   return (
     <form action={formAction} className="flex max-w-2xl flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <Label>Class reminders</Label>
+        <Label>{translate("classTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          Emailed to students (guardian fallback) of the class&apos;s discipline
-          and location, ahead of each session.
+          {translate("classHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="classRemindersEnabled"
             defaultChecked={classRemindersEnabled}
           />
-          Enable class reminders
+          {translate("classEnable")}
         </label>
         <div className="grid max-w-xs gap-2">
-          <Label htmlFor="classReminderHoursBefore">Hours before class</Label>
+          <Label htmlFor="classReminderHoursBefore">
+            {translate("classHours")}
+          </Label>
           <Input
             id="classReminderHoursBefore"
             name="classReminderHoursBefore"
@@ -89,21 +92,20 @@ function CommunicationsFormInner({
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>Payment reminders</Label>
+        <Label>{translate("paymentTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          Sent once per invoice when it enters the due-soon window, and once
-          more when it has been overdue for the given days.
+          {translate("paymentHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="paymentRemindersEnabled"
             defaultChecked={paymentRemindersEnabled}
           />
-          Enable payment reminders
+          {translate("paymentEnable")}
         </label>
         <div className="grid max-w-xs gap-2">
           <Label htmlFor="paymentReminderDaysBeforeDue">
-            Days before due date
+            {translate("paymentDays")}
           </Label>
           <Input
             id="paymentReminderDaysBeforeDue"
@@ -114,7 +116,7 @@ function CommunicationsFormInner({
             defaultValue={paymentReminderDaysBeforeDue}
           />
           <Label htmlFor="paymentReminderOverdueDays">
-            Days overdue before the overdue reminder
+            {translate("paymentOverdue")}
           </Label>
           <Input
             id="paymentReminderOverdueDays"
@@ -130,35 +132,33 @@ function CommunicationsFormInner({
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>Birthday emails</Label>
+        <Label>{translate("birthdayTitle")}</Label>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="birthdayEmailsEnabled"
             defaultChecked={birthdayEmailsEnabled}
           />
-          Enable birthday emails (sent on the day)
+          {translate("birthdayEnable")}
         </label>
       </div>
 
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>Trial follow-ups</Label>
+        <Label>{translate("trialTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          One email per open trial, this many days after the class the prospect
-          booked (or after they joined the pipeline for walk-ins), if they have
-          not converted.
+          {translate("trialHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="trialFollowUpsEnabled"
             defaultChecked={trialFollowUpsEnabled}
           />
-          Enable trial follow-up emails
+          {translate("trialEnable")}
         </label>
         <div className="grid max-w-xs gap-2">
           <Label htmlFor="trialFollowUpDaysAfterJoin">
-            Days after the trial date before follow-up
+            {translate("trialDays")}
           </Label>
           <Input
             id="trialFollowUpDaysAfterJoin"
@@ -174,39 +174,36 @@ function CommunicationsFormInner({
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>Booking confirmations</Label>
+        <Label>{translate("bookingTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          One confirmation email to the prospect the moment their booking lands
-          on the public booking page. Deduped per booking.
+          {translate("bookingHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="bookingConfirmationsEnabled"
             defaultChecked={bookingConfirmationsEnabled}
           />
-          Enable booking confirmation emails
+          {translate("bookingEnable")}
         </label>
       </div>
 
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>New booking alerts (staff)</Label>
+        <Label>{translate("staffTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          One alert email per recipient every time a booking lands on the public
-          booking page, so staff see it without opening the Trials page.
-          Template editable under Admin → Templates.
+          {translate("staffHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="bookingStaffAlertsEnabled"
             defaultChecked={bookingStaffAlertsEnabled}
           />
-          Enable new-booking alert emails
+          {translate("staffEnable")}
         </label>
         <div className="grid max-w-md gap-2">
           <Label htmlFor="bookingStaffAlertRecipients">
-            Alert recipients (comma-separated emails)
+            {translate("staffRecipients")}
           </Label>
           <Input
             id="bookingStaffAlertRecipients"
@@ -216,7 +213,7 @@ function CommunicationsFormInner({
             defaultValue={bookingStaffAlertRecipients.join(", ")}
           />
           <p className="text-muted-foreground text-xs">
-            Alerts start once at least one address is saved.
+            {translate("staffRecipientsHint")}
           </p>
         </div>
       </div>
@@ -224,39 +221,36 @@ function CommunicationsFormInner({
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>Agreement reminders</Label>
+        <Label>{translate("agreementTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          One email per student per unsigned or out-of-date agreement. Bumping a
-          document&apos;s version re-arms the reminder. Template editable under
-          Admin → Templates.
+          {translate("agreementHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="agreementRemindersEnabled"
             defaultChecked={agreementRemindersEnabled}
           />
-          Enable agreement reminder emails
+          {translate("agreementEnable")}
         </label>
       </div>
 
       <Separator />
 
       <div className="flex flex-col gap-2">
-        <Label>Verification reminders</Label>
+        <Label>{translate("verificationTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          One email per trainer per expiring or expired credential (e.g. a
-          working-with-children check). Renewing the record re-arms it.
+          {translate("verificationHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="verificationRemindersEnabled"
             defaultChecked={verificationRemindersEnabled}
           />
-          Enable verification reminder emails
+          {translate("verificationEnable")}
         </label>
         <div className="grid max-w-xs gap-2">
           <Label htmlFor="verificationReminderDaysBefore">
-            Days before expiry to remind
+            {translate("verificationDays")}
           </Label>
           <Input
             id="verificationReminderDaysBefore"
@@ -269,7 +263,7 @@ function CommunicationsFormInner({
         </div>
         <div className="grid max-w-md gap-2">
           <Label htmlFor="verificationReminderRecipients">
-            Fallback recipients (comma-separated emails)
+            {translate("verificationRecipients")}
           </Label>
           <Input
             id="verificationReminderRecipients"
@@ -279,8 +273,7 @@ function CommunicationsFormInner({
             defaultValue={verificationReminderRecipients.join(", ")}
           />
           <p className="text-muted-foreground text-xs">
-            Used when a trainer has no email on their record. Reminders repeat
-            weekly while a credential stays expired or expiring.
+            {translate("verificationRecipientsHint")}
           </p>
         </div>
       </div>
@@ -297,7 +290,7 @@ function CommunicationsFormInner({
       ) : null}
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save communication settings"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>

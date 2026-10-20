@@ -23,21 +23,6 @@ export const EMAIL_LOG_TYPES = [
 ] as const;
 export type EmailLogType = (typeof EMAIL_LOG_TYPES)[number];
 
-export const EMAIL_TYPE_LABELS: Record<EmailLogType, string> = {
-  INVITE: "Invite",
-  REMINDER: "Reminder",
-  CLASSREMINDER: "Class reminder",
-  PAYMENTREMINDER: "Payment reminder",
-  TRIALFOLLOWUP: "Trial follow-up",
-  PORTALLINK: "Portal link",
-  BIRTHDAY: "Birthday",
-  BOOKING: "Booking confirmation",
-  BOOKINGSTAFF: "New-booking alert (staff)",
-  CAMPAIGN: "Campaign",
-  RESET: "Password reset",
-  TEST: "SMTP test",
-};
-
 export type EmailLogEntry = {
   id: string;
   type: string;

@@ -325,7 +325,8 @@ export async function saveEmailLogRetentionSettings(
       "Setting",
       "email-log-retention",
     );
-  return { ok: true, message: "Email log retention saved." };
+  const translate = await getTranslations("Admin.emailLog.errors");
+  return { ok: true, message: translate("retentionSaved") };
 }
 
 export async function saveSchedulingSettings(
@@ -355,6 +356,8 @@ export async function saveEmailSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translateForm = await getTranslations("Admin.email.form");
+  const translateErrors = await getTranslations("Admin.email.errors");
 
   const { emailSettingsSchema } = await import("@/lib/settings/schema");
   const parsed = emailSettingsSchema.safeParse({
@@ -374,7 +377,7 @@ export async function saveEmailSettings(
   if (!parsed.success) {
     return {
       ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+      message: translateErrors("invalid"),
     };
   }
 
@@ -385,23 +388,25 @@ export async function saveEmailSettings(
   if (parsed.data.smtpAuthType === "oauth2") {
     const currentEmail = await getEmailSettings();
     const missing = [
-      !parsed.data.smtpUser ? "SMTP username" : null,
-      !parsed.data.smtpOAuth2ClientId ? "OAuth2 client ID" : null,
+      !parsed.data.smtpUser ? translateForm("user") : null,
+      !parsed.data.smtpOAuth2ClientId ? translateForm("oauthClientId") : null,
       !parsed.data.smtpOAuth2ClientSecret &&
       !formData.get("smtpOAuth2ClientSecret") &&
       !currentEmail.smtpOAuth2ClientSecretConfigured
-        ? "OAuth2 client secret"
+        ? translateForm("clientSecret")
         : null,
       !parsed.data.smtpOAuth2RefreshToken &&
       !formData.get("smtpOAuth2RefreshToken") &&
       !currentEmail.smtpOAuth2RefreshTokenConfigured
-        ? "OAuth2 refresh token"
+        ? translateForm("refreshToken")
         : null,
     ].filter(Boolean);
     if (missing.length > 0) {
       return {
         ok: false,
-        message: `OAuth2 auth requires: ${missing.join(", ")}.`,
+        message: translateErrors("oauthMissing", {
+          fields: missing.join(", "),
+        }),
       };
     }
   }
@@ -410,7 +415,7 @@ export async function saveEmailSettings(
   const user = await getCurrentUser();
   if (user)
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_SETTINGS, "Setting", "email");
-  return { ok: true, message: "Email settings saved." };
+  return { ok: true, message: translateErrors("saved") };
 }
 
 export async function sendSmtpTestAction(
@@ -491,6 +496,7 @@ export async function saveCommunicationsSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
+  const translate = await getTranslations("Admin.communications.errors");
 
   const parsed = communicationsSettingsSchema.safeParse({
     classRemindersEnabled: formData.get("classRemindersEnabled") === "on",
@@ -528,7 +534,7 @@ export async function saveCommunicationsSettings(
   if (!parsed.success) {
     return {
       ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+      message: translate("invalid"),
     };
   }
 
@@ -542,7 +548,7 @@ export async function saveCommunicationsSettings(
       "Setting",
       "communications",
     );
-  return { ok: true, message: "Communication settings saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function saveEmailTemplatesAction(
@@ -550,6 +556,7 @@ export async function saveEmailTemplatesAction(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
+  const translate = await getTranslations("Admin.templates.errors");
 
   const templates = {
     classReminderSubject: String(formData.get("classReminderSubject") ?? ""),
@@ -587,7 +594,7 @@ export async function saveEmailTemplatesAction(
   if (empty) {
     return {
       ok: false,
-      message: "Every subject and body must have content.",
+      message: translate("empty"),
     };
   }
 
@@ -601,7 +608,7 @@ export async function saveEmailTemplatesAction(
       "Setting",
       "email-templates",
     );
-  return { ok: true, message: "Email templates saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 // Sends one sample email through the real SMTP transport so the admin can
@@ -611,10 +618,11 @@ export async function sendCommunicationSampleAction(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
+  const translate = await getTranslations("Admin.templates.errors");
 
   const recipientRaw = String(formData.get("recipient") ?? "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientRaw)) {
-    return { ok: false, message: "Enter a valid recipient email address." };
+    return { ok: false, message: translate("invalidRecipient") };
   }
 
   const { sendEmail } = await import("@/lib/email/mailer");
@@ -634,12 +642,11 @@ export async function sendCommunicationSampleAction(
         "Setting",
         "communications.sample",
       );
-    return { ok: true, message: "Sample reminder sent." };
+    return { ok: true, message: translate("sampleSent") };
   }
   return {
     ok: false,
-    message:
-      "Send failed — check the email log. Most common cause: SMTP not configured.",
+    message: translate("sampleFailed"),
   };
 }
 

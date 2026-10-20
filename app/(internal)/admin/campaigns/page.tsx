@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -20,16 +23,20 @@ import { listCampaigns } from "@/lib/db/campaigns";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { listDisciplines } from "@/lib/db/belts";
 import { listCourseOptions } from "@/lib/db/courses";
-import { formatDate } from "@/lib/utils";
 
 import { CampaignComposer } from "./campaign-composer";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Campaigns" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.campaigns");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminCampaignsPage() {
   await requirePermission(PERMISSIONS.COMMUNICATIONS_EDIT);
+  const translate = await getTranslations("Admin.campaigns");
+  const formatter = await getFormatter();
   const [locations, disciplines, courses, campaigns] = await Promise.all([
     listAssignableLocations(),
     listDisciplines(),
@@ -37,14 +44,20 @@ export default async function AdminCampaignsPage() {
     listCampaigns(),
   ]);
 
+  const formatQueuedDate = (value: Date) =>
+    formatter.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Campaigns</h1>
-        <p className="text-muted-foreground text-sm">
-          Send a one-off email to a group. Queued campaigns are delivered by the
-          scheduler within a few minutes.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <CampaignComposer
@@ -64,26 +77,24 @@ export default async function AdminCampaignsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent campaigns</CardTitle>
-          <CardDescription>
-            Delivery is logged per recipient in the Email log.
-          </CardDescription>
+          <CardTitle>{translate("recentTitle")}</CardTitle>
+          <CardDescription>{translate("recentDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {campaigns.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No campaigns sent yet.
+              {translate("empty")}
             </p>
           ) : (
             <div className="rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Subject</TableHead>
-                    <TableHead>Audience</TableHead>
-                    <TableHead>Delivered</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Queued</TableHead>
+                    <TableHead>{translate("columns.subject")}</TableHead>
+                    <TableHead>{translate("columns.audience")}</TableHead>
+                    <TableHead>{translate("columns.delivered")}</TableHead>
+                    <TableHead>{translate("columns.status")}</TableHead>
+                    <TableHead>{translate("columns.queued")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -98,7 +109,9 @@ export default async function AdminCampaignsPage() {
                       <TableCell className="text-sm">
                         {campaign.sentCount}/{campaign.recipientCount}
                         {campaign.failedCount > 0
-                          ? ` · ${campaign.failedCount} failed`
+                          ? ` · ${translate("failedCount", {
+                              count: campaign.failedCount,
+                            })}`
                           : ""}
                       </TableCell>
                       <TableCell>
@@ -108,14 +121,14 @@ export default async function AdminCampaignsPage() {
                           }
                         >
                           {campaign.status === "SENT"
-                            ? "Sent"
+                            ? translate("statuses.sent")
                             : campaign.status === "SENDING"
-                              ? "Sending"
-                              : "Queued"}
+                              ? translate("statuses.sending")
+                              : translate("statuses.queued")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs">
-                        {formatDate(campaign.createdAt)}
+                        {formatQueuedDate(campaign.createdAt)}
                       </TableCell>
                     </TableRow>
                   ))}

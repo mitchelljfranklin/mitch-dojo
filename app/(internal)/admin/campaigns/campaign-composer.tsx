@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,19 +29,20 @@ type CampaignComposerProps = {
   courses: Option[];
 };
 
-const AUDIENCE_OPTIONS = [
-  { value: "ALL", label: "All active members" },
-  { value: "LOCATION", label: "Members at a location" },
-  { value: "DISCIPLINE", label: "Members training a discipline" },
-  { value: "COURSE", label: "Members in a course" },
-  { value: "OVERDUE", label: "Members with an overdue balance" },
-];
+const AUDIENCE_VALUES = [
+  "ALL",
+  "LOCATION",
+  "DISCIPLINE",
+  "COURSE",
+  "OVERDUE",
+] as const;
 
 export function CampaignComposer({
   locations,
   disciplines,
   courses,
 }: CampaignComposerProps) {
+  const translate = useTranslations("Admin.campaigns");
   const [state, formAction, isPending] = useActionState<
     CampaignActionState,
     FormData
@@ -61,31 +63,31 @@ export function CampaignComposer({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Compose a message</CardTitle>
+        <CardTitle>{translate("composerTitle")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex max-w-2xl flex-col gap-4">
           <input type="hidden" name="audienceType" value={audience} />
           <div className="grid gap-2">
-            <Label htmlFor="campaign-subject">Subject</Label>
+            <Label htmlFor="campaign-subject">{translate("subject")}</Label>
             <Input
               id="campaign-subject"
               name="subject"
               required
               maxLength={150}
-              placeholder="e.g. Dojo closed this Saturday"
+              placeholder={translate("subjectPlaceholder")}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="campaign-audience">Audience</Label>
+            <Label htmlFor="campaign-audience">{translate("audience")}</Label>
             <Select value={audience} onValueChange={setAudience}>
               <SelectTrigger id="campaign-audience">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {AUDIENCE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {AUDIENCE_VALUES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {translate(`audiences.${value}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -93,7 +95,7 @@ export function CampaignComposer({
           </div>
           {needsRef ? (
             <div className="grid gap-2">
-              <Label htmlFor="campaign-ref">Target</Label>
+              <Label htmlFor="campaign-ref">{translate("target")}</Label>
               <select
                 id="campaign-ref"
                 name="audienceRefId"
@@ -102,7 +104,7 @@ export function CampaignComposer({
                 className="border-input bg-background h-9 rounded-md border px-3 text-sm"
               >
                 <option value="" disabled>
-                  Choose…
+                  {translate("choose")}
                 </option>
                 {refOptions.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -113,18 +115,17 @@ export function CampaignComposer({
             </div>
           ) : null}
           <div className="grid gap-2">
-            <Label htmlFor="campaign-body">Message</Label>
+            <Label htmlFor="campaign-body">{translate("message")}</Label>
             <Textarea
               id="campaign-body"
               name="body"
               rows={6}
               required
               maxLength={5000}
-              placeholder="Markdown supported."
+              placeholder={translate("messagePlaceholder")}
             />
             <p className="text-muted-foreground text-xs">
-              Sent to each member&apos;s email, falling back to their guardian.
-              Duplicates are removed automatically.
+              {translate("messageHint")}
             </p>
           </div>
           {state && "error" in state ? (
@@ -139,7 +140,7 @@ export function CampaignComposer({
           ) : null}
           <div>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Queueing..." : "Queue campaign"}
+              {isPending ? translate("queueing") : translate("queue")}
             </Button>
           </div>
         </form>
