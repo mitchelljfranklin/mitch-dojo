@@ -44,8 +44,9 @@ plan without asking.
   enrollment import), Invoices (list, detail, payments), Trials (pipeline,
   conversion), Trainers (roster, verifications), Compliance (outstanding
   agreements), Incidents (accident book, reports), Analytics (overview,
-  charts), Reports (attendance, celebrations, revenue), and Profile
-  (account, password).
+  charts), Reports (attendance, celebrations, revenue), Profile
+  (account, password), and Admin core settings (General, Appearance,
+  Locations, Users, Roles).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -44,6 +45,7 @@ function ColorField({
   defaultHex: string;
   name: string;
 }) {
+  const translate = useTranslations("Admin.appearance");
   const [color, setColor] = useState(hexValue || defaultHex);
 
   return (
@@ -71,7 +73,7 @@ function ColorField({
           size="sm"
           onClick={() => setColor(defaultHex)}
         >
-          Reset
+          {translate("colors.reset")}
         </Button>
       </div>
     </div>
@@ -96,6 +98,7 @@ function AppearanceFormInner({
   bookingHeadline,
   bookingDescription,
 }: AppearanceFormProps) {
+  const translate = useTranslations("Admin.appearance");
   const [state, action, isPending] = useActionState(
     saveAppearanceSettings,
     undefined,
@@ -118,7 +121,7 @@ function AppearanceFormInner({
         value="false"
       />
       <div className="grid gap-2">
-        <Label htmlFor="logoFile">Logo (light backgrounds)</Label>
+        <Label htmlFor="logoFile">{translate("logo.label")}</Label>
         <Input
           id="logoFile"
           name="logoFile"
@@ -135,19 +138,18 @@ function AppearanceFormInner({
           <div className="flex flex-col gap-2">
             <img
               src={`/api/brand/logo?v=${logoKey}`}
-              alt="Current logo"
+              alt={translate("logo.currentAlt")}
               width={48}
               height={48}
               className="h-10 w-auto rounded-md border object-contain"
             />
             <p className="text-muted-foreground text-xs">
-              Rendered bare — upload the dark-background variant below if this
-              badge is hard to see on dark surfaces.
+              {translate("logo.hint")}
             </p>
             <ConfirmDialog
-              title="Remove logo?"
-              description="The current logo will be removed from all pages. You can upload a new logo at any time."
-              confirmLabel="Remove"
+              title={translate("logo.removeTitle")}
+              description={translate("logo.removeDescription")}
+              confirmLabel={translate("logo.confirmRemove")}
               formId="appearance-form"
             >
               <Button
@@ -162,21 +164,19 @@ function AppearanceFormInner({
                   if (input) input.value = "true";
                 }}
               >
-                Remove logo
+                {translate("logo.remove")}
               </Button>
             </ConfirmDialog>
           </div>
         ) : (
           <p className="text-muted-foreground text-xs">
-            No logo uploaded. Upload a PNG or JPG (max 2 MB).
+            {translate("logo.none")}
           </p>
         )}
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="logoDarkFile">
-          Logo for dark backgrounds (optional)
-        </Label>
+        <Label htmlFor="logoDarkFile">{translate("logoDark.label")}</Label>
         <Input
           id="logoDarkFile"
           name="logoDarkFile"
@@ -185,9 +185,7 @@ function AppearanceFormInner({
           className="cursor-pointer"
         />
         <p className="text-muted-foreground text-xs">
-          A light or white knockout version of your badge, shown on dark-mode
-          surfaces and optionally in emails. Without one, the primary logo on
-          its white plate is used everywhere.
+          {translate("logoDark.hint")}
         </p>
         {hasLogoDark ? (
           <div className="flex flex-col gap-2">
@@ -197,16 +195,16 @@ function AppearanceFormInner({
             >
               <img
                 src={`/api/brand/logo?variant=dark&v=${logoDarkKey}`}
-                alt="Current dark-background logo"
+                alt={translate("logoDark.currentAlt")}
                 width={48}
                 height={48}
                 className="h-10 w-auto object-contain"
               />
             </span>
             <ConfirmDialog
-              title="Remove dark-background logo?"
-              description="Dark-mode surfaces will fall back to the primary logo on its white plate."
-              confirmLabel="Remove"
+              title={translate("logoDark.removeTitle")}
+              description={translate("logoDark.removeDescription")}
+              confirmLabel={translate("logoDark.confirmRemove")}
               formId="appearance-form"
             >
               <Button
@@ -221,7 +219,7 @@ function AppearanceFormInner({
                   if (input) input.value = "true";
                 }}
               >
-                Remove dark logo
+                {translate("logoDark.remove")}
               </Button>
             </ConfirmDialog>
           </div>
@@ -229,11 +227,9 @@ function AppearanceFormInner({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="emailLogoVariant">Email logo</Label>
+        <Label htmlFor="emailLogoVariant">{translate("emailLogo.label")}</Label>
         <p className="text-muted-foreground text-xs">
-          Which logo appears in the header of outgoing emails. Emails render on
-          a white background, so the dark logo rides on a dark plate to stay
-          visible.
+          {translate("emailLogo.hint")}
         </p>
         <Select
           name="emailLogoVariant"
@@ -244,42 +240,44 @@ function AppearanceFormInner({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="primary">Primary logo</SelectItem>
+            <SelectItem value="primary">
+              {translate("emailLogo.primary")}
+            </SelectItem>
             <SelectItem value="dark" disabled={!hasLogoDark}>
-              Dark logo (dark plate)
+              {translate("emailLogo.dark")}
             </SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <ColorField
-        label="Primary colour"
-        description="Used for main buttons, links, and active states."
+        label={translate("colors.primaryLabel")}
+        description={translate("colors.primaryHint")}
         hexValue={primaryHex}
         defaultHex="#0a0a0a"
         name="primaryHex"
       />
 
       <ColorField
-        label="Secondary colour"
-        description="Used for tags, pills, badges, and secondary elements."
+        label={translate("colors.secondaryLabel")}
+        description={translate("colors.secondaryHint")}
         hexValue={secondaryHex}
         defaultHex="#f5f5f5"
         name="secondaryHex"
       />
 
       <div className="border-t pt-6">
-        <p className="text-sm font-medium">Layout</p>
+        <p className="text-sm font-medium">{translate("layout.title")}</p>
         <p className="text-muted-foreground text-xs">
-          Adjust the overall look and feel of the platform.
+          {translate("layout.hint")}
         </p>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="borderRadius">Border radius (px)</Label>
+          <Label htmlFor="borderRadius">{translate("layout.radius")}</Label>
           <p className="text-muted-foreground text-xs">
-            Controls how rounded corners are across the app.
+            {translate("layout.radiusHint")}
           </p>
           <Input
             id="borderRadius"
@@ -293,17 +291,19 @@ function AppearanceFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="pageWidth">Page width</Label>
+          <Label htmlFor="pageWidth">{translate("layout.width")}</Label>
           <p className="text-muted-foreground text-xs">
-            Constrain content to a readable width or use the full screen.
+            {translate("layout.widthHint")}
           </p>
           <Select name="pageWidth" defaultValue={pageWidth} key={pageWidth}>
             <SelectTrigger id="pageWidth" className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="constrained">Constrained</SelectItem>
-              <SelectItem value="full">Full width</SelectItem>
+              <SelectItem value="constrained">
+                {translate("layout.constrained")}
+              </SelectItem>
+              <SelectItem value="full">{translate("layout.full")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -311,7 +311,9 @@ function AppearanceFormInner({
 
       <div className="grid gap-4 border-t pt-4">
         <div className="grid gap-2">
-          <Label htmlFor="bookingHeadline">Booking page headline</Label>
+          <Label htmlFor="bookingHeadline">
+            {translate("booking.headline")}
+          </Label>
           <Input
             id="bookingHeadline"
             name="bookingHeadline"
@@ -319,11 +321,13 @@ function AppearanceFormInner({
             defaultValue={bookingHeadline}
           />
           <p className="text-muted-foreground text-xs">
-            Shown at the top of your public booking page ({`/book`}).
+            {translate("booking.headlineHint")}
           </p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="bookingDescription">Booking page description</Label>
+          <Label htmlFor="bookingDescription">
+            {translate("booking.description")}
+          </Label>
           <Textarea
             id="bookingDescription"
             name="bookingDescription"
@@ -332,15 +336,14 @@ function AppearanceFormInner({
             defaultValue={bookingDescription}
           />
           <p className="text-muted-foreground text-xs">
-            Short pitch under the headline. The dojo name is shown above it
-            automatically.
+            {translate("booking.descriptionHint")}
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending} size="sm">
-          {isPending ? "Saving..." : "Save appearance"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>

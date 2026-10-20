@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -14,7 +17,10 @@ import { RolesManager } from "../roles-manager";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Roles" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.roles");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminRolesPage({
   searchParams,
@@ -22,6 +28,7 @@ export default async function AdminRolesPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   await requirePermission(PERMISSIONS.ROLES_MANAGE);
+  const translate = await getTranslations("Admin.roles");
   const roles = await listRoles();
   const query = await searchParams;
 
@@ -40,18 +47,16 @@ export default async function AdminRolesPage({
         <FlashToast variant="error" message={query.roleError} />
       ) : null}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Roles</h1>
-        <p className="text-muted-foreground text-sm">
-          Permission sets assigned to staff accounts.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Roles</CardTitle>
-          <CardDescription>
-            Define permission sets and assign them to staff accounts.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <RolesManager roles={roleViews} />

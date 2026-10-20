@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -13,25 +16,29 @@ import { OrganizationForm } from "../organization-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — General" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.general");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminGeneralPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.general");
   const organization = await getOrganizationSettings();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">General</h1>
-        <p className="text-muted-foreground text-sm">
-          The school identity shown across the platform.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Organization</CardTitle>
-          <CardDescription>Branding shown across the app.</CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <OrganizationForm

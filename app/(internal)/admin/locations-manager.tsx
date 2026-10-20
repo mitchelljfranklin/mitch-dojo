@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,10 +46,11 @@ type EditorTarget = LocationView | "new";
 const initialState: LocationActionState = undefined;
 
 function LocationFields({ location }: { location?: LocationView }) {
+  const translate = useTranslations("Admin.locations.form");
   return (
     <>
       <div className="grid gap-2">
-        <Label htmlFor="location-name">Name</Label>
+        <Label htmlFor="location-name">{translate("name")}</Label>
         <Input
           id="location-name"
           name="name"
@@ -58,7 +60,7 @@ function LocationFields({ location }: { location?: LocationView }) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="location-address">Address</Label>
+        <Label htmlFor="location-address">{translate("address")}</Label>
         <Input
           id="location-address"
           name="address"
@@ -67,7 +69,7 @@ function LocationFields({ location }: { location?: LocationView }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="location-phone">Phone</Label>
+          <Label htmlFor="location-phone">{translate("phone")}</Label>
           <Input
             id="location-phone"
             name="phone"
@@ -75,7 +77,7 @@ function LocationFields({ location }: { location?: LocationView }) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="location-email">Email</Label>
+          <Label htmlFor="location-email">{translate("email")}</Label>
           <Input
             id="location-email"
             name="email"
@@ -86,7 +88,7 @@ function LocationFields({ location }: { location?: LocationView }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="location-sort-order">Sort order</Label>
+          <Label htmlFor="location-sort-order">{translate("sortOrder")}</Label>
           <Input
             id="location-sort-order"
             name="sortOrder"
@@ -101,7 +103,7 @@ function LocationFields({ location }: { location?: LocationView }) {
             name="isActive"
             defaultChecked={location ? location.isActive : true}
           />
-          Active
+          {translate("active")}
         </label>
       </div>
     </>
@@ -109,6 +111,7 @@ function LocationFields({ location }: { location?: LocationView }) {
 }
 
 function NewLocationForm({ onClose }: { onClose: () => void }) {
+  const translate = useTranslations("Admin.locations.form");
   const [state, formAction, isPending] = useActionState(
     createLocationAction,
     initialState,
@@ -131,10 +134,10 @@ function NewLocationForm({ onClose }: { onClose: () => void }) {
       ) : null}
       <SheetFooter className="px-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create location"}
+          {isPending ? translate("creating") : translate("create")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {translate("cancel")}
         </Button>
       </SheetFooter>
     </form>
@@ -148,6 +151,7 @@ function EditLocationForm({
   location: LocationView;
   onClose: () => void;
 }) {
+  const translate = useTranslations("Admin.locations");
   const [state, formAction, isPending] = useActionState(
     updateLocationAction,
     initialState,
@@ -184,16 +188,13 @@ function EditLocationForm({
       ) : null}
 
       <div className="grid gap-2 border-t pt-4">
-        <Label>Public QR check-in</Label>
-        <p className="text-muted-foreground text-xs">
-          Print this QR at the door. Students scan it and tap their name to
-          check in — no app or login required.
-        </p>
+        <Label>{translate("qr.title")}</Label>
+        <p className="text-muted-foreground text-xs">{translate("qr.hint")}</p>
         <div className="flex items-start gap-4">
           <img
             key={qrBust}
             src={`/api/locations/${location.id}/checkin-qr?v=${qrBust}`}
-            alt={`Check-in QR for ${location.name}`}
+            alt={translate("qr.alt", { name: location.name })}
             className="size-32 rounded-md border bg-white p-1"
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -201,8 +202,7 @@ function EditLocationForm({
               <CopyLink value={checkinUrl} />
             ) : (
               <p className="text-muted-foreground text-xs">
-                QR not generated yet — it appears the first time this image
-                loads.
+                {translate("qr.notGenerated")}
               </p>
             )}
             <form action={regenerateCheckinTokenAction}>
@@ -213,31 +213,33 @@ function EditLocationForm({
                 size="sm"
                 onClick={() => setQrBust(Date.now())}
               >
-                Regenerate QR
+                {translate("qr.regenerate")}
               </Button>
             </form>
             <p className="text-muted-foreground text-xs">
-              Regenerating invalidates any previously printed QR.
+              {translate("qr.regenerateHint")}
             </p>
           </div>
         </div>
       </div>
 
       <div className="mt-auto grid gap-2 border-t pt-4">
-        <Label>Danger zone</Label>
+        <Label>{translate("danger.title")}</Label>
         <form
           id={`delete-location-${location.id}`}
           action={deleteLocationAction}
         >
           <input type="hidden" name="locationId" value={location.id} />
           <ConfirmDialog
-            title="Delete location?"
-            description={`${location.name} will be permanently removed. Locations with students assigned must be deactivated instead.`}
-            confirmLabel="Delete"
+            title={translate("danger.deleteTitle")}
+            description={translate("danger.deleteDescription", {
+              name: location.name,
+            })}
+            confirmLabel={translate("danger.delete")}
             formId={`delete-location-${location.id}`}
           >
             <Button type="button" size="sm" variant="destructive">
-              Delete
+              {translate("danger.delete")}
             </Button>
           </ConfirmDialog>
         </form>
@@ -249,10 +251,10 @@ function EditLocationForm({
           form={`edit-location-${location.id}`}
           disabled={isPending}
         >
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? translate("form.saving") : translate("form.save")}
         </SubmitButton>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {translate("form.cancel")}
         </Button>
       </SheetFooter>
     </div>
@@ -260,6 +262,7 @@ function EditLocationForm({
 }
 
 export function LocationsManager({ locations }: { locations: LocationView[] }) {
+  const translate = useTranslations("Admin.locations.manager");
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<EditorTarget | null>(null);
 
@@ -282,22 +285,20 @@ export function LocationsManager({ locations }: { locations: LocationView[] }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Input
-          aria-label="Search locations"
-          placeholder="Search locations…"
+          aria-label={translate("searchAria")}
+          placeholder={translate("searchPlaceholder")}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className="max-w-xs"
         />
         <Button size="sm" onClick={() => setEditing("new")}>
-          New location
+          {translate("new")}
         </Button>
       </div>
 
       {filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          {locations.length === 0
-            ? "No locations yet."
-            : "No locations match your search."}
+          {locations.length === 0 ? translate("empty") : translate("noMatch")}
         </p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
@@ -311,17 +312,18 @@ export function LocationsManager({ locations }: { locations: LocationView[] }) {
               <div className="flex flex-col">
                 <span className="text-sm font-medium">{location.name}</span>
                 <span className="text-muted-foreground text-xs">
-                  {location.address || "No address"}
+                  {location.address || translate("noAddress")}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <Badge variant="secondary" className="text-xs">
-                  {location.studentCount}{" "}
-                  {location.studentCount === 1 ? "student" : "students"}
+                  {translate("studentCount", {
+                    count: location.studentCount,
+                  })}
                 </Badge>
                 {location.isActive ? null : (
                   <Badge variant="outline" className="text-xs">
-                    Inactive
+                    {translate("inactive")}
                   </Badge>
                 )}
               </div>
@@ -339,10 +341,8 @@ export function LocationsManager({ locations }: { locations: LocationView[] }) {
         {editing === "new" ? (
           <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
             <SheetHeader>
-              <SheetTitle>Add location</SheetTitle>
-              <SheetDescription>
-                Create a dojo location students can be assigned to.
-              </SheetDescription>
+              <SheetTitle>{translate("addTitle")}</SheetTitle>
+              <SheetDescription>{translate("addDescription")}</SheetDescription>
             </SheetHeader>
             <NewLocationForm onClose={() => setEditing(null)} />
           </SheetContent>
@@ -354,9 +354,9 @@ export function LocationsManager({ locations }: { locations: LocationView[] }) {
             <SheetHeader>
               <SheetTitle>{editingLocation.name}</SheetTitle>
               <SheetDescription>
-                {editingLocation.studentCount}{" "}
-                {editingLocation.studentCount === 1 ? "student" : "students"}{" "}
-                assigned
+                {translate("assigned", {
+                  count: editingLocation.studentCount,
+                })}
               </SheetDescription>
             </SheetHeader>
             <EditLocationForm

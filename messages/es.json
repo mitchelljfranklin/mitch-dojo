@@ -1522,6 +1522,291 @@
     "currentIncorrect": "La contraseña actual es incorrecta.",
     "emailTaken": "Este correo ya está en uso."
   },
+  "Admin": {
+    "general": {
+      "metaTitle": "Administración — General",
+      "title": "General",
+      "subtitle": "La identidad del centro que se muestra en toda la plataforma.",
+      "cardTitle": "Organización",
+      "cardDescription": "Marca que se muestra en la aplicación.",
+      "name": "Nombre de la organización",
+      "supportEmail": "Correo de soporte",
+      "defaultLanguage": "Idioma predeterminado",
+      "languageHint": "Se usa en la aplicación y las páginas públicas salvo que alguien elija otro idioma. Los visitantes pueden cambiar de idioma en la página de reservas.",
+      "defaultCountry": "País predeterminado",
+      "none": "Ninguno",
+      "countryHint": "Se preselecciona en la sección de dirección del formulario de alumno.",
+      "saving": "Guardando...",
+      "save": "Guardar",
+      "saved": "Ajustes de la organización guardados.",
+      "invalid": "Revisa los datos de la organización e inténtalo de nuevo."
+    },
+    "appearance": {
+      "metaTitle": "Administración — Apariencia",
+      "title": "Apariencia",
+      "subtitle": "Logotipo, colores, textos de la página de reservas y diseño.",
+      "cardTitle": "Apariencia",
+      "cardDescription": "Personaliza el logotipo, los colores, los textos de la página de reservas y el diseño.",
+      "logo": {
+        "label": "Logotipo (fondos claros)",
+        "currentAlt": "Logotipo actual",
+        "hint": "Se muestra sin fondo — sube la variante para fondos oscuros si esta insignia no se ve bien en superficies oscuras.",
+        "none": "No hay logotipo subido. Sube un PNG o JPG (máx. 2 MB).",
+        "removeTitle": "¿Quitar el logotipo?",
+        "removeDescription": "El logotipo actual se quitará de todas las páginas. Puedes subir uno nuevo cuando quieras.",
+        "remove": "Quitar logotipo",
+        "confirmRemove": "Quitar"
+      },
+      "logoDark": {
+        "label": "Logotipo para fondos oscuros (opcional)",
+        "hint": "Una versión clara o en blanco de tu insignia, mostrada en superficies oscuras y opcionalmente en correos. Sin ella, se usa el logotipo principal sobre su placa blanca en todas partes.",
+        "currentAlt": "Logotipo actual para fondos oscuros",
+        "removeTitle": "¿Quitar el logotipo para fondos oscuros?",
+        "removeDescription": "Las superficies oscuras volverán al logotipo principal sobre su placa blanca.",
+        "remove": "Quitar logotipo oscuro",
+        "confirmRemove": "Quitar"
+      },
+      "emailLogo": {
+        "label": "Logotipo de correo",
+        "hint": "Qué logotipo aparece en la cabecera de los correos salientes. Los correos se muestran sobre fondo blanco, así que el logotipo oscuro va sobre una placa oscura para seguir visible.",
+        "primary": "Logotipo principal",
+        "dark": "Logotipo oscuro (placa oscura)"
+      },
+      "colors": {
+        "primaryLabel": "Color primario",
+        "primaryHint": "Se usa en botones principales, enlaces y estados activos.",
+        "secondaryLabel": "Color secundario",
+        "secondaryHint": "Se usa en etiquetas, píldoras, insignias y elementos secundarios.",
+        "reset": "Restablecer"
+      },
+      "layout": {
+        "title": "Diseño",
+        "hint": "Ajusta el aspecto general de la plataforma.",
+        "radius": "Radio de borde (px)",
+        "radiusHint": "Controla el redondeo de las esquinas en la aplicación.",
+        "width": "Ancho de página",
+        "widthHint": "Limita el contenido a un ancho legible o usa toda la pantalla.",
+        "constrained": "Limitado",
+        "full": "Ancho completo"
+      },
+      "booking": {
+        "headline": "Titular de la página de reservas",
+        "headlineHint": "Se muestra en la parte superior de tu página pública de reservas (/book).",
+        "description": "Descripción de la página de reservas",
+        "descriptionHint": "Breve texto bajo el titular. El nombre del dojo aparece automáticamente encima."
+      },
+      "save": "Guardar apariencia",
+      "saving": "Guardando...",
+      "errors": {
+        "invalidPrimary": "El color primario debe ser un color hexadecimal válido (p. ej. #3b82f6).",
+        "invalidSecondary": "El color secundario debe ser un color hexadecimal válido (p. ej. #f59e0b).",
+        "logoTooLarge": "El logotipo debe pesar menos de 2 MB.",
+        "logoNotImage": "El logotipo debe ser un archivo de imagen.",
+        "logoType": "El logotipo debe ser una imagen PNG, JPG, GIF o WEBP.",
+        "logoContent": "El contenido del logotipo no coincide con su extensión.",
+        "invalid": "Revisa los ajustes de apariencia e inténtalo de nuevo.",
+        "saved": "Ajustes de apariencia guardados."
+      }
+    },
+    "users": {
+      "metaTitle": "Administración — Usuarios",
+      "title": "Usuarios",
+      "subtitle": "Cuentas de personal y su acceso.",
+      "cardTitle": "Cuentas de personal",
+      "cardDescription": "Crea cuentas de personal y gestiona su rol, acceso y contraseña.",
+      "manager": {
+        "searchAria": "Buscar personal",
+        "searchPlaceholder": "Buscar personal…",
+        "new": "Nuevo usuario",
+        "empty": "Aún no hay usuarios.",
+        "noMatch": "Ningún miembro del personal coincide con la búsqueda.",
+        "added": "Añadido {date}",
+        "disabled": "Deshabilitado"
+      },
+      "form": {
+        "addTitle": "Añadir usuario",
+        "addDescription": "Crea una cuenta de personal con un rol y contraseña iniciales.",
+        "name": "Nombre",
+        "email": "Correo",
+        "password": "Contraseña",
+        "role": "Rol",
+        "creating": "Creando...",
+        "create": "Crear usuario",
+        "cancel": "Cancelar"
+      },
+      "edit": {
+        "role": "Rol",
+        "save": "Guardar",
+        "access": "Acceso",
+        "enable": "Habilitar inicio de sesión",
+        "disableTitle": "¿Deshabilitar usuario?",
+        "disableDescription": "{name} ya no podrá iniciar sesión. Sus datos se conservan.",
+        "disableSignIn": "Deshabilitar inicio de sesión",
+        "signInMethod": "Método de acceso",
+        "local": "Local",
+        "sso": "SSO",
+        "newPassword": "Nueva contraseña",
+        "resetTitle": "¿Restablecer contraseña?",
+        "resetDescription": "Esto sobrescribe la contraseña actual de {name}. Deberá usar la nueva para iniciar sesión.",
+        "reset": "Restablecer",
+        "ssoHint": "Inicia sesión mediante SSO — sin contraseña local.",
+        "danger": "Zona de peligro",
+        "deleteTitle": "¿Eliminar usuario?",
+        "deleteDescription": "{name} se eliminará de forma permanente. No se puede deshacer. El historial de auditoría se conserva (se muestra como «Usuario eliminado»).",
+        "deleteUser": "Eliminar usuario",
+        "confirmDelete": "Eliminar"
+      },
+      "errors": {
+        "invalid": "Revisa los datos del usuario e inténtalo de nuevo.",
+        "roleMissing": "El rol seleccionado no existe.",
+        "emailExists": "Ya existe un usuario con este correo.",
+        "createFailed": "No se pudo crear el usuario. Inténtalo de nuevo.",
+        "created": "Usuario creado."
+      }
+    },
+    "roles": {
+      "metaTitle": "Administración — Roles",
+      "title": "Roles",
+      "subtitle": "Conjuntos de permisos asignados a las cuentas de personal.",
+      "cardTitle": "Roles",
+      "cardDescription": "Define conjuntos de permisos y asígnalos a las cuentas de personal.",
+      "manager": {
+        "searchPlaceholder": "Buscar roles…",
+        "new": "Nuevo rol",
+        "noMatch": "Ningún rol coincide con la búsqueda.",
+        "system": "Sistema",
+        "userCount": "{count, plural, one {# usuario} other {# usuarios}}",
+        "edit": "Editar",
+        "duplicate": "Duplicar",
+        "deleteTitle": "¿Eliminar rol?",
+        "deleteDescription": "El rol «{name}» se eliminará de forma permanente. Solo es posible cuando no hay usuarios asignados.",
+        "delete": "Eliminar"
+      },
+      "editor": {
+        "createTitle": "Crear rol",
+        "adminDescription": "El rol Admin siempre tiene todos los permisos y no se puede cambiar.",
+        "description": "Elige los permisos que otorga este rol. Los usuarios asignados obtienen exactamente estos permisos.",
+        "name": "Nombre",
+        "descriptionLabel": "Descripción",
+        "selectAll": "Seleccionar todos los permisos",
+        "permissionsCount": "{granted} / {total} permisos",
+        "saving": "Guardando...",
+        "create": "Crear rol",
+        "save": "Guardar cambios",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "invalid": "Revisa los datos del rol e inténtalo de nuevo.",
+        "duplicate": "Ya existe un rol con este nombre.",
+        "createFailed": "No se pudo crear el rol. Inténtalo de nuevo.",
+        "created": "Rol creado.",
+        "updated": "Rol actualizado.",
+        "missing": "Falta el rol.",
+        "updateFailed": "No se pudo actualizar el rol.",
+        "duplicateFailed": "No se pudo duplicar el rol: {reason}",
+        "deleteFailed": "No se pudo eliminar el rol: {reason}"
+      },
+      "systemRoles": {
+        "Admin": "Administrador",
+        "Trainer": "Instructor",
+        "Viewer": "Lector"
+      },
+      "groups": {
+        "students": "Alumnos",
+        "incidents": "Seguridad e incidentes",
+        "locations": "Sedes",
+        "classes": "Clases y horario",
+        "attendance": "Asistencia",
+        "belts": "Cinturones y grados",
+        "memberships": "Membresías y pagos",
+        "analytics": "Analítica",
+        "communications": "Comunicación",
+        "administration": "Administración",
+        "profile": "Perfil"
+      },
+      "permissions": {
+        "students:view": "Ver alumnos",
+        "students:create": "Crear alumnos",
+        "students:edit": "Editar alumnos",
+        "students:delete": "Eliminar alumnos",
+        "students:medical": "Ver información médica y de salud",
+        "incidents:view": "Ver informes de incidentes",
+        "incidents:manage": "Registrar y gestionar informes de incidentes",
+        "locations:edit": "Gestionar sedes del dojo",
+        "classes:view": "Ver clases y horario",
+        "classes:edit": "Crear y editar clases",
+        "attendance:view": "Ver asistencia",
+        "attendance:mark": "Marcar asistencia",
+        "belts:view": "Ver cinturones y grados",
+        "belts:edit": "Registrar grados y ascensos",
+        "memberships:view": "Ver membresías y pagos",
+        "memberships:edit": "Gestionar membresías y pagos",
+        "analytics:view": "Ver panel de analítica",
+        "communications:edit": "Enviar correos y campañas",
+        "audit:view": "Ver auditoría y registro de correos",
+        "users:manage": "Gestionar usuarios",
+        "roles:manage": "Gestionar roles",
+        "settings:manage": "Gestionar ajustes",
+        "api:manage": "Gestionar acceso a la API",
+        "profile:view": "Ver y editar el perfil propio"
+      }
+    },
+    "locations": {
+      "metaTitle": "Administración — Sedes",
+      "title": "Sedes",
+      "subtitle": "Sedes del dojo que pertenecen al centro. Los alumnos se asignan a una o varias sedes; cada clase se imparte exactamente en una.",
+      "cardTitle": "Sedes",
+      "cardDescription": "El token de registro por QR se regenera a petición; el enlace anterior deja de funcionar de inmediato.",
+      "manager": {
+        "searchAria": "Buscar sedes",
+        "searchPlaceholder": "Buscar sedes…",
+        "new": "Nueva sede",
+        "empty": "Aún no hay sedes.",
+        "noMatch": "Ninguna sede coincide con la búsqueda.",
+        "noAddress": "Sin dirección",
+        "studentCount": "{count, plural, one {# alumno} other {# alumnos}}",
+        "inactive": "Inactiva",
+        "addTitle": "Añadir sede",
+        "addDescription": "Crea una sede del dojo a la que se puedan asignar alumnos.",
+        "assigned": "{count, plural, one {# alumno asignado} other {# alumnos asignados}}"
+      },
+      "form": {
+        "name": "Nombre",
+        "address": "Dirección",
+        "noAddress": "Sin dirección",
+        "phone": "Teléfono",
+        "email": "Correo",
+        "sortOrder": "Orden",
+        "active": "Activa",
+        "creating": "Creando...",
+        "create": "Crear sede",
+        "saving": "Guardando...",
+        "save": "Guardar",
+        "cancel": "Cancelar"
+      },
+      "qr": {
+        "title": "Registro público por QR",
+        "hint": "Imprime este QR en la puerta. Los alumnos lo escanean y tocan su nombre para registrarse — sin aplicación ni inicio de sesión.",
+        "alt": "QR de registro de {name}",
+        "notGenerated": "QR aún no generado — aparece la primera vez que se carga esta imagen.",
+        "regenerate": "Regenerar QR",
+        "regenerateHint": "Regenerar invalida cualquier QR impreso anteriormente."
+      },
+      "danger": {
+        "title": "Zona de peligro",
+        "deleteTitle": "¿Eliminar la sede?",
+        "deleteDescription": "{name} se eliminará de forma permanente. Las sedes con alumnos asignados deben desactivarse en su lugar.",
+        "delete": "Eliminar"
+      },
+      "errors": {
+        "invalid": "Revisa los datos de la sede e inténtalo de nuevo.",
+        "duplicate": "Ya existe una sede con este nombre.",
+        "created": "Sede creada.",
+        "updated": "Sede actualizada.",
+        "hasStudents": "Esta sede todavía tiene alumnos — desactívala en su lugar."
+      }
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

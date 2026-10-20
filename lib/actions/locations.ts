@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -44,10 +45,11 @@ export async function createLocationAction(
   formData: FormData,
 ): Promise<LocationActionState> {
   await requirePermission(PERMISSIONS.LOCATIONS_EDIT);
+  const translate = await getTranslations("Admin.locations.errors");
 
   const parsed = parseLocationInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   let location;
@@ -55,7 +57,7 @@ export async function createLocationAction(
     location = await createLocation(parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A location with this name already exists." };
+      return { error: translate("duplicate") };
     }
     throw error;
   }
@@ -70,7 +72,7 @@ export async function createLocationAction(
       { name: parsed.data.name },
     );
   }
-  return { ok: true, message: "Location created." };
+  return { ok: true, message: translate("created") };
 }
 
 export async function updateLocationAction(
@@ -78,18 +80,19 @@ export async function updateLocationAction(
   formData: FormData,
 ): Promise<LocationActionState> {
   await requirePermission(PERMISSIONS.LOCATIONS_EDIT);
+  const translate = await getTranslations("Admin.locations.errors");
   const locationId = getField(formData, "locationId");
 
   const parsed = parseLocationInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   try {
     await updateLocation(locationId, parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A location with this name already exists." };
+      return { error: translate("duplicate") };
     }
     throw error;
   }
@@ -103,11 +106,12 @@ export async function updateLocationAction(
       locationId,
     );
   }
-  return { ok: true, message: "Location updated." };
+  return { ok: true, message: translate("updated") };
 }
 
 export async function deleteLocationAction(formData: FormData) {
   await requirePermission(PERMISSIONS.LOCATIONS_EDIT);
+  const translate = await getTranslations("Admin.locations.errors");
   const locationId = getField(formData, "locationId");
 
   try {
@@ -115,7 +119,9 @@ export async function deleteLocationAction(formData: FormData) {
   } catch (error: unknown) {
     if (error instanceof Error && error.message.startsWith("This location")) {
       redirect(
-        `/admin/locations?locationError=${encodeURIComponent(error.message)}`,
+        `/admin/locations?locationError=${encodeURIComponent(
+          translate("hasStudents"),
+        )}`,
       );
     }
     throw error;

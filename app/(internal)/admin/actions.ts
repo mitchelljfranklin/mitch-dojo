@@ -2,6 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { env } from "@/lib/env";
 import { requirePermission, getCurrentUser } from "@/lib/auth";
@@ -54,23 +55,24 @@ const ALLOWED_LOGO_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 // magic bytes. Returns the storage key, or an error message for the form.
 async function storeLogoUpload(
   file: File,
+  translate: (key: string) => string,
 ): Promise<{ key: string } | { error: string }> {
   if (file.size > 2 * 1024 * 1024) {
-    return { error: "Logo must be under 2 MB." };
+    return { error: translate("errors.logoTooLarge") };
   }
   if (!file.type.startsWith("image/") || isDangerousUploadMime(file.type)) {
-    return { error: "Logo must be an image file." };
+    return { error: translate("errors.logoNotImage") };
   }
   // The declared MIME type is client-controlled, so the extension
   // allowlist and magic bytes are the real gate. SVG is excluded outright:
   // it is scriptable and is served inline from this origin.
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
   if (!ALLOWED_LOGO_EXTENSIONS.has(ext)) {
-    return { error: "Logo must be a PNG, JPG, GIF, or WEBP image." };
+    return { error: translate("errors.logoType") };
   }
   const buffer = Buffer.from(await file.arrayBuffer());
   if (!validateMagicBytes(ext, buffer)) {
-    return { error: "Logo file content does not match its extension." };
+    return { error: translate("errors.logoContent") };
   }
   const fileName = `logo-${randomBytes(8).toString("hex")}.${ext}`;
   await storage.save(fileName, buffer);
@@ -84,6 +86,7 @@ export async function saveOrganizationSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.general");
 
   const parsed = organizationSettingsSchema.safeParse({
     name: formData.get("name"),
@@ -94,7 +97,7 @@ export async function saveOrganizationSettings(
   if (!parsed.success) {
     return {
       ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+      message: translate("invalid"),
     };
   }
 
@@ -107,7 +110,7 @@ export async function saveOrganizationSettings(
       "Setting",
       "organization",
     );
-  return { ok: true, message: "Organization settings saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function saveAppearanceSettings(
@@ -115,6 +118,7 @@ export async function saveAppearanceSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.appearance");
 
   const primaryHex = (formData.get("primaryHex") as string) || "";
   const secondaryHex = (formData.get("secondaryHex") as string) || "";
@@ -127,13 +131,13 @@ export async function saveAppearanceSettings(
   if (primaryHex && !/^#[0-9a-fA-F]{6}$/.test(primaryHex)) {
     return {
       ok: false,
-      message: "Primary color must be a valid hex color (e.g. #3b82f6).",
+      message: translate("errors.invalidPrimary"),
     };
   }
   if (secondaryHex && !/^#[0-9a-fA-F]{6}$/.test(secondaryHex)) {
     return {
       ok: false,
-      message: "Secondary color must be a valid hex color (e.g. #f59e0b).",
+      message: translate("errors.invalidSecondary"),
     };
   }
 
@@ -150,7 +154,7 @@ export async function saveAppearanceSettings(
   if (removeLogo) {
     logoKey = "";
   } else if (logoFile && logoFile.size > 0) {
-    const stored = await storeLogoUpload(logoFile);
+    const stored = await storeLogoUpload(logoFile, translate);
     if ("error" in stored) {
       return { ok: false, message: stored.error };
     }
@@ -160,7 +164,7 @@ export async function saveAppearanceSettings(
   if (removeLogoDark) {
     logoDarkKey = "";
   } else if (logoDarkFile && logoDarkFile.size > 0) {
-    const stored = await storeLogoUpload(logoDarkFile);
+    const stored = await storeLogoUpload(logoDarkFile, translate);
     if ("error" in stored) {
       return { ok: false, message: stored.error };
     }
@@ -223,7 +227,7 @@ export async function saveAppearanceSettings(
       "Setting",
       "appearance",
     );
-  return { ok: true, message: "Appearance settings saved." };
+  return { ok: true, message: translate("errors.saved") };
 }
 
 // The former grab-bag saveOperationsSettings action, split four ways so each

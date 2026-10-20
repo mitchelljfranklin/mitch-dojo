@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { Prisma } from "../../prisma/generated/prisma/client";
 import { requirePermission, getCurrentUser } from "@/lib/auth";
@@ -31,13 +32,11 @@ export async function createRoleAction(
   formData: FormData,
 ): Promise<RoleActionState> {
   await requirePermission(PERMISSIONS.ROLES_MANAGE);
+  const translate = await getTranslations("Admin.roles.errors");
 
   const parsed = parseRoleForm(formData);
   if (!parsed.success) {
-    return {
-      ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
-    };
+    return { ok: false, message: translate("invalid") };
   }
 
   try {
@@ -51,18 +50,15 @@ export async function createRoleAction(
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
-      return { ok: false, message: "A role with this name already exists." };
+      return { ok: false, message: translate("duplicate") };
     }
-    return {
-      ok: false,
-      message: "Could not create the role. Please try again.",
-    };
+    return { ok: false, message: translate("createFailed") };
   }
 
   // No revalidatePath here: this result is consumed by useActionState in a modal.
   // Revalidating the current route re-renders the modal and drops the returned
   // state in production builds. The client refreshes after closing instead.
-  return { ok: true, message: "Role created." };
+  return { ok: true, message: translate("created") };
 }
 
 export async function updateRoleAction(
@@ -70,18 +66,16 @@ export async function updateRoleAction(
   formData: FormData,
 ): Promise<RoleActionState> {
   await requirePermission(PERMISSIONS.ROLES_MANAGE);
+  const translate = await getTranslations("Admin.roles.errors");
 
   const roleId = getField(formData, "roleId");
   if (!roleId) {
-    return { ok: false, message: "Missing role." };
+    return { ok: false, message: translate("missing") };
   }
 
   const parsed = parseRoleForm(formData);
   if (!parsed.success) {
-    return {
-      ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
-    };
+    return { ok: false, message: translate("invalid") };
   }
 
   try {
@@ -94,16 +88,17 @@ export async function updateRoleAction(
     return {
       ok: false,
       message:
-        error instanceof Error ? error.message : "Could not update the role.",
+        error instanceof Error ? error.message : translate("updateFailed"),
     };
   }
 
   // See createRoleAction: the client refreshes after closing the modal.
-  return { ok: true, message: "Role updated." };
+  return { ok: true, message: translate("updated") };
 }
 
 export async function duplicateRoleAction(formData: FormData): Promise<void> {
   await requirePermission(PERMISSIONS.ROLES_MANAGE);
+  const translate = await getTranslations("Admin.roles.errors");
 
   const roleId = getField(formData, "roleId");
   if (!roleId) {
@@ -128,13 +123,16 @@ export async function duplicateRoleAction(formData: FormData): Promise<void> {
     const reason =
       error instanceof Error ? error.message : "Unknown database error";
     redirect(
-      `/admin/roles?roleError=${encodeURIComponent(`Could not duplicate the role: ${reason}`)}`,
+      `/admin/roles?roleError=${encodeURIComponent(
+        translate("duplicateFailed", { reason }),
+      )}`,
     );
   }
 }
 
 export async function deleteRoleAction(formData: FormData): Promise<void> {
   await requirePermission(PERMISSIONS.ROLES_MANAGE);
+  const translate = await getTranslations("Admin.roles.errors");
 
   const roleId = getField(formData, "roleId");
   if (!roleId) {
@@ -156,7 +154,9 @@ export async function deleteRoleAction(formData: FormData): Promise<void> {
     const reason =
       error instanceof Error ? error.message : "Unknown database error";
     redirect(
-      `/admin/roles?roleError=${encodeURIComponent(`Could not delete the role: ${reason}`)}`,
+      `/admin/roles?roleError=${encodeURIComponent(
+        translate("deleteFailed", { reason }),
+      )}`,
     );
   }
 }

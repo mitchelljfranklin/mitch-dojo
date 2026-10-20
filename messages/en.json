@@ -1522,6 +1522,291 @@
     "currentIncorrect": "Current password is incorrect.",
     "emailTaken": "This email is already taken."
   },
+  "Admin": {
+    "general": {
+      "metaTitle": "Admin — General",
+      "title": "General",
+      "subtitle": "The school identity shown across the platform.",
+      "cardTitle": "Organization",
+      "cardDescription": "Branding shown across the app.",
+      "name": "Organization name",
+      "supportEmail": "Support email",
+      "defaultLanguage": "Default language",
+      "languageHint": "Used across the app and public pages unless someone picks another language. Visitors can switch language on the booking page.",
+      "defaultCountry": "Default country",
+      "none": "None",
+      "countryHint": "Preselected in the address section of the student form.",
+      "saving": "Saving...",
+      "save": "Save",
+      "saved": "Organization settings saved.",
+      "invalid": "Check the organization details and try again."
+    },
+    "appearance": {
+      "metaTitle": "Admin — Appearance",
+      "title": "Appearance",
+      "subtitle": "Logo, colours, booking-page copy, and layout.",
+      "cardTitle": "Appearance",
+      "cardDescription": "Customise the logo, colours, booking page copy, and layout.",
+      "logo": {
+        "label": "Logo (light backgrounds)",
+        "currentAlt": "Current logo",
+        "hint": "Rendered bare — upload the dark-background variant below if this badge is hard to see on dark surfaces.",
+        "none": "No logo uploaded. Upload a PNG or JPG (max 2 MB).",
+        "removeTitle": "Remove logo?",
+        "removeDescription": "The current logo will be removed from all pages. You can upload a new logo at any time.",
+        "remove": "Remove logo",
+        "confirmRemove": "Remove"
+      },
+      "logoDark": {
+        "label": "Logo for dark backgrounds (optional)",
+        "hint": "A light or white knockout version of your badge, shown on dark-mode surfaces and optionally in emails. Without one, the primary logo on its white plate is used everywhere.",
+        "currentAlt": "Current dark-background logo",
+        "removeTitle": "Remove dark-background logo?",
+        "removeDescription": "Dark-mode surfaces will fall back to the primary logo on its white plate.",
+        "remove": "Remove dark logo",
+        "confirmRemove": "Remove"
+      },
+      "emailLogo": {
+        "label": "Email logo",
+        "hint": "Which logo appears in the header of outgoing emails. Emails render on a white background, so the dark logo rides on a dark plate to stay visible.",
+        "primary": "Primary logo",
+        "dark": "Dark logo (dark plate)"
+      },
+      "colors": {
+        "primaryLabel": "Primary colour",
+        "primaryHint": "Used for main buttons, links, and active states.",
+        "secondaryLabel": "Secondary colour",
+        "secondaryHint": "Used for tags, pills, badges, and secondary elements.",
+        "reset": "Reset"
+      },
+      "layout": {
+        "title": "Layout",
+        "hint": "Adjust the overall look and feel of the platform.",
+        "radius": "Border radius (px)",
+        "radiusHint": "Controls how rounded corners are across the app.",
+        "width": "Page width",
+        "widthHint": "Constrain content to a readable width or use the full screen.",
+        "constrained": "Constrained",
+        "full": "Full width"
+      },
+      "booking": {
+        "headline": "Booking page headline",
+        "headlineHint": "Shown at the top of your public booking page (/book).",
+        "description": "Booking page description",
+        "descriptionHint": "Short pitch under the headline. The dojo name is shown above it automatically."
+      },
+      "save": "Save appearance",
+      "saving": "Saving...",
+      "errors": {
+        "invalidPrimary": "Primary colour must be a valid hex colour (e.g. #3b82f6).",
+        "invalidSecondary": "Secondary colour must be a valid hex colour (e.g. #f59e0b).",
+        "logoTooLarge": "Logo must be under 2 MB.",
+        "logoNotImage": "Logo must be an image file.",
+        "logoType": "Logo must be a PNG, JPG, GIF, or WEBP image.",
+        "logoContent": "Logo file content does not match its extension.",
+        "invalid": "Check the appearance settings and try again.",
+        "saved": "Appearance settings saved."
+      }
+    },
+    "users": {
+      "metaTitle": "Admin — Users",
+      "title": "Users",
+      "subtitle": "Staff accounts and their access.",
+      "cardTitle": "Staff accounts",
+      "cardDescription": "Create staff accounts and manage their role, access, and password.",
+      "manager": {
+        "searchAria": "Search staff",
+        "searchPlaceholder": "Search staff…",
+        "new": "New user",
+        "empty": "No users yet.",
+        "noMatch": "No staff match your search.",
+        "added": "Added {date}",
+        "disabled": "Disabled"
+      },
+      "form": {
+        "addTitle": "Add user",
+        "addDescription": "Create a staff account with a starting role and password.",
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "role": "Role",
+        "creating": "Creating...",
+        "create": "Create user",
+        "cancel": "Cancel"
+      },
+      "edit": {
+        "role": "Role",
+        "save": "Save",
+        "access": "Access",
+        "enable": "Enable sign-in",
+        "disableTitle": "Disable user?",
+        "disableDescription": "{name} will no longer be able to sign in. Their data is preserved.",
+        "disableSignIn": "Disable sign-in",
+        "signInMethod": "Sign-in method",
+        "local": "Local",
+        "sso": "SSO",
+        "newPassword": "New password",
+        "resetTitle": "Reset password?",
+        "resetDescription": "This overwrites {name}'s current password. They must use the new password to sign in.",
+        "reset": "Reset",
+        "ssoHint": "Signs in through single sign-on — no local password.",
+        "danger": "Danger zone",
+        "deleteTitle": "Delete user?",
+        "deleteDescription": "{name} will be permanently removed. This cannot be undone. Audit history is preserved (shown as \"Deleted user\").",
+        "deleteUser": "Delete user",
+        "confirmDelete": "Delete"
+      },
+      "errors": {
+        "invalid": "Check the user details and try again.",
+        "roleMissing": "Selected role does not exist.",
+        "emailExists": "A user with this email already exists.",
+        "createFailed": "Could not create the user. Please try again.",
+        "created": "User created."
+      }
+    },
+    "roles": {
+      "metaTitle": "Admin — Roles",
+      "title": "Roles",
+      "subtitle": "Permission sets assigned to staff accounts.",
+      "cardTitle": "Roles",
+      "cardDescription": "Define permission sets and assign them to staff accounts.",
+      "manager": {
+        "searchPlaceholder": "Search roles…",
+        "new": "New role",
+        "noMatch": "No roles match your search.",
+        "system": "System",
+        "userCount": "{count, plural, one {# user} other {# users}}",
+        "edit": "Edit",
+        "duplicate": "Duplicate",
+        "deleteTitle": "Delete role?",
+        "deleteDescription": "The \"{name}\" role will be permanently removed. This is only possible when no users are assigned to it.",
+        "delete": "Delete"
+      },
+      "editor": {
+        "createTitle": "Create role",
+        "adminDescription": "The Admin role always has every permission and cannot be changed.",
+        "description": "Choose the permissions this role grants. Users assigned to this role gain exactly these permissions.",
+        "name": "Name",
+        "descriptionLabel": "Description",
+        "selectAll": "Select all permissions",
+        "permissionsCount": "{granted} / {total} permissions",
+        "saving": "Saving...",
+        "create": "Create role",
+        "save": "Save changes",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "invalid": "Check the role details and try again.",
+        "duplicate": "A role with this name already exists.",
+        "createFailed": "Could not create the role. Please try again.",
+        "created": "Role created.",
+        "updated": "Role updated.",
+        "missing": "Missing role.",
+        "updateFailed": "Could not update the role.",
+        "duplicateFailed": "Could not duplicate the role: {reason}",
+        "deleteFailed": "Could not delete the role: {reason}"
+      },
+      "systemRoles": {
+        "Admin": "Admin",
+        "Trainer": "Trainer",
+        "Viewer": "Viewer"
+      },
+      "groups": {
+        "students": "Students",
+        "incidents": "Safety & incidents",
+        "locations": "Locations",
+        "classes": "Classes & schedule",
+        "attendance": "Attendance",
+        "belts": "Belts & gradings",
+        "memberships": "Memberships & payments",
+        "analytics": "Analytics",
+        "communications": "Communications",
+        "administration": "Administration",
+        "profile": "Profile"
+      },
+      "permissions": {
+        "students:view": "View students",
+        "students:create": "Create students",
+        "students:edit": "Edit students",
+        "students:delete": "Delete students",
+        "students:medical": "View medical & health information",
+        "incidents:view": "View incident reports",
+        "incidents:manage": "Record & manage incident reports",
+        "locations:edit": "Manage dojo locations",
+        "classes:view": "View classes & schedule",
+        "classes:edit": "Create & edit classes",
+        "attendance:view": "View attendance",
+        "attendance:mark": "Mark attendance",
+        "belts:view": "View belts & gradings",
+        "belts:edit": "Record gradings & promotions",
+        "memberships:view": "View memberships & payments",
+        "memberships:edit": "Manage memberships & payments",
+        "analytics:view": "View analytics dashboard",
+        "communications:edit": "Send emails & campaigns",
+        "audit:view": "View audit & email logs",
+        "users:manage": "Manage users",
+        "roles:manage": "Manage roles",
+        "settings:manage": "Manage settings",
+        "api:manage": "Manage API access",
+        "profile:view": "View and edit own profile"
+      }
+    },
+    "locations": {
+      "metaTitle": "Admin — Locations",
+      "title": "Locations",
+      "subtitle": "Dojo sites belonging to the school. Students are assigned to one or more locations; every class runs at exactly one.",
+      "cardTitle": "Locations",
+      "cardDescription": "The QR check-in token regenerates on request; the old link stops working immediately.",
+      "manager": {
+        "searchAria": "Search locations",
+        "searchPlaceholder": "Search locations…",
+        "new": "New location",
+        "empty": "No locations yet.",
+        "noMatch": "No locations match your search.",
+        "noAddress": "No address",
+        "studentCount": "{count, plural, one {# student} other {# students}}",
+        "inactive": "Inactive",
+        "addTitle": "Add location",
+        "addDescription": "Create a dojo location students can be assigned to.",
+        "assigned": "{count, plural, one {# student assigned} other {# students assigned}}"
+      },
+      "form": {
+        "name": "Name",
+        "address": "Address",
+        "noAddress": "No address",
+        "phone": "Phone",
+        "email": "Email",
+        "sortOrder": "Sort order",
+        "active": "Active",
+        "creating": "Creating...",
+        "create": "Create location",
+        "saving": "Saving...",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "qr": {
+        "title": "Public QR check-in",
+        "hint": "Print this QR at the door. Students scan it and tap their name to check in — no app or login required.",
+        "alt": "Check-in QR for {name}",
+        "notGenerated": "QR not generated yet — it appears the first time this image loads.",
+        "regenerate": "Regenerate QR",
+        "regenerateHint": "Regenerating invalidates any previously printed QR."
+      },
+      "danger": {
+        "title": "Danger zone",
+        "deleteTitle": "Delete location?",
+        "deleteDescription": "{name} will be permanently removed. Locations with students assigned must be deactivated instead.",
+        "delete": "Delete"
+      },
+      "errors": {
+        "invalid": "Check the location details and try again.",
+        "duplicate": "A location with this name already exists.",
+        "created": "Location created.",
+        "updated": "Location updated.",
+        "hasStudents": "This location still has students — deactivate it instead."
+      }
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

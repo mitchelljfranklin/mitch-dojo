@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -14,7 +17,10 @@ import { LocationsManager } from "../locations-manager";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Locations" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.locations");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminLocationsPage({
   searchParams,
@@ -22,6 +28,7 @@ export default async function AdminLocationsPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   await requirePermission(PERMISSIONS.LOCATIONS_EDIT);
+  const translate = await getTranslations("Admin.locations");
   const locations = await listLocationsWithCounts();
   const query = await searchParams;
 
@@ -43,20 +50,16 @@ export default async function AdminLocationsPage({
         <FlashToast variant="error" message={query.locationError} />
       ) : null}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Locations</h1>
-        <p className="text-muted-foreground text-sm">
-          Dojo sites belonging to the school. Students are assigned to one or
-          more locations; every class runs at exactly one.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Locations</CardTitle>
-          <CardDescription>
-            The QR check-in token regenerates on request; the old link stops
-            working immediately.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <LocationsManager locations={locationViews} />

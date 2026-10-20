@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -13,27 +16,29 @@ import { AppearanceForm } from "../appearance-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Appearance" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.appearance");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminAppearancePage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.appearance");
   const appearance = await getAppearanceSettings();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Appearance</h1>
-        <p className="text-muted-foreground text-sm">
-          Logo, colours, booking-page copy, and layout.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>
-            Customise the logo, colours, booking page copy, and layout.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <AppearanceForm

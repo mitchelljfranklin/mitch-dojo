@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ import {
   type UserActionState,
 } from "@/lib/actions/users";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
-import { formatDate } from "@/lib/utils";
+import { SYSTEM_ROLE_NAMES } from "@/lib/permissions";
 
 export type UserView = {
   id: string;
@@ -59,6 +60,11 @@ function NewUserForm({
   roles: RoleOption[];
   onClose: () => void;
 }) {
+  const translate = useTranslations("Admin.users.form");
+  const translateRoles = useTranslations("Admin.roles");
+  const systemRoleNames = new Set<string>(Object.values(SYSTEM_ROLE_NAMES));
+  const roleLabel = (name: string) =>
+    systemRoleNames.has(name) ? translateRoles(`systemRoles.${name}`) : name;
   const [state, formAction, isPending] = useActionState(
     addUserAction,
     initialState,
@@ -76,15 +82,15 @@ function NewUserForm({
   return (
     <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
       <div className="grid gap-2">
-        <Label htmlFor="new-name">Name</Label>
+        <Label htmlFor="new-name">{translate("name")}</Label>
         <Input id="new-name" name="name" required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="new-email">Email</Label>
+        <Label htmlFor="new-email">{translate("email")}</Label>
         <Input id="new-email" name="email" type="email" required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="new-password">Password</Label>
+        <Label htmlFor="new-password">{translate("password")}</Label>
         <Input
           id="new-password"
           name="password"
@@ -95,7 +101,7 @@ function NewUserForm({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="new-role">Role</Label>
+        <Label htmlFor="new-role">{translate("role")}</Label>
         <Select name="roleId" defaultValue={defaultRole?.id}>
           <SelectTrigger id="new-role">
             <SelectValue />
@@ -103,7 +109,7 @@ function NewUserForm({
           <SelectContent>
             {roles.map((role) => (
               <SelectItem key={role.id} value={role.id}>
-                {role.name}
+                {roleLabel(role.name)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -111,10 +117,10 @@ function NewUserForm({
       </div>
       <SheetFooter className="px-0">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create user"}
+          {isPending ? translate("creating") : translate("create")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {translate("cancel")}
         </Button>
       </SheetFooter>
     </form>
@@ -130,10 +136,15 @@ function EditUserForm({
   roles: RoleOption[];
   isSelf: boolean;
 }) {
+  const translate = useTranslations("Admin.users.edit");
+  const translateRoles = useTranslations("Admin.roles");
+  const systemRoleNames = new Set<string>(Object.values(SYSTEM_ROLE_NAMES));
+  const roleLabel = (name: string) =>
+    systemRoleNames.has(name) ? translateRoles(`systemRoles.${name}`) : name;
   return (
     <div className="flex flex-1 flex-col gap-6 px-4">
       <div className="grid gap-2">
-        <Label htmlFor={`role-${user.id}`}>Role</Label>
+        <Label htmlFor={`role-${user.id}`}>{translate("role")}</Label>
         <form action={changeRoleAction} className="flex items-center gap-2">
           <input type="hidden" name="userId" value={user.id} />
           <Select key={user.roleId} name="roleId" defaultValue={user.roleId}>
@@ -143,19 +154,19 @@ function EditUserForm({
             <SelectContent>
               {roles.map((role) => (
                 <SelectItem key={role.id} value={role.id}>
-                  {role.name}
+                  {roleLabel(role.name)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <SubmitButton type="submit" size="sm" variant="secondary">
-            Save
+            {translate("save")}
           </SubmitButton>
         </form>
       </div>
 
       <div className="grid gap-2">
-        <Label>Access</Label>
+        <Label>{translate("access")}</Label>
         <form id={`toggle-user-${user.id}`} action={toggleUserAction}>
           <input type="hidden" name="userId" value={user.id} />
           <input
@@ -165,17 +176,19 @@ function EditUserForm({
           />
           {user.disabled ? (
             <SubmitButton type="submit" size="sm" variant="secondary">
-              Enable sign-in
+              {translate("enable")}
             </SubmitButton>
           ) : (
             <ConfirmDialog
-              title="Disable user?"
-              description={`${user.name} will no longer be able to sign in. Their data is preserved.`}
-              confirmLabel="Disable"
+              title={translate("disableTitle")}
+              description={translate("disableDescription", {
+                name: user.name,
+              })}
+              confirmLabel={translate("disableSignIn")}
               formId={`toggle-user-${user.id}`}
             >
               <Button type="button" size="sm" variant="secondary">
-                Disable sign-in
+                {translate("disableSignIn")}
               </Button>
             </ConfirmDialog>
           )}
@@ -183,10 +196,12 @@ function EditUserForm({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor={`password-${user.id}`}>Sign-in method</Label>
+        <Label htmlFor={`password-${user.id}`}>
+          {translate("signInMethod")}
+        </Label>
         <div className="flex items-center gap-2">
           <Badge variant={user.hasLocalPassword ? "secondary" : "outline"}>
-            {user.hasLocalPassword ? "Local" : "SSO"}
+            {user.hasLocalPassword ? translate("local") : translate("sso")}
           </Badge>
           {user.hasLocalPassword ? (
             <form
@@ -200,25 +215,27 @@ function EditUserForm({
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="New password"
+                placeholder={translate("newPassword")}
                 minLength={12}
                 className="flex-1"
               />
               <ConfirmDialog
-                title="Reset password?"
-                description={`This overwrites ${user.name}'s current password. They must use the new password to sign in.`}
-                confirmLabel="Reset"
+                title={translate("resetTitle")}
+                description={translate("resetDescription", {
+                  name: user.name,
+                })}
+                confirmLabel={translate("reset")}
                 variant="default"
                 formId={`reset-password-${user.id}`}
               >
                 <Button type="button" size="sm" variant="secondary">
-                  Reset
+                  {translate("reset")}
                 </Button>
               </ConfirmDialog>
             </form>
           ) : (
             <p className="text-muted-foreground text-xs">
-              Signs in through single sign-on — no local password.
+              {translate("ssoHint")}
             </p>
           )}
         </div>
@@ -226,17 +243,19 @@ function EditUserForm({
 
       {!isSelf ? (
         <div className="grid gap-2 border-t pt-4">
-          <Label>Danger zone</Label>
+          <Label>{translate("danger")}</Label>
           <form id={`delete-user-${user.id}`} action={deleteUserAction}>
             <input type="hidden" name="userId" value={user.id} />
             <ConfirmDialog
-              title="Delete user?"
-              description={`${user.name} will be permanently removed. This cannot be undone. Audit history is preserved (shown as "Deleted user").`}
-              confirmLabel="Delete"
+              title={translate("deleteTitle")}
+              description={translate("deleteDescription", {
+                name: user.name,
+              })}
+              confirmLabel={translate("confirmDelete")}
               formId={`delete-user-${user.id}`}
             >
               <Button type="button" size="sm" variant="destructive">
-                Delete user
+                {translate("deleteUser")}
               </Button>
             </ConfirmDialog>
           </form>
@@ -255,6 +274,13 @@ export function UsersManager({
   roles: RoleOption[];
   currentUserId: string;
 }) {
+  const translate = useTranslations("Admin.users.manager");
+  const translateForm = useTranslations("Admin.users.form");
+  const translateRoles = useTranslations("Admin.roles");
+  const systemRoleNames = new Set<string>(Object.values(SYSTEM_ROLE_NAMES));
+  const roleLabel = (name: string) =>
+    systemRoleNames.has(name) ? translateRoles(`systemRoles.${name}`) : name;
+  const formatter = useFormatter();
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<EditorTarget | null>(null);
 
@@ -281,20 +307,20 @@ export function UsersManager({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Input
-          aria-label="Search staff"
-          placeholder="Search staff…"
+          aria-label={translate("searchAria")}
+          placeholder={translate("searchPlaceholder")}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className="max-w-xs"
         />
         <Button size="sm" onClick={() => setEditing("new")}>
-          New user
+          {translate("new")}
         </Button>
       </div>
 
       {filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          {users.length === 0 ? "No users yet." : "No staff match your search."}
+          {users.length === 0 ? translate("empty") : translate("noMatch")}
         </p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
@@ -313,16 +339,22 @@ export function UsersManager({
                   </span>
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  Added {formatDate(user.createdAt)}
+                  {translate("added", {
+                    date: formatter.dateTime(new Date(user.createdAt), {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    }),
+                  })}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <Badge variant="secondary" className="text-xs">
-                  {user.roleName}
+                  {roleLabel(user.roleName)}
                 </Badge>
                 {user.disabled ? (
                   <Badge variant="destructive" className="text-xs">
-                    Disabled
+                    {translate("disabled")}
                   </Badge>
                 ) : null}
               </div>
@@ -340,9 +372,9 @@ export function UsersManager({
         {editing === "new" ? (
           <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
             <SheetHeader>
-              <SheetTitle>Add user</SheetTitle>
+              <SheetTitle>{translateForm("addTitle")}</SheetTitle>
               <SheetDescription>
-                Create a staff account with a starting role and password.
+                {translateForm("addDescription")}
               </SheetDescription>
             </SheetHeader>
             <NewUserForm roles={roles} onClose={() => setEditing(null)} />
