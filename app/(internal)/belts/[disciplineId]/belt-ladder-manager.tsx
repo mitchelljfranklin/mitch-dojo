@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ function BeltFields({
   belt?: BeltRangeView;
   defaultOrder: number;
 }) {
+  const t = useTranslations("Belts.ladder");
   const [color, setColor] = useState(belt?.colorHex ?? "#FFFFFF");
 
   return (
@@ -60,7 +62,7 @@ function BeltFields({
       <input type="hidden" name="colorHex" value={color} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="belt-name">Name</Label>
+          <Label htmlFor="belt-name">{t("name")}</Label>
           <Input
             id="belt-name"
             name="name"
@@ -70,7 +72,7 @@ function BeltFields({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="belt-color">Colour</Label>
+          <Label htmlFor="belt-color">{t("colour")}</Label>
           <div className="flex items-center gap-2">
             <input
               id="belt-color"
@@ -78,7 +80,7 @@ function BeltFields({
               value={normalizeHexForPicker(color)}
               onChange={(event) => setColor(event.target.value.toUpperCase())}
               className="h-9 w-14 cursor-pointer rounded border p-1"
-              aria-label="Colour palette"
+              aria-label={t("colourPalette")}
             />
             <Input
               id="belt-color-hex"
@@ -89,14 +91,14 @@ function BeltFields({
                 setColor(normalizeHexForPicker(event.target.value))
               }
               className="w-28 font-mono"
-              aria-label="Colour hex value"
+              aria-label={t("colourHex")}
               pattern="^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
               required
             />
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="belt-order">Order (0 = entry rank)</Label>
+          <Label htmlFor="belt-order">{t("orderLabel")}</Label>
           <Input
             id="belt-order"
             name="order"
@@ -109,7 +111,7 @@ function BeltFields({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="belt-required">Required trainings</Label>
+          <Label htmlFor="belt-required">{t("required")}</Label>
           <Input
             id="belt-required"
             name="requiredTrainings"
@@ -120,10 +122,7 @@ function BeltFields({
             required
             className="w-24"
           />
-          <p className="text-muted-foreground text-xs">
-            Cumulative total of trained sessions (across all courses of this
-            discipline) needed to be awarded this belt.
-          </p>
+          <p className="text-muted-foreground text-xs">{t("requiredHint")}</p>
         </div>
       </div>
     </>
@@ -139,6 +138,7 @@ function NewBeltForm({
   nextOrder: number;
   onClose: () => void;
 }) {
+  const t = useTranslations("Belts.ladder");
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
     FormData
@@ -162,10 +162,10 @@ function NewBeltForm({
       ) : null}
       <SheetFooter className="px-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Adding..." : "Add belt level"}
+          {isPending ? t("adding") : t("addSubmit")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {t("cancel")}
         </Button>
       </SheetFooter>
     </form>
@@ -181,6 +181,7 @@ function EditBeltForm({
   belt: BeltRangeView;
   onClose: () => void;
 }) {
+  const t = useTranslations("Belts.ladder");
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
     FormData
@@ -210,18 +211,18 @@ function EditBeltForm({
       ) : null}
 
       <div className="mt-auto grid gap-2 border-t pt-4">
-        <Label>Danger zone</Label>
+        <Label>{t("danger")}</Label>
         <form id={`delete-belt-${belt.id}`} action={deleteBeltLevelAction}>
           <input type="hidden" name="beltLevelId" value={belt.id} />
           <input type="hidden" name="disciplineId" value={disciplineId} />
           <ConfirmDialog
-            title="Remove belt level?"
-            description={`${belt.name} will be removed from this discipline. Belts that have been awarded cannot be removed.`}
-            confirmLabel="Remove"
+            title={t("removeTitle")}
+            description={t("removeDescription", { name: belt.name })}
+            confirmLabel={t("remove")}
             formId={`delete-belt-${belt.id}`}
           >
             <Button type="button" size="sm" variant="destructive">
-              Remove
+              {t("remove")}
             </Button>
           </ConfirmDialog>
         </form>
@@ -233,10 +234,10 @@ function EditBeltForm({
           form={`edit-belt-${belt.id}`}
           disabled={isPending}
         >
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? t("saving") : t("save")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {t("cancel")}
         </Button>
       </SheetFooter>
     </div>
@@ -252,6 +253,7 @@ export function BeltLadderManager({
   belts: BeltRangeView[];
   canEdit: boolean;
 }) {
+  const t = useTranslations("Belts.ladder");
   const [editing, setEditing] = useState<EditorTarget | null>(null);
 
   const editingBelt =
@@ -266,22 +268,18 @@ export function BeltLadderManager({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-medium">Belt ladder</h3>
-          <p className="text-muted-foreground text-xs">
-            Ranks for this discipline, lowest order first.
-          </p>
+          <h3 className="text-sm font-medium">{t("title")}</h3>
+          <p className="text-muted-foreground text-xs">{t("description")}</p>
         </div>
         {canEdit ? (
           <Button size="sm" onClick={() => setEditing("new")}>
-            Add belt
+            {t("add")}
           </Button>
         ) : null}
       </div>
 
       {belts.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No belt levels yet. Add the entry belt first (0 required trainings).
-        </p>
+        <p className="text-muted-foreground text-sm">{t("empty")}</p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
           {belts.map((belt) => {
@@ -297,12 +295,11 @@ export function BeltLadderManager({
                     {belt.name}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    order {belt.order}
+                    {t("order", { order: belt.order })}
                   </span>
                 </div>
                 <Badge variant="secondary" className="text-xs">
-                  {belt.requiredTrainings} training
-                  {belt.requiredTrainings === 1 ? "" : "s"}
+                  {t("trainings", { count: belt.requiredTrainings })}
                 </Badge>
               </>
             );
@@ -337,10 +334,8 @@ export function BeltLadderManager({
         {editing === "new" ? (
           <SheetContent className="w-full overflow-y-auto sm:max-w-md">
             <SheetHeader>
-              <SheetTitle>Add belt level</SheetTitle>
-              <SheetDescription>
-                Define a rank for this discipline.
-              </SheetDescription>
+              <SheetTitle>{t("addTitle")}</SheetTitle>
+              <SheetDescription>{t("addDescription")}</SheetDescription>
             </SheetHeader>
             <NewBeltForm
               disciplineId={disciplineId}
@@ -355,7 +350,7 @@ export function BeltLadderManager({
           >
             <SheetHeader>
               <SheetTitle>{editingBelt.name}</SheetTitle>
-              <SheetDescription>Update the belt definition.</SheetDescription>
+              <SheetDescription>{t("editDescription")}</SheetDescription>
             </SheetHeader>
             <EditBeltForm
               disciplineId={disciplineId}

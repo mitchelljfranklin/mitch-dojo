@@ -731,6 +731,130 @@
       "none": "No attendance imported. First error: {error}"
     }
   },
+  "Belts": {
+    "metaTitle": "Belts & gradings",
+    "title": "Belts & gradings",
+    "subtitle": "Belt ladders and student progression per discipline.",
+    "actions": {
+      "viewCourses": "View courses",
+      "newDiscipline": "New discipline",
+      "importHistory": "Import history"
+    },
+    "empty": {
+      "title": "No disciplines yet",
+      "description": "Create a discipline (e.g. Karate, Jujitsu) to set up its belt ladder. Courses are linked to a discipline so progression is shared across all locations teaching it."
+    },
+    "card": {
+      "inactive": "Inactive",
+      "beltCount": "{count, plural, one {# belt} other {# belts}}",
+      "courseCount": "{count, plural, one {# course} other {# courses}}"
+    },
+    "delete": {
+      "title": "Delete {name}?",
+      "description": "The discipline and its belt ladder will be permanently removed.",
+      "confirm": "Delete"
+    },
+    "discipline": {
+      "metaTitle": "Belt progression",
+      "beltsBadge": "{count, plural, one {# belt} other {# belts}}",
+      "inactive": "Inactive",
+      "gradings": "Gradings"
+    },
+    "ladder": {
+      "title": "Belt ladder",
+      "description": "Ranks for this discipline, lowest order first.",
+      "add": "Add belt",
+      "empty": "No belt levels yet. Add the entry belt first (0 required trainings).",
+      "order": "order {order}",
+      "trainings": "{count, plural, one {# training} other {# trainings}}",
+      "addTitle": "Add belt level",
+      "addDescription": "Define a rank for this discipline.",
+      "editDescription": "Update the belt definition.",
+      "name": "Name",
+      "colour": "Colour",
+      "colourPalette": "Colour palette",
+      "colourHex": "Colour hex value",
+      "orderLabel": "Order (0 = entry rank)",
+      "required": "Required trainings",
+      "requiredHint": "Cumulative total of trained sessions (across all courses of this discipline) needed to be awarded this belt.",
+      "adding": "Adding...",
+      "addSubmit": "Add belt level",
+      "saving": "Saving...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "danger": "Danger zone",
+      "removeTitle": "Remove belt level?",
+      "removeDescription": "{name} will be removed from this discipline. Belts that have been awarded cannot be removed.",
+      "remove": "Remove"
+    },
+    "progress": {
+      "title": "Student progression",
+      "description": "Current rank, total trained sessions across all courses of this discipline, and eligibility for the next belt.",
+      "empty": "No active or trial students yet.",
+      "searchAria": "Filter students by name",
+      "searchPlaceholder": "Search students…",
+      "beltAria": "Filter by belt",
+      "allBelts": "All belts",
+      "unranked": "Unranked",
+      "eligibilityAria": "Filter by eligibility",
+      "allStudents": "All students",
+      "eligible": "Eligible for next belt",
+      "needs": "Needs trainings",
+      "clear": "Clear",
+      "none": "No students match the filters.",
+      "showing": "Showing {filtered} of {total} students",
+      "trainings": "{count, plural, one {# training} other {# trainings}} on this discipline",
+      "noBelt": "No belt recorded yet",
+      "eligibleBadge": "Eligible: {belt}",
+      "progressBadge": "{belt}: {current}/{required}",
+      "promote": "Promote"
+    },
+    "promotion": {
+      "title": "Record promotion",
+      "eligible": "{name} has met the training requirement.",
+      "notEligible": "{name} has not yet met the next belt's training requirement — record anyway if the instructor decides so.",
+      "belt": "Belt",
+      "current": " (current)",
+      "skipHint": "Skipping belts (first belt at a higher rank, or a multi-level grading) also records the skipped lower belts so the history shows the complete ladder.",
+      "credit": "Starting trainings credit",
+      "creditHint": "Prior sessions this student brings from elsewhere. Prefilled with {belt}'s requirement ({count}) — enter more if they had extra sessions. The counter always covers the belt being awarded: a lower value is topped up at save. Shown only for the first belt in a discipline.",
+      "date": "Award date",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional — grading day, examiner, techniques assessed, etc.",
+      "override": "Override eligibility requirement",
+      "overrideHint": "The student counts {current} of the {required} trainings {belt} requires. Tick this to record the promotion anyway — the counter is then aligned to the new rank (e.g. exceptional progression, a make-up grading, or a multi-level grading).",
+      "recording": "Recording...",
+      "record": "Record promotion",
+      "savedHint": "The table refreshes automatically.",
+      "done": "Done",
+      "cancel": "Cancel"
+    },
+    "sheet": {
+      "newTitle": "Add discipline",
+      "newDescription": "Create a discipline with its own belt ladder (e.g. Karate, Jujitsu).",
+      "name": "Name",
+      "namePlaceholder": "e.g. Karate, Jujitsu",
+      "creating": "Creating...",
+      "create": "Create discipline",
+      "done": "Done",
+      "cancel": "Cancel"
+    },
+    "created": "Discipline created.",
+    "beltAdded": "Belt level added.",
+    "beltUpdated": "Belt level updated.",
+    "promotionRecorded": "Promotion recorded.",
+    "errors": {
+      "disciplineName": "Discipline name is required (max 80 characters).",
+      "disciplineDuplicate": "A discipline with that name already exists.",
+      "disciplineHasCourses": "This discipline still has courses — remove or reassign them first.",
+      "beltInvalid": "Check the belt details and try again.",
+      "beltDuplicate": "A belt with that name already exists in this discipline.",
+      "beltMissing": "That belt no longer exists.",
+      "beltAwarded": "This belt has been awarded and cannot be removed.",
+      "promotionInvalid": "Check the promotion details and try again.",
+      "eligibility": "{belt} requires {required} trainings — the student counts {count}. Tick \"Override eligibility\" to record anyway."
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

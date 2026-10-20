@@ -38,8 +38,9 @@ plan without asking.
   Catalogs live in `messages/`, resolution in `lib/i18n/`. Translated
   surfaces: public booking, member portal, QR check-in, auth screens, the
   staff shell/dashboard, the full Students domain (list, form, detail,
-  households, CSV import), Classes (courses + weekly schedule), and Attendance
-  (browser, session sheets, backfill, CSV import).
+  households, CSV import), Classes (courses + weekly schedule), Attendance
+  (browser, session sheets, backfill, CSV import), and Belts (disciplines,
+  ladder, progression, promotions).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

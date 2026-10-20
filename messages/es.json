@@ -731,6 +731,130 @@
       "none": "No se importó ninguna asistencia. Primer error: {error}"
     }
   },
+  "Belts": {
+    "metaTitle": "Cinturones y grados",
+    "title": "Cinturones y grados",
+    "subtitle": "Escaleras de cinturones y progreso de los alumnos por disciplina.",
+    "actions": {
+      "viewCourses": "Ver cursos",
+      "newDiscipline": "Nueva disciplina",
+      "importHistory": "Importar historial"
+    },
+    "empty": {
+      "title": "Aún no hay disciplinas",
+      "description": "Crea una disciplina (p. ej. Kárate, Jiu-Jitsu) para configurar su escalera de cinturones. Los cursos se vinculan a una disciplina, así el progreso es común en todas las sedes que la imparten."
+    },
+    "card": {
+      "inactive": "Inactiva",
+      "beltCount": "{count, plural, one {# cinturón} other {# cinturones}}",
+      "courseCount": "{count, plural, one {# curso} other {# cursos}}"
+    },
+    "delete": {
+      "title": "¿Eliminar {name}?",
+      "description": "La disciplina y su escalera de cinturones se eliminarán de forma permanente.",
+      "confirm": "Eliminar"
+    },
+    "discipline": {
+      "metaTitle": "Progreso de cinturones",
+      "beltsBadge": "{count, plural, one {# cinturón} other {# cinturones}}",
+      "inactive": "Inactiva",
+      "gradings": "Grados"
+    },
+    "ladder": {
+      "title": "Escalera de cinturones",
+      "description": "Rangos de esta disciplina, del orden más bajo al más alto.",
+      "add": "Añadir cinturón",
+      "empty": "Aún no hay niveles de cinturón. Añade primero el cinturón de entrada (0 entrenamientos requeridos).",
+      "order": "orden {order}",
+      "trainings": "{count, plural, one {# entrenamiento} other {# entrenamientos}}",
+      "addTitle": "Añadir nivel de cinturón",
+      "addDescription": "Define un rango para esta disciplina.",
+      "editDescription": "Actualiza la definición del cinturón.",
+      "name": "Nombre",
+      "colour": "Color",
+      "colourPalette": "Paleta de colores",
+      "colourHex": "Valor hexadecimal del color",
+      "orderLabel": "Orden (0 = rango de entrada)",
+      "required": "Entrenamientos requeridos",
+      "requiredHint": "Total acumulado de sesiones entrenadas (en todos los cursos de esta disciplina) necesarias para obtener este cinturón.",
+      "adding": "Añadiendo...",
+      "addSubmit": "Añadir nivel de cinturón",
+      "saving": "Guardando...",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "danger": "Zona de peligro",
+      "removeTitle": "¿Quitar el nivel de cinturón?",
+      "removeDescription": "{name} se quitará de esta disciplina. Los cinturones ya otorgados no se pueden quitar.",
+      "remove": "Quitar"
+    },
+    "progress": {
+      "title": "Progreso de los alumnos",
+      "description": "Rango actual, total de sesiones entrenadas en todos los cursos de esta disciplina y elegibilidad para el siguiente cinturón.",
+      "empty": "Aún no hay alumnos activos ni de prueba.",
+      "searchAria": "Filtrar alumnos por nombre",
+      "searchPlaceholder": "Buscar alumnos…",
+      "beltAria": "Filtrar por cinturón",
+      "allBelts": "Todos los cinturones",
+      "unranked": "Sin rango",
+      "eligibilityAria": "Filtrar por elegibilidad",
+      "allStudents": "Todos los alumnos",
+      "eligible": "Elegible para el siguiente cinturón",
+      "needs": "Necesita entrenamientos",
+      "clear": "Limpiar",
+      "none": "Ningún alumno coincide con los filtros.",
+      "showing": "Mostrando {filtered} de {total} alumnos",
+      "trainings": "{count, plural, one {# entrenamiento} other {# entrenamientos}} en esta disciplina",
+      "noBelt": "Aún no hay cinturón registrado",
+      "eligibleBadge": "Elegible: {belt}",
+      "progressBadge": "{belt}: {current}/{required}",
+      "promote": "Ascender"
+    },
+    "promotion": {
+      "title": "Registrar ascenso",
+      "eligible": "{name} ha cumplido el requisito de entrenamientos.",
+      "notEligible": "{name} aún no ha cumplido el requisito de entrenamientos del siguiente cinturón — regístralo igualmente si el instructor lo decide.",
+      "belt": "Cinturón",
+      "current": " (actual)",
+      "skipHint": "Saltar cinturones (primer cinturón en un rango superior, o un grado de varios niveles) también registra los cinturones inferiores omitidos para que el historial muestre la escalera completa.",
+      "credit": "Crédito de entrenamientos iniciales",
+      "creditHint": "Sesiones previas que este alumno aporta de otro lugar. Se rellena con el requisito de {belt} ({count}) — introduce más si tenía sesiones adicionales. El contador siempre cubre el cinturón que se otorga: un valor menor se completa al guardar. Solo se muestra para el primer cinturón de una disciplina.",
+      "date": "Fecha de concesión",
+      "notes": "Notas",
+      "notesPlaceholder": "Opcional — día de grado, examinador, técnicas evaluadas, etc.",
+      "override": "Anular el requisito de elegibilidad",
+      "overrideHint": "El alumno cuenta {current} de los {required} entrenamientos que requiere {belt}. Marca esto para registrar el ascenso igualmente — el contador se alinea entonces con el nuevo rango (p. ej. progreso excepcional, un grado de recuperación o un grado de varios niveles).",
+      "recording": "Registrando...",
+      "record": "Registrar ascenso",
+      "savedHint": "La tabla se actualiza automáticamente.",
+      "done": "Hecho",
+      "cancel": "Cancelar"
+    },
+    "sheet": {
+      "newTitle": "Añadir disciplina",
+      "newDescription": "Crea una disciplina con su propia escalera de cinturones (p. ej. Kárate, Jiu-Jitsu).",
+      "name": "Nombre",
+      "namePlaceholder": "p. ej. Kárate, Jiu-Jitsu",
+      "creating": "Creando...",
+      "create": "Crear disciplina",
+      "done": "Hecho",
+      "cancel": "Cancelar"
+    },
+    "created": "Disciplina creada.",
+    "beltAdded": "Nivel de cinturón añadido.",
+    "beltUpdated": "Nivel de cinturón actualizado.",
+    "promotionRecorded": "Ascenso registrado.",
+    "errors": {
+      "disciplineName": "El nombre de la disciplina es obligatorio (máx. 80 caracteres).",
+      "disciplineDuplicate": "Ya existe una disciplina con ese nombre.",
+      "disciplineHasCourses": "Esta disciplina todavía tiene cursos — elimínalos o reasígnalos primero.",
+      "beltInvalid": "Revisa los datos del cinturón e inténtalo de nuevo.",
+      "beltDuplicate": "Ya existe un cinturón con ese nombre en esta disciplina.",
+      "beltMissing": "Ese cinturón ya no existe.",
+      "beltAwarded": "Este cinturón ya se ha otorgado y no se puede quitar.",
+      "promotionInvalid": "Revisa los datos del ascenso e inténtalo de nuevo.",
+      "eligibility": "{belt} requiere {required} entrenamientos — el alumno cuenta {count}. Marca «Anular el requisito de elegibilidad» para registrarlo igualmente."
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,10 @@ import { listDisciplines } from "@/lib/db/belts";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Belts & gradings" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Belts");
+  return { title: t("metaTitle") };
+}
 
 type BeltsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -25,31 +30,30 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
   const disciplines = await listDisciplines();
   const sp = await searchParams;
+  const t = await getTranslations("Belts");
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: "Belts & gradings" }]} />
+      <Breadcrumbs segments={[{ label: t("title") }]} />
       {sp.disciplineError ? (
         <FlashToast variant="error" message={sp.disciplineError} />
       ) : null}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Belts & gradings
+            {t("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Belt ladders and student progression per discipline.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/classes">View courses</Link>
+            <Link href="/classes">{t("actions.viewCourses")}</Link>
           </Button>
           {canEdit ? (
             <>
               <AddDisciplineButton />
               <Button asChild variant="outline">
-                <Link href="/belts/import">Import history</Link>
+                <Link href="/belts/import">{t("actions.importHistory")}</Link>
               </Button>
             </>
           ) : null}
@@ -59,13 +63,11 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
       {disciplines.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No disciplines yet</CardTitle>
+            <CardTitle>{t("empty.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              Create a discipline (e.g. Karate, Jujitsu) to set up its belt
-              ladder. Courses are linked to a discipline so progression is
-              shared across all locations teaching it.
+              {t("empty.description")}
             </p>
           </CardContent>
         </Card>
@@ -82,16 +84,19 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
                       </CardTitle>
                       {discipline.isActive ? null : (
                         <Badge variant="outline" className="shrink-0">
-                          Inactive
+                          {t("card.inactive")}
                         </Badge>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="text-muted-foreground text-xs">
-                    {discipline._count.beltRangeEntries} belt
-                    {discipline._count.beltRangeEntries === 1 ? "" : "s"} ·{" "}
-                    {discipline._count.courses} course
-                    {discipline._count.courses === 1 ? "" : "s"}
+                    {t("card.beltCount", {
+                      count: discipline._count.beltRangeEntries,
+                    })}{" "}
+                    ·{" "}
+                    {t("card.courseCount", {
+                      count: discipline._count.courses,
+                    })}
                   </CardContent>
                 </Card>
               </Link>
@@ -107,9 +112,9 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
                     value={discipline.id}
                   />
                   <ConfirmDialog
-                    title={`Delete ${discipline.name}?`}
-                    description="The discipline and its belt ladder will be permanently removed."
-                    confirmLabel="Delete"
+                    title={t("delete.title", { name: discipline.name })}
+                    description={t("delete.description")}
+                    confirmLabel={t("delete.confirm")}
                   >
                     <Button
                       type="submit"
@@ -117,7 +122,7 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
                       variant="ghost"
                       className="text-destructive h-7 px-2 text-xs"
                     >
-                      Delete
+                      {t("delete.confirm")}
                     </Button>
                   </ConfirmDialog>
                 </form>

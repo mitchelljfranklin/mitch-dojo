@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -43,17 +44,18 @@ export async function createDisciplineAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts");
 
   const name = getField(formData, "name")?.trim();
   if (!name || name.length === 0 || name.length > 80) {
-    return { error: "Discipline name is required (max 80 characters)." };
+    return { error: t("errors.disciplineName") };
   }
 
   try {
     await createDiscipline(name);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A discipline with that name already exists." };
+      return { error: t("errors.disciplineDuplicate") };
     }
     throw error;
   }
@@ -67,11 +69,12 @@ export async function createDisciplineAction(
       name,
     );
   }
-  return { ok: true, message: "Discipline created." };
+  return { ok: true, message: t("created") };
 }
 
 export async function deleteDisciplineAction(formData: FormData) {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts");
   const disciplineId = getField(formData, "disciplineId");
 
   try {
@@ -81,7 +84,11 @@ export async function deleteDisciplineAction(formData: FormData) {
       error instanceof Error &&
       error.message.startsWith("This discipline has courses")
     ) {
-      redirect(`/belts?disciplineError=${encodeURIComponent(error.message)}`);
+      redirect(
+        `/belts?disciplineError=${encodeURIComponent(
+          t("errors.disciplineHasCourses"),
+        )}`,
+      );
     }
     throw error;
   }
@@ -115,20 +122,19 @@ export async function createBeltLevelAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts");
   const disciplineId = getField(formData, "disciplineId");
 
   const parsed = parseBeltInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: t("errors.beltInvalid") };
   }
 
   try {
     await createBeltRangeEntry(disciplineId, parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return {
-        error: "A belt with that name already exists in this discipline.",
-      };
+      return { error: t("errors.beltDuplicate") };
     }
     throw error;
   }
@@ -143,7 +149,7 @@ export async function createBeltLevelAction(
       { disciplineId },
     );
   }
-  return { ok: true, message: "Belt level added." };
+  return { ok: true, message: t("beltAdded") };
 }
 
 // Feeds useActionState — must not revalidatePath (see AGENTS.md).
@@ -152,20 +158,19 @@ export async function updateBeltLevelAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts");
   const beltLevelId = getField(formData, "beltLevelId");
 
   const parsed = parseBeltInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: t("errors.beltInvalid") };
   }
 
   try {
     await updateBeltRangeEntry(beltLevelId, parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return {
-        error: "A belt with that name already exists in this discipline.",
-      };
+      return { error: t("errors.beltDuplicate") };
     }
     throw error;
   }
@@ -179,11 +184,12 @@ export async function updateBeltLevelAction(
       beltLevelId,
     );
   }
-  return { ok: true, message: "Belt level updated." };
+  return { ok: true, message: t("beltUpdated") };
 }
 
 export async function deleteBeltLevelAction(formData: FormData) {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts");
   const beltLevelId = getField(formData, "beltLevelId");
   const disciplineId = getField(formData, "disciplineId");
 
@@ -195,7 +201,9 @@ export async function deleteBeltLevelAction(formData: FormData) {
       error.message.startsWith("This belt has been awarded")
     ) {
       redirect(
-        `/belts/${disciplineId}?beltError=${encodeURIComponent(error.message)}`,
+        `/belts/${disciplineId}?beltError=${encodeURIComponent(
+          t("errors.beltAwarded"),
+        )}`,
       );
     }
     throw error;
@@ -221,6 +229,7 @@ export async function recordPromotionAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   const user = await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts");
   const studentId = getField(formData, "studentId");
 
   const parsed = promotionSchema.safeParse({
@@ -230,7 +239,7 @@ export async function recordPromotionAction(
     trainingsCredit: getField(formData, "trainingsCredit") || "0",
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: t("errors.promotionInvalid") };
   }
 
   // Enforce the training requirement unless the instructor explicitly
@@ -243,7 +252,7 @@ export async function recordPromotionAction(
     parsed.data.beltRangeEntryId,
   );
   if (eligibility === null) {
-    return { error: "That belt no longer exists." };
+    return { error: t("errors.beltMissing") };
   }
   const requiredTrainings = eligibility.requiredTrainings ?? 0;
   const creditTowardsGate =
@@ -254,7 +263,11 @@ export async function recordPromotionAction(
       getField(formData, "overrideEligibility") === "on";
     if (!overrideConfirmed) {
       return {
-        error: `${eligibility.targetBeltName} requires ${requiredTrainings} trainings — the student counts ${effectiveTrainings}. Tick "Override eligibility" to record anyway.`,
+        error: t("errors.eligibility", {
+          belt: eligibility.targetBeltName,
+          required: requiredTrainings,
+          count: effectiveTrainings,
+        }),
       };
     }
   }
@@ -270,7 +283,7 @@ export async function recordPromotionAction(
     });
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes("not found")) {
-      return { error: "That belt no longer exists." };
+      return { error: t("errors.beltMissing") };
     }
     throw error;
   }
@@ -282,7 +295,7 @@ export async function recordPromotionAction(
     parsed.data.beltRangeEntryId,
     { studentId },
   );
-  return { ok: true, message: "Promotion recorded." };
+  return { ok: true, message: t("promotionRecorded") };
 }
 
 export async function deletePromotionAction(formData: FormData) {

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ export function ProgressTable({
   rows,
   canEdit,
 }: ProgressTableProps) {
+  const t = useTranslations("Belts.progress");
   const [promoting, setPromoting] = useState<ProgressRow | null>(null);
   const [defaultBeltId, setDefaultBeltId] = useState("");
   // Client-side filters: the rows are already in memory, so filtering
@@ -108,36 +110,31 @@ export function ProgressTable({
     <Card>
       <div className="flex items-center justify-between px-6 pt-6">
         <div>
-          <h2 className="text-base font-semibold">Student progression</h2>
-          <p className="text-muted-foreground text-xs">
-            Current rank, total trained sessions across all courses of this
-            discipline, and eligibility for the next belt.
-          </p>
+          <h2 className="text-base font-semibold">{t("title")}</h2>
+          <p className="text-muted-foreground text-xs">{t("description")}</p>
         </div>
       </div>
       <CardContent className="pt-4">
         {rows.length === 0 ? (
-          <p className="text-muted-foreground pb-2 text-sm">
-            No active or trial students yet.
-          </p>
+          <p className="text-muted-foreground pb-2 text-sm">{t("empty")}</p>
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-end gap-2">
               <Input
-                aria-label="Filter students by name"
-                placeholder="Search students…"
+                aria-label={t("searchAria")}
+                placeholder={t("searchPlaceholder")}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 className="h-9 w-52"
               />
               <select
-                aria-label="Filter by belt"
+                aria-label={t("beltAria")}
                 value={beltFilter}
                 onChange={(event) => setBeltFilter(event.target.value)}
                 className="border-input bg-background h-9 rounded-md border px-3 text-sm"
               >
-                <option value="ALL">All belts</option>
-                <option value="UNRANKED">Unranked</option>
+                <option value="ALL">{t("allBelts")}</option>
+                <option value="UNRANKED">{t("unranked")}</option>
                 {belts.map((belt) => (
                   <option key={belt.id} value={belt.id}>
                     {belt.name}
@@ -145,14 +142,14 @@ export function ProgressTable({
                 ))}
               </select>
               <select
-                aria-label="Filter by eligibility"
+                aria-label={t("eligibilityAria")}
                 value={eligibilityFilter}
                 onChange={(event) => setEligibilityFilter(event.target.value)}
                 className="border-input bg-background h-9 rounded-md border px-3 text-sm"
               >
-                <option value="ALL">All students</option>
-                <option value="ELIGIBLE">Eligible for next belt</option>
-                <option value="NEEDS">Needs trainings</option>
+                <option value="ALL">{t("allStudents")}</option>
+                <option value="ELIGIBLE">{t("eligible")}</option>
+                <option value="NEEDS">{t("needs")}</option>
               </select>
               {filtersActive ? (
                 <Button
@@ -165,19 +162,20 @@ export function ProgressTable({
                     setEligibilityFilter("ALL");
                   }}
                 >
-                  Clear
+                  {t("clear")}
                 </Button>
               ) : null}
             </div>
             {filteredRows.length === 0 ? (
-              <p className="text-muted-foreground pb-2 text-sm">
-                No students match the filters.
-              </p>
+              <p className="text-muted-foreground pb-2 text-sm">{t("none")}</p>
             ) : (
               <>
                 {filtersActive && filteredRows.length < rows.length ? (
                   <p className="text-muted-foreground mb-2 text-xs">
-                    Showing {filteredRows.length} of {rows.length} students
+                    {t("showing", {
+                      filtered: filteredRows.length,
+                      total: rows.length,
+                    })}
                   </p>
                 ) : null}
                 <div className="flex flex-col divide-y rounded-lg border">
@@ -192,8 +190,8 @@ export function ProgressTable({
                         </span>
                         <span className="text-muted-foreground text-xs">
                           {row.currentBeltName
-                            ? `${row.trainingsTotal} training${row.trainingsTotal === 1 ? "" : "s"} on this discipline`
-                            : "No belt recorded yet"}
+                            ? t("trainings", { count: row.trainingsTotal })
+                            : t("noBelt")}
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -204,7 +202,7 @@ export function ProgressTable({
                           />
                         ) : (
                           <Badge variant="outline" className="text-xs">
-                            Unranked
+                            {t("unranked")}
                           </Badge>
                         )}
                         {row.nextBeltName && row.requiredTrainings !== null ? (
@@ -213,8 +211,12 @@ export function ProgressTable({
                             className="text-xs"
                           >
                             {row.isEligible
-                              ? `Eligible: ${row.nextBeltName}`
-                              : `${row.nextBeltName}: ${row.trainingsTotal}/${row.requiredTrainings}`}
+                              ? t("eligibleBadge", { belt: row.nextBeltName })
+                              : t("progressBadge", {
+                                  belt: row.nextBeltName,
+                                  current: row.trainingsTotal,
+                                  required: row.requiredTrainings,
+                                })}
                           </Badge>
                         ) : null}
                         {canEdit ? (
@@ -227,7 +229,7 @@ export function ProgressTable({
                               setDefaultBeltId(defaultBeltIdFor(row, belts));
                             }}
                           >
-                            Promote
+                            {t("promote")}
                           </Button>
                         ) : null}
                       </div>
@@ -277,6 +279,7 @@ function PromotionSheet({
   defaultBeltId: string;
   onClose: () => void;
 }) {
+  const t = useTranslations("Belts.promotion");
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
     FormData
@@ -312,19 +315,18 @@ function PromotionSheet({
   return (
     <SheetContent className="w-full overflow-y-auto sm:max-w-md">
       <SheetHeader>
-        <SheetTitle>Record promotion</SheetTitle>
+        <SheetTitle>{t("title")}</SheetTitle>
         <SheetDescription>
-          {student.name}
-          {student.isEligible
-            ? " has met the training requirement."
-            : " has not yet met the next belt's training requirement — record anyway if the instructor decides so."}
+          {t(student.isEligible ? "eligible" : "notEligible", {
+            name: student.name,
+          })}
         </SheetDescription>
       </SheetHeader>
       <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
         <input type="hidden" name="studentId" value={student.studentId} />
         <input type="hidden" name="disciplineId" value={disciplineId} />
         <div className="grid gap-2">
-          <Label htmlFor="promotion-belt">Belt</Label>
+          <Label htmlFor="promotion-belt">{t("belt")}</Label>
           {/* Uncontrolled with a mount-time default: React 19 resets forms
               after every action, which would revert a controlled select to
               the browser default between attempts. */}
@@ -339,19 +341,15 @@ function PromotionSheet({
             {belts.map((belt) => (
               <option key={belt.id} value={belt.id}>
                 {belt.name}
-                {student.currentBeltName === belt.name ? " (current)" : ""}
+                {student.currentBeltName === belt.name ? t("current") : ""}
               </option>
             ))}
           </select>
-          <p className="text-muted-foreground text-xs">
-            Skipping belts (first belt at a higher rank, or a multi-level
-            grading) also records the skipped lower belts so the history shows
-            the complete ladder.
-          </p>
+          <p className="text-muted-foreground text-xs">{t("skipHint")}</p>
         </div>
         {isFirstBelt ? (
           <div className="grid gap-2">
-            <Label htmlFor="promotion-credit">Starting trainings credit</Label>
+            <Label htmlFor="promotion-credit">{t("credit")}</Label>
             <Input
               id="promotion-credit"
               name="trainingsCredit"
@@ -367,17 +365,15 @@ function PromotionSheet({
               }}
             />
             <p className="text-muted-foreground text-xs">
-              Prior sessions this student brings from elsewhere. Prefilled with{" "}
-              {selectedBelt?.name ?? "this belt"}
-              &apos;s requirement ({creditDefault}) — enter more if they had
-              extra sessions. The counter always covers the belt being awarded:
-              a lower value is topped up at save. Shown only for the first belt
-              in a discipline.
+              {t("creditHint", {
+                belt: selectedBelt?.name ?? t("belt"),
+                count: creditDefault,
+              })}
             </p>
           </div>
         ) : null}
         <div className="grid gap-2">
-          <Label htmlFor="promotion-date">Award date</Label>
+          <Label htmlFor="promotion-date">{t("date")}</Label>
           <Input
             id="promotion-date"
             name="awardedAt"
@@ -387,12 +383,12 @@ function PromotionSheet({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="promotion-notes">Notes</Label>
+          <Label htmlFor="promotion-notes">{t("notes")}</Label>
           <Textarea
             id="promotion-notes"
             name="notes"
             rows={4}
-            placeholder="Optional — grading day, examiner, techniques assessed, etc."
+            placeholder={t("notesPlaceholder")}
           />
         </div>
         {needsOverride ? (
@@ -403,15 +399,13 @@ function PromotionSheet({
               className="mt-0.5"
             />
             <span>
-              <span className="font-medium">
-                Override eligibility requirement
-              </span>
+              <span className="font-medium">{t("override")}</span>
               <span className="text-muted-foreground block text-xs">
-                The student counts {effectiveTrainings} of the{" "}
-                {selectedRequired} trainings {selectedBelt?.name ?? "this belt"}{" "}
-                requires. Tick this to record the promotion anyway — the counter
-                is then aligned to the new rank (e.g. exceptional progression, a
-                make-up grading, or a multi-level grading).
+                {t("overrideHint", {
+                  current: effectiveTrainings,
+                  required: selectedRequired,
+                  belt: selectedBelt?.name ?? t("belt"),
+                })}
               </span>
             </span>
           </label>
@@ -423,21 +417,21 @@ function PromotionSheet({
         ) : null}
         {promotionSaved && state && "message" in state ? (
           <p className="text-success text-sm" role="status">
-            {state.message} The table refreshes automatically.
+            {state.message} {t("savedHint")}
           </p>
         ) : null}
         <SheetFooter className="px-0">
           {promotionSaved ? (
             <Button type="button" onClick={onClose}>
-              Done
+              {t("done")}
             </Button>
           ) : (
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Recording..." : "Record promotion"}
+              {isPending ? t("recording") : t("record")}
             </Button>
           )}
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            {t("cancel")}
           </Button>
         </SheetFooter>
       </form>

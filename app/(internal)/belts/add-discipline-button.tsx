@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ type BeltActionState =
 const initialState: BeltActionState = undefined;
 
 export function AddDisciplineButton() {
+  const t = useTranslations("Belts");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
@@ -38,7 +40,7 @@ export function AddDisciplineButton() {
   return (
     <>
       <Button size="sm" onClick={() => setOpen(true)}>
-        New discipline
+        {t("actions.newDiscipline")}
       </Button>
       <Sheet
         open={open}
@@ -48,21 +50,18 @@ export function AddDisciplineButton() {
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Add discipline</SheetTitle>
-            <SheetDescription>
-              Create a discipline with its own belt ladder (e.g. Karate,
-              Jujitsu).
-            </SheetDescription>
+            <SheetTitle>{t("sheet.newTitle")}</SheetTitle>
+            <SheetDescription>{t("sheet.newDescription")}</SheetDescription>
           </SheetHeader>
           <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
             <div className="grid gap-2">
-              <Label htmlFor="discipline-name">Name</Label>
+              <Label htmlFor="discipline-name">{t("sheet.name")}</Label>
               <Input
                 id="discipline-name"
                 name="name"
                 required
                 maxLength={80}
-                placeholder="e.g. Karate, Jujitsu"
+                placeholder={t("sheet.namePlaceholder")}
               />
             </div>
             {state && "error" in state ? (
@@ -78,11 +77,11 @@ export function AddDisciplineButton() {
             <SheetFooter className="px-4">
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {t("sheet.done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Creating..." : "Create discipline"}
+                  {isPending ? t("sheet.creating") : t("sheet.create")}
                 </Button>
               )}
               <Button
@@ -90,7 +89,7 @@ export function AddDisciplineButton() {
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("sheet.cancel")}
               </Button>
             </SheetFooter>
           </form>
