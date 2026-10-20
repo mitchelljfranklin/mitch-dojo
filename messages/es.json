@@ -1,0 +1,61 @@
+{
+  "Book": {
+    "metaTitle": "Reserva una clase de prueba gratis",
+    "changeLanguage": "Cambiar idioma",
+    "tooManyRequestsTitle": "Demasiadas solicitudes",
+    "tooManyRequestsDescription": "Espera un momento e inténtalo de nuevo.",
+    "bookedTitle": "¡Reserva recibida!",
+    "bookedDescription": "Gracias — confirmaremos tu plaza en breve. ¡Nos vemos en el tatami!",
+    "errorTitle": "Algo salió mal",
+    "errorFallback": "Inténtalo de nuevo.",
+    "errors": {
+      "rate": "Demasiados intentos desde tu red — inténtalo de nuevo más tarde.",
+      "invalid": "Completa todos los campos obligatorios.",
+      "contact": "Deja un correo electrónico o un número de teléfono.",
+      "exists": "Ya tenemos una reserva para ese alumno — contáctanos y lo solucionamos.",
+      "full": "Esa clase está completa — elige otro horario o contáctanos."
+    },
+    "unavailable": "Las reservas en línea no están disponibles ahora mismo — contáctanos directamente.",
+    "form": {
+      "honeypotLabel": "Sitio web",
+      "whoFor": "¿Para quién es la prueba? *",
+      "myself": "Yo (adulto)",
+      "child": "Mi hijo/a",
+      "firstName": "Nombre",
+      "childFirstName": "Nombre del niño/a",
+      "lastName": "Apellido",
+      "childLastName": "Apellido del niño/a",
+      "guardianName": "Nombre del tutor (tú)",
+      "guardianRelationship": "Relación con el niño/a",
+      "preferNotToSay": "Prefiero no decirlo",
+      "email": "Correo electrónico",
+      "guardianEmail": "Correo del tutor",
+      "phone": "Teléfono",
+      "guardianPhone": "Teléfono del tutor",
+      "contactNoteChild": "Los niños no necesitan sus propios datos de contacto — guardaremos los del tutor y nos comunicaremos contigo por ellos.",
+      "contactNoteAdult": "Deja un correo electrónico o un número de teléfono para que podamos confirmar tu plaza.",
+      "location": "Ubicación *",
+      "chooseLocation": "Elige una ubicación",
+      "martialArt": "Arte marcial *",
+      "chooseMartialArt": "Elige un arte marcial",
+      "preferredClass": "Clase preferida",
+      "noPreference": "Sin preferencia",
+      "classOption": "{courseName} — {date} a las {time}",
+      "classOptionFull": "{courseName} — {date} a las {time} (completa)",
+      "sessionNote": "Opcional — confirmaremos tu plaza por correo electrónico o teléfono.",
+      "submit": "Reservar mi prueba gratis",
+      "relationships": {
+        "mother": "Madre",
+        "father": "Padre",
+        "parent": "Progenitor/a",
+        "stepParent": "Padrastro/madrastra",
+        "grandparent": "Abuelo/a",
+        "sibling": "Hermano/a",
+        "auntUncle": "Tío/a",
+        "legalGuardian": "Tutor legal",
+        "carer": "Cuidador/a",
+        "other": "Otro"
+      }
+    }
+  }
+}

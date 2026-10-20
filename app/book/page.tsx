@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 
 import { BrandMark } from "@/components/brand-mark";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import {
   Card,
   CardContent,
@@ -17,20 +20,28 @@ import { BookingForm } from "./booking-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Book a free trial class",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Book");
+  return { title: t("metaTitle") };
+}
 
 const BOOKING_PAGE_LOADS_PER_MIN = 20;
 
-const ERROR_MESSAGES: Record<string, string> = {
-  rate: "Too many attempts from your network — please try again later.",
-  invalid: "Please fill in all required fields.",
-  contact: "Please leave an email address or a phone number.",
-  exists:
-    "We already have a booking for that student — contact us and we will sort it out.",
-  full: "That class is fully booked — please pick another time or contact us.",
-};
+const BOOKING_ERROR_CODES = [
+  "rate",
+  "invalid",
+  "contact",
+  "exists",
+  "full",
+] as const;
+
+type BookingErrorCode = (typeof BOOKING_ERROR_CODES)[number];
+
+function isBookingErrorCode(
+  value: string | undefined,
+): value is BookingErrorCode {
+  return BOOKING_ERROR_CODES.some((code) => code === value);
+}
 
 type BookPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -38,6 +49,7 @@ type BookPageProps = {
 
 export default async function BookPage({ searchParams }: BookPageProps) {
   const sp = await searchParams;
+  const t = await getTranslations("Book");
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -46,10 +58,8 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       <div className="mx-auto max-w-md p-8">
         <Card>
           <CardHeader>
-            <CardTitle>Too many requests</CardTitle>
-            <CardDescription>
-              Please wait a moment and try again.
-            </CardDescription>
+            <CardTitle>{t("tooManyRequestsTitle")}</CardTitle>
+            <CardDescription>{t("tooManyRequestsDescription")}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -62,9 +72,14 @@ export default async function BookPage({ searchParams }: BookPageProps) {
     getAppearanceSettings(),
   ]);
 
+  const errorCode = isBookingErrorCode(sp.error) ? sp.error : undefined;
+
   return (
     <div className="mx-auto max-w-lg p-6">
-      <BrandMark />
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <BrandMark />
+        <LocaleSwitcher />
+      </div>
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
           {appearance.bookingHeadline}
@@ -77,11 +92,8 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       {sp.booked ? (
         <Card className="border-success/40 mb-4">
           <CardHeader>
-            <CardTitle className="text-success">Booking received!</CardTitle>
-            <CardDescription>
-              Thank you — we will confirm your spot shortly. See you on the
-              mats!
-            </CardDescription>
+            <CardTitle className="text-success">{t("bookedTitle")}</CardTitle>
+            <CardDescription>{t("bookedDescription")}</CardDescription>
           </CardHeader>
         </Card>
       ) : null}
@@ -89,10 +101,10 @@ export default async function BookPage({ searchParams }: BookPageProps) {
         <Card className="border-destructive/40 mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-base">
-              Something went wrong
+              {t("errorTitle")}
             </CardTitle>
             <CardDescription>
-              {ERROR_MESSAGES[sp.error] ?? "Please try again."}
+              {errorCode ? t(`errors.${errorCode}`) : t("errorFallback")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -101,10 +113,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       <Card>
         <CardContent className="pt-6">
           {locations.length === 0 || disciplines.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              Online booking is not available right now — please contact us
-              directly.
-            </p>
+            <p className="text-muted-foreground text-sm">{t("unavailable")}</p>
           ) : (
             <BookingForm
               locations={locations}

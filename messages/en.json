@@ -1,0 +1,61 @@
+{
+  "Book": {
+    "metaTitle": "Book a free trial class",
+    "changeLanguage": "Change language",
+    "tooManyRequestsTitle": "Too many requests",
+    "tooManyRequestsDescription": "Please wait a moment and try again.",
+    "bookedTitle": "Booking received!",
+    "bookedDescription": "Thank you — we will confirm your spot shortly. See you on the mats!",
+    "errorTitle": "Something went wrong",
+    "errorFallback": "Please try again.",
+    "errors": {
+      "rate": "Too many attempts from your network — please try again later.",
+      "invalid": "Please fill in all required fields.",
+      "contact": "Please leave an email address or a phone number.",
+      "exists": "We already have a booking for that student — contact us and we will sort it out.",
+      "full": "That class is fully booked — please pick another time or contact us."
+    },
+    "unavailable": "Online booking is not available right now — please contact us directly.",
+    "form": {
+      "honeypotLabel": "Website",
+      "whoFor": "Who is this trial for? *",
+      "myself": "Myself (adult)",
+      "child": "My child",
+      "firstName": "First name",
+      "childFirstName": "Child's first name",
+      "lastName": "Last name",
+      "childLastName": "Child's last name",
+      "guardianName": "Guardian name (you)",
+      "guardianRelationship": "Relationship to child",
+      "preferNotToSay": "Prefer not to say",
+      "email": "Email",
+      "guardianEmail": "Guardian email",
+      "phone": "Phone",
+      "guardianPhone": "Guardian phone",
+      "contactNoteChild": "Children don't need their own contact — we'll keep these as the guardian's details and reach you on them.",
+      "contactNoteAdult": "Please leave either an email or a phone number so we can confirm your spot.",
+      "location": "Location *",
+      "chooseLocation": "Choose a location",
+      "martialArt": "Martial art *",
+      "chooseMartialArt": "Choose a martial art",
+      "preferredClass": "Preferred class",
+      "noPreference": "No preference",
+      "classOption": "{courseName} — {date} at {time}",
+      "classOptionFull": "{courseName} — {date} at {time} (full)",
+      "sessionNote": "Optional — we will confirm your spot by email or phone.",
+      "submit": "Book my free trial",
+      "relationships": {
+        "mother": "Mother",
+        "father": "Father",
+        "parent": "Parent",
+        "stepParent": "Step-parent",
+        "grandparent": "Grandparent",
+        "sibling": "Sibling",
+        "auntUncle": "Aunt/Uncle",
+        "legalGuardian": "Legal guardian",
+        "carer": "Carer",
+        "other": "Other"
+      }
+    }
+  }
+}

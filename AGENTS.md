@@ -33,6 +33,9 @@ plan without asking.
   + SSO (Microsoft Entra ID / Google / generic OIDC with break-glass URL)
 - **Tailwind CSS v4 + shadcn/ui** — UI; themed via CSS-variable design tokens
   (light + dark)
+- **next-intl** — cookie-based locale (`NEXT_LOCALE`), English default with a
+  Spanish catalog; catalogs live in `messages/`, resolution in `lib/i18n/`.
+  The public booking page is the first translated surface.
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)
