@@ -3,21 +3,43 @@ import { describe, expect, it } from "vitest";
 import { localeFromAcceptLanguage, resolveLocale } from "./locale";
 
 describe("resolveLocale", () => {
-  it("prefers the cookie over the browser header", () => {
+  it("prefers the cookie over the school default and the browser header", () => {
     expect(
-      resolveLocale({ cookieLocale: "es", acceptLanguage: "en-GB,en;q=0.9" }),
+      resolveLocale({
+        cookieLocale: "en",
+        organizationDefault: "es",
+        acceptLanguage: "es-ES,es;q=0.9",
+      }),
+    ).toBe("en");
+  });
+
+  it("uses the school default over the browser header", () => {
+    expect(
+      resolveLocale({
+        cookieLocale: null,
+        organizationDefault: "es",
+        acceptLanguage: "en-GB,en;q=0.9",
+      }),
     ).toBe("es");
   });
 
-  it("ignores an unsupported cookie and uses the header", () => {
+  it("ignores an unsupported cookie and school default, then uses the header", () => {
     expect(
-      resolveLocale({ cookieLocale: "de", acceptLanguage: "es-MX,es;q=0.9" }),
+      resolveLocale({
+        cookieLocale: "de",
+        organizationDefault: "fr",
+        acceptLanguage: "es-MX,es;q=0.9",
+      }),
     ).toBe("es");
   });
 
   it("falls back to the default locale when nothing matches", () => {
     expect(
-      resolveLocale({ cookieLocale: null, acceptLanguage: "fr-FR,fr;q=0.9" }),
+      resolveLocale({
+        cookieLocale: null,
+        organizationDefault: null,
+        acceptLanguage: "fr-FR,fr;q=0.9",
+      }),
     ).toBe("en");
   });
 });

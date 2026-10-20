@@ -2,18 +2,22 @@ import { defaultLocale, isLocale, type Locale } from "./config";
 
 type LocaleResolutionInput = {
   cookieLocale?: string | null;
+  organizationDefault?: string | null;
   acceptLanguage?: string | null;
 };
 
 /**
- * Picks the request locale: an explicit choice stored in the cookie wins,
- * then the browser's Accept-Language header, then the app default.
+ * Picks the request locale: an explicit choice stored in the cookie wins, then
+ * the school's default language (Admin → General), then the browser's
+ * Accept-Language header, then the app default.
  */
 export function resolveLocale({
   cookieLocale,
+  organizationDefault,
   acceptLanguage,
 }: LocaleResolutionInput): Locale {
   if (isLocale(cookieLocale)) return cookieLocale;
+  if (isLocale(organizationDefault)) return organizationDefault;
   return localeFromAcceptLanguage(acceptLanguage) ?? defaultLocale;
 }
 

@@ -38,6 +38,11 @@ const defaultSettings: DefaultSetting[] = [
   { category: "organization", key: "organization.name", value: "My Dojo" },
   { category: "organization", key: "organization.supportEmail", value: "" },
   {
+    category: "organization",
+    key: "organization.defaultLocale",
+    value: "en",
+  },
+  {
     category: "operations",
     key: "operations.loginRateLimitPerMin",
     value: 10,

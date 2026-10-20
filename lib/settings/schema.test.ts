@@ -5,7 +5,27 @@ import {
   communicationsSettingsSchema,
   emailTemplateSchema,
   membershipsSettingsSchema,
+  organizationSettingsSchema,
 } from "./schema";
+
+describe("organizationSettingsSchema", () => {
+  it("defaults the school language to English", () => {
+    expect(organizationSettingsSchema.parse({}).defaultLocale).toBe("en");
+  });
+
+  it("accepts a supported language", () => {
+    expect(
+      organizationSettingsSchema.parse({ defaultLocale: "es" }).defaultLocale,
+    ).toBe("es");
+  });
+
+  it("rejects an unsupported language", () => {
+    const result = organizationSettingsSchema.safeParse({
+      defaultLocale: "de",
+    });
+    expect(result.success).toBe(false);
+  });
+});
 
 describe("membershipsSettingsSchema", () => {
   it("defaults tax settings when unset", () => {

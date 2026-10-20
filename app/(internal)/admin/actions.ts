@@ -89,6 +89,7 @@ export async function saveOrganizationSettings(
     name: formData.get("name"),
     supportEmail: formData.get("supportEmail") ?? "",
     defaultCountry: String(formData.get("defaultCountry") ?? "").toUpperCase(),
+    defaultLocale: formData.get("defaultLocale") ?? "en",
   });
   if (!parsed.success) {
     return {

@@ -38,6 +38,7 @@ export default async function AdminGeneralPage() {
             name={organization.name}
             supportEmail={organization.supportEmail}
             defaultCountry={organization.defaultCountry}
+            defaultLocale={organization.defaultLocale}
           />
         </CardContent>
       </Card>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { LOCALES, defaultLocale as fallbackLocale } from "../i18n/config";
 import { isValidCountryCode } from "../countries";
 
 export const organizationSettingsSchema = z.object({
@@ -16,6 +17,9 @@ export const organizationSettingsSchema = z.object({
       "Use a valid ISO country code",
     )
     .default(""),
+  // Language visitors and staff see unless they choose another one with the
+  // language selector.
+  defaultLocale: z.enum(LOCALES).default(fallbackLocale),
 });
 
 export type OrganizationSettings = z.infer<typeof organizationSettingsSchema>;
