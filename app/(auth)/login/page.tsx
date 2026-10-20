@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import {
   Card,
@@ -33,7 +35,10 @@ import { SsoButtons, type SsoButton } from "./sso-buttons";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Sign in" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth");
+  return { title: t("login.title") };
+}
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -120,6 +125,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const organization = await getOrganizationSettings();
   const ssoSettings = await getSsoSettings();
   const ssoButtons = await enabledSsoButtons();
+  const t = await getTranslations("Auth.login");
 
   const breakGlassValid = await verifyBreakGlassParam(sp.breakGlass);
   const showLocalAuth = shouldShowLocalAuth({
@@ -132,13 +138,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <Card>
       <CardHeader>
         <CardTitle>{organization.name}</CardTitle>
-        <CardDescription>Sign in to your account.</CardDescription>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {sp.error ? (
           <p className="text-destructive text-sm" role="alert">
-            Sign-in was denied. If you believe this is a mistake, contact your
-            administrator.
+            {t("denied")}
           </p>
         ) : null}
 
@@ -148,7 +153,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <>
             {ssoButtons.length > 0 ? (
               <p className="text-muted-foreground text-center text-xs">
-                or sign in with email
+                {t("orEmail")}
               </p>
             ) : null}
             <LoginForm />
@@ -156,14 +161,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               href="/forgot-password"
               className="hover:text-primary text-muted-foreground text-center text-xs hover:underline"
             >
-              Forgot password?
+              {t("forgot")}
             </a>
           </>
         ) : null}
 
         {ssoButtons.length > 0 && !showLocalAuth ? (
           <p className="text-muted-foreground text-center text-xs">
-            This dojo signs in through single sign-on only.
+            {t("ssoOnly")}
           </p>
         ) : null}
       </CardContent>

@@ -35,8 +35,8 @@ plan without asking.
   (light + dark)
 - **next-intl** — cookie-based locale (`NEXT_LOCALE`), English default with a
   Spanish catalog; the school default is configurable in Admin → General.
-  Catalogs live in `messages/`, resolution in `lib/i18n/`. The public booking
-  page is the first translated surface.
+  Catalogs live in `messages/`, resolution in `lib/i18n/`. Translated
+  surfaces: public booking, member portal, QR check-in, and auth screens.
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

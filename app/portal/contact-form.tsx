@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +17,7 @@ import {
 } from "./contact-actions";
 
 export function PortalContactForm({ contact }: { contact: PortalContact }) {
+  const t = useTranslations("Portal.contact");
   const [state, formAction, isPending] = useActionState<
     PortalContactState,
     FormData
@@ -27,7 +29,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       <input type="hidden" name="studentId" value={contact.studentId} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("email")}</Label>
           <Input
             id="email"
             name="email"
@@ -36,12 +38,12 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">{t("phone")}</Label>
           <Input id="phone" name="phone" defaultValue={contact.phone ?? ""} />
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="addressLine">Address</Label>
+        <Label htmlFor="addressLine">{t("address")}</Label>
         <Input
           id="addressLine"
           name="addressLine"
@@ -50,15 +52,15 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="grid gap-2">
-          <Label htmlFor="city">City / suburb</Label>
+          <Label htmlFor="city">{t("city")}</Label>
           <Input id="city" name="city" defaultValue={contact.city ?? ""} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="state">State / region</Label>
+          <Label htmlFor="state">{t("state")}</Label>
           <Input id="state" name="state" defaultValue={contact.state ?? ""} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="postcode">Postcode</Label>
+          <Label htmlFor="postcode">{t("postcode")}</Label>
           <Input
             id="postcode"
             name="postcode"
@@ -67,17 +69,17 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="country">Country (2-letter code)</Label>
+        <Label htmlFor="country">{t("country")}</Label>
         <Input
           id="country"
           name="country"
           maxLength={2}
           defaultValue={contact.country ?? ""}
-          placeholder="e.g. AU"
+          placeholder={t("countryPlaceholder")}
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="emergencyContactName">Emergency contact name</Label>
+        <Label htmlFor="emergencyContactName">{t("emergencyName")}</Label>
         <Input
           id="emergencyContactName"
           name="emergencyContactName"
@@ -85,7 +87,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="emergencyContactPhone">Emergency contact phone</Label>
+        <Label htmlFor="emergencyContactPhone">{t("emergencyPhone")}</Label>
         <Input
           id="emergencyContactPhone"
           name="emergencyContactPhone"
@@ -94,7 +96,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="guardianName">Guardian name</Label>
+          <Label htmlFor="guardianName">{t("guardianName")}</Label>
           <Input
             id="guardianName"
             name="guardianName"
@@ -102,7 +104,9 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="guardianRelationship">Guardian relationship</Label>
+          <Label htmlFor="guardianRelationship">
+            {t("guardianRelationship")}
+          </Label>
           <Input
             id="guardianRelationship"
             name="guardianRelationship"
@@ -112,7 +116,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="guardianEmail">Guardian email</Label>
+          <Label htmlFor="guardianEmail">{t("guardianEmail")}</Label>
           <Input
             id="guardianEmail"
             name="guardianEmail"
@@ -121,7 +125,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="guardianPhone">Guardian phone</Label>
+          <Label htmlFor="guardianPhone">{t("guardianPhone")}</Label>
           <Input
             id="guardianPhone"
             name="guardianPhone"
@@ -131,7 +135,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save contact details"}
+          {isPending ? t("saving") : t("save")}
         </Button>
       </div>
     </form>
@@ -145,6 +149,7 @@ export function PortalPreferencesForm({
   studentId: string;
   emailOptOut: boolean;
 }) {
+  const t = useTranslations("Portal.preferences");
   const [state, formAction, isPending] = useActionState<
     PortalContactState,
     FormData
@@ -156,15 +161,12 @@ export function PortalPreferencesForm({
       <input type="hidden" name="studentId" value={studentId} />
       <label className="flex w-fit items-center gap-2 text-sm">
         <Checkbox name="emailOptOut" defaultChecked={emailOptOut} />
-        Pause non-essential emails (class reminders, birthdays, agreements)
+        {t("pause")}
       </label>
-      <p className="text-muted-foreground text-xs">
-        Payment reminders and account emails are always sent. Ask us at the dojo
-        about any other mail.
-      </p>
+      <p className="text-muted-foreground text-xs">{t("note")}</p>
       <div>
         <Button type="submit" variant="outline" disabled={isPending}>
-          {isPending ? "Saving..." : "Save email preference"}
+          {isPending ? t("saving") : t("save")}
         </Button>
       </div>
     </form>

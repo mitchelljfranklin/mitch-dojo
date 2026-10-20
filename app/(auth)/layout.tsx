@@ -1,3 +1,6 @@
+import { getTranslations } from "next-intl/server";
+
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { getAppearanceSettings, getOrganizationSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
@@ -5,13 +8,17 @@ export const dynamic = "force-dynamic";
 export default async function AuthLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [appearance, organization] = await Promise.all([
+  const [appearance, organization, t] = await Promise.all([
     getAppearanceSettings(),
     getOrganizationSettings(),
+    getTranslations("Auth"),
   ]);
 
   return (
     <div className="relative grid min-h-svh place-items-center p-4">
+      <div className="absolute top-4 right-4 z-10">
+        <LocaleSwitcher />
+      </div>
       <div className="absolute inset-0 overflow-hidden">
         <div className="from-primary/5 via-background to-primary/10 absolute inset-0 bg-gradient-to-br" />
         <div className="bg-primary/5 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/3 rounded-full blur-3xl" />
@@ -51,9 +58,7 @@ export default async function AuthLayout({
             <h1 className="text-2xl font-semibold tracking-tight">
               {organization.name}
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Dojo management
-            </p>
+            <p className="text-muted-foreground mt-1 text-sm">{t("tagline")}</p>
           </div>
         )}
         {children}

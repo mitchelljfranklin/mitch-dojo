@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 export function KioskToggle({ kiosk }: { kiosk: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("Checkin");
 
   function toggle() {
     const params = new URLSearchParams(window.location.search);
@@ -26,7 +28,7 @@ export function KioskToggle({ kiosk }: { kiosk: boolean }) {
 
   return (
     <Button type="button" variant="outline" size="sm" onClick={toggle}>
-      {kiosk ? "Exit kiosk" : "Kiosk mode"}
+      {kiosk ? t("kioskExit") : t("kioskEnter")}
     </Button>
   );
 }

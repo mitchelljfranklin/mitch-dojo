@@ -1,7 +1,10 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { BrandMark } from "@/components/brand-mark";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import {
   Card,
   CardContent,
@@ -21,10 +24,13 @@ import { KioskToggle } from "./kiosk-toggle";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Check in",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Checkin");
+  return {
+    title: t("metaTitle"),
+    robots: { index: false, follow: false },
+  };
+}
 
 const CHECKIN_PAGE_LOADS_PER_MIN = 30;
 
@@ -39,6 +45,7 @@ export default async function CheckinPage({
 }: CheckinPageProps) {
   const { token } = await params;
   const sp = await searchParams;
+  const t = await getTranslations("Checkin");
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -47,10 +54,8 @@ export default async function CheckinPage({
       <div className="mx-auto max-w-md p-8">
         <Card>
           <CardHeader>
-            <CardTitle>Too many requests</CardTitle>
-            <CardDescription>
-              Please wait a moment and try again.
-            </CardDescription>
+            <CardTitle>{t("rateLimitedTitle")}</CardTitle>
+            <CardDescription>{t("rateLimitedDescription")}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -71,7 +76,8 @@ export default async function CheckinPage({
     <div
       className={kiosk ? "flex min-h-svh flex-col p-4" : "mx-auto max-w-md p-6"}
     >
-      <div className="mb-4 flex items-center justify-end">
+      <div className="mb-4 flex items-center justify-end gap-2">
+        <LocaleSwitcher />
         <KioskToggle kiosk={kiosk} />
       </div>
       {kiosk ? null : <BrandMark />}
@@ -83,22 +89,18 @@ export default async function CheckinPage({
               : "text-2xl font-semibold tracking-tight"
           }
         >
-          Check in at {locationName}
+          {t("title", { location: locationName ?? "" })}
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Tap your name under today&apos;s class to check in.
-        </p>
+        <p className="text-muted-foreground mt-1 text-sm">{t("subtitle")}</p>
       </div>
 
       {sp.error === "suspended" ? (
         <Card className="border-destructive/40 mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-base">
-              Membership suspended
+              {t("suspendedTitle")}
             </CardTitle>
-            <CardDescription>
-              Please speak to staff at the front desk before training.
-            </CardDescription>
+            <CardDescription>{t("suspendedDescription")}</CardDescription>
           </CardHeader>
         </Card>
       ) : null}
@@ -107,12 +109,9 @@ export default async function CheckinPage({
         <Card className="border-destructive/40 mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-base">
-              Agreement signature required
+              {t("agreementsTitle")}
             </CardTitle>
-            <CardDescription>
-              Please sign your outstanding agreement before training — check
-              your member portal or speak to staff.
-            </CardDescription>
+            <CardDescription>{t("agreementsDescription")}</CardDescription>
           </CardHeader>
         </Card>
       ) : null}
@@ -120,11 +119,8 @@ export default async function CheckinPage({
       {sessions.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No classes today</CardTitle>
-            <CardDescription>
-              There are no scheduled sessions at this location today. See you
-              next class!
-            </CardDescription>
+            <CardTitle>{t("noClassesTitle")}</CardTitle>
+            <CardDescription>{t("noClassesDescription")}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -150,7 +146,7 @@ export default async function CheckinPage({
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-2 text-xs">
-                  Tap your name to check in
+                  {t("tapToCheckIn")}
                 </p>
                 <CheckinSessionGroup
                   token={token}
@@ -158,6 +154,7 @@ export default async function CheckinPage({
                   students={session.students}
                   action={checkInAction}
                   kiosk={kiosk}
+                  emptyLabel={t("noStudents")}
                 />
               </CardContent>
             </Card>
@@ -174,12 +171,14 @@ function CheckinSessionGroup({
   students,
   action,
   kiosk,
+  emptyLabel,
 }: {
   token: string;
   sessionId: string;
   students: { studentId: string; name: string; checkedIn: boolean }[];
   action: (formData: FormData) => Promise<void>;
   kiosk: boolean;
+  emptyLabel: string;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -205,7 +204,7 @@ function CheckinSessionGroup({
         </form>
       ))}
       {students.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No students assigned.</p>
+        <p className="text-muted-foreground text-sm">{emptyLabel}</p>
       ) : null}
     </div>
   );

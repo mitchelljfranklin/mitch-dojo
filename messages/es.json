@@ -1,7 +1,9 @@
 {
+  "Common": {
+    "changeLanguage": "Cambiar idioma"
+  },
   "Book": {
     "metaTitle": "Reserva una clase de prueba gratis",
-    "changeLanguage": "Cambiar idioma",
     "tooManyRequestsTitle": "Demasiadas solicitudes",
     "tooManyRequestsDescription": "Espera un momento e inténtalo de nuevo.",
     "bookedTitle": "¡Reserva recibida!",
@@ -56,6 +58,194 @@
         "carer": "Cuidador/a",
         "other": "Otro"
       }
+    }
+  },
+  "Auth": {
+    "tagline": "Gestión de dojo",
+    "login": {
+      "title": "Iniciar sesión",
+      "description": "Inicia sesión en tu cuenta.",
+      "denied": "Se denegó el inicio de sesión. Si crees que es un error, contacta con tu administrador.",
+      "orEmail": "o inicia sesión con tu correo",
+      "forgot": "¿Olvidaste tu contraseña?",
+      "ssoOnly": "Este dojo solo permite iniciar sesión mediante inicio de sesión único.",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "tooMany": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+      "invalid": "Correo electrónico o contraseña incorrectos.",
+      "ssoWith": "Iniciar sesión con {provider}"
+    },
+    "forgot": {
+      "title": "Recuperar contraseña",
+      "description": "Introduce tu correo y te enviaremos un enlace para restablecerla.",
+      "email": "Correo electrónico",
+      "submit": "Enviar enlace",
+      "submitting": "Enviando...",
+      "back": "Volver al inicio de sesión",
+      "invalidEmail": "Introduce un correo electrónico válido.",
+      "rateLimited": "Si existe una cuenta con ese correo, ya se ha enviado un enlace de restablecimiento recientemente.",
+      "sent": "Si existe una cuenta con ese correo, se ha enviado un enlace de restablecimiento."
+    },
+    "reset": {
+      "title": "Restablecer contraseña",
+      "description": "Elige una nueva contraseña para tu cuenta.",
+      "missing": "Este enlace de restablecimiento falta o no es válido. Solicita uno nuevo en la",
+      "expired": "Este enlace de restablecimiento ha caducado o ya se ha usado. Solicita uno nuevo en la",
+      "forgotLink": "página de recuperación de contraseña",
+      "forUser": "Elige una nueva contraseña para {email}.",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Restablecer contraseña",
+      "submitting": "Restableciendo...",
+      "back": "Volver al inicio de sesión",
+      "invalidLink": "Enlace de restablecimiento no válido.",
+      "invalidPassword": "Usa una contraseña que cumpla los requisitos.",
+      "expiredToken": "Este enlace de restablecimiento no es válido o ha caducado."
+    },
+    "setup": {
+      "title": "Crear administrador",
+      "description": "Configura la cuenta de administrador inicial para empezar a gestionar tu dojo.",
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "passwordHint": "Al menos 12 caracteres.",
+      "submit": "Crear administrador",
+      "submitting": "Creando…",
+      "alreadyDone": "La configuración ya se ha completado.",
+      "invalid": "Revisa el nombre, el correo y la contraseña (al menos 12 caracteres).",
+      "roleError": "No se pudo inicializar el rol de administrador. Inténtalo de nuevo.",
+      "createdSignIn": "Cuenta creada. Inicia sesión."
+    }
+  },
+  "Checkin": {
+    "metaTitle": "Registro de asistencia",
+    "rateLimitedTitle": "Demasiadas solicitudes",
+    "rateLimitedDescription": "Espera un momento e inténtalo de nuevo.",
+    "title": "Regístrate en {location}",
+    "subtitle": "Toca tu nombre en la clase de hoy para registrarte.",
+    "suspendedTitle": "Membresía suspendida",
+    "suspendedDescription": "Habla con el personal en recepción antes de entrenar.",
+    "agreementsTitle": "Se requiere firma del acuerdo",
+    "agreementsDescription": "Firma tu acuerdo pendiente antes de entrenar — consulta tu portal del miembro o habla con el personal.",
+    "noClassesTitle": "No hay clases hoy",
+    "noClassesDescription": "Hoy no hay sesiones programadas en esta sede. ¡Nos vemos en la próxima clase!",
+    "tapToCheckIn": "Toca tu nombre para registrarte",
+    "noStudents": "No hay alumnos asignados.",
+    "kioskEnter": "Modo kiosco",
+    "kioskExit": "Salir del modo kiosco"
+  },
+  "Portal": {
+    "metaTitle": "Portal del miembro",
+    "rateLimitedTitle": "Demasiadas solicitudes",
+    "rateLimitedDescription": "Espera un momento e inténtalo de nuevo.",
+    "accessTitle": "Se necesita acceso al portal",
+    "accessRate": "Demasiados intentos — espera un momento y vuelve a abrir tu enlace.",
+    "accessExpired": "Tu enlace del portal ha caducado o no es válido. Pídenos uno nuevo en el dojo cuando quieras.",
+    "noMembersTitle": "Aún no hay miembros",
+    "noMembersDescription": "Este hogar no tiene alumnos que mostrar. Pídenos un enlace nuevo en el dojo.",
+    "notFoundTitle": "Miembro no encontrado",
+    "notFoundDescription": "Pídenos un enlace nuevo del portal en el dojo.",
+    "label": "Portal del miembro",
+    "memberSince": "Miembro desde {date}",
+    "addToCalendar": "Añadir clases al calendario",
+    "signOut": "Cerrar sesión",
+    "progress": {
+      "title": "Tu progreso",
+      "classes": "{count, plural, one {# clase} other {# clases}} entrenadas en total.",
+      "none": "Aún no hay grados — ¡tu primer cinturón te espera!",
+      "since": "desde {date}"
+    },
+    "upcoming": {
+      "title": "Próximas clases",
+      "description": "Próximos 14 días en tus sedes.",
+      "none": "No hay clases programadas en las próximas dos semanas."
+    },
+    "attendance": {
+      "title": "Asistencia reciente",
+      "description": "Tus últimas clases en el tatami.",
+      "none": "Aún no has asistido a ninguna clase — ¡nos vemos pronto!"
+    },
+    "account": {
+      "title": "Tu cuenta",
+      "balance": "Liquida tu saldo en recepción o por transferencia bancaria.",
+      "square": "Estás al día — ¡gracias!",
+      "none": "Aún no hay facturas.",
+      "paid": "Pagada",
+      "due": "vence {date}",
+      "outstanding": "Pendiente"
+    },
+    "details": {
+      "title": "Tus datos",
+      "description": "Mantén tus datos de contacto actualizados — los usamos para recordatorios de clases y en caso de emergencia.",
+      "emailPreferences": "Preferencias de correo"
+    },
+    "documents": {
+      "title": "Documentos y consentimiento",
+      "description": "Lee y firma nuestros documentos de membresía. La firma digital equivale a firmar en papel — se registran tu nombre y la fecha.",
+      "none": "Aún no hay documentos para firmar.",
+      "signed": "Firmado {date}",
+      "updated": "Actualizado — firma la nueva versión",
+      "needed": "Firma necesaria",
+      "signedBy": "Firmado por {name} el {date}.",
+      "download": "Descargar PDF"
+    },
+    "statuses": {
+      "student": {
+        "TRIAL": "Prueba",
+        "ACTIVE": "Activo",
+        "INACTIVE": "Inactivo",
+        "ALUMNI": "Antiguo alumno"
+      },
+      "attendance": {
+        "PRESENT": "Presente",
+        "LATE": "Tarde",
+        "EXCUSED": "Justificado",
+        "ABSENT": "Ausente"
+      }
+    },
+    "contact": {
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "address": "Dirección",
+      "city": "Ciudad / barrio",
+      "state": "Provincia / región",
+      "postcode": "Código postal",
+      "country": "País (código de 2 letras)",
+      "countryPlaceholder": "p. ej. AU",
+      "emergencyName": "Nombre del contacto de emergencia",
+      "emergencyPhone": "Teléfono del contacto de emergencia",
+      "guardianName": "Nombre del tutor",
+      "guardianRelationship": "Relación con el alumno",
+      "guardianEmail": "Correo del tutor",
+      "guardianPhone": "Teléfono del tutor",
+      "save": "Guardar datos de contacto",
+      "saving": "Guardando...",
+      "rateLimited": "Demasiados intentos — espera un momento e inténtalo de nuevo.",
+      "expired": "Tu enlace del portal ha caducado — pídenos uno nuevo.",
+      "invalid": "Revisa los datos e inténtalo de nuevo.",
+      "saved": "Datos de contacto guardados."
+    },
+    "preferences": {
+      "pause": "Pausar correos no esenciales (recordatorios de clases, cumpleaños, acuerdos)",
+      "note": "Los recordatorios de pago y los correos de cuenta se envían siempre. Consúltanos en el dojo sobre cualquier otro correo.",
+      "save": "Guardar preferencia de correo",
+      "saving": "Guardando...",
+      "invalid": "Revisa la selección e inténtalo de nuevo.",
+      "saved": "Preferencias de correo guardadas."
+    },
+    "sign": {
+      "confirmation": "He leído y entendido este documento en su totalidad y estoy de acuerdo.",
+      "nameLabel": "Escribe tu nombre para firmar",
+      "namePlaceholder": "Tu nombre completo",
+      "submit": "Firmar {document}",
+      "submitting": "Firmando…",
+      "rateLimited": "Demasiados intentos — espera un momento e inténtalo de nuevo.",
+      "expired": "Tu enlace del portal ha caducado — pídenos uno nuevo.",
+      "incomplete": "Marca la confirmación y escribe tu nombre para firmar este documento.",
+      "unavailable": "Ese documento ya no está disponible.",
+      "signed": "Firmado — gracias, {name}."
     }
   }
 }

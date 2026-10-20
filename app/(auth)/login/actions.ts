@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { AuthError } from "next-auth";
+import { getTranslations } from "next-intl/server";
 
 import { signIn } from "@/lib/auth";
 import { getClientIp } from "@/lib/client-ip";
@@ -19,9 +20,10 @@ export async function authenticate(
 
   const settings = await getOperationsSettings();
   const rateLimitPerMin = settings.loginRateLimitPerMin ?? 10;
+  const t = await getTranslations("Auth.login");
 
   if (!rateLimit("login", ip, rateLimitPerMin)) {
-    return { error: "Too many attempts. Please wait a moment and try again." };
+    return { error: t("tooMany") };
   }
 
   try {
@@ -33,7 +35,7 @@ export async function authenticate(
     return undefined;
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Invalid email or password." };
+      return { error: t("invalid") };
     }
     throw error;
   }

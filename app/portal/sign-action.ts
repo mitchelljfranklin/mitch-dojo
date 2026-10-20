@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies, headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 
 import { getClientIp } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
@@ -22,12 +23,13 @@ export async function signPortalAgreementAction(
   _previousState: PortalSignState,
   formData: FormData,
 ): Promise<PortalSignState> {
+  const t = await getTranslations("Portal.sign");
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
   if (!rateLimit("portal-sign", clientIp, PORTAL_SIGNS_PER_MIN)) {
     return {
       ok: false,
-      message: "Too many attempts — please wait a moment and try again.",
+      message: t("rateLimited"),
     };
   }
 
@@ -38,7 +40,7 @@ export async function signPortalAgreementAction(
   if (!studentId) {
     return {
       ok: false,
-      message: "Your portal link has expired — ask us for a fresh one.",
+      message: t("expired"),
     };
   }
 
@@ -48,14 +50,13 @@ export async function signPortalAgreementAction(
   if (!documentId || !signedByName || !confirmed) {
     return {
       ok: false,
-      message:
-        "Tick the confirmation and type your name to sign this document.",
+      message: t("incomplete"),
     };
   }
 
   const document = await getAgreementDocumentById(documentId);
   if (!document || !document.enabled) {
-    return { ok: false, message: "That document is no longer available." };
+    return { ok: false, message: t("unavailable") };
   }
 
   await signAgreementViaPortal({ studentId, documentId, signedByName });
@@ -65,5 +66,5 @@ export async function signPortalAgreementAction(
     documentTitle: document.title,
   });
 
-  return { ok: true, message: `Signed — thank you, ${signedByName}.` };
+  return { ok: true, message: t("signed", { name: signedByName }) };
 }

@@ -1,7 +1,9 @@
 {
+  "Common": {
+    "changeLanguage": "Change language"
+  },
   "Book": {
     "metaTitle": "Book a free trial class",
-    "changeLanguage": "Change language",
     "tooManyRequestsTitle": "Too many requests",
     "tooManyRequestsDescription": "Please wait a moment and try again.",
     "bookedTitle": "Booking received!",
@@ -56,6 +58,194 @@
         "carer": "Carer",
         "other": "Other"
       }
+    }
+  },
+  "Auth": {
+    "tagline": "Dojo management",
+    "login": {
+      "title": "Sign in",
+      "description": "Sign in to your account.",
+      "denied": "Sign-in was denied. If you believe this is a mistake, contact your administrator.",
+      "orEmail": "or sign in with email",
+      "forgot": "Forgot password?",
+      "ssoOnly": "This dojo signs in through single sign-on only.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "tooMany": "Too many attempts. Please wait a moment and try again.",
+      "invalid": "Invalid email or password.",
+      "ssoWith": "Sign in with {provider}"
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "description": "Enter your email and we'll send you a reset link.",
+      "email": "Email",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "back": "Back to sign in",
+      "invalidEmail": "Enter a valid email address.",
+      "rateLimited": "If an account with that email exists, a reset link has already been sent recently.",
+      "sent": "If an account with that email exists, a reset link has been sent."
+    },
+    "reset": {
+      "title": "Reset password",
+      "description": "Choose a new password for your account.",
+      "missing": "This reset link is missing or invalid. Request a new one on the",
+      "expired": "This reset link has expired or has already been used. Request a new one on the",
+      "forgotLink": "forgot-password page",
+      "forUser": "Choose a new password for {email}.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "submit": "Reset password",
+      "submitting": "Resetting...",
+      "back": "Back to sign in",
+      "invalidLink": "Invalid reset link.",
+      "invalidPassword": "Use a password that meets the requirements.",
+      "expiredToken": "This reset link is invalid or has expired."
+    },
+    "setup": {
+      "title": "Create admin",
+      "description": "Set up the initial administrator account to start managing your dojo.",
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "At least 12 characters.",
+      "submit": "Create admin",
+      "submitting": "Creating…",
+      "alreadyDone": "Setup has already been completed.",
+      "invalid": "Check the name, email, and password (at least 12 characters).",
+      "roleError": "Could not initialize the Admin role. Please try again.",
+      "createdSignIn": "Account created. Please sign in."
+    }
+  },
+  "Checkin": {
+    "metaTitle": "Check in",
+    "rateLimitedTitle": "Too many requests",
+    "rateLimitedDescription": "Please wait a moment and try again.",
+    "title": "Check in at {location}",
+    "subtitle": "Tap your name under today's class to check in.",
+    "suspendedTitle": "Membership suspended",
+    "suspendedDescription": "Please speak to staff at the front desk before training.",
+    "agreementsTitle": "Agreement signature required",
+    "agreementsDescription": "Please sign your outstanding agreement before training — check your member portal or speak to staff.",
+    "noClassesTitle": "No classes today",
+    "noClassesDescription": "There are no scheduled sessions at this location today. See you next class!",
+    "tapToCheckIn": "Tap your name to check in",
+    "noStudents": "No students assigned.",
+    "kioskEnter": "Kiosk mode",
+    "kioskExit": "Exit kiosk"
+  },
+  "Portal": {
+    "metaTitle": "Member portal",
+    "rateLimitedTitle": "Too many requests",
+    "rateLimitedDescription": "Please wait a moment and try again.",
+    "accessTitle": "Portal access needed",
+    "accessRate": "Too many attempts — please wait a moment, then reopen your link.",
+    "accessExpired": "Your portal link has expired or is not valid. Ask us at the dojo for a fresh link any time.",
+    "noMembersTitle": "No members yet",
+    "noMembersDescription": "This household has no students to show. Ask us at the dojo for a fresh link.",
+    "notFoundTitle": "Member not found",
+    "notFoundDescription": "Please ask us at the dojo for a fresh portal link.",
+    "label": "Member portal",
+    "memberSince": "Member since {date}",
+    "addToCalendar": "Add classes to calendar",
+    "signOut": "Sign out",
+    "progress": {
+      "title": "Your progress",
+      "classes": "{count, plural, one {# class} other {# classes}} trained in total.",
+      "none": "No gradings yet — your first belt is waiting for you!",
+      "since": "since {date}"
+    },
+    "upcoming": {
+      "title": "Upcoming classes",
+      "description": "Next 14 days at your locations.",
+      "none": "No scheduled classes in the next two weeks."
+    },
+    "attendance": {
+      "title": "Recent attendance",
+      "description": "Your last classes on the mats.",
+      "none": "No classes attended yet — see you soon!"
+    },
+    "account": {
+      "title": "Your account",
+      "balance": "Please settle your balance at the front desk or by bank transfer.",
+      "square": "You are all square — thank you!",
+      "none": "No invoices yet.",
+      "paid": "Paid",
+      "due": "due {date}",
+      "outstanding": "Outstanding"
+    },
+    "details": {
+      "title": "Your details",
+      "description": "Keep your contact details up to date — we use them for class reminders and in an emergency.",
+      "emailPreferences": "Email preferences"
+    },
+    "documents": {
+      "title": "Documents & consent",
+      "description": "Read and sign our membership documents. Signing digitally is equivalent to signing on paper — your name and the date are recorded.",
+      "none": "No documents to sign yet.",
+      "signed": "Signed {date}",
+      "updated": "Updated — please sign the new version",
+      "needed": "Signature needed",
+      "signedBy": "Signed by {name} on {date}.",
+      "download": "Download PDF"
+    },
+    "statuses": {
+      "student": {
+        "TRIAL": "Trial",
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "ALUMNI": "Alumni"
+      },
+      "attendance": {
+        "PRESENT": "Present",
+        "LATE": "Late",
+        "EXCUSED": "Excused",
+        "ABSENT": "Absent"
+      }
+    },
+    "contact": {
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "city": "City / suburb",
+      "state": "State / region",
+      "postcode": "Postcode",
+      "country": "Country (2-letter code)",
+      "countryPlaceholder": "e.g. AU",
+      "emergencyName": "Emergency contact name",
+      "emergencyPhone": "Emergency contact phone",
+      "guardianName": "Guardian name",
+      "guardianRelationship": "Guardian relationship",
+      "guardianEmail": "Guardian email",
+      "guardianPhone": "Guardian phone",
+      "save": "Save contact details",
+      "saving": "Saving...",
+      "rateLimited": "Too many attempts — please wait a moment and try again.",
+      "expired": "Your portal link has expired — ask us for a fresh one.",
+      "invalid": "Check the details and try again.",
+      "saved": "Contact details saved."
+    },
+    "preferences": {
+      "pause": "Pause non-essential emails (class reminders, birthdays, agreements)",
+      "note": "Payment reminders and account emails are always sent. Ask us at the dojo about any other mail.",
+      "save": "Save email preference",
+      "saving": "Saving...",
+      "invalid": "Check the selection and try again.",
+      "saved": "Email preferences saved."
+    },
+    "sign": {
+      "confirmation": "I have read and understood this document in full, and I agree to it.",
+      "nameLabel": "Type your name to sign",
+      "namePlaceholder": "Your full name",
+      "submit": "Sign {document}",
+      "submitting": "Signing…",
+      "rateLimited": "Too many attempts — please wait a moment and try again.",
+      "expired": "Your portal link has expired — ask us for a fresh one.",
+      "incomplete": "Tick the confirmation and type your name to sign this document.",
+      "unavailable": "That document is no longer available.",
+      "signed": "Signed — thank you, {name}."
     }
   }
 }

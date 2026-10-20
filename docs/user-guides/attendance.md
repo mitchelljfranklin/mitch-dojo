@@ -29,9 +29,10 @@ The sheet offers four statuses:
 
 Each location has a **public, no-login check-in page**. Students (or parents) scan the QR code on arrival, pick themselves from the list, and are marked Present. A class lists only the students training that class's discipline.
 
-- The page is secured by a **revocable token** — rotate it from the location page if the QR leaks (a poster in a shared hallway, for example).
+- The page is secured by a **revocable token** - rotate it from the location page if the QR leaks (a poster in a shared hallway, for example).
 - Check-ins record `Present` with source `CHECKIN`. Staff can overwrite afterwards; the source becomes `MANUAL`.
 - Students with overdue invoices past the suspension window are **refused check-in** (configurable; see [Memberships settings](../configuration/memberships)).
+- The page follows the school's **Default language** ([Admin → General](../configuration/general)); a selector in the corner switches language for that device and remembers the choice.
 
 ::: tip Print the QR
 The check-in URL is stable per location — print the QR once and stick it at the front desk.

@@ -16,7 +16,7 @@ import { LOCALE_LABELS, LOCALES } from "@/lib/i18n/config";
 
 export function LocaleSwitcher() {
   const locale = useLocale();
-  const t = useTranslations("Book");
+  const t = useTranslations("Common");
   const router = useRouter();
   const [selectedLocale, setSelectedLocale] = useState(locale);
   const [isPending, startTransition] = useTransition();

@@ -34,6 +34,10 @@ Members can also **download PDFs** of their own invoices and agreements from the
 
 Members can tick **Pause non-essential emails** to opt out of class reminders, birthday emails, trial follow-ups, and agreement reminders. **Payment reminders and account emails are always sent** (they're transactional), and staff-side notifications (e.g. new-booking alerts) are unaffected.
 
+## Language
+
+The portal follows the school's **Default language** ([Admin → General](../configuration/general)) and includes a language selector in the header. A member's choice is remembered in a cookie and overrides the school default. English and Spanish ship today.
+
 ## White-labeling
 
 The portal, the [booking page](./trials), and check-in screens all share your branding from [Admin → Appearance](../configuration/appearance) — logo, colours, and org name.

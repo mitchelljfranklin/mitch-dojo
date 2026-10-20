@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +26,7 @@ export function PortalAgreementSignForm({
   documentLabel,
 }: PortalAgreementSignFormProps) {
   const router = useRouter();
+  const t = useTranslations("Portal.sign");
   const [state, formAction, isPending] = useActionState<
     PortalSignState,
     FormData
@@ -41,18 +43,16 @@ export function PortalAgreementSignForm({
       <input type="hidden" name="documentId" value={documentId} />
       <label className="flex items-start gap-2 text-sm">
         <Checkbox name="confirmed" required />
-        <span>
-          I have read and understood this document in full, and I agree to it.
-        </span>
+        <span>{t("confirmation")}</span>
       </label>
       <div className="grid gap-2">
-        <Label htmlFor={`signer-${documentId}`}>Type your name to sign</Label>
+        <Label htmlFor={`signer-${documentId}`}>{t("nameLabel")}</Label>
         <Input
           id={`signer-${documentId}`}
           name="signedByName"
           required
           maxLength={60}
-          placeholder="Your full name"
+          placeholder={t("namePlaceholder")}
         />
       </div>
       {state && !state.ok ? (
@@ -62,7 +62,9 @@ export function PortalAgreementSignForm({
       ) : null}
       <div>
         <Button type="submit" size="sm" disabled={isPending}>
-          {isPending ? "Signing…" : `Sign ${documentLabel}`}
+          {isPending
+            ? t("submitting")
+            : t("submit", { document: documentLabel })}
         </Button>
       </div>
     </form>
