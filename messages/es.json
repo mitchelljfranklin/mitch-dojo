@@ -485,6 +485,133 @@
       "enrolledSome": "Se inscribieron {count} de {total} alumnos en {plan} (el resto ya estaba inscrito)."
     }
   },
+  "Classes": {
+    "metaTitle": "Clases",
+    "title": "Clases",
+    "subtitle": "Cursos que se imparten en las sedes de tu dojo.",
+    "actions": {
+      "schedule": "Horario semanal",
+      "importAttendance": "Importar asistencia",
+      "new": "Nuevo curso",
+      "viewCourses": "Ver cursos",
+      "createCourse": "Crear un curso →"
+    },
+    "filters": {
+      "search": "Buscar",
+      "searchPlaceholder": "Nombre del curso…",
+      "location": "Sede",
+      "allLocations": "Todas las sedes",
+      "trainer": "Instructor",
+      "anyTrainer": "Cualquier instructor",
+      "sort": "Ordenar",
+      "filter": "Filtrar",
+      "clear": "Limpiar",
+      "locationAria": "Filtrar cursos por sede",
+      "trainerAria": "Filtrar cursos por instructor",
+      "sortAria": "Ordenar cursos"
+    },
+    "sort": {
+      "name": "Nombre (A–Z)",
+      "location": "Sede",
+      "newest": "Más recientes"
+    },
+    "empty": {
+      "filtered": "Ningún curso coincide con los filtros seleccionados.",
+      "title": "Aún no hay cursos",
+      "create": "Crea tu primer curso para construir el horario semanal.",
+      "readOnly": "Aún no se ha configurado ningún curso."
+    },
+    "card": {
+      "inactive": "Inactivo",
+      "weeklySlots": "{count, plural, one {# franja semanal} other {# franjas semanales}}"
+    },
+    "weekdays": {
+      "0": "Domingo",
+      "1": "Lunes",
+      "2": "Martes",
+      "3": "Miércoles",
+      "4": "Jueves",
+      "5": "Viernes",
+      "6": "Sábado"
+    },
+    "schedule": {
+      "metaTitle": "Horario semanal",
+      "title": "Horario semanal",
+      "subtitle": "Horarios recurrentes de todos los cursos y sedes.",
+      "emptyTitle": "El horario está vacío",
+      "emptyDescription": "Añade cursos con horarios semanales y aparecerán aquí.",
+      "noClasses": "No hay clases",
+      "classCount": "{count, plural, one {# clase} other {# clases}}",
+      "inactive": "Inactivo"
+    },
+    "form": {
+      "name": "Nombre *",
+      "location": "Sede *",
+      "chooseLocation": "Elige una sede…",
+      "locationHint": "Cada curso se imparte en exactamente una sede.",
+      "discipline": "Disciplina *",
+      "chooseDiscipline": "Elige una disciplina…",
+      "disciplineHint": "La disciplina determina la escala de cinturones usada para la progresión.",
+      "trainer": "Instructor",
+      "noTrainer": "Sin instructor asignado",
+      "active": "Activo",
+      "description": "Descripción",
+      "weeklyTimes": "Horarios semanales",
+      "weeklyHint": "Franjas recurrentes que generan sesiones en el horario.",
+      "addSlot": "Añadir franja",
+      "slotDay": "Día de la franja {index}",
+      "slotStart": "Hora de inicio de la franja {index}",
+      "slotEnd": "Hora de fin de la franja {index}",
+      "to": "a",
+      "trialBookable": "Reservable para prueba",
+      "slotTrial": "Franja {index} reservable para prueba",
+      "capacity": "Aforo",
+      "slotCapacity": "Aforo de prueba de la franja {index}",
+      "remove": "Quitar",
+      "noSlots": "No hay franjas semanales — el curso existe pero nunca aparece en el horario.",
+      "inactiveSuffix": " (inactiva)",
+      "saving": "Guardando...",
+      "create": "Crear curso",
+      "save": "Guardar cambios"
+    },
+    "page": {
+      "newTitle": "Nuevo curso",
+      "newBreadcrumb": "Nuevo",
+      "editTitle": "Editar curso",
+      "editBreadcrumb": "Editar",
+      "detailsTitle": "Datos del curso",
+      "createDescription": "Crea un curso y sus horarios semanales recurrentes.",
+      "editDescription": "Actualizar los horarios regenera las próximas sesiones a partir de las nuevas franjas; las sesiones que ya tienen asistencia se conservan."
+    },
+    "detail": {
+      "created": "Curso creado.",
+      "noTrainer": "Sin instructor asignado",
+      "inactive": "Inactivo",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteTitle": "¿Eliminar curso?",
+      "deleteDescription": "{name}, sus franjas semanales y las sesiones generadas se eliminarán permanentemente. Esta acción no se puede deshacer.",
+      "deleteConfirm": "Eliminar",
+      "weeklyTitle": "Horarios semanales",
+      "weeklyDescription": "Franjas recurrentes que generan sesiones en el horario.",
+      "noWeekly": "Aún no hay franjas semanales — añádelas desde Editar.",
+      "notTrial": "No reservable para prueba",
+      "upcomingTitle": "Próximas sesiones",
+      "upcomingDescription": "Generadas para las próximas dos semanas a partir de las franjas semanales.",
+      "noUpcoming": "No hay próximas sesiones. Añade franjas semanales primero.",
+      "attended": "{trained}/{total} asistieron",
+      "attendance": "Asistencia",
+      "restore": "Restaurar",
+      "cancel": "Cancelar",
+      "cancelled": "Cancelada",
+      "scheduled": "Programada"
+    },
+    "errors": {
+      "invalid": "Revisa los datos del curso e inténtalo de nuevo.",
+      "duplicateSlot": "Ya existe una franja semanal con ese día y hora de inicio.",
+      "updated": "Curso actualizado."
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

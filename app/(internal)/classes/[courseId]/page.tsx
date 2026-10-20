@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,6 @@ import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getCourse } from "@/lib/db/courses";
 import { ensureUpcomingSessions, listSessions } from "@/lib/db/sessions";
 import { getAttendanceCountsBySession } from "@/lib/db/attendance";
-import { WEEKDAY_LABELS } from "@/lib/schemas/course";
-import { formatDateUtc } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +36,9 @@ export default async function CourseDetailPage({
   searchParams,
 }: CourseDetailPageProps) {
   const user = await requirePermission(PERMISSIONS.CLASSES_VIEW);
+  const t = await getTranslations("Classes");
+  const d = await getTranslations("Classes.detail");
+  const format = await getFormatter();
   const canViewAttendance = hasPermission(
     user.permissions,
     PERMISSIONS.ATTENDANCE_VIEW,
@@ -61,17 +63,24 @@ export default async function CourseDetailPage({
   const attendanceCounts = await getAttendanceCountsBySession(
     upcoming.sessions.map((session) => session.id),
   );
+  const day = (value: Date) =>
+    format.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Classes", href: "/classes" },
+          { label: t("title"), href: "/classes" },
           { label: course.name },
         ]}
       />
       {sp.created ? (
-        <FlashToast variant="success" message="Course created." />
+        <FlashToast variant="success" message={d("created")} />
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -86,10 +95,12 @@ export default async function CourseDetailPage({
               <Badge variant="secondary">{course.trainer.name}</Badge>
             ) : (
               <span className="text-muted-foreground text-xs">
-                No trainer assigned
+                {d("noTrainer")}
               </span>
             )}
-            {course.isActive ? null : <Badge variant="outline">Inactive</Badge>}
+            {course.isActive ? null : (
+              <Badge variant="outline">{d("inactive")}</Badge>
+            )}
           </div>
           {course.description ? (
             <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
@@ -101,7 +112,7 @@ export default async function CourseDetailPage({
           {canEdit ? (
             <>
               <Button asChild variant="outline">
-                <Link href={`/classes/${course.id}/edit`}>Edit</Link>
+                <Link href={`/classes/${course.id}/edit`}>{d("edit")}</Link>
               </Button>
               <form
                 id={`delete-course-${course.id}`}
@@ -109,13 +120,13 @@ export default async function CourseDetailPage({
               >
                 <input type="hidden" name="courseId" value={course.id} />
                 <ConfirmDialog
-                  title="Delete course?"
-                  description={`${course.name}, its weekly slots, and its generated sessions will be permanently removed. This cannot be undone.`}
-                  confirmLabel="Delete"
+                  title={d("deleteTitle")}
+                  description={d("deleteDescription", { name: course.name })}
+                  confirmLabel={d("deleteConfirm")}
                   formId={`delete-course-${course.id}`}
                 >
                   <Button type="button" variant="destructive">
-                    Delete
+                    {d("delete")}
                   </Button>
                 </ConfirmDialog>
               </form>
@@ -127,16 +138,12 @@ export default async function CourseDetailPage({
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Weekly training times</CardTitle>
-            <CardDescription>
-              Recurring slots that generate sessions on the schedule.
-            </CardDescription>
+            <CardTitle>{d("weeklyTitle")}</CardTitle>
+            <CardDescription>{d("weeklyDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {course.trainingTimes.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No weekly slots yet — add them via Edit.
-              </p>
+              <p className="text-muted-foreground text-sm">{d("noWeekly")}</p>
             ) : (
               course.trainingTimes.map((slot) => (
                 <div
@@ -144,11 +151,11 @@ export default async function CourseDetailPage({
                   className="flex items-center justify-between gap-4 rounded-md border p-2 text-sm"
                 >
                   <span className="font-medium">
-                    {WEEKDAY_LABELS[slot.weekday] ?? slot.weekday}
+                    {t(`weekdays.${slot.weekday}`)}
                   </span>
                   <span className="flex items-center gap-2">
                     {!slot.trialBookable ? (
-                      <Badge variant="outline">Not trial bookable</Badge>
+                      <Badge variant="outline">{d("notTrial")}</Badge>
                     ) : null}
                     <span className="text-muted-foreground font-mono text-xs">
                       {slot.startTime} – {slot.endTime}
@@ -162,16 +169,12 @@ export default async function CourseDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming sessions</CardTitle>
-            <CardDescription>
-              Generated for the next two weeks from the weekly slots.
-            </CardDescription>
+            <CardTitle>{d("upcomingTitle")}</CardTitle>
+            <CardDescription>{d("upcomingDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {upcoming.sessions.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No upcoming sessions. Add weekly slots first.
-              </p>
+              <p className="text-muted-foreground text-sm">{d("noUpcoming")}</p>
             ) : (
               upcoming.sessions.map((session) => {
                 const counts = attendanceCounts.get(session.id) ?? {
@@ -185,7 +188,7 @@ export default async function CourseDetailPage({
                   >
                     <div className="flex min-w-0 flex-col">
                       <span>
-                        {formatDateUtc(session.date)} ·{" "}
+                        {day(session.date)} ·{" "}
                         <span className="font-mono text-xs">
                           {session.startTime}–{session.endTime}
                         </span>
@@ -193,7 +196,10 @@ export default async function CourseDetailPage({
                       <span className="text-muted-foreground text-xs">
                         {session.locationName}
                         {counts.total > 0
-                          ? ` · ${counts.trained}/${counts.total} attended`
+                          ? ` · ${d("attended", {
+                              trained: counts.trained,
+                              total: counts.total,
+                            })}`
                           : ""}
                       </span>
                     </div>
@@ -201,7 +207,7 @@ export default async function CourseDetailPage({
                       {canViewAttendance ? (
                         <Button asChild size="sm" variant="outline">
                           <Link href={`/sessions/${session.id}`}>
-                            Attendance
+                            {d("attendance")}
                           </Link>
                         </Button>
                       ) : null}
@@ -241,8 +247,8 @@ export default async function CourseDetailPage({
                             }
                           >
                             {session.status === "CANCELLED"
-                              ? "Restore"
-                              : "Cancel"}
+                              ? d("restore")
+                              : d("cancel")}
                           </Button>
                         </form>
                       ) : (
@@ -254,8 +260,8 @@ export default async function CourseDetailPage({
                           }
                         >
                           {session.status === "CANCELLED"
-                            ? "Cancelled"
-                            : "Scheduled"}
+                            ? d("cancelled")
+                            : d("scheduled")}
                         </Badge>
                       )}
                     </div>

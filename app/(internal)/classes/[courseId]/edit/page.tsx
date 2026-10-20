@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import {
@@ -19,7 +21,10 @@ import { listTrainers } from "@/lib/db/trainers";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Edit course" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Classes");
+  return { title: t("page.editTitle") };
+}
 
 type EditCoursePageProps = {
   params: Promise<{ courseId: string }>;
@@ -27,6 +32,7 @@ type EditCoursePageProps = {
 
 export default async function EditCoursePage({ params }: EditCoursePageProps) {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const t = await getTranslations("Classes");
   const { courseId } = await params;
   const [course, locations, disciplines, trainers] = await Promise.all([
     getCourse(courseId),
@@ -42,19 +48,18 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Classes", href: "/classes" },
+          { label: t("title"), href: "/classes" },
           { label: course.name, href: `/classes/${course.id}` },
-          { label: "Edit" },
+          { label: t("page.editBreadcrumb") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">Edit course</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {t("page.editTitle")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>Course details</CardTitle>
-          <CardDescription>
-            Updating training times regenerates upcoming sessions from the new
-            slots; sessions that already have attendance are kept.
-          </CardDescription>
+          <CardTitle>{t("page.detailsTitle")}</CardTitle>
+          <CardDescription>{t("page.editDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <CourseForm
@@ -70,7 +75,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
               id: trainer.id,
               name: trainer.name,
             }))}
-            submitLabel="Save changes"
+            submitLabel={t("form.save")}
             values={{
               name: course.name,
               description: course.description,

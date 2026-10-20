@@ -1,4 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   Card,
   CardContent,
@@ -16,10 +18,14 @@ import { listTrainers } from "@/lib/db/trainers";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "New course" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Classes");
+  return { title: t("page.newTitle") };
+}
 
 export default async function NewCoursePage() {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const t = await getTranslations("Classes");
   const [locations, disciplines, trainers] = await Promise.all([
     listAssignableLocations(),
     listDisciplines(),
@@ -29,15 +35,18 @@ export default async function NewCoursePage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
-        segments={[{ label: "Classes", href: "/classes" }, { label: "New" }]}
+        segments={[
+          { label: t("title"), href: "/classes" },
+          { label: t("page.newBreadcrumb") },
+        ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">New course</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {t("page.newTitle")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>Course details</CardTitle>
-          <CardDescription>
-            Create a course and its recurring weekly training times.
-          </CardDescription>
+          <CardTitle>{t("page.detailsTitle")}</CardTitle>
+          <CardDescription>{t("page.createDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <CourseForm
@@ -52,7 +61,7 @@ export default async function NewCoursePage() {
               id: trainer.id,
               name: trainer.name,
             }))}
-            submitLabel="Create course"
+            submitLabel={t("form.create")}
           />
         </CardContent>
       </Card>

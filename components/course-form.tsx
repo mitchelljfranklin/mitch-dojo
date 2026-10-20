@@ -2,6 +2,7 @@
 
 import { ActionForm } from "@/components/action-form";
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
-import { WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/lib/schemas/course";
+import { WEEKDAY_ORDER } from "@/lib/schemas/course";
 
 export type CourseFormValues = {
   id?: string;
@@ -92,6 +93,8 @@ function CourseFormInner({
   submitLabel,
   courseId,
 }: CourseFormProps) {
+  const t = useTranslations("Classes.form");
+  const classesT = useTranslations("Classes");
   const [state, formAction, isPending] = useActionState<
     CourseFormState,
     FormData
@@ -130,7 +133,7 @@ function CourseFormInner({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="course-name">Name *</Label>
+          <Label htmlFor="course-name">{t("name")}</Label>
           <Input
             id="course-name"
             name="name"
@@ -140,51 +143,47 @@ function CourseFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="course-location">Location *</Label>
+          <Label htmlFor="course-location">{t("location")}</Label>
           <Select name="locationId" defaultValue={values?.locationId ?? ""}>
             <SelectTrigger id="course-location">
-              <SelectValue placeholder="Choose a location…" />
+              <SelectValue placeholder={t("chooseLocation")} />
             </SelectTrigger>
             <SelectContent>
               {locations.map((location) => (
                 <SelectItem key={location.id} value={location.id}>
                   {location.name}
-                  {location.isActive ? null : " (inactive)"}
+                  {location.isActive ? null : t("inactiveSuffix")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-muted-foreground text-xs">
-            Every course runs at exactly one location.
-          </p>
+          <p className="text-muted-foreground text-xs">{t("locationHint")}</p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="course-discipline">Discipline *</Label>
+          <Label htmlFor="course-discipline">{t("discipline")}</Label>
           <Select name="disciplineId" defaultValue={values?.disciplineId ?? ""}>
             <SelectTrigger id="course-discipline">
-              <SelectValue placeholder="Choose a discipline…" />
+              <SelectValue placeholder={t("chooseDiscipline")} />
             </SelectTrigger>
             <SelectContent>
               {disciplines.map((discipline) => (
                 <SelectItem key={discipline.id} value={discipline.id}>
                   {discipline.name}
-                  {discipline.isActive ? null : " (inactive)"}
+                  {discipline.isActive ? null : t("inactiveSuffix")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-muted-foreground text-xs">
-            The discipline determines the belt ladder used for progression.
-          </p>
+          <p className="text-muted-foreground text-xs">{t("disciplineHint")}</p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="course-trainer">Trainer</Label>
+          <Label htmlFor="course-trainer">{t("trainer")}</Label>
           <Select name="trainerId" defaultValue={values?.trainerId ?? ""}>
             <SelectTrigger id="course-trainer">
-              <SelectValue placeholder="No trainer assigned" />
+              <SelectValue placeholder={t("noTrainer")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No trainer assigned</SelectItem>
+              <SelectItem value="">{t("noTrainer")}</SelectItem>
               {trainers.map((trainer) => (
                 <SelectItem key={trainer.id} value={trainer.id}>
                   {trainer.name}
@@ -198,12 +197,12 @@ function CourseFormInner({
             name="isActive"
             defaultChecked={values ? values.isActive : true}
           />
-          Active
+          {t("active")}
         </label>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="course-description">Description</Label>
+        <Label htmlFor="course-description">{t("description")}</Label>
         <Textarea
           id="course-description"
           name="description"
@@ -215,13 +214,11 @@ function CourseFormInner({
       <div className="border-t pt-4">
         <div className="mb-2 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium">Weekly training times</h3>
-            <p className="text-muted-foreground text-xs">
-              Recurring slots that generate sessions on the schedule.
-            </p>
+            <h3 className="text-sm font-medium">{t("weeklyTimes")}</h3>
+            <p className="text-muted-foreground text-xs">{t("weeklyHint")}</p>
           </div>
           <Button type="button" variant="secondary" size="sm" onClick={addSlot}>
-            Add slot
+            {t("addSlot")}
           </Button>
         </div>
         <div className="flex flex-col gap-2">
@@ -229,7 +226,7 @@ function CourseFormInner({
             <div key={index} className="flex flex-wrap items-center gap-2">
               <input type="hidden" name="slotWeekday" value={slot.weekday} />
               <select
-                aria-label={`Slot ${index + 1} day`}
+                aria-label={t("slotDay", { index: index + 1 })}
                 value={slot.weekday}
                 onChange={(event) =>
                   updateSlot(index, { weekday: Number(event.target.value) })
@@ -238,12 +235,12 @@ function CourseFormInner({
               >
                 {WEEKDAY_ORDER.map((weekday) => (
                   <option key={weekday} value={weekday}>
-                    {WEEKDAY_LABELS[weekday]}
+                    {classesT(`weekdays.${weekday}`)}
                   </option>
                 ))}
               </select>
               <Input
-                aria-label={`Slot ${index + 1} start time`}
+                aria-label={t("slotStart", { index: index + 1 })}
                 name="slotStartTime"
                 type="time"
                 value={slot.startTime}
@@ -253,9 +250,9 @@ function CourseFormInner({
                 className="w-32"
                 required
               />
-              <span className="text-muted-foreground text-xs">to</span>
+              <span className="text-muted-foreground text-xs">{t("to")}</span>
               <Input
-                aria-label={`Slot ${index + 1} end time`}
+                aria-label={t("slotEnd", { index: index + 1 })}
                 name="slotEndTime"
                 type="time"
                 value={slot.endTime}
@@ -272,18 +269,18 @@ function CourseFormInner({
                   value={slot.trialBookable ? "on" : "off"}
                 />
                 <Checkbox
-                  aria-label={`Slot ${index + 1} trial bookable`}
+                  aria-label={t("slotTrial", { index: index + 1 })}
                   checked={slot.trialBookable}
                   onCheckedChange={(checked) =>
                     updateSlot(index, { trialBookable: checked === true })
                   }
                 />
-                Trial bookable
+                {t("trialBookable")}
               </label>
               <label className="flex items-center gap-1.5 text-xs">
-                Capacity
+                {t("capacity")}
                 <Input
-                  aria-label={`Slot ${index + 1} trial capacity`}
+                  aria-label={t("slotCapacity", { index: index + 1 })}
                   name="slotCapacity"
                   type="number"
                   min={0}
@@ -308,15 +305,12 @@ function CourseFormInner({
                 onClick={() => removeSlot(index)}
                 disabled={slots.length === 0}
               >
-                Remove
+                {t("remove")}
               </Button>
             </div>
           ))}
           {slots.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No weekly slots — the course exists but never appears on the
-              schedule.
-            </p>
+            <p className="text-muted-foreground text-sm">{t("noSlots")}</p>
           ) : null}
         </div>
       </div>
@@ -329,7 +323,7 @@ function CourseFormInner({
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : submitLabel}
+          {isPending ? t("saving") : submitLabel}
         </Button>
       </div>
     </ActionForm>

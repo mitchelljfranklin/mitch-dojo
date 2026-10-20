@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -74,10 +75,11 @@ export async function createCourseAction(
   formData: FormData,
 ): Promise<CourseFormState> {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const t = await getTranslations("Classes.errors");
 
   const parsed = parseCourseInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: t("invalid") };
   }
 
   let courseId: string;
@@ -86,7 +88,7 @@ export async function createCourseAction(
   } catch (error: unknown) {
     if (isDuplicateSlotError(error)) {
       return {
-        error: "A weekly slot with that day and start time already exists.",
+        error: t("duplicateSlot"),
       };
     }
     throw error;
@@ -106,11 +108,12 @@ export async function updateCourseAction(
   formData: FormData,
 ): Promise<CourseFormState> {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const t = await getTranslations("Classes.errors");
   const courseId = getField(formData, "courseId");
 
   const parsed = parseCourseInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: t("invalid") };
   }
 
   try {
@@ -118,7 +121,7 @@ export async function updateCourseAction(
   } catch (error: unknown) {
     if (isDuplicateSlotError(error)) {
       return {
-        error: "A weekly slot with that day and start time already exists.",
+        error: t("duplicateSlot"),
       };
     }
     throw error;
@@ -130,7 +133,7 @@ export async function updateCourseAction(
   }
   // No revalidatePath: this feeds useActionState — the client refreshes via
   // useActionFeedback (see AGENTS.md).
-  return { ok: true, message: "Course updated." };
+  return { ok: true, message: t("updated") };
 }
 
 export async function deleteCourseAction(formData: FormData) {

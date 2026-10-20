@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,11 +9,14 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { ensureUpcomingSessions, getWeeklySchedule } from "@/lib/db/sessions";
-import { WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/lib/schemas/course";
+import { WEEKDAY_ORDER } from "@/lib/schemas/course";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Weekly schedule" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Classes.schedule");
+  return { title: t("metaTitle") };
+}
 
 type ScheduleSlot = {
   startTime: string;
@@ -23,15 +28,22 @@ type ScheduleSlot = {
   isActive: boolean;
 };
 
-function formatTime(time: string): string {
+function formatTime(
+  time: string,
+  format: Awaited<ReturnType<typeof getFormatter>>,
+): string {
   const [hours, minutes] = time.split(":").map(Number);
-  const suffix = hours >= 12 ? "pm" : "am";
-  const displayHour = hours % 12 === 0 ? 12 : hours % 12;
-  return `${displayHour}:${String(minutes).padStart(2, "0")}${suffix}`;
+  return format.dateTime(
+    new Date(Date.UTC(2000, 0, 1, hours ?? 0, minutes ?? 0)),
+    { hour: "numeric", minute: "2-digit", timeZone: "UTC" },
+  );
 }
 
 export default async function SchedulePage() {
   await requirePermission(PERMISSIONS.CLASSES_VIEW);
+  const t = await getTranslations("Classes.schedule");
+  const classesT = await getTranslations("Classes");
+  const format = await getFormatter();
   // Generate upcoming sessions on view too (idempotent) so the schedule and
   // check-in always have concrete rows to attach to. The scheduler also runs
   // this every tick, so a dojo that never opens a course page still gets them.
@@ -49,38 +61,36 @@ export default async function SchedulePage() {
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Classes", href: "/classes" },
-          { label: "Schedule" },
+          { label: classesT("title"), href: "/classes" },
+          { label: t("title") },
         ]}
       />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Weekly schedule
+            {t("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Recurring training times across all courses and locations.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/classes">View courses</Link>
+          <Link href="/classes">{classesT("actions.viewCourses")}</Link>
         </Button>
       </div>
 
       {slots.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>The timetable is empty</CardTitle>
+            <CardTitle>{t("emptyTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              Add courses with weekly training times and they will appear here.
+              {t("emptyDescription")}
             </p>
             <Link
               href="/classes/new"
               className="text-primary mt-2 inline-block text-sm hover:underline"
             >
-              Create a course →
+              {classesT("actions.createCourse")}
             </Link>
           </CardContent>
         </Card>
@@ -94,12 +104,12 @@ export default async function SchedulePage() {
               <Card key={weekday} className="flex flex-col">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">
-                    {WEEKDAY_LABELS[weekday]}
+                    {classesT(`weekdays.${weekday}`)}
                   </CardTitle>
                   <p className="text-muted-foreground text-xs">
                     {daySlots.length === 0
-                      ? "No classes"
-                      : `${daySlots.length} class${daySlots.length === 1 ? "" : "es"}`}
+                      ? t("noClasses")
+                      : t("classCount", { count: daySlots.length })}
                   </p>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col gap-2">
@@ -113,12 +123,12 @@ export default async function SchedulePage() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-mono text-xs font-medium">
-                          {formatTime(slot.startTime)}–
-                          {formatTime(slot.endTime)}
+                          {formatTime(slot.startTime, format)}–
+                          {formatTime(slot.endTime, format)}
                         </span>
                         {slot.isActive ? null : (
                           <Badge variant="outline" className="text-[10px]">
-                            Inactive
+                            {t("inactive")}
                           </Badge>
                         )}
                       </div>

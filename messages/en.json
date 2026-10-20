@@ -485,6 +485,133 @@
       "enrolledSome": "Enrolled {count} of {total} students in {plan} (the rest were already enrolled)."
     }
   },
+  "Classes": {
+    "metaTitle": "Classes",
+    "title": "Classes",
+    "subtitle": "Courses run across your dojo locations.",
+    "actions": {
+      "schedule": "Weekly schedule",
+      "importAttendance": "Import attendance",
+      "new": "New course",
+      "viewCourses": "View courses",
+      "createCourse": "Create a course →"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Course name…",
+      "location": "Location",
+      "allLocations": "All locations",
+      "trainer": "Trainer",
+      "anyTrainer": "Any trainer",
+      "sort": "Sort",
+      "filter": "Filter",
+      "clear": "Clear",
+      "locationAria": "Filter courses by location",
+      "trainerAria": "Filter courses by trainer",
+      "sortAria": "Sort courses"
+    },
+    "sort": {
+      "name": "Name (A–Z)",
+      "location": "Location",
+      "newest": "Newest"
+    },
+    "empty": {
+      "filtered": "No courses match the selected filters.",
+      "title": "No courses yet",
+      "create": "Create your first course to build the weekly timetable.",
+      "readOnly": "No courses have been set up yet."
+    },
+    "card": {
+      "inactive": "Inactive",
+      "weeklySlots": "{count, plural, one {# weekly slot} other {# weekly slots}}"
+    },
+    "weekdays": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    },
+    "schedule": {
+      "metaTitle": "Weekly schedule",
+      "title": "Weekly schedule",
+      "subtitle": "Recurring training times across all courses and locations.",
+      "emptyTitle": "The timetable is empty",
+      "emptyDescription": "Add courses with weekly training times and they will appear here.",
+      "noClasses": "No classes",
+      "classCount": "{count, plural, one {# class} other {# classes}}",
+      "inactive": "Inactive"
+    },
+    "form": {
+      "name": "Name *",
+      "location": "Location *",
+      "chooseLocation": "Choose a location…",
+      "locationHint": "Every course runs at exactly one location.",
+      "discipline": "Discipline *",
+      "chooseDiscipline": "Choose a discipline…",
+      "disciplineHint": "The discipline determines the belt ladder used for progression.",
+      "trainer": "Trainer",
+      "noTrainer": "No trainer assigned",
+      "active": "Active",
+      "description": "Description",
+      "weeklyTimes": "Weekly training times",
+      "weeklyHint": "Recurring slots that generate sessions on the schedule.",
+      "addSlot": "Add slot",
+      "slotDay": "Slot {index} day",
+      "slotStart": "Slot {index} start time",
+      "slotEnd": "Slot {index} end time",
+      "to": "to",
+      "trialBookable": "Trial bookable",
+      "slotTrial": "Slot {index} trial bookable",
+      "capacity": "Capacity",
+      "slotCapacity": "Slot {index} trial capacity",
+      "remove": "Remove",
+      "noSlots": "No weekly slots — the course exists but never appears on the schedule.",
+      "inactiveSuffix": " (inactive)",
+      "saving": "Saving...",
+      "create": "Create course",
+      "save": "Save changes"
+    },
+    "page": {
+      "newTitle": "New course",
+      "newBreadcrumb": "New",
+      "editTitle": "Edit course",
+      "editBreadcrumb": "Edit",
+      "detailsTitle": "Course details",
+      "createDescription": "Create a course and its recurring weekly training times.",
+      "editDescription": "Updating training times regenerates upcoming sessions from the new slots; sessions that already have attendance are kept."
+    },
+    "detail": {
+      "created": "Course created.",
+      "noTrainer": "No trainer assigned",
+      "inactive": "Inactive",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteTitle": "Delete course?",
+      "deleteDescription": "{name}, its weekly slots, and its generated sessions will be permanently removed. This cannot be undone.",
+      "deleteConfirm": "Delete",
+      "weeklyTitle": "Weekly training times",
+      "weeklyDescription": "Recurring slots that generate sessions on the schedule.",
+      "noWeekly": "No weekly slots yet — add them via Edit.",
+      "notTrial": "Not trial bookable",
+      "upcomingTitle": "Upcoming sessions",
+      "upcomingDescription": "Generated for the next two weeks from the weekly slots.",
+      "noUpcoming": "No upcoming sessions. Add weekly slots first.",
+      "attended": "{trained}/{total} attended",
+      "attendance": "Attendance",
+      "restore": "Restore",
+      "cancel": "Cancel",
+      "cancelled": "Cancelled",
+      "scheduled": "Scheduled"
+    },
+    "errors": {
+      "invalid": "Check the course details and try again.",
+      "duplicateSlot": "A weekly slot with that day and start time already exists.",
+      "updated": "Course updated."
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

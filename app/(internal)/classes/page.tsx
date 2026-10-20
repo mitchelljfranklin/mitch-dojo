@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,13 +10,22 @@ import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { Pagination } from "@/components/pagination";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
-import { listCourses, COURSE_SORTS, type CourseSort } from "@/lib/db/courses";
+import { listCourses, type CourseSort } from "@/lib/db/courses";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { listTrainers } from "@/lib/db/trainers";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Classes" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Classes");
+  return { title: t("metaTitle") };
+}
+
+const SORT_LABEL_KEYS: Record<CourseSort, string> = {
+  name: "name",
+  location: "location",
+  newest: "newest",
+};
 
 type ClassesPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -22,6 +33,7 @@ type ClassesPageProps = {
 
 export default async function ClassesPage({ searchParams }: ClassesPageProps) {
   const user = await requirePermission(PERMISSIONS.CLASSES_VIEW);
+  const t = await getTranslations("Classes");
   const canEdit = hasPermission(user.permissions, PERMISSIONS.CLASSES_EDIT);
   const canImportAttendance = hasPermission(
     user.permissions,
@@ -49,23 +61,25 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Classes</h1>
-          <p className="text-muted-foreground text-sm">
-            Courses run across your dojo locations.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t("title")}
+          </h1>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/classes/schedule">Weekly schedule</Link>
+            <Link href="/classes/schedule">{t("actions.schedule")}</Link>
           </Button>
           {canImportAttendance ? (
             <Button asChild variant="outline">
-              <Link href="/attendance/import">Import attendance</Link>
+              <Link href="/attendance/import">
+                {t("actions.importAttendance")}
+              </Link>
             </Button>
           ) : null}
           {canEdit ? (
             <Button asChild>
-              <Link href="/classes/new">New course</Link>
+              <Link href="/classes/new">{t("actions.new")}</Link>
             </Button>
           ) : null}
         </div>
@@ -75,12 +89,12 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
         <form className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1">
             <label className="text-muted-foreground text-xs" htmlFor="query">
-              Search
+              {t("filters.search")}
             </label>
             <Input
               id="query"
               name="query"
-              placeholder="Course name…"
+              placeholder={t("filters.searchPlaceholder")}
               defaultValue={sp.query ?? ""}
               className="w-48"
             />
@@ -90,16 +104,16 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
               className="text-muted-foreground text-xs"
               htmlFor="locationId"
             >
-              Location
+              {t("filters.location")}
             </label>
             <AutoSubmitSelect
               name="locationId"
               defaultValue={sp.locationId ?? ""}
               key={`location-${sp.locationId ?? ""}`}
-              emptyOptionLabel="All locations"
+              emptyOptionLabel={t("filters.allLocations")}
               id="locationId"
               className="w-44"
-              ariaLabel="Filter courses by location"
+              ariaLabel={t("filters.locationAria")}
               options={locations.map((location) => ({
                 value: location.id,
                 label: location.name,
@@ -111,16 +125,16 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
               className="text-muted-foreground text-xs"
               htmlFor="trainerId"
             >
-              Trainer
+              {t("filters.trainer")}
             </label>
             <AutoSubmitSelect
               name="trainerId"
               defaultValue={sp.trainerId ?? ""}
               key={`trainer-${sp.trainerId ?? ""}`}
-              emptyOptionLabel="Any trainer"
+              emptyOptionLabel={t("filters.anyTrainer")}
               id="trainerId"
               className="w-44"
-              ariaLabel="Filter courses by trainer"
+              ariaLabel={t("filters.trainerAria")}
               options={trainers.map((trainer) => ({
                 value: trainer.id,
                 label: trainer.name,
@@ -129,26 +143,28 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-muted-foreground text-xs" htmlFor="sort">
-              Sort
+              {t("filters.sort")}
             </label>
             <AutoSubmitSelect
               name="sort"
               defaultValue={sort}
               id="sort"
               className="w-44"
-              ariaLabel="Sort courses"
-              options={Object.entries(COURSE_SORTS).map(([value, label]) => ({
-                value,
-                label,
-              }))}
+              ariaLabel={t("filters.sortAria")}
+              options={(Object.keys(SORT_LABEL_KEYS) as CourseSort[]).map(
+                (value) => ({
+                  value,
+                  label: t(`sort.${SORT_LABEL_KEYS[value]}`),
+                }),
+              )}
             />
           </div>
           <Button type="submit" variant="secondary" size="sm" className="mb-px">
-            Filter
+            {t("filters.filter")}
           </Button>
           {hasFilters ? (
             <Button asChild variant="ghost" size="sm" className="mb-px">
-              <Link href="/classes">Clear</Link>
+              <Link href="/classes">{t("filters.clear")}</Link>
             </Button>
           ) : null}
         </form>
@@ -156,19 +172,15 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
 
       {courses.length === 0 ? (
         hasFilters ? (
-          <p className="text-muted-foreground text-sm">
-            No courses match the selected filters.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("empty.filtered")}</p>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>No courses yet</CardTitle>
+              <CardTitle>{t("empty.title")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
-                {canEdit
-                  ? "Create your first course to build the weekly timetable."
-                  : "No courses have been set up yet."}
+                {canEdit ? t("empty.create") : t("empty.readOnly")}
               </p>
             </CardContent>
           </Card>
@@ -183,7 +195,7 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
                     <CardTitle className="truncate">{course.name}</CardTitle>
                     {course.isActive ? null : (
                       <Badge variant="outline" className="shrink-0">
-                        Inactive
+                        {t("card.inactive")}
                       </Badge>
                     )}
                   </div>
@@ -197,8 +209,9 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
                     <p className="line-clamp-2">{course.description}</p>
                   ) : null}
                   <span className="mt-2 block">
-                    {course.weeklySlotCount} weekly slot
-                    {course.weeklySlotCount === 1 ? "" : "s"}
+                    {t("card.weeklySlots", {
+                      count: course.weeklySlotCount,
+                    })}
                   </span>
                 </CardContent>
               </Card>
@@ -207,12 +220,7 @@ export default async function ClassesPage({ searchParams }: ClassesPageProps) {
         </div>
       )}
 
-      <Pagination
-        page={page}
-        pageSize={pageSize}
-        totalCount={totalCount}
-        itemLabel="courses"
-      />
+      <Pagination page={page} pageSize={pageSize} totalCount={totalCount} />
     </div>
   );
 }
