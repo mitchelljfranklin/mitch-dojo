@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import {
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 export function AttendanceImportForm() {
+  const t = useTranslations("Attendance.import");
   const [state, formAction, isPending] = useActionState<
     AttendanceImportState,
     FormData
@@ -21,7 +23,7 @@ export function AttendanceImportForm() {
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="grid gap-2">
-        <Label htmlFor="attendance-import-file">CSV file</Label>
+        <Label htmlFor="attendance-import-file">{t("csvFile")}</Label>
         <Input
           id="attendance-import-file"
           name="file"
@@ -43,7 +45,7 @@ export function AttendanceImportForm() {
       ) : null}
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Importing..." : "Import"}
+          {isPending ? t("importing") : t("submit")}
         </Button>
       </div>
     </form>

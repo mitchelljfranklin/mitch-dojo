@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {
 } from "@/lib/actions/attendance";
 import {
   ATTENDANCE_STATUSES,
-  ATTENDANCE_STATUS_LABELS,
   type AttendanceStatusValue,
 } from "@/lib/schemas/attendance";
 
@@ -48,6 +48,8 @@ export function AttendanceForm({
   canMark,
   students,
 }: AttendanceFormProps) {
+  const t = useTranslations("Attendance.form");
+  const statusT = useTranslations("Attendance.status");
   const [state, formAction, isPending] = useActionState<
     AttendanceActionState,
     FormData
@@ -88,10 +90,10 @@ export function AttendanceForm({
             size="sm"
             onClick={markAllPresent}
           >
-            Mark all present
+            {t("markAllPresent")}
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving..." : "Save attendance"}
+            {isPending ? t("saving") : t("save")}
           </Button>
         </div>
       ) : null}
@@ -119,21 +121,21 @@ export function AttendanceForm({
               </span>
               {student.source === "CHECKIN" ? (
                 <Badge variant="secondary" className="text-[10px]">
-                  QR check-in
+                  {t("qr")}
                 </Badge>
               ) : null}
             </div>
             {canMark ? (
               <select
                 key={`${student.studentId}-${student.status ?? "none"}`}
-                aria-label={`Attendance for ${student.name}`}
+                aria-label={t("attendanceAria", { name: student.name })}
                 name={`s_${student.studentId}`}
                 defaultValue={student.status ?? "ABSENT"}
                 className={`border-input bg-background h-9 rounded-md border px-3 text-sm ${statusClass(student.status)}`}
               >
                 {ATTENDANCE_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {ATTENDANCE_STATUS_LABELS[status]}
+                    {statusT(status)}
                   </option>
                 ))}
               </select>
@@ -142,9 +144,7 @@ export function AttendanceForm({
                 variant={student.status ? "secondary" : "outline"}
                 className={statusClass(student.status)}
               >
-                {student.status
-                  ? ATTENDANCE_STATUS_LABELS[student.status]
-                  : "Not marked"}
+                {student.status ? statusT(student.status) : t("notMarked")}
               </Badge>
             )}
           </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +19,7 @@ import {
   addPastAttendanceAction,
   type PastAttendanceState,
 } from "@/lib/actions/attendance";
-import {
-  ATTENDANCE_STATUSES,
-  ATTENDANCE_STATUS_LABELS,
-} from "@/lib/schemas/attendance";
+import { ATTENDANCE_STATUSES } from "@/lib/schemas/attendance";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 export type BackfillCourse = {
@@ -44,6 +42,8 @@ export function PastAttendanceSheet({
   courses: BackfillCourse[];
   canMark: boolean;
 }) {
+  const t = useTranslations("Attendance.past");
+  const statusT = useTranslations("Attendance.status");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     PastAttendanceState,
@@ -71,21 +71,20 @@ export function PastAttendanceSheet({
         variant="outline"
         onClick={() => setOpen(true)}
       >
-        Add past attendance
+        {t("button")}
       </Button>
 
       <SheetContent className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Add past attendance</SheetTitle>
+          <SheetTitle>{t("title")}</SheetTitle>
           <SheetDescription>
-            Record a training {studentName} attended before this session was
-            scheduled — e.g. a forgotten mark or imported history.
+            {t("description", { name: studentName })}
           </SheetDescription>
         </SheetHeader>
         <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
           <input type="hidden" name="studentId" value={studentId} />
           <div className="grid gap-2">
-            <Label htmlFor="backfill-course">Course</Label>
+            <Label htmlFor="backfill-course">{t("course")}</Label>
             <select
               id="backfill-course"
               name="courseId"
@@ -95,18 +94,16 @@ export function PastAttendanceSheet({
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.name} ({course.locationName})
-                  {course.isActive ? "" : " — inactive"}
+                  {course.isActive ? "" : t("inactive")}
                 </option>
               ))}
             </select>
             {courses.length === 0 ? (
-              <p className="text-muted-foreground text-xs">
-                No courses exist at this student&apos;s locations yet.
-              </p>
+              <p className="text-muted-foreground text-xs">{t("noCourses")}</p>
             ) : null}
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="backfill-date">Date attended</Label>
+            <Label htmlFor="backfill-date">{t("date")}</Label>
             <Input
               id="backfill-date"
               name="date"
@@ -116,7 +113,7 @@ export function PastAttendanceSheet({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="backfill-status">Status</Label>
+            <Label htmlFor="backfill-status">{t("status")}</Label>
             <select
               id="backfill-status"
               name="status"
@@ -125,7 +122,7 @@ export function PastAttendanceSheet({
             >
               {ATTENDANCE_STATUSES.map((status) => (
                 <option key={status} value={status}>
-                  {ATTENDANCE_STATUS_LABELS[status]}
+                  {statusT(status)}
                 </option>
               ))}
             </select>
@@ -137,17 +134,17 @@ export function PastAttendanceSheet({
           ) : null}
           {saved && state && "message" in state ? (
             <p className="text-success text-sm" role="status">
-              {state.message} The list below refreshes automatically.
+              {state.message} {t("savedHint")}
             </p>
           ) : null}
           <SheetFooter className="px-0">
             {saved ? (
               <Button type="button" onClick={() => setOpen(false)}>
-                Done
+                {t("done")}
               </Button>
             ) : (
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save attendance"}
+                {isPending ? t("saving") : t("save")}
               </Button>
             )}
             <Button
@@ -155,7 +152,7 @@ export function PastAttendanceSheet({
               variant="outline"
               onClick={() => setOpen(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </SheetFooter>
         </form>

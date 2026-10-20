@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,11 +30,13 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { listSessions } from "@/lib/db/sessions";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { listDisciplines } from "@/lib/db/belts";
-import { formatDateUtc } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Attendance" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Attendance");
+  return { title: t("metaTitle") };
+}
 
 const PAGE_SIZE = 25;
 // Default window: last 4 weeks + next 2 — today's classes on top of the
@@ -54,6 +58,8 @@ export default async function AttendancePage({
   searchParams,
 }: AttendancePageProps) {
   await requirePermission(PERMISSIONS.ATTENDANCE_VIEW);
+  const t = await getTranslations("Attendance");
+  const format = await getFormatter();
 
   const sp = await searchParams;
   const from = sp.from || isoDaysFromToday(DEFAULT_FROM_DAYS);
@@ -81,29 +87,31 @@ export default async function AttendancePage({
     page,
     pageSize: PAGE_SIZE,
   });
+  const day = (value: Date) =>
+    format.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: "Attendance" }]} />
+      <Breadcrumbs segments={[{ label: t("title") }]} />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Attendance</h1>
-        <p className="text-muted-foreground text-sm">
-          Every session, past and upcoming — open any sheet to view or mark it.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Sessions</CardTitle>
-          <CardDescription>
-            Default window covers the last 4 weeks and the next 2 — adjust the
-            dates to travel further.
-          </CardDescription>
+          <CardTitle>{t("sessionsTitle")}</CardTitle>
+          <CardDescription>{t("sessionsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <form className="flex flex-wrap items-end gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="attendance-from">From</Label>
+              <Label htmlFor="attendance-from">{t("filters.from")}</Label>
               <Input
                 id="attendance-from"
                 name="from"
@@ -113,7 +121,7 @@ export default async function AttendancePage({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="attendance-to">To</Label>
+              <Label htmlFor="attendance-to">{t("filters.to")}</Label>
               <Input
                 id="attendance-to"
                 name="to"
@@ -123,23 +131,25 @@ export default async function AttendancePage({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="attendance-course">Course</Label>
+              <Label htmlFor="attendance-course">{t("filters.course")}</Label>
               <Input
                 id="attendance-course"
                 name="course"
-                placeholder="Course name…"
+                placeholder={t("filters.coursePlaceholder")}
                 defaultValue={sp.course ?? ""}
                 className="w-44"
               />
             </div>
             <div className="grid w-44 gap-2">
-              <Label htmlFor="attendance-location">Location</Label>
+              <Label htmlFor="attendance-location">
+                {t("filters.location")}
+              </Label>
               <AutoSubmitSelect
                 name="location"
                 id="attendance-location"
                 defaultValue={location || "ALL"}
                 options={[
-                  { value: "ALL", label: "All locations" },
+                  { value: "ALL", label: t("filters.allLocations") },
                   ...locations.map((entry) => ({
                     value: entry.id,
                     label: entry.name,
@@ -148,34 +158,34 @@ export default async function AttendancePage({
               />
             </div>
             <div className="grid w-40 gap-2">
-              <Label htmlFor="attendance-status">Status</Label>
+              <Label htmlFor="attendance-status">{t("filters.status")}</Label>
               <AutoSubmitSelect
                 name="status"
                 id="attendance-status"
                 defaultValue={statusInput || "ALL"}
                 options={[
-                  { value: "ALL", label: "All statuses" },
-                  { value: "SCHEDULED", label: "Scheduled" },
-                  { value: "CANCELLED", label: "Cancelled" },
+                  { value: "ALL", label: t("filters.allStatuses") },
+                  { value: "SCHEDULED", label: t("filters.scheduled") },
+                  { value: "CANCELLED", label: t("filters.cancelled") },
                 ]}
               />
             </div>
             <Button type="submit" size="sm" variant="outline">
-              Filter
+              {t("filters.filter")}
             </Button>
             <Link
               href="/attendance"
               className="text-muted-foreground pb-2 text-sm hover:underline"
             >
-              Clear
+              {t("filters.clear")}
             </Link>
           </form>
 
           {result.sessions.length === 0 ? (
             <EmptyState
               icon="sessions"
-              title="No sessions in this window"
-              description="Adjust the date range or filters — sessions appear here once their course has weekly times."
+              title={t("empty.title")}
+              description={t("empty.description")}
             />
           ) : (
             <>
@@ -183,15 +193,15 @@ export default async function AttendancePage({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Course</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Trainer</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Marked</TableHead>
+                      <TableHead>{t("table.date")}</TableHead>
+                      <TableHead>{t("table.time")}</TableHead>
+                      <TableHead>{t("table.course")}</TableHead>
+                      <TableHead>{t("table.location")}</TableHead>
+                      <TableHead>{t("table.trainer")}</TableHead>
+                      <TableHead>{t("table.status")}</TableHead>
+                      <TableHead>{t("table.marked")}</TableHead>
                       <TableHead>
-                        <span className="sr-only">Open sheet</span>
+                        <span className="sr-only">{t("table.openSheet")}</span>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -199,7 +209,7 @@ export default async function AttendancePage({
                     {result.sessions.map((session) => (
                       <TableRow key={session.id}>
                         <TableCell className="text-sm font-medium">
-                          {formatDateUtc(session.date)}
+                          {day(session.date)}
                         </TableCell>
                         <TableCell className="text-muted-foreground font-mono text-xs">
                           {session.startTime}–{session.endTime}
@@ -222,19 +232,22 @@ export default async function AttendancePage({
                             }
                           >
                             {session.status === "CANCELLED"
-                              ? "Cancelled"
-                              : "Scheduled"}
+                              ? t("status.cancelled")
+                              : t("status.scheduled")}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs">
                           {session.marked === 0
-                            ? "Not marked"
-                            : `${session.marked} marked · ${session.trained} trained`}
+                            ? t("table.notMarked")
+                            : t("table.markedSummary", {
+                                marked: session.marked,
+                                trained: session.trained,
+                              })}
                         </TableCell>
                         <TableCell>
                           <Button asChild variant="outline" size="sm">
                             <Link href={`/sessions/${session.id}`}>
-                              Open sheet
+                              {t("table.openSheet")}
                             </Link>
                           </Button>
                         </TableCell>
@@ -247,7 +260,6 @@ export default async function AttendancePage({
                 page={page}
                 pageSize={PAGE_SIZE}
                 totalCount={result.totalCount}
-                itemLabel="sessions"
               />
             </>
           )}

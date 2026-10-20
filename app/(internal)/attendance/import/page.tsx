@@ -1,4 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   Card,
   CardContent,
@@ -13,55 +15,48 @@ import { AttendanceImportForm } from "./import-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Import attendance" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Attendance.import");
+  return { title: t("metaTitle") };
+}
 
 export default async function ImportAttendancePage() {
   await requirePermission(PERMISSIONS.ATTENDANCE_MARK);
+  const t = await getTranslations("Attendance.import");
+  const classesT = await getTranslations("Classes");
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Classes", href: "/classes" },
-          { label: "Import attendance" },
+          { label: classesT("title"), href: "/classes" },
+          { label: t("breadcrumb") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Import attendance history
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>CSV import</CardTitle>
-          <CardDescription>
-            Backfill past trainings from your previous system. Missing class
-            sessions are created automatically; already-recorded rows are
-            skipped, so re-running an import is safe.
-          </CardDescription>
+          <CardTitle>{t("cardTitle")}</CardTitle>
+          <CardDescription>{t("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="text-sm">
-            <p className="mb-2 font-medium">Columns</p>
+            <p className="mb-2 font-medium">{t("columns")}</p>
             <ul className="text-muted-foreground list-disc pl-5 text-xs">
               <li>
-                <code>Date</code> — required, YYYY-MM-DD (today or earlier)
+                <code>Date</code> — {t("dateLine")}
               </li>
               <li>
-                <code>Course</code> — required, exact existing course name
+                <code>Course</code> — {t("courseLine")}
               </li>
               <li>
-                <code>Email</code> — student email, or <code>FirstName</code> +{" "}
-                <code>LastName</code>
+                <code>Email</code> — {t("studentLine")}
               </li>
               <li>
-                <code>Status</code> — optional: Present (default), Late,
-                Excused, Absent
+                <code>Status</code> — {t("statusLine")}
               </li>
             </ul>
-            <p className="text-muted-foreground mt-2 text-xs">
-              Students are matched within the course&apos;s location. Rows
-              referring to unknown courses or students are reported as errors
-              and skipped — nothing is auto-created.
-            </p>
+            <p className="text-muted-foreground mt-2 text-xs">{t("note")}</p>
           </div>
           <AttendanceImportForm />
         </CardContent>

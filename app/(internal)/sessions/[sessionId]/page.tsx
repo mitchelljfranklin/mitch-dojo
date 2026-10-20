@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,12 +16,14 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getSessionRoster } from "@/lib/db/attendance";
-import { formatDateUtc } from "@/lib/utils";
 import { AttendanceForm } from "@/components/attendance-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Attendance" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Attendance");
+  return { title: t("metaTitle") };
+}
 
 type SessionAttendancePageProps = {
   params: Promise<{ sessionId: string }>;
@@ -31,6 +35,9 @@ export default async function SessionAttendancePage({
   searchParams,
 }: SessionAttendancePageProps) {
   const user = await requirePermission(PERMISSIONS.ATTENDANCE_VIEW);
+  const t = await getTranslations("Attendance.session");
+  const attendanceT = await getTranslations("Attendance");
+  const format = await getFormatter();
   const canMark = hasPermission(user.permissions, PERMISSIONS.ATTENDANCE_MARK);
 
   const { sessionId } = await params;
@@ -44,14 +51,20 @@ export default async function SessionAttendancePage({
   if (!session) {
     notFound();
   }
+  const day = format.dateTime(session.date, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Attendance", href: "/attendance" },
+          { label: attendanceT("title"), href: "/attendance" },
           { label: session.courseName, href: `/classes/${session.courseId}` },
-          { label: formatDateUtc(session.date) },
+          { label: day },
         ]}
       />
 
@@ -67,11 +80,11 @@ export default async function SessionAttendancePage({
               {session.startTime}–{session.endTime}
             </span>
             {session.status === "CANCELLED" ? (
-              <Badge variant="destructive">Cancelled</Badge>
+              <Badge variant="destructive">{t("cancelled")}</Badge>
             ) : null}
             {session.trainerName ? (
               <span className="text-muted-foreground text-xs">
-                Trainer: {session.trainerName}
+                {t("trainer", { name: session.trainerName })}
               </span>
             ) : null}
           </div>
@@ -85,7 +98,7 @@ export default async function SessionAttendancePage({
                   : `/sessions/${session.id}?scope=all`
               }
             >
-              {includeAll ? "Show discipline only" : "Show everyone here"}
+              {includeAll ? t("showDiscipline") : t("showEveryone")}
             </Link>
           </Button>
           <Button asChild variant="outline">
@@ -93,26 +106,35 @@ export default async function SessionAttendancePage({
               href={`/api/sessions/${session.id}/attendance-pdf${includeAll ? "?scope=all" : ""}`}
               download
             >
-              Download PDF
+              {t("downloadPdf")}
             </a>
           </Button>
           <Button asChild variant="outline">
-            <Link href={`/classes/${session.courseId}`}>Back to course</Link>
+            <Link href={`/classes/${session.courseId}`}>
+              {t("backToCourse")}
+            </Link>
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Attendance</CardTitle>
+          <CardTitle>{t("attendanceTitle")}</CardTitle>
           <CardDescription>
             {roster.length === 0
-              ? `No ${includeAll ? "students" : `${session.disciplineName} students`} at ${session.locationName} yet.`
+              ? includeAll
+                ? t("emptyAll", { location: session.locationName })
+                : t("emptyDiscipline", {
+                    discipline: session.disciplineName,
+                    location: session.locationName,
+                  })
               : canMark
                 ? includeAll
-                  ? "Mark each student and save. Showing everyone at this location."
-                  : `Mark each student and save. Showing ${session.disciplineName} students (use “Show everyone here” for drop-ins).`
-                : "Read-only view. You need the attendance marking permission to record attendance."}
+                  ? t("markAll")
+                  : t("markDiscipline", {
+                      discipline: session.disciplineName,
+                    })
+                : t("readOnly")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -130,8 +152,10 @@ export default async function SessionAttendancePage({
             />
           ) : (
             <p className="text-muted-foreground text-sm">
-              Assign students to {session.disciplineName} at{" "}
-              {session.locationName} to take their attendance.
+              {t("assignHint", {
+                discipline: session.disciplineName,
+                location: session.locationName,
+              })}
             </p>
           )}
         </CardContent>
