@@ -15,14 +15,18 @@ type AutoSubmitSelectProps = {
   defaultValue?: string;
   options: Option[];
   /**
-   * When provided, an extra first item with an empty value is rendered so the
-   * selection can be cleared back to "no filter" after picking a value.
+   * When provided, an extra first item is rendered so the selection can be
+   * cleared back to "no filter" after picking a value. Radix Select cannot use
+   * an empty string as an item value, so a sentinel is used and translated
+   * back to "" when the form submits.
    */
   emptyOptionLabel?: string;
   id?: string;
   className?: string;
   ariaLabel?: string;
 };
+
+const EMPTY_OPTION_VALUE = "__all__";
 
 /**
  * A Select that submits its enclosing <form> on change. Use inside a GET form
@@ -38,22 +42,25 @@ export function AutoSubmitSelect({
   className,
   ariaLabel,
 }: AutoSubmitSelectProps) {
+  const selectValue =
+    emptyOptionLabel && defaultValue === "" ? EMPTY_OPTION_VALUE : defaultValue;
+
   return (
     <>
       <input
         type="hidden"
         id={`${name}-proxy`}
         name={name}
-        defaultValue={defaultValue}
+        defaultValue={selectValue}
       />
       <Select
-        defaultValue={defaultValue}
+        defaultValue={selectValue}
         onValueChange={(value) => {
           const input = document.getElementById(
             `${name}-proxy`,
           ) as HTMLInputElement | null;
           if (input) {
-            input.value = value;
+            input.value = value === EMPTY_OPTION_VALUE ? "" : value;
             input.form?.requestSubmit();
           }
         }}
@@ -63,7 +70,9 @@ export function AutoSubmitSelect({
         </SelectTrigger>
         <SelectContent>
           {emptyOptionLabel ? (
-            <SelectItem value="">{emptyOptionLabel}</SelectItem>
+            <SelectItem value={EMPTY_OPTION_VALUE}>
+              {emptyOptionLabel}
+            </SelectItem>
           ) : null}
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>

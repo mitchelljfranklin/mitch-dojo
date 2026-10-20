@@ -1,29 +1,34 @@
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
-import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { StudentsTable } from "./students-table";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
-import {
-  listStudents,
-  STUDENT_SORTS,
-  type StudentSort,
-} from "@/lib/db/students";
+import { listStudents, type StudentSort } from "@/lib/db/students";
 import { listDisciplines } from "@/lib/db/belts";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { listActivePlansForSelection } from "@/lib/db/memberships";
-import { STUDENT_STATUS_LABELS, STUDENT_STATUSES } from "@/lib/schemas/student";
+import { STUDENT_STATUSES } from "@/lib/schemas/student";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Students" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Students");
+  return { title: t("metaTitle") };
+}
+
+const SORT_LABEL_KEYS: Record<StudentSort, string> = {
+  name: "name",
+  "name-desc": "nameDesc",
+  newest: "newest",
+  oldest: "oldest",
+};
 
 type StudentsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -33,6 +38,7 @@ export default async function StudentsPage({
   searchParams,
 }: StudentsPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
+  const t = await getTranslations("Students");
   const canCreateStudent = hasPermission(
     user.permissions,
     PERMISSIONS.STUDENTS_CREATE,
@@ -62,26 +68,26 @@ export default async function StudentsPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Students</h1>
-          <p className="text-muted-foreground text-sm">
-            Everyone who trains at your dojo locations.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t("title")}
+          </h1>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/students/households">Households</Link>
+            <Link href="/students/households">{t("actions.households")}</Link>
           </Button>
           <Button asChild variant="outline">
-            <a href="/api/students/export">Export CSV</a>
+            <a href="/api/students/export">{t("actions.export")}</a>
           </Button>
           {canCreateStudent ? (
             <Button asChild variant="outline">
-              <Link href="/students/import">Import</Link>
+              <Link href="/students/import">{t("actions.import")}</Link>
             </Button>
           ) : null}
           {canCreateStudent ? (
             <Button asChild>
-              <Link href="/students/new">New student</Link>
+              <Link href="/students/new">{t("actions.new")}</Link>
             </Button>
           ) : null}
         </div>
@@ -91,31 +97,31 @@ export default async function StudentsPage({
         <form className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1">
             <label className="text-muted-foreground text-xs" htmlFor="query">
-              Search
+              {t("filters.search")}
             </label>
             <Input
               id="query"
               name="query"
-              placeholder="Name or email…"
+              placeholder={t("filters.searchPlaceholder")}
               defaultValue={sp.query ?? ""}
               className="w-48"
             />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-muted-foreground text-xs" htmlFor="status">
-              Status
+              {t("filters.status")}
             </label>
             <AutoSubmitSelect
               name="status"
               defaultValue={sp.status ?? ""}
               key={`status-${sp.status ?? ""}`}
-              emptyOptionLabel="Any status"
+              emptyOptionLabel={t("filters.anyStatus")}
               id="status"
               className="w-36"
-              ariaLabel="Filter students by status"
+              ariaLabel={t("filters.statusAria")}
               options={STUDENT_STATUSES.map((status) => ({
                 value: status,
-                label: STUDENT_STATUS_LABELS[status],
+                label: t(`status.${status}`),
               }))}
             />
           </div>
@@ -124,16 +130,16 @@ export default async function StudentsPage({
               className="text-muted-foreground text-xs"
               htmlFor="locationId"
             >
-              Location
+              {t("filters.location")}
             </label>
             <AutoSubmitSelect
               name="locationId"
               defaultValue={sp.locationId ?? ""}
               key={`location-${sp.locationId ?? ""}`}
-              emptyOptionLabel="All locations"
+              emptyOptionLabel={t("filters.allLocations")}
               id="locationId"
               className="w-44"
-              ariaLabel="Filter students by location"
+              ariaLabel={t("filters.locationAria")}
               options={locations.map((location) => ({
                 value: location.id,
                 label: location.name,
@@ -142,26 +148,28 @@ export default async function StudentsPage({
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-muted-foreground text-xs" htmlFor="sort">
-              Sort
+              {t("filters.sort")}
             </label>
             <AutoSubmitSelect
               name="sort"
               defaultValue={sort}
               id="sort"
               className="w-44"
-              ariaLabel="Sort students"
-              options={Object.entries(STUDENT_SORTS).map(([value, label]) => ({
-                value,
-                label,
-              }))}
+              ariaLabel={t("filters.sortAria")}
+              options={(Object.keys(SORT_LABEL_KEYS) as StudentSort[]).map(
+                (value) => ({
+                  value,
+                  label: t(`sort.${SORT_LABEL_KEYS[value]}`),
+                }),
+              )}
             />
           </div>
           <Button type="submit" variant="secondary" size="sm" className="mb-px">
-            Filter
+            {t("filters.filter")}
           </Button>
           {hasFilters ? (
             <Button asChild variant="ghost" size="sm" className="mb-px">
-              <Link href="/students">Clear</Link>
+              <Link href="/students">{t("filters.clear")}</Link>
             </Button>
           ) : null}
         </form>
@@ -169,19 +177,15 @@ export default async function StudentsPage({
 
       {students.length === 0 ? (
         hasFilters ? (
-          <p className="text-muted-foreground text-sm">
-            No students match the selected filters.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("empty.filtered")}</p>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>No students yet</CardTitle>
+              <CardTitle>{t("empty.title")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
-                {canCreateStudent
-                  ? "Add your first student, or import a CSV from your existing records."
-                  : "No students are enrolled yet."}
+                {canCreateStudent ? t("empty.create") : t("empty.readOnly")}
               </p>
               {canCreateStudent ? (
                 <div className="mt-2 flex gap-3">
@@ -189,13 +193,13 @@ export default async function StudentsPage({
                     href="/students/new"
                     className="text-primary text-sm hover:underline"
                   >
-                    Add a student →
+                    {t("empty.add")}
                   </Link>
                   <Link
                     href="/students/import"
                     className="text-muted-foreground text-sm hover:underline"
                   >
-                    Import a CSV →
+                    {t("empty.import")}
                   </Link>
                 </div>
               ) : null}
@@ -227,12 +231,7 @@ export default async function StudentsPage({
             }))}
             plans={plans.map((plan) => ({ id: plan.id, name: plan.name }))}
           />
-          <Pagination
-            page={page}
-            pageSize={pageSize}
-            totalCount={totalCount}
-            itemLabel="students"
-          />
+          <Pagination page={page} pageSize={pageSize} totalCount={totalCount} />
         </>
       )}
     </div>

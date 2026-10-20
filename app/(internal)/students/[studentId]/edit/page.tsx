@@ -1,4 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -19,7 +21,10 @@ import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Edit student" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Students");
+  return { title: t("form.editTitle") };
+}
 
 type EditStudentPageProps = {
   params: Promise<{ studentId: string }>;
@@ -29,6 +34,7 @@ export default async function EditStudentPage({
   params,
 }: EditStudentPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students");
   const { studentId } = await params;
   const [student, locations, disciplines, households, organization] =
     await Promise.all([
@@ -49,19 +55,21 @@ export default async function EditStudentPage({
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Students", href: "/students" },
+          { label: t("title"), href: "/students" },
           {
             label: `${student.firstName} ${student.lastName}`,
             href: `/students/${student.id}`,
           },
-          { label: "Edit" },
+          { label: t("form.editCrumb") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">Edit student</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {t("form.editTitle")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>Student details</CardTitle>
-          <CardDescription>Update profile and dojo locations.</CardDescription>
+          <CardTitle>{t("form.detailsTitle")}</CardTitle>
+          <CardDescription>{t("form.editDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <StudentForm
@@ -71,7 +79,7 @@ export default async function EditStudentPage({
             disciplines={disciplines}
             households={households}
             defaultCountry={organization.defaultCountry}
-            submitLabel="Save changes"
+            submitLabel={t("form.save")}
             canViewMedical={hasPermission(
               user.permissions,
               PERMISSIONS.STUDENTS_MEDICAL,

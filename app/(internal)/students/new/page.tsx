@@ -1,4 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -17,10 +19,14 @@ import { getOrganizationSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "New student" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Students");
+  return { title: t("actions.new") };
+}
 
 export default async function NewStudentPage() {
   const user = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
+  const t = await getTranslations("Students");
   const [locations, disciplines, households, organization] = await Promise.all([
     listAssignableLocations(),
     prisma.discipline.findMany({
@@ -35,15 +41,18 @@ export default async function NewStudentPage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
-        segments={[{ label: "Students", href: "/students" }, { label: "New" }]}
+        segments={[
+          { label: t("title"), href: "/students" },
+          { label: t("actions.new") },
+        ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">New student</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {t("actions.new")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>Student details</CardTitle>
-          <CardDescription>
-            Add a new student and assign them to dojo locations.
-          </CardDescription>
+          <CardTitle>{t("form.detailsTitle")}</CardTitle>
+          <CardDescription>{t("form.createDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <StudentForm
@@ -52,7 +61,7 @@ export default async function NewStudentPage() {
             disciplines={disciplines}
             households={households}
             defaultCountry={organization.defaultCountry}
-            submitLabel="Create student"
+            submitLabel={t("form.create")}
             canViewMedical={hasPermission(
               user.permissions,
               PERMISSIONS.STUDENTS_MEDICAL,

@@ -3,6 +3,7 @@
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -25,7 +26,6 @@ import { resolveCountryCode } from "@/lib/countries";
 import { getField } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
-import { STUDENT_STATUS_LABELS } from "@/lib/schemas/student";
 import {
   ALLOWED_ATTACHMENT_EXTS,
   MAX_ATTACHMENT_BYTES,
@@ -48,6 +48,37 @@ import {
 
 export type StudentFormState =
   { error: string } | { ok: true; message: string } | undefined;
+
+type TranslateError = (key: string) => string;
+
+// Zod stops at the first issue for these single-field rules; map its path to a
+// specific translated message so the form can say what is actually missing.
+function studentErrorMessage(
+  issues: { path: readonly PropertyKey[]; message: string }[],
+  t: TranslateError,
+): string {
+  const first = issues[0];
+  const field = first?.path[0];
+  switch (field) {
+    case "firstName":
+      return t("firstNameRequired");
+    case "lastName":
+      return t("lastNameRequired");
+    case "email":
+    case "guardianEmail":
+      return t("emailInvalid");
+    case "locationIds":
+      return t("locationRequired");
+    case "primaryLocationId":
+      return first.message.includes("one of the assigned locations")
+        ? t("primaryMismatch")
+        : t("primaryRequired");
+    case "disciplineIds":
+      return t("disciplineRequired");
+    default:
+      return t("invalid");
+  }
+}
 
 function parseStudentInput(formData: FormData) {
   return studentSchema.safeParse({
@@ -115,6 +146,7 @@ async function handlePhotoUpload(
   formData: FormData,
   currentPhotoKey: string | null,
 ): Promise<{ photoKey: string | null; error?: string }> {
+  const t = await getTranslations("Students.errors");
   const removePhoto = getField(formData, "removePhoto") === "true";
   const photoFile = formData.get("photoFile");
 
@@ -126,26 +158,26 @@ async function handlePhotoUpload(
   }
 
   if (photoFile.size > 2 * 1024 * 1024) {
-    return { photoKey: currentPhotoKey, error: "Photo must be under 2 MB." };
+    return { photoKey: currentPhotoKey, error: t("photoTooLarge") };
   }
   if (
     !photoFile.type.startsWith("image/") ||
     isDangerousUploadMime(photoFile.type)
   ) {
-    return { photoKey: currentPhotoKey, error: "Photo must be an image file." };
+    return { photoKey: currentPhotoKey, error: t("photoType") };
   }
   const ext = photoFile.name.split(".").pop()?.toLowerCase() ?? "";
   if (!["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) {
     return {
       photoKey: currentPhotoKey,
-      error: "Photo must be a PNG, JPG, GIF, or WEBP image.",
+      error: t("photoFormat"),
     };
   }
   const buffer = Buffer.from(await photoFile.arrayBuffer());
   if (!validateMagicBytes(ext, buffer)) {
     return {
       photoKey: currentPhotoKey,
-      error: "Photo file content does not match its extension.",
+      error: t("photoMismatch"),
     };
   }
 
@@ -159,10 +191,11 @@ export async function createStudentAction(
   formData: FormData,
 ): Promise<StudentFormState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
+  const t = await getTranslations("Students.errors");
 
   const parsed = parseStudentInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: studentErrorMessage(parsed.error.issues, t) };
   }
 
   // Medical PHI is gated by students:medical on the WRITE side too: without
@@ -181,7 +214,7 @@ export async function createStudentAction(
     studentId = await createStudent(data);
   } catch (error: unknown) {
     if (isDuplicateEmailError(error)) {
-      return { error: "A student with this email already exists." };
+      return { error: t("duplicateEmail") };
     }
     throw error;
   }
@@ -204,10 +237,11 @@ export async function updateStudentAction(
 ): Promise<StudentFormState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const studentId = getField(formData, "studentId");
+  const t = await getTranslations("Students.errors");
 
   const parsed = parseStudentInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: studentErrorMessage(parsed.error.issues, t) };
   }
 
   const existing = await prisma.student.findUnique({
@@ -235,7 +269,7 @@ export async function updateStudentAction(
     await updateStudent(studentId, data);
   } catch (error: unknown) {
     if (isDuplicateEmailError(error)) {
-      return { error: "A student with this email already exists." };
+      return { error: t("duplicateEmail") };
     }
     throw error;
   }
@@ -571,13 +605,14 @@ export async function bulkSetStatusAction(
   formData: FormData,
 ): Promise<BulkActionState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students");
   const ids = readSelectedIds(formData);
   const status = getField(formData, "status");
   if (ids.length === 0) {
-    return { ok: false, message: "Select at least one student." };
+    return { ok: false, message: t("errors.bulkSelect") };
   }
   if (!STUDENT_STATUSES.includes(status as StudentStatus)) {
-    return { ok: false, message: "Choose a status to apply." };
+    return { ok: false, message: t("errors.statusRequired") };
   }
 
   await prisma.student.updateMany({
@@ -593,7 +628,10 @@ export async function bulkSetStatusAction(
   );
   return {
     ok: true,
-    message: `Set ${ids.length} student${ids.length === 1 ? "" : "s"} to ${STUDENT_STATUS_LABELS[status as StudentStatus]}.`,
+    message: t("errors.statusDone", {
+      count: ids.length,
+      status: t(`status.${status}`),
+    }),
   };
 }
 
@@ -602,6 +640,7 @@ export async function bulkAssignDisciplinesAction(
   formData: FormData,
 ): Promise<BulkActionState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students");
   const ids = readSelectedIds(formData);
   const disciplineIds = formData
     .getAll("disciplineIds")
@@ -609,10 +648,10 @@ export async function bulkAssignDisciplinesAction(
       (value): value is string => typeof value === "string" && value.length > 0,
     );
   if (ids.length === 0) {
-    return { ok: false, message: "Select at least one student." };
+    return { ok: false, message: t("errors.bulkSelect") };
   }
   if (disciplineIds.length === 0) {
-    return { ok: false, message: "Choose at least one discipline." };
+    return { ok: false, message: t("errors.disciplineRequired") };
   }
 
   const validDisciplines = await prisma.discipline.findMany({
@@ -632,8 +671,8 @@ export async function bulkAssignDisciplinesAction(
     ok: true,
     message:
       added > 0
-        ? `Assigned ${added} discipline link${added === 1 ? "" : "s"} (existing ones kept).`
-        : "All selected students already train those disciplines.",
+        ? t("errors.assigned", { count: added })
+        : t("errors.alreadyAssigned"),
   };
 }
 
@@ -642,13 +681,14 @@ export async function bulkEnrollAction(
   formData: FormData,
 ): Promise<BulkActionState> {
   const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const t = await getTranslations("Students");
   const ids = readSelectedIds(formData);
   const planId = getField(formData, "planId");
   if (ids.length === 0) {
-    return { ok: false, message: "Select at least one student." };
+    return { ok: false, message: t("errors.bulkSelect") };
   }
   if (!planId) {
-    return { ok: false, message: "Choose a plan." };
+    return { ok: false, message: t("errors.planRequired") };
   }
 
   const plan = await prisma.membershipPlan.findUnique({
@@ -656,7 +696,7 @@ export async function bulkEnrollAction(
     select: { name: true },
   });
   if (!plan) {
-    return { ok: false, message: "That plan no longer exists." };
+    return { ok: false, message: t("errors.planMissing") };
   }
 
   const results = await Promise.all(
@@ -676,7 +716,11 @@ export async function bulkEnrollAction(
     ok: true,
     message:
       created === ids.length
-        ? `Enrolled ${created} student${created === 1 ? "" : "s"} in ${plan.name}.`
-        : `Enrolled ${created} of ${ids.length} students in ${plan.name} (the rest were already enrolled).`,
+        ? t("errors.enrolledAll", { count: created, plan: plan.name })
+        : t("errors.enrolledSome", {
+            count: created,
+            total: ids.length,
+            plan: plan.name,
+          }),
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,7 @@ import { COUNTRIES, countryName } from "@/lib/countries";
 import {
   GUARDIAN_RELATIONSHIPS,
   STUDENT_STATUSES,
-  STUDENT_STATUS_LABELS,
-  type StudentStatus,
+  type GuardianRelationship,
 } from "@/lib/schemas/student";
 
 export type StudentFormLocation = {
@@ -62,6 +62,20 @@ export type StudentFormValues = {
 export type StudentFormState =
   { error: string } | { ok: true; message: string } | undefined;
 
+// Stored relationship values stay in English; only the label is translated.
+const RELATIONSHIP_MESSAGE_KEYS: Record<GuardianRelationship, string> = {
+  Mother: "mother",
+  Father: "father",
+  Parent: "parent",
+  "Step-parent": "stepParent",
+  Grandparent: "grandparent",
+  Sibling: "sibling",
+  "Aunt/Uncle": "auntUncle",
+  "Legal guardian": "legalGuardian",
+  Carer: "carer",
+  Other: "other",
+};
+
 type StudentFormAction = (
   state: StudentFormState,
   formData: FormData,
@@ -107,6 +121,8 @@ function StudentFormInner({
   studentId,
   canViewMedical,
 }: StudentFormProps) {
+  const t = useTranslations("Students.form");
+  const statusT = useTranslations("Students.status");
   const [state, formAction, isPending] = useActionState<
     StudentFormState,
     FormData
@@ -150,7 +166,7 @@ function StudentFormInner({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="firstName">First name *</Label>
+          <Label htmlFor="firstName">{t("firstName")}</Label>
           <Input
             id="firstName"
             name="firstName"
@@ -159,7 +175,7 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="lastName">Last name *</Label>
+          <Label htmlFor="lastName">{t("lastName")}</Label>
           <Input
             id="lastName"
             name="lastName"
@@ -168,7 +184,7 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("email")}</Label>
           <Input
             id="email"
             name="email"
@@ -177,11 +193,11 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">{t("phone")}</Label>
           <Input id="phone" name="phone" defaultValue={values?.phone ?? ""} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="dateOfBirth">Date of birth</Label>
+          <Label htmlFor="dateOfBirth">{t("dateOfBirth")}</Label>
           <Input
             id="dateOfBirth"
             name="dateOfBirth"
@@ -191,7 +207,7 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="status">Status</Label>
+          <Label htmlFor="status">{t("status")}</Label>
           <select
             id="status"
             name="status"
@@ -200,7 +216,7 @@ function StudentFormInner({
           >
             {STUDENT_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {STUDENT_STATUS_LABELS[status]}
+                {statusT(status)}
               </option>
             ))}
           </select>
@@ -208,10 +224,10 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">Address</h3>
+        <h3 className="mb-2 text-sm font-medium">{t("address")}</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2 sm:col-span-3 sm:grid-cols-1">
-            <Label htmlFor="addressLine">Street address</Label>
+            <Label htmlFor="addressLine">{t("street")}</Label>
             <Input
               id="addressLine"
               name="addressLine"
@@ -220,7 +236,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="city">City</Label>
+            <Label htmlFor="city">{t("city")}</Label>
             <Input
               id="city"
               name="city"
@@ -229,7 +245,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="state">State / Region / Province</Label>
+            <Label htmlFor="state">{t("state")}</Label>
             <Input
               id="state"
               name="state"
@@ -238,7 +254,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="postcode">Postcode</Label>
+            <Label htmlFor="postcode">{t("postcode")}</Label>
             <Input
               id="postcode"
               name="postcode"
@@ -247,14 +263,14 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2 sm:col-span-3">
-            <Label htmlFor="country">Country</Label>
+            <Label htmlFor="country">{t("country")}</Label>
             <select
               id="country"
               name="country"
               defaultValue={values?.country ?? defaultCountry}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             >
-              <option value="">None</option>
+              <option value="">{t("none")}</option>
               {COUNTRIES.map((code) => (
                 <option key={code} value={code}>
                   {countryName(code)}
@@ -266,10 +282,10 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">Guardian (for juniors)</h3>
+        <h3 className="mb-2 text-sm font-medium">{t("guardian")}</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
-            <Label htmlFor="guardianName">Name</Label>
+            <Label htmlFor="guardianName">{t("name")}</Label>
             <Input
               id="guardianName"
               name="guardianName"
@@ -277,7 +293,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="guardianEmail">Email</Label>
+            <Label htmlFor="guardianEmail">{t("email")}</Label>
             <Input
               id="guardianEmail"
               name="guardianEmail"
@@ -286,7 +302,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="guardianPhone">Phone</Label>
+            <Label htmlFor="guardianPhone">{t("phone")}</Label>
             <Input
               id="guardianPhone"
               name="guardianPhone"
@@ -296,17 +312,19 @@ function StudentFormInner({
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
-            <Label htmlFor="guardianRelationship">Relationship</Label>
+            <Label htmlFor="guardianRelationship">{t("relationship")}</Label>
             <select
               id="guardianRelationship"
               name="guardianRelationship"
               defaultValue={values?.guardianRelationship ?? ""}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             >
-              <option value="">Not stated</option>
+              <option value="">{t("notStated")}</option>
               {GUARDIAN_RELATIONSHIPS.map((relationship) => (
                 <option key={relationship} value={relationship}>
-                  {relationship}
+                  {t(
+                    `relationships.${RELATIONSHIP_MESSAGE_KEYS[relationship]}`,
+                  )}
                 </option>
               ))}
             </select>
@@ -317,17 +335,14 @@ function StudentFormInner({
       {canViewMedical ? (
         <div className="border-t pt-4">
           <h3 className="mb-2 text-sm font-medium">
-            Health &amp; medical{" "}
+            {t("medical")}{" "}
             <span className="text-muted-foreground text-xs font-normal">
-              (sensitive — visible only to medical-permitted roles)
+              {t("medicalNote")}
             </span>
           </h3>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="medicalMedications">
-                Prescribed medications that may impair reaction time or
-                judgement
-              </Label>
+              <Label htmlFor="medicalMedications">{t("medications")}</Label>
               <Textarea
                 id="medicalMedications"
                 name="medicalMedications"
@@ -336,9 +351,7 @@ function StudentFormInner({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="medicalConditions">
-                Conditions we should be aware of (asthma, epilepsy, …)
-              </Label>
+              <Label htmlFor="medicalConditions">{t("conditions")}</Label>
               <Textarea
                 id="medicalConditions"
                 name="medicalConditions"
@@ -347,9 +360,7 @@ function StudentFormInner({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="medicalInjuries">
-                Illnesses or injuries that may affect training
-              </Label>
+              <Label htmlFor="medicalInjuries">{t("injuries")}</Label>
               <Textarea
                 id="medicalInjuries"
                 name="medicalInjuries"
@@ -362,10 +373,10 @@ function StudentFormInner({
       ) : null}
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">Emergency contact</h3>
+        <h3 className="mb-2 text-sm font-medium">{t("emergency")}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="emergencyContactName">Name</Label>
+            <Label htmlFor="emergencyContactName">{t("name")}</Label>
             <Input
               id="emergencyContactName"
               name="emergencyContactName"
@@ -373,7 +384,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="emergencyContactPhone">Phone</Label>
+            <Label htmlFor="emergencyContactPhone">{t("phone")}</Label>
             <Input
               id="emergencyContactPhone"
               name="emergencyContactPhone"
@@ -384,10 +395,9 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="text-sm font-medium">Dojo locations</h3>
+        <h3 className="text-sm font-medium">{t("locations")}</h3>
         <p className="text-muted-foreground mb-2 text-xs">
-          Assign the student to one or more locations and choose their home
-          dojo.
+          {t("locationsHint")}
         </p>
         <div className="flex flex-col gap-2">
           <div className="grid gap-2 sm:grid-cols-2">
@@ -409,7 +419,10 @@ function StudentFormInner({
                   <span className="min-w-0 flex-1">
                     {location.name}
                     {location.isActive ? null : (
-                      <span className="text-muted-foreground"> (inactive)</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        {t("inactive")}
+                      </span>
                     )}
                   </span>
                 </label>
@@ -417,14 +430,11 @@ function StudentFormInner({
             })}
           </div>
           {locations.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No locations exist yet — create one under Settings → Locations
-              first.
-            </p>
+            <p className="text-muted-foreground text-sm">{t("noLocations")}</p>
           ) : null}
         </div>
         <div className="mt-4 grid max-w-xs gap-2">
-          <Label htmlFor="primaryLocationId">Primary (home) dojo</Label>
+          <Label htmlFor="primaryLocationId">{t("primary")}</Label>
           <select
             id="primaryLocationId"
             name="primaryLocationId"
@@ -432,7 +442,7 @@ function StudentFormInner({
             onChange={(event) => setPrimaryLocationId(event.target.value)}
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
           >
-            <option value="">Choose…</option>
+            <option value="">{t("choose")}</option>
             {locations
               .filter((location) => selectedLocationIds.includes(location.id))
               .map((location) => (
@@ -445,10 +455,9 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="text-sm font-medium">Disciplines</h3>
+        <h3 className="text-sm font-medium">{t("disciplines")}</h3>
         <p className="text-muted-foreground mb-2 text-xs">
-          Which arts the student trains — they appear in those progression
-          tables and hold a separate rank in each.
+          {t("disciplinesHint")}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
           {disciplines.map((discipline) => {
@@ -469,7 +478,10 @@ function StudentFormInner({
                 <span className="min-w-0 flex-1">
                   {discipline.name}
                   {discipline.isActive ? null : (
-                    <span className="text-muted-foreground"> (inactive)</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      {t("inactive")}
+                    </span>
                   )}
                 </span>
               </label>
@@ -477,19 +489,15 @@ function StudentFormInner({
           })}
         </div>
         {disciplines.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No disciplines exist yet — create one under Belts &amp; gradings
-            first.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("noDisciplines")}</p>
         ) : null}
       </div>
 
       {households.length > 0 ? (
         <div className="border-t pt-4">
-          <h3 className="mb-2 text-sm font-medium">Household</h3>
+          <h3 className="mb-2 text-sm font-medium">{t("household")}</h3>
           <p className="text-muted-foreground mb-2 text-xs">
-            Group siblings under one family contact (optional). Blank guardian
-            details are inherited from the household.
+            {t("householdHint")}
           </p>
           <select
             id="householdId"
@@ -497,7 +505,7 @@ function StudentFormInner({
             defaultValue={values?.householdId ?? ""}
             className="border-input bg-background h-9 w-full max-w-xs rounded-md border px-3 text-sm"
           >
-            <option value="">No household</option>
+            <option value="">{t("noHousehold")}</option>
             {households.map((household) => (
               <option key={household.id} value={household.id}>
                 {household.name}
@@ -508,12 +516,12 @@ function StudentFormInner({
       ) : null}
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">Photo</h3>
+        <h3 className="mb-2 text-sm font-medium">{t("photo")}</h3>
         {values?.photoKey ? (
           <div className="flex items-center gap-3">
             <img
               src={`/api/students/${values.id}/photo?v=${values.photoKey}`}
-              alt="Student photo"
+              alt={t("photoAlt")}
               className="size-16 rounded-md border object-cover"
             />
             <Button
@@ -528,12 +536,12 @@ function StudentFormInner({
                 if (input) input.value = "true";
               }}
             >
-              Remove photo
+              {t("removePhoto")}
             </Button>
           </div>
         ) : null}
         <div className="grid max-w-sm gap-2">
-          <Label htmlFor="photoFile">Upload photo</Label>
+          <Label htmlFor="photoFile">{t("uploadPhoto")}</Label>
           <Input
             id="photoFile"
             name="photoFile"
@@ -541,14 +549,12 @@ function StudentFormInner({
             accept="image/*"
             className="cursor-pointer"
           />
-          <p className="text-muted-foreground text-xs">
-            PNG, JPG, GIF, or WEBP up to 2 MB. Served only to signed-in staff.
-          </p>
+          <p className="text-muted-foreground text-xs">{t("photoHint")}</p>
         </div>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="notes">Notes</Label>
+        <Label htmlFor="notes">{t("notes")}</Label>
         <Textarea
           id="notes"
           name="notes"
@@ -565,7 +571,7 @@ function StudentFormInner({
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : submitLabel}
+          {isPending ? t("saving") : submitLabel}
         </Button>
       </div>
     </ActionForm>

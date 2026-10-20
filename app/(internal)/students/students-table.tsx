@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,11 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  STUDENT_STATUS_LABELS,
-  STUDENT_STATUSES,
-  type StudentStatus,
-} from "@/lib/schemas/student";
+import { STUDENT_STATUSES, type StudentStatus } from "@/lib/schemas/student";
 import {
   bulkAssignDisciplinesAction,
   bulkEnrollAction,
@@ -30,7 +27,6 @@ import {
   type BulkActionState,
 } from "@/lib/actions/students";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
-import { formatDate } from "@/lib/utils";
 
 type StudentRow = {
   id: string;
@@ -67,10 +63,6 @@ type StudentsTableProps = {
   plans: BulkOption[];
 };
 
-function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
-}
-
 export function StudentsTable({
   students,
   page,
@@ -82,6 +74,8 @@ export function StudentsTable({
   plans,
 }: StudentsTableProps) {
   const router = useRouter();
+  const t = useTranslations("Students");
+  const format = useFormatter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [statusState, statusAction, statusPending] = useActionState<
     BulkActionState,
@@ -152,16 +146,16 @@ export function StudentsTable({
               {canEdit ? (
                 <TableHead className="w-10">
                   <Checkbox
-                    aria-label="Select all students on this page"
+                    aria-label={t("table.selectAll")}
                     checked={allPageSelected}
                     onCheckedChange={toggleAll}
                   />
                 </TableHead>
               ) : null}
-              <TableHead>Student</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Home dojo</TableHead>
-              <TableHead>Joined</TableHead>
+              <TableHead>{t("table.student")}</TableHead>
+              <TableHead>{t("table.status")}</TableHead>
+              <TableHead>{t("table.homeDojo")}</TableHead>
+              <TableHead>{t("table.joined")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -170,7 +164,9 @@ export function StudentsTable({
                 {canEdit ? (
                   <TableCell>
                     <Checkbox
-                      aria-label={`Select ${student.firstName} ${student.lastName}`}
+                      aria-label={t("table.select", {
+                        name: `${student.firstName} ${student.lastName}`,
+                      })}
                       checked={selectedIds.has(student.id)}
                       onCheckedChange={() => toggleOne(student.id)}
                     />
@@ -207,7 +203,7 @@ export function StudentsTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANTS[student.status]}>
-                    {STUDENT_STATUS_LABELS[student.status]}
+                    {t(`status.${student.status}`)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-sm">
@@ -215,19 +211,23 @@ export function StudentsTable({
                   {student.locationCount > 1 ? (
                     <span className="text-muted-foreground">
                       {" "}
-                      +{student.locationCount - 1} more
+                      {t("table.more", { count: student.locationCount - 1 })}
                     </span>
                   ) : null}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {formatDate(student.joinedAt)}
+                  {format.dateTime(new Date(student.joinedAt), {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <p className="text-muted-foreground border-t px-4 py-2 text-xs">
-          Showing {start}–{end} of {totalCount} students
+          {t("table.showing", { start, end, total: totalCount })}
         </p>
       </div>
 
@@ -235,7 +235,7 @@ export function StudentsTable({
         <div className="bg-background fixed inset-x-0 bottom-0 z-40 border-t shadow-lg">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
             <span className="text-sm font-medium">
-              {selectedCount} selected
+              {t("table.selected", { count: selectedCount })}
             </span>
             <form action={statusAction} className="flex items-center gap-2">
               {Array.from(selectedIds).map((id) => (
@@ -246,14 +246,14 @@ export function StudentsTable({
                 required
                 defaultValue=""
                 className="border-input bg-background h-8 rounded-md border px-2 text-xs"
-                aria-label="Status to apply"
+                aria-label={t("table.statusAria")}
               >
                 <option value="" disabled>
-                  Set status…
+                  {t("table.setStatus")}
                 </option>
                 {STUDENT_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {STUDENT_STATUS_LABELS[status]}
+                    {t(`status.${status}`)}
                   </option>
                 ))}
               </select>
@@ -263,7 +263,7 @@ export function StudentsTable({
                 variant="outline"
                 disabled={statusPending}
               >
-                {statusPending ? "Applying…" : "Apply"}
+                {statusPending ? t("table.applying") : t("table.apply")}
               </Button>
             </form>
             {disciplines.length > 0 ? (
@@ -279,10 +279,10 @@ export function StudentsTable({
                   required
                   defaultValue=""
                   className="border-input bg-background h-8 rounded-md border px-2 text-xs"
-                  aria-label="Discipline to assign"
+                  aria-label={t("table.disciplineAria")}
                 >
                   <option value="" disabled>
-                    Assign discipline…
+                    {t("table.assignDiscipline")}
                   </option>
                   {disciplines.map((discipline) => (
                     <option key={discipline.id} value={discipline.id}>
@@ -296,7 +296,9 @@ export function StudentsTable({
                   variant="outline"
                   disabled={disciplinesPending}
                 >
-                  {disciplinesPending ? "Assigning…" : "Assign"}
+                  {disciplinesPending
+                    ? t("table.assigning")
+                    : t("table.assign")}
                 </Button>
               </form>
             ) : null}
@@ -310,10 +312,10 @@ export function StudentsTable({
                   required
                   defaultValue=""
                   className="border-input bg-background h-8 rounded-md border px-2 text-xs"
-                  aria-label="Plan to enroll"
+                  aria-label={t("table.planAria")}
                 >
                   <option value="" disabled>
-                    Enroll in plan…
+                    {t("table.enrollPlan")}
                   </option>
                   {plans.map((plan) => (
                     <option key={plan.id} value={plan.id}>
@@ -327,7 +329,7 @@ export function StudentsTable({
                   variant="outline"
                   disabled={enrollPending}
                 >
-                  {enrollPending ? "Enrolling…" : "Enroll"}
+                  {enrollPending ? t("table.enrolling") : t("table.enroll")}
                 </Button>
               </form>
             ) : null}
@@ -337,7 +339,7 @@ export function StudentsTable({
               variant="ghost"
               onClick={() => setSelectedIds(new Set())}
             >
-              Clear
+              {t("table.clear")}
             </Button>
           </div>
         </div>
