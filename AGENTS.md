@@ -39,8 +39,9 @@ plan without asking.
   surfaces: public booking, member portal, QR check-in, auth screens, the
   staff shell/dashboard, the full Students domain (list, form, detail,
   households, CSV import), Classes (courses + weekly schedule), Attendance
-  (browser, session sheets, backfill, CSV import), and Belts (disciplines,
-  ladder, progression, promotions, gradings, CSV import).
+  (browser, session sheets, backfill, CSV import), Belts (disciplines,
+  ladder, progression, promotions, gradings, CSV import), Memberships (plans,
+  enrollment import), and Invoices (list, detail, payments).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

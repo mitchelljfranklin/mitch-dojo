@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,8 @@ export function NewInvoiceSheet({
   plans,
   locations,
 }: NewInvoiceSheetProps) {
+  const translate = useTranslations("Memberships.invoices.new");
+  const formatter = useFormatter();
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
@@ -78,7 +81,7 @@ export function NewInvoiceSheet({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>New invoice</Button>
+      <Button onClick={() => setOpen(true)}>{translate("button")}</Button>
       <Sheet
         open={open}
         onOpenChange={(next) => {
@@ -87,11 +90,8 @@ export function NewInvoiceSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>New invoice</SheetTitle>
-            <SheetDescription>
-              Bill a plan manually — one-off items or a recurring cycle run
-              early.
-            </SheetDescription>
+            <SheetTitle>{translate("title")}</SheetTitle>
+            <SheetDescription>{translate("description")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -99,10 +99,10 @@ export function NewInvoiceSheet({
             className="flex flex-1 flex-col gap-4 px-4"
           >
             <div className="grid gap-2">
-              <Label htmlFor="invoice-student">Student</Label>
+              <Label htmlFor="invoice-student">{translate("student")}</Label>
               <Select name="studentId" required>
                 <SelectTrigger id="invoice-student">
-                  <SelectValue placeholder="Choose a student" />
+                  <SelectValue placeholder={translate("chooseStudent")} />
                 </SelectTrigger>
                 <SelectContent>
                   {students.map((student) => (
@@ -114,23 +114,27 @@ export function NewInvoiceSheet({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="invoice-plan">Plan</Label>
+              <Label htmlFor="invoice-plan">{translate("plan")}</Label>
               <Select name="planId" required>
                 <SelectTrigger id="invoice-plan">
-                  <SelectValue placeholder="Choose a plan" />
+                  <SelectValue placeholder={translate("choosePlan")} />
                 </SelectTrigger>
                 <SelectContent>
                   {plans.map((plan) => (
                     <SelectItem key={plan.id} value={plan.id}>
-                      {plan.name} ({(plan.priceCents / 100).toFixed(2)}{" "}
-                      {currency})
+                      {plan.name} (
+                      {formatter.number(plan.priceCents / 100, {
+                        style: "currency",
+                        currency,
+                      })}
+                      )
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="invoice-due">Due date</Label>
+              <Label htmlFor="invoice-due">{translate("due")}</Label>
               <Input
                 id="invoice-due"
                 name="dueDate"
@@ -140,13 +144,15 @@ export function NewInvoiceSheet({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="invoice-location">Location</Label>
+              <Label htmlFor="invoice-location">{translate("location")}</Label>
               <Select name="locationId" defaultValue="SCHOOL_WIDE">
                 <SelectTrigger id="invoice-location">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SCHOOL_WIDE">School-wide</SelectItem>
+                  <SelectItem value="SCHOOL_WIDE">
+                    {translate("schoolWide")}
+                  </SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
@@ -155,18 +161,17 @@ export function NewInvoiceSheet({
                 </SelectContent>
               </Select>
               <p className="text-muted-foreground text-xs">
-                Optional — tag the invoice to a dojo site for per-location
-                revenue. Recurring memberships stay school-wide.
+                {translate("locationHint")}
               </p>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="invoice-notes">Notes</Label>
+              <Label htmlFor="invoice-notes">{translate("notes")}</Label>
               <Textarea
                 id="invoice-notes"
                 name="notes"
                 maxLength={500}
                 rows={2}
-                placeholder="Optional"
+                placeholder={translate("notesPlaceholder")}
               />
             </div>
             {state && "error" in state ? (
@@ -182,11 +187,11 @@ export function NewInvoiceSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {translate("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Creating..." : "Create invoice"}
+                  {isPending ? translate("creating") : translate("create")}
                 </Button>
               )}
               <Button
@@ -194,7 +199,7 @@ export function NewInvoiceSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

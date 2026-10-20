@@ -325,6 +325,7 @@ export async function createInvoiceAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships.invoices.new");
 
   const parsed = invoiceSchema.safeParse({
     studentId: getField(formData, "studentId"),
@@ -333,7 +334,7 @@ export async function createInvoiceAction(
     notes: getField(formData, "notes") ?? "",
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   // Optional location: "SCHOOL_WIDE" is the picker's no-location value.
@@ -346,7 +347,7 @@ export async function createInvoiceAction(
       select: { id: true },
     });
     if (!location) {
-      return { error: "That location no longer exists." };
+      return { error: translate("locationMissing") };
     }
   }
 
@@ -367,20 +368,35 @@ export async function createInvoiceAction(
     `#${invoice.number}`,
     { studentId: parsed.data.studentId, planId: parsed.data.planId },
   );
-  return { ok: true, message: `Invoice #${invoice.number} created.` };
+  return {
+    ok: true,
+    message: translate("created", { number: invoice.number }),
+  };
 }
 
 export async function voidInvoiceAction(formData: FormData) {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships.invoices.detail");
   const invoiceId = getField(formData, "invoiceId");
 
   try {
     await voidInvoice(invoiceId);
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("cannot be voided")) {
-      redirect(
-        `/memberships/invoices/${invoiceId}?invoiceError=${encodeURIComponent(error.message)}`,
-      );
+    if (error instanceof Error) {
+      const errorKey = error.message.includes("paid invoice")
+        ? "voidPaid"
+        : error.message.includes("payments recorded")
+          ? "voidHasPayments"
+          : error.message.includes("not found")
+            ? "invoiceMissing"
+            : null;
+      if (errorKey) {
+        redirect(
+          `/memberships/invoices/${invoiceId}?invoiceError=${encodeURIComponent(
+            translate(errorKey),
+          )}`,
+        );
+      }
     }
     throw error;
   }
@@ -399,6 +415,7 @@ export async function recordPaymentAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships.invoices.record");
   const invoiceId = getField(formData, "invoiceId");
 
   const parsed = paymentSchema.safeParse({
@@ -408,7 +425,7 @@ export async function recordPaymentAction(
     reference: getField(formData, "reference") ?? "",
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   try {
@@ -422,8 +439,17 @@ export async function recordPaymentAction(
       recordedById: user.id,
     });
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("Invoice")) {
-      return { error: error.message };
+    if (error instanceof Error) {
+      const errorKey = error.message.includes("not found")
+        ? "invoiceMissing"
+        : error.message.includes("void")
+          ? "invoiceVoid"
+          : error.message.includes("exceeds")
+            ? "exceeds"
+            : null;
+      if (errorKey) {
+        return { error: translate(errorKey) };
+      }
     }
     throw error;
   }
@@ -432,7 +458,7 @@ export async function recordPaymentAction(
     amountCents: parsed.data.amount,
     method: parsed.data.method,
   });
-  return { ok: true, message: "Payment recorded." };
+  return { ok: true, message: translate("recordedPayment") };
 }
 
 export async function deletePaymentAction(formData: FormData) {
@@ -633,21 +659,22 @@ export async function recordBulkPaymentsAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   const actor = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships.invoices.bulk");
 
   const invoiceIds = formData.getAll("invoiceIds").map(String).filter(Boolean);
   if (invoiceIds.length === 0) {
-    return { error: "Select at least one invoice." };
+    return { error: translate("selectOne") };
   }
 
   const methodRaw = getField(formData, "method");
   if (!(PAYMENT_METHODS as readonly string[]).includes(methodRaw)) {
-    return { error: "Choose a payment method." };
+    return { error: translate("invalidMethod") };
   }
   const method = methodRaw as PaymentMethod;
 
   const paidAtRaw = getField(formData, "paidAt");
   if (!isValidIsoDateString(paidAtRaw)) {
-    return { error: "Enter a valid payment date." };
+    return { error: translate("invalidDate") };
   }
   const paidAt = new Date(`${paidAtRaw}T00:00:00.000Z`);
   const reference = getField(formData, "reference").trim() || null;
@@ -671,14 +698,13 @@ export async function recordBulkPaymentsAction(
   }
 
   if (result.recorded === 0) {
-    return {
-      error: "Nothing to record — those invoices are already settled.",
-    };
+    return { error: translate("nothing") };
   }
   return {
     ok: true,
-    message: `Recorded ${result.recorded} payment(s)${
-      result.skipped > 0 ? `; ${result.skipped} skipped` : ""
-    }.`,
+    message: translate("recorded", {
+      recorded: result.recorded,
+      skipped: result.skipped,
+    }),
   };
 }

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,13 +24,13 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { getInvoiceDetail } from "@/lib/db/memberships";
 import { getMembershipsSettings } from "@/lib/settings";
-import {
-  PAYMENT_METHOD_LABELS,
-  type PaymentMethod,
-} from "@/lib/schemas/membership";
-import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Memberships.invoices.detail");
+  return { title: translate("metaTitle") };
+}
 
 type InvoiceDetailPageProps = {
   params: Promise<{ invoiceId: string }>;
@@ -42,6 +44,22 @@ export default async function InvoiceDetailPage({
   const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
   const { currency } = await getMembershipsSettings();
+  const translate = await getTranslations("Memberships.invoices.detail");
+  const translateInvoices = await getTranslations("Memberships.invoices");
+  const translateMemberships = await getTranslations("Memberships");
+  const formatter = await getFormatter();
+  const formatMoney = (cents: number, displayCurrency = currency) =>
+    formatter.number(cents / 100, {
+      style: "currency",
+      currency: displayCurrency,
+    });
+  const formatDate = (value: Date) =>
+    formatter.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 
   const { invoiceId } = await params;
   const query = await searchParams;
@@ -54,8 +72,11 @@ export default async function InvoiceDetailPage({
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Memberships", href: "/memberships" },
-          { label: "Invoices", href: "/memberships/invoices" },
+          { label: translateMemberships("title"), href: "/memberships" },
+          {
+            label: translateInvoices("title"),
+            href: "/memberships/invoices",
+          },
           { label: `#${invoice.number}` },
         ]}
       />
@@ -66,11 +87,13 @@ export default async function InvoiceDetailPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Invoice #{invoice.number}
+            {translate("title", { number: invoice.number })}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             {invoice.isOverdue ? (
-              <Badge variant="destructive">Overdue</Badge>
+              <Badge variant="destructive">
+                {translateInvoices("status.OVERDUE")}
+              </Badge>
             ) : (
               <Badge
                 variant={
@@ -81,19 +104,21 @@ export default async function InvoiceDetailPage({
                       : "default"
                 }
               >
-                {invoice.status}
+                {translateInvoices(`status.${invoice.status}`)}
               </Badge>
             )}
             <span className="text-muted-foreground text-sm">
-              Issued {formatDateUtc(invoice.issueDate)} · Due{" "}
-              {formatDate(invoice.dueDate)}
+              {translate("issued", {
+                issued: formatDate(invoice.issueDate),
+                due: formatDate(invoice.dueDate),
+              })}
             </span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
             <a href={`/api/invoices/${invoice.id}/pdf`} download>
-              Download PDF
+              {translate("downloadPdf")}
             </a>
           </Button>
           {canEdit && invoice.status === "OPEN" ? (
@@ -108,13 +133,13 @@ export default async function InvoiceDetailPage({
             <form id={`void-invoice-${invoice.id}`} action={voidInvoiceAction}>
               <input type="hidden" name="invoiceId" value={invoice.id} />
               <ConfirmDialog
-                title={`Void invoice #${invoice.number}?`}
-                description="A voided invoice is kept for the record but can no longer receive payments."
-                confirmLabel="Void invoice"
+                title={translate("voidTitle", { number: invoice.number })}
+                description={translate("voidDescription")}
+                confirmLabel={translate("voidConfirm")}
                 formId={`void-invoice-${invoice.id}`}
               >
                 <Button type="button" variant="outline">
-                  Void
+                  {translate("void")}
                 </Button>
               </ConfirmDialog>
             </form>
@@ -125,7 +150,7 @@ export default async function InvoiceDetailPage({
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Billed to</CardTitle>
+            <CardTitle>{translate("billedTo")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             <Link
@@ -141,12 +166,14 @@ export default async function InvoiceDetailPage({
             ) : null}
             {invoice.location ? (
               <span className="text-muted-foreground text-xs">
-                Location: {invoice.location.name}
+                {translate("location", { name: invoice.location.name })}
               </span>
             ) : null}
             {invoice.enrollment ? (
               <span className="text-muted-foreground text-xs">
-                Enrollment: {invoice.enrollment.plan.name}
+                {translate("enrollment", {
+                  plan: invoice.enrollment.plan.name,
+                })}
               </span>
             ) : null}
             {invoice.notes ? (
@@ -159,13 +186,15 @@ export default async function InvoiceDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Summary</CardTitle>
+            <CardTitle>{translate("summary")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             {invoice.taxCents > 0 ? (
               <>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">
+                    {translate("subtotal")}
+                  </span>
                   <span>
                     {formatMoney(
                       invoice.financials.totalCents - invoice.taxCents,
@@ -175,24 +204,26 @@ export default async function InvoiceDetailPage({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    {invoice.taxLabel ?? "Tax"}
+                    {invoice.taxLabel ?? translate("tax")}
                   </span>
                   <span>{formatMoney(invoice.taxCents, currency)}</span>
                 </div>
               </>
             ) : null}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Total</span>
+              <span className="text-muted-foreground">
+                {translate("total")}
+              </span>
               <span>
                 {formatMoney(invoice.financials.totalCents, currency)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Paid</span>
+              <span className="text-muted-foreground">{translate("paid")}</span>
               <span>{formatMoney(invoice.financials.paidCents, currency)}</span>
             </div>
             <div className="flex justify-between border-t pt-2 font-medium">
-              <span>Balance</span>
+              <span>{translate("balance")}</span>
               <span>
                 {formatMoney(invoice.financials.balanceCents, currency)}
               </span>
@@ -203,7 +234,7 @@ export default async function InvoiceDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Line items</CardTitle>
+          <CardTitle>{translate("lineItems")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {invoice.items.map((item) => (
@@ -222,11 +253,13 @@ export default async function InvoiceDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Payments</CardTitle>
+          <CardTitle>{translate("payments")}</CardTitle>
           <CardDescription>
             {invoice.payments.length === 0
-              ? "No payments recorded yet."
-              : `${invoice.payments.length} payment${invoice.payments.length === 1 ? "" : "s"} recorded.`}
+              ? translate("noPayments")
+              : translate("paymentsRecorded", {
+                  count: invoice.payments.length,
+                })}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -240,16 +273,17 @@ export default async function InvoiceDetailPage({
                   {formatMoney(payment.amountCents, currency)}
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  {PAYMENT_METHOD_LABELS[payment.method as PaymentMethod] ??
-                    payment.method}{" "}
-                  · {formatDate(payment.paidAt)}
-                  {payment.recordedBy ? ` · by ${payment.recordedBy.name}` : ""}
+                  {translateInvoices(`paymentMethod.${payment.method}`)} ·{" "}
+                  {formatDate(payment.paidAt)}
+                  {payment.recordedBy
+                    ? ` · ${translate("by", { name: payment.recordedBy.name })}`
+                    : ""}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {payment.reference ? (
                   <span className="text-muted-foreground max-w-[14rem] truncate text-xs">
-                    Ref: {payment.reference}
+                    {translate("reference", { reference: payment.reference })}
                   </span>
                 ) : null}
                 {canEdit && invoice.status !== "VOID" ? (
@@ -260,9 +294,9 @@ export default async function InvoiceDetailPage({
                     <input type="hidden" name="paymentId" value={payment.id} />
                     <input type="hidden" name="invoiceId" value={invoice.id} />
                     <ConfirmDialog
-                      title="Delete payment?"
-                      description="The payment will be permanently removed and the invoice balance restored."
-                      confirmLabel="Delete"
+                      title={translate("deleteTitle")}
+                      description={translate("deleteDescription")}
+                      confirmLabel={translate("delete")}
                       formId={`delete-payment-${payment.id}`}
                     >
                       <Button
@@ -271,7 +305,7 @@ export default async function InvoiceDetailPage({
                         variant="ghost"
                         className="text-destructive"
                       >
-                        Delete
+                        {translate("delete")}
                       </Button>
                     </ConfirmDialog>
                   </form>

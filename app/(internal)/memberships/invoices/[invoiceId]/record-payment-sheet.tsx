@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +27,7 @@ import {
   recordPaymentAction,
   type MembershipActionState,
 } from "@/lib/actions/memberships";
-import {
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_METHODS,
-} from "@/lib/schemas/membership";
+import { PAYMENT_METHODS } from "@/lib/schemas/membership";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 type RecordPaymentSheetProps = {
@@ -52,6 +50,9 @@ export function RecordPaymentSheet({
   invoiceNumber,
   balanceCents,
 }: RecordPaymentSheetProps) {
+  const translate = useTranslations("Memberships.invoices.record");
+  const translateInvoices = useTranslations("Memberships.invoices");
+  const formatter = useFormatter();
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
@@ -63,7 +64,7 @@ export function RecordPaymentSheet({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Record payment</Button>
+      <Button onClick={() => setOpen(true)}>{translate("record")}</Button>
       <Sheet
         open={open}
         onOpenChange={(next) => {
@@ -72,9 +73,16 @@ export function RecordPaymentSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Record payment — #{invoiceNumber}</SheetTitle>
+            <SheetTitle>
+              {translate("title", { number: invoiceNumber })}
+            </SheetTitle>
             <SheetDescription>
-              Outstanding balance: {(balanceCents / 100).toFixed(2)} {currency}
+              {translate("balance", {
+                amount: formatter.number(balanceCents / 100, {
+                  style: "currency",
+                  currency,
+                }),
+              })}
             </SheetDescription>
           </SheetHeader>
           <ActionForm
@@ -84,7 +92,9 @@ export function RecordPaymentSheet({
           >
             <input type="hidden" name="invoiceId" value={invoiceId} />
             <div className="grid gap-2">
-              <Label htmlFor="payment-amount">Amount ({currency})</Label>
+              <Label htmlFor="payment-amount">
+                {translate("amount", { currency })}
+              </Label>
               <Input
                 id="payment-amount"
                 name="amount"
@@ -94,7 +104,7 @@ export function RecordPaymentSheet({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="payment-method">Method</Label>
+              <Label htmlFor="payment-method">{translate("method")}</Label>
               <Select name="method" defaultValue="CASH">
                 <SelectTrigger id="payment-method">
                   <SelectValue />
@@ -102,14 +112,14 @@ export function RecordPaymentSheet({
                 <SelectContent>
                   {PAYMENT_METHODS.map((method) => (
                     <SelectItem key={method} value={method}>
-                      {PAYMENT_METHOD_LABELS[method]}
+                      {translateInvoices(`paymentMethod.${method}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="payment-date">Payment date</Label>
+              <Label htmlFor="payment-date">{translate("date")}</Label>
               <Input
                 id="payment-date"
                 name="paidAt"
@@ -119,12 +129,14 @@ export function RecordPaymentSheet({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="payment-reference">Reference</Label>
+              <Label htmlFor="payment-reference">
+                {translate("reference")}
+              </Label>
               <Input
                 id="payment-reference"
                 name="reference"
                 maxLength={120}
-                placeholder="Optional — e.g. bank transfer reference"
+                placeholder={translate("referencePlaceholder")}
               />
             </div>
             {state && "error" in state ? (
@@ -140,11 +152,11 @@ export function RecordPaymentSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {translate("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Recording..." : "Record payment"}
+                  {isPending ? translate("recording") : translate("record")}
                 </Button>
               )}
               <Button
@@ -152,7 +164,7 @@ export function RecordPaymentSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

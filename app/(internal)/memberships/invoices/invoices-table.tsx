@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useActionState } from "react";
 import Link from "next/link";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,11 +38,7 @@ import {
   type MembershipActionState,
   recordBulkPaymentsAction,
 } from "@/lib/actions/memberships";
-import {
-  PAYMENT_METHODS,
-  PAYMENT_METHOD_LABELS,
-} from "@/lib/schemas/membership";
-import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
+import { PAYMENT_METHODS } from "@/lib/schemas/membership";
 
 export type InvoiceRowView = {
   id: string;
@@ -55,12 +52,6 @@ export type InvoiceRowView = {
   isOverdue: boolean;
   totalCents: number;
   balanceCents: number;
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: "Open",
-  PAID: "Paid",
-  VOID: "Void",
 };
 
 function statusBadgeVariant(status: string) {
@@ -89,8 +80,23 @@ export function InvoicesTable({
   currency: string;
   canEdit: boolean;
 }) {
+  const translate = useTranslations("Memberships.invoices");
+  const formatter = useFormatter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const formatDate = (value: string) =>
+    formatter.dateTime(new Date(value), {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  const formatMoney = (cents: number, displayCurrency = currency) =>
+    formatter.number(cents / 100, {
+      style: "currency",
+      currency: displayCurrency,
+    });
 
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
@@ -122,7 +128,7 @@ export function InvoicesTable({
       {canEdit && selected.size > 0 ? (
         <div className="bg-muted/50 flex flex-wrap items-center justify-between gap-3 rounded-md border p-3">
           <span className="text-sm font-medium">
-            {selected.size} invoice{selected.size === 1 ? "" : "s"} selected
+            {translate("selected", { count: selected.size })}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -130,10 +136,10 @@ export function InvoicesTable({
               size="sm"
               onClick={() => setSelected(new Set())}
             >
-              Clear
+              {translate("clear")}
             </Button>
             <Button size="sm" onClick={() => setSheetOpen(true)}>
-              Record payment
+              {translate("recordPayment")}
             </Button>
           </div>
         </div>
@@ -145,20 +151,24 @@ export function InvoicesTable({
             {canEdit ? (
               <TableHead className="w-10">
                 <Checkbox
-                  aria-label="Select all open invoices"
+                  aria-label={translate("table.selectAll")}
                   checked={allSelected}
                   onCheckedChange={(checked) => toggleAll(checked === true)}
                   disabled={selectableIds.length === 0}
                 />
               </TableHead>
             ) : null}
-            <TableHead className="w-20">#</TableHead>
-            <TableHead>Student</TableHead>
-            <TableHead>Issued</TableHead>
-            <TableHead>Due</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Total</TableHead>
-            <TableHead className="text-right">Balance</TableHead>
+            <TableHead className="w-20">{translate("table.number")}</TableHead>
+            <TableHead>{translate("table.student")}</TableHead>
+            <TableHead>{translate("table.issued")}</TableHead>
+            <TableHead>{translate("table.due")}</TableHead>
+            <TableHead>{translate("table.status")}</TableHead>
+            <TableHead className="text-right">
+              {translate("table.total")}
+            </TableHead>
+            <TableHead className="text-right">
+              {translate("table.balance")}
+            </TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -169,7 +179,9 @@ export function InvoicesTable({
                 <TableCell>
                   {isSelectable(row) ? (
                     <Checkbox
-                      aria-label={`Select invoice ${row.number}`}
+                      aria-label={translate("table.selectInvoice", {
+                        number: row.number,
+                      })}
                       checked={selected.has(row.id)}
                       onCheckedChange={(checked) =>
                         toggleOne(row.id, checked === true)
@@ -199,14 +211,16 @@ export function InvoicesTable({
                   </span>
                 ) : null}
               </TableCell>
-              <TableCell>{formatDateUtc(row.issueDate)}</TableCell>
+              <TableCell>{formatDate(row.issueDate)}</TableCell>
               <TableCell>{formatDate(row.dueDate)}</TableCell>
               <TableCell>
                 {row.isOverdue ? (
-                  <Badge variant="destructive">Overdue</Badge>
+                  <Badge variant="destructive">
+                    {translate("status.OVERDUE")}
+                  </Badge>
                 ) : (
                   <Badge variant={statusBadgeVariant(row.status)}>
-                    {STATUS_LABELS[row.status] ?? row.status}
+                    {translate(`status.${row.status}`)}
                   </Badge>
                 )}
               </TableCell>
@@ -218,7 +232,9 @@ export function InvoicesTable({
               </TableCell>
               <TableCell className="text-right">
                 <Button asChild variant="ghost" size="sm">
-                  <Link href={`/memberships/invoices/${row.id}`}>Open</Link>
+                  <Link href={`/memberships/invoices/${row.id}`}>
+                    {translate("table.open")}
+                  </Link>
                 </Button>
               </TableCell>
             </TableRow>
@@ -237,11 +253,8 @@ export function InvoicesTable({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Record payment</SheetTitle>
-            <SheetDescription>
-              Records the full outstanding balance of each selected invoice with
-              the same method and date.
-            </SheetDescription>
+            <SheetTitle>{translate("bulk.title")}</SheetTitle>
+            <SheetDescription>{translate("bulk.description")}</SheetDescription>
           </SheetHeader>
           <form
             key={sheetOpen ? "open" : "closed"}
@@ -252,7 +265,7 @@ export function InvoicesTable({
               <input key={id} type="hidden" name="invoiceIds" value={id} />
             ))}
             <div className="grid gap-2">
-              <Label htmlFor="bulk-method">Method</Label>
+              <Label htmlFor="bulk-method">{translate("bulk.method")}</Label>
               <Select name="method" defaultValue="CASH">
                 <SelectTrigger id="bulk-method">
                   <SelectValue />
@@ -260,14 +273,14 @@ export function InvoicesTable({
                 <SelectContent>
                   {PAYMENT_METHODS.map((method) => (
                     <SelectItem key={method} value={method}>
-                      {PAYMENT_METHOD_LABELS[method]}
+                      {translate(`paymentMethod.${method}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="bulk-paidAt">Date</Label>
+              <Label htmlFor="bulk-paidAt">{translate("bulk.date")}</Label>
               <Input
                 id="bulk-paidAt"
                 name="paidAt"
@@ -277,7 +290,9 @@ export function InvoicesTable({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="bulk-reference">Reference (optional)</Label>
+              <Label htmlFor="bulk-reference">
+                {translate("bulk.reference")}
+              </Label>
               <Input id="bulk-reference" name="reference" maxLength={120} />
             </div>
             {state && "error" in state ? (
@@ -299,7 +314,7 @@ export function InvoicesTable({
                     setSheetOpen(false);
                   }}
                 >
-                  Done
+                  {translate("bulk.done")}
                 </Button>
               ) : (
                 <Button
@@ -307,10 +322,8 @@ export function InvoicesTable({
                   disabled={isPending || selected.size === 0}
                 >
                   {isPending
-                    ? "Recording..."
-                    : `Record ${selected.size} payment${
-                        selected.size === 1 ? "" : "s"
-                      }`}
+                    ? translate("bulk.recording")
+                    : translate("bulk.record", { count: selected.size })}
                 </Button>
               )}
               <Button
@@ -318,7 +331,7 @@ export function InvoicesTable({
                 variant="outline"
                 onClick={() => setSheetOpen(false)}
               >
-                Cancel
+                {translate("bulk.cancel")}
               </Button>
             </SheetFooter>
           </form>
