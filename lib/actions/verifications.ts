@@ -3,6 +3,7 @@
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -154,6 +155,7 @@ export async function saveTrainerVerificationAction(
   formData: FormData,
 ): Promise<VerificationActionState> {
   const actor = await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const translate = await getTranslations("Trainers.verifications");
 
   const parsed = verificationRecordSchema.safeParse({
     trainerId: getField(formData, "trainerId"),
@@ -164,7 +166,7 @@ export async function saveTrainerVerificationAction(
     notes: getField(formData, "notes"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   // Optional scanned document.
@@ -172,15 +174,15 @@ export async function saveTrainerVerificationAction(
   const file = formData.get("document");
   if (file instanceof File && file.size > 0) {
     if (file.size > MAX_ATTACHMENT_BYTES) {
-      return { error: "The document is too large (max 20 MB)." };
+      return { error: translate("tooLarge") };
     }
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     if (!ALLOWED_ATTACHMENT_EXTS.has(ext)) {
-      return { error: `File type .${ext} is not allowed.` };
+      return { error: translate("fileType", { extension: ext }) };
     }
     const buffer = Buffer.from(await file.arrayBuffer());
     if (!validateMagicBytes(ext, buffer)) {
-      return { error: "File content does not match its extension." };
+      return { error: translate("fileContent") };
     }
     documentKey = `trainer-verification-${randomBytes(12).toString("hex")}.${ext}`;
     await storage.save(documentKey, buffer);
@@ -210,7 +212,7 @@ export async function saveTrainerVerificationAction(
     { typeId: parsed.data.typeId, expiresAt: parsed.data.expiresAt },
   );
   // State-fed — client refreshes via useActionFeedback.
-  return { ok: true, message: "Verification saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function deleteTrainerVerificationAction(
@@ -218,6 +220,7 @@ export async function deleteTrainerVerificationAction(
   formData: FormData,
 ): Promise<VerificationActionState> {
   const actor = await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const translate = await getTranslations("Trainers.verifications");
   const verificationId = getField(formData, "verificationId");
 
   const { documentKey } = await deleteTrainerVerification(verificationId);
@@ -231,5 +234,5 @@ export async function deleteTrainerVerificationAction(
     undefined,
     { verificationId },
   );
-  return { ok: true, message: "Verification removed." };
+  return { ok: true, message: translate("removed") };
 }

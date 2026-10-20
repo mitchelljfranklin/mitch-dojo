@@ -1172,6 +1172,146 @@
       "more": " …"
     }
   },
+  "Trials": {
+    "metaTitle": "Trials",
+    "title": "Trials",
+    "subtitle": "Trial pipeline — move leads through contact, first class, and conversion.",
+    "actions": {
+      "openBooking": "Open booking page"
+    },
+    "stats": {
+      "open": "Open trials",
+      "converted": "Converted this month",
+      "conversionRate": "Conversion rate"
+    },
+    "filters": {
+      "all": "All"
+    },
+    "stages": {
+      "NEW": "New",
+      "CONTACTED": "Contacted",
+      "FIRST_CLASS": "First class",
+      "CONVERTED": "Converted",
+      "LOST": "Lost"
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "lost": "{count, plural, one {# lost trial} other {# lost trials}} on record.",
+      "noLost": "No lost trials on record.",
+      "empty": "No trials in this view yet. Website bookings land here as \"New\".",
+      "lead": "Lead",
+      "stage": "Stage",
+      "inTrial": "In trial",
+      "lastClass": "Last class",
+      "contact": "Contact",
+      "moveTo": "Move to",
+      "movePlaceholder": "Move to…",
+      "apply": "Apply",
+      "noLocation": "No location",
+      "days": "{count}d"
+    },
+    "convert": {
+      "button": "Convert",
+      "title": "Convert {name}",
+      "description": "Flips the trial to an active member. Optionally enroll them in a plan and create the first invoice in the same step.",
+      "plan": "Plan (optional)",
+      "noEnrollment": "No enrollment now",
+      "periodSuffix": "/{period}",
+      "createInvoice": "Create the first invoice now (standard due window)",
+      "noPlans": "No active plans yet — create one under Memberships to enroll on conversion.",
+      "converting": "Converting…",
+      "submit": "Convert trial",
+      "invalid": "This trial can no longer be converted.",
+      "partial": "Converted, but the enrollment or invoice failed — enroll and bill manually from the student record.",
+      "converted": "Trial converted.",
+      "convertedEnrolled": "Trial converted and enrolled.",
+      "convertedInvoiced": "Trial converted, enrolled, and first invoice created."
+    }
+  },
+  "Trainers": {
+    "metaTitle": "Trainers",
+    "title": "Trainers",
+    "subtitle": "Instructors who run your classes. Some may also have staff accounts.",
+    "actions": {
+      "viewCourses": "View courses",
+      "schedule": "Weekly schedule"
+    },
+    "manager": {
+      "searchAria": "Search trainers",
+      "searchPlaceholder": "Search trainers…",
+      "new": "New trainer",
+      "empty": "No trainers yet.",
+      "noMatch": "No trainers match your search.",
+      "courseCount": "{count, plural, one {# course} other {# courses}}",
+      "expired": "{count} expired",
+      "expiring": "{count} expiring",
+      "missing": "{count} missing",
+      "hasAccount": "Has account",
+      "inactive": "Inactive",
+      "noEmail": "No email",
+      "addTitle": "Add trainer",
+      "addDescription": "Add an instructor to your roster.",
+      "taught": "{count, plural, one {# course taught} other {# courses taught}}"
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "bio": "Bio",
+      "linkedAccount": "Linked staff account",
+      "optional": "(optional)",
+      "noAccount": "No account",
+      "linkHint": "Linking an account lets this trainer sign in. Their permissions come from the account's role, not from being a trainer.",
+      "active": "Active",
+      "creating": "Creating...",
+      "create": "Create trainer",
+      "saving": "Saving...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "danger": "Danger zone",
+      "delete": "Delete trainer",
+      "deleteHint": "Courses taught by this trainer keep existing but lose their trainer assignment.",
+      "verifications": "Verifications",
+      "created": "Trainer created.",
+      "updated": "Trainer updated.",
+      "invalid": "Check the trainer details and try again.",
+      "duplicate": "That email or linked account is already in use."
+    },
+    "verifications": {
+      "status": {
+        "VALID": "Valid",
+        "EXPIRING": "Expiring soon",
+        "EXPIRED": "Expired",
+        "MISSING": "Not recorded"
+      },
+      "record": "Record",
+      "edit": "Edit",
+      "defaultDescription": "Record the credential details for this trainer.",
+      "reference": "Reference / number",
+      "issued": "Issued",
+      "expires": "Expires",
+      "expiresOptional": "Expires (optional)",
+      "document": "Document (optional)",
+      "documentHint": "A file is on record — uploading a new one replaces it.",
+      "notes": "Notes",
+      "saving": "Saving...",
+      "save": "Save",
+      "done": "Done",
+      "cancel": "Cancel",
+      "remove": "Remove",
+      "required": "Required",
+      "noReference": "No reference",
+      "expiresOn": "expires {date}",
+      "loading": "Loading verifications…",
+      "empty": "No verification types configured. Add some under Admin → Verifications.",
+      "saved": "Verification saved.",
+      "removed": "Verification removed.",
+      "tooLarge": "The document is too large (max 20 MB).",
+      "fileType": "File type .{extension} is not allowed.",
+      "fileContent": "File content does not match its extension.",
+      "invalid": "Check the verification details and try again."
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

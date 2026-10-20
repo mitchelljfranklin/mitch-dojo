@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,20 +30,15 @@ import {
 } from "@/lib/db/trials";
 import { setTrialStageAction } from "@/lib/actions/trials";
 import { listActivePlansForSelection } from "@/lib/db/memberships";
+import { getMembershipsSettings } from "@/lib/settings";
 import { ConvertTrialSheet } from "./convert-trial-sheet";
-import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Trials" };
-
-const STAGE_LABELS: Record<TrialStageValue, string> = {
-  NEW: "New",
-  CONTACTED: "Contacted",
-  FIRST_CLASS: "First class",
-  CONVERTED: "Converted",
-  LOST: "Lost",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Trials");
+  return { title: translate("metaTitle") };
+}
 
 // Pipeline order: active stages first, closed at the bottom.
 const STAGE_ORDER: TrialStageValue[] = [
@@ -67,6 +64,9 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
   const canBill = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
   const query = await searchParams;
+  const translate = await getTranslations("Trials");
+  const formatter = await getFormatter();
+  const { currency } = await getMembershipsSettings();
   const stageFilter = STAGE_ORDER.find((stage) => stage === query.stage);
 
   const { rows, convertedThisMonth, lostCount } = await listTrials();
@@ -83,30 +83,40 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
   const closed = convertedThisMonth + lostCount;
   const conversionRate =
     closed > 0 ? Math.round((convertedThisMonth / closed) * 100) : null;
+  const formatDate = (value: Date) =>
+    formatter.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: "Trials" }]} />
+      <Breadcrumbs segments={[{ label: translate("title") }]} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Trials</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {translate("title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            Trial pipeline — move leads through contact, first class, and
-            conversion.
+            {translate("subtitle")}
           </p>
         </div>
         <Button asChild variant="outline">
           <Link href="/book" target="_blank">
-            Open booking page
+            {translate("actions.openBooking")}
           </Link>
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Open trials" value={openTrials} />
-        <StatCard label="Converted this month" value={convertedThisMonth} />
+        <StatCard label={translate("stats.open")} value={openTrials} />
         <StatCard
-          label="Conversion rate"
+          label={translate("stats.converted")}
+          value={convertedThisMonth}
+        />
+        <StatCard
+          label={translate("stats.conversionRate")}
           value={conversionRate ?? 0}
           format={conversionRate === null ? "number" : "percent"}
         />
@@ -114,12 +124,14 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
 
       <div className="flex flex-wrap items-center gap-2">
         <Link href="/trials">
-          <Badge variant={stageFilter ? "outline" : "default"}>All</Badge>
+          <Badge variant={stageFilter ? "outline" : "default"}>
+            {translate("filters.all")}
+          </Badge>
         </Link>
         {STAGE_ORDER.map((stage) => (
           <Link key={stage} href={`/trials?stage=${stage}`}>
             <Badge variant={stageFilter === stage ? "default" : "outline"}>
-              {STAGE_LABELS[stage]}
+              {translate(`stages.${stage}`)}
             </Badge>
           </Link>
         ))}
@@ -127,29 +139,30 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pipeline</CardTitle>
+          <CardTitle>{translate("pipeline.title")}</CardTitle>
           <CardDescription>
             {lostCount > 0
-              ? `${lostCount} lost trial${lostCount === 1 ? "" : "s"} on record.`
-              : "No lost trials on record."}
+              ? translate("pipeline.lost", { count: lostCount })
+              : translate("pipeline.noLost")}
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
           {visible.length === 0 ? (
             <p className="text-muted-foreground py-6 text-center text-sm">
-              No trials in this view yet. Website bookings land here as
-              &quot;New&quot;.
+              {translate("pipeline.empty")}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Lead</TableHead>
-                  <TableHead>Stage</TableHead>
-                  <TableHead>In trial</TableHead>
-                  <TableHead>Last class</TableHead>
-                  <TableHead>Contact</TableHead>
-                  {canEdit ? <TableHead>Move to</TableHead> : null}
+                  <TableHead>{translate("pipeline.lead")}</TableHead>
+                  <TableHead>{translate("pipeline.stage")}</TableHead>
+                  <TableHead>{translate("pipeline.inTrial")}</TableHead>
+                  <TableHead>{translate("pipeline.lastClass")}</TableHead>
+                  <TableHead>{translate("pipeline.contact")}</TableHead>
+                  {canEdit ? (
+                    <TableHead>{translate("pipeline.moveTo")}</TableHead>
+                  ) : null}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,16 +176,19 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
                         {trial.name}
                       </Link>
                       <div className="text-muted-foreground text-xs">
-                        {trial.locationNames.join(", ") || "No location"}
+                        {trial.locationNames.join(", ") ||
+                          translate("pipeline.noLocation")}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={stageBadgeVariant(trial.stage)}>
-                        {STAGE_LABELS[trial.stage]}
+                        {translate(`stages.${trial.stage}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="tabular-nums">
-                      {trial.daysInTrial}d
+                      {translate("pipeline.days", {
+                        count: trial.daysInTrial,
+                      })}
                     </TableCell>
                     <TableCell>
                       {trial.lastAttendedAt
@@ -206,12 +222,12 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
                                 className="border-input bg-background h-8 rounded-md border px-2 text-xs"
                               >
                                 <option value="" disabled>
-                                  Move to…
+                                  {translate("pipeline.movePlaceholder")}
                                 </option>
                                 {TRIAL_STAGE_TRANSITIONS[trial.stage].map(
                                   (stage) => (
                                     <option key={stage} value={stage}>
-                                      {STAGE_LABELS[stage]}
+                                      {translate(`stages.${stage}`)}
                                     </option>
                                   ),
                                 )}
@@ -222,7 +238,7 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
                                 variant="outline"
                                 className="h-8 px-2 text-xs"
                               >
-                                Apply
+                                {translate("pipeline.apply")}
                               </Button>
                             </form>
                             {TRIAL_STAGE_TRANSITIONS[trial.stage].includes(
@@ -233,6 +249,7 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
                                 studentName={trial.name}
                                 plans={plans}
                                 canBill={canBill}
+                                currency={currency}
                               />
                             ) : null}
                           </div>

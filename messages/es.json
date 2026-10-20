@@ -1172,6 +1172,146 @@
       "more": " …"
     }
   },
+  "Trials": {
+    "metaTitle": "Pruebas",
+    "title": "Pruebas",
+    "subtitle": "Embudo de pruebas — mueve a los interesados por contacto, primera clase y conversión.",
+    "actions": {
+      "openBooking": "Abrir página de reservas"
+    },
+    "stats": {
+      "open": "Pruebas abiertas",
+      "converted": "Convertidos este mes",
+      "conversionRate": "Tasa de conversión"
+    },
+    "filters": {
+      "all": "Todas"
+    },
+    "stages": {
+      "NEW": "Nueva",
+      "CONTACTED": "Contactado",
+      "FIRST_CLASS": "Primera clase",
+      "CONVERTED": "Convertido",
+      "LOST": "Perdido"
+    },
+    "pipeline": {
+      "title": "Embudo",
+      "lost": "{count, plural, one {# prueba perdida registrada.} other {# pruebas perdidas registradas.}}",
+      "noLost": "No hay pruebas perdidas registradas.",
+      "empty": "Aún no hay pruebas en esta vista. Las reservas del sitio web aparecen aquí como «Nueva».",
+      "lead": "Interesado",
+      "stage": "Etapa",
+      "inTrial": "En prueba",
+      "lastClass": "Última clase",
+      "contact": "Contacto",
+      "moveTo": "Mover a",
+      "movePlaceholder": "Mover a…",
+      "apply": "Aplicar",
+      "noLocation": "Sin sede",
+      "days": "{count}d"
+    },
+    "convert": {
+      "button": "Convertir",
+      "title": "Convertir a {name}",
+      "description": "Convierte la prueba en socio activo. Opcionalmente inscríbelo en un plan y crea la primera factura en el mismo paso.",
+      "plan": "Plan (opcional)",
+      "noEnrollment": "Sin inscripción ahora",
+      "periodSuffix": "/{period}",
+      "createInvoice": "Crear la primera factura ahora (plazo estándar)",
+      "noPlans": "Aún no hay planes activos — crea uno en Membresías para inscribirlo al convertir.",
+      "converting": "Convirtiendo…",
+      "submit": "Convertir prueba",
+      "invalid": "Esta prueba ya no se puede convertir.",
+      "partial": "Convertido, pero falló la inscripción o la factura — inscríbelo y factúralo manualmente desde la ficha del alumno.",
+      "converted": "Prueba convertida.",
+      "convertedEnrolled": "Prueba convertida e inscrita.",
+      "convertedInvoiced": "Prueba convertida, inscrita y primera factura creada."
+    }
+  },
+  "Trainers": {
+    "metaTitle": "Instructores",
+    "title": "Instructores",
+    "subtitle": "Instructores que imparten tus clases. Algunos también pueden tener cuentas de personal.",
+    "actions": {
+      "viewCourses": "Ver cursos",
+      "schedule": "Horario semanal"
+    },
+    "manager": {
+      "searchAria": "Buscar instructores",
+      "searchPlaceholder": "Buscar instructores…",
+      "new": "Nuevo instructor",
+      "empty": "Aún no hay instructores.",
+      "noMatch": "Ningún instructor coincide con la búsqueda.",
+      "courseCount": "{count, plural, one {# curso} other {# cursos}}",
+      "expired": "{count, plural, one {# caducado} other {# caducados}}",
+      "expiring": "{count, plural, one {# por caducar} other {# por caducar}}",
+      "missing": "{count, plural, one {# faltante} other {# faltantes}}",
+      "hasAccount": "Con cuenta",
+      "inactive": "Inactivo",
+      "noEmail": "Sin correo",
+      "addTitle": "Añadir instructor",
+      "addDescription": "Añade un instructor a tu plantilla.",
+      "taught": "{count, plural, one {# curso impartido} other {# cursos impartidos}}"
+    },
+    "form": {
+      "name": "Nombre",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "bio": "Biografía",
+      "linkedAccount": "Cuenta de personal vinculada",
+      "optional": "(opcional)",
+      "noAccount": "Sin cuenta",
+      "linkHint": "Vincular una cuenta permite que este instructor inicie sesión. Sus permisos provienen del rol de la cuenta, no de ser instructor.",
+      "active": "Activo",
+      "creating": "Creando...",
+      "create": "Crear instructor",
+      "saving": "Guardando...",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "danger": "Zona de peligro",
+      "delete": "Eliminar instructor",
+      "deleteHint": "Los cursos impartidos por este instructor se conservan, pero pierden la asignación de instructor.",
+      "verifications": "Verificaciones",
+      "created": "Instructor creado.",
+      "updated": "Instructor actualizado.",
+      "invalid": "Revisa los datos del instructor e inténtalo de nuevo.",
+      "duplicate": "Ese correo o cuenta vinculada ya está en uso."
+    },
+    "verifications": {
+      "status": {
+        "VALID": "Válido",
+        "EXPIRING": "Por caducar",
+        "EXPIRED": "Caducado",
+        "MISSING": "Sin registrar"
+      },
+      "record": "Registrar",
+      "edit": "Editar",
+      "defaultDescription": "Registra los datos de la credencial de este instructor.",
+      "reference": "Referencia / número",
+      "issued": "Emitido",
+      "expires": "Caduca",
+      "expiresOptional": "Caduca (opcional)",
+      "document": "Documento (opcional)",
+      "documentHint": "Hay un archivo registrado — subir uno nuevo lo sustituye.",
+      "notes": "Notas",
+      "saving": "Guardando...",
+      "save": "Guardar",
+      "done": "Hecho",
+      "cancel": "Cancelar",
+      "remove": "Quitar",
+      "required": "Obligatorio",
+      "noReference": "Sin referencia",
+      "expiresOn": "caduca {date}",
+      "loading": "Cargando verificaciones…",
+      "empty": "No hay tipos de verificación configurados. Añádelos en Administración → Verificaciones.",
+      "saved": "Verificación guardada.",
+      "removed": "Verificación eliminada.",
+      "tooLarge": "El documento es demasiado grande (máx. 20 MB).",
+      "fileType": "El tipo de archivo .{extension} no está permitido.",
+      "fileContent": "El contenido del archivo no coincide con su extensión.",
+      "invalid": "Revisa los datos de la verificación e inténtalo de nuevo."
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

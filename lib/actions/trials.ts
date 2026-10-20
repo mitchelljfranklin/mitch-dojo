@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -67,6 +68,7 @@ export async function convertTrialAction(
   formData: FormData,
 ): Promise<ConvertTrialState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const translate = await getTranslations("Trials.convert");
   const studentId = getField(formData, "studentId");
   const planId = getField(formData, "planId");
   const createFirstInvoice = getField(formData, "createFirstInvoice") === "on";
@@ -76,7 +78,7 @@ export async function convertTrialAction(
     select: { trialStage: true },
   });
   if (!current?.trialStage || !canTransition(current.trialStage, "CONVERTED")) {
-    return { ok: false, message: "This trial can no longer be converted." };
+    return { ok: false, message: translate("invalid") };
   }
 
   const canBill = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
@@ -127,8 +129,7 @@ export async function convertTrialAction(
       );
       return {
         ok: false,
-        message:
-          "Converted, but the enrollment or invoice failed — enroll and bill manually from the student record.",
+        message: translate("partial"),
       };
     }
   }
@@ -145,9 +146,9 @@ export async function convertTrialAction(
   return {
     ok: true,
     message: createInvoiceNow
-      ? "Trial converted, enrolled, and first invoice created."
+      ? translate("convertedInvoiced")
       : usePlan
-        ? "Trial converted and enrolled."
-        : "Trial converted.",
+        ? translate("convertedEnrolled")
+        : translate("converted"),
   };
 }

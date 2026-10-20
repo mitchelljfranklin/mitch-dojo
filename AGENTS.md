@@ -41,7 +41,8 @@ plan without asking.
   households, CSV import), Classes (courses + weekly schedule), Attendance
   (browser, session sheets, backfill, CSV import), Belts (disciplines,
   ladder, progression, promotions, gradings, CSV import), Memberships (plans,
-  enrollment import), and Invoices (list, detail, payments).
+  enrollment import), Invoices (list, detail, payments), Trials (pipeline,
+  conversion), and Trainers (roster, verifications).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

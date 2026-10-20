@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,18 +42,19 @@ type ConvertTrialSheetProps = {
   studentName: string;
   plans: PlanOption[];
   canBill: boolean;
+  currency: string;
 };
-
-function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
-}
 
 export function ConvertTrialSheet({
   studentId,
   studentName,
   plans,
   canBill,
+  currency,
 }: ConvertTrialSheetProps) {
+  const translate = useTranslations("Trials.convert");
+  const translateMemberships = useTranslations("Memberships");
+  const formatter = useFormatter();
   const [open, setOpen] = useState(false);
   const [planId, setPlanId] = useState("");
   const [state, formAction, isPending] = useActionState<
@@ -69,7 +71,7 @@ export function ConvertTrialSheet({
         variant="secondary"
         onClick={() => setOpen(true)}
       >
-        Convert
+        {translate("button")}
       </Button>
       <Sheet
         open={open}
@@ -84,11 +86,8 @@ export function ConvertTrialSheet({
           className="w-full overflow-y-auto sm:max-w-md"
         >
           <SheetHeader>
-            <SheetTitle>Convert {studentName}</SheetTitle>
-            <SheetDescription>
-              Flips the trial to an active member. Optionally enroll them in a
-              plan and create the first invoice in the same step.
-            </SheetDescription>
+            <SheetTitle>{translate("title", { name: studentName })}</SheetTitle>
+            <SheetDescription>{translate("description")}</SheetDescription>
           </SheetHeader>
           <ActionForm action={formAction} className="flex flex-col gap-5">
             <input type="hidden" name="studentId" value={studentId} />
@@ -97,7 +96,7 @@ export function ConvertTrialSheet({
               <>
                 <div className="grid gap-2">
                   <Label htmlFor={`convert-plan-${studentId}`}>
-                    Plan (optional)
+                    {translate("plan")}
                   </Label>
                   <Select
                     name="planId"
@@ -105,14 +104,22 @@ export function ConvertTrialSheet({
                     onValueChange={setPlanId}
                   >
                     <SelectTrigger id={`convert-plan-${studentId}`}>
-                      <SelectValue placeholder="No enrollment now" />
+                      <SelectValue placeholder={translate("noEnrollment")} />
                     </SelectTrigger>
                     <SelectContent>
                       {plans.map((plan) => (
                         <SelectItem key={plan.id} value={plan.id}>
-                          {plan.name} — {formatPrice(plan.priceCents)}
+                          {plan.name} —{" "}
+                          {formatter.number(plan.priceCents / 100, {
+                            style: "currency",
+                            currency,
+                          })}
                           {plan.billingPeriod
-                            ? `/${plan.billingPeriod.toLowerCase()}`
+                            ? translate("periodSuffix", {
+                                period: translateMemberships(
+                                  `billingPeriod.${plan.billingPeriod}`,
+                                ).toLowerCase(),
+                              })
                             : ""}
                         </SelectItem>
                       ))}
@@ -121,15 +128,14 @@ export function ConvertTrialSheet({
                 </div>
                 <label className="flex w-fit items-center gap-2 text-sm">
                   <Checkbox name="createFirstInvoice" disabled={!planId} />
-                  Create the first invoice now (standard due window)
+                  {translate("createInvoice")}
                 </label>
               </>
             ) : null}
 
             {canBill && plans.length === 0 ? (
               <p className="text-muted-foreground text-xs">
-                No active plans yet — create one under Memberships to enroll on
-                conversion.
+                {translate("noPlans")}
               </p>
             ) : null}
 
@@ -141,7 +147,7 @@ export function ConvertTrialSheet({
 
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Converting…" : "Convert trial"}
+                {isPending ? translate("converting") : translate("submit")}
               </Button>
             </SheetFooter>
           </ActionForm>

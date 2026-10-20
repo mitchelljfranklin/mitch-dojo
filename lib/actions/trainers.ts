@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -36,10 +37,11 @@ export async function createTrainerAction(
   formData: FormData,
 ): Promise<TrainerActionState> {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const translate = await getTranslations("Trainers.form");
 
   const parsed = parseTrainerInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   let trainer;
@@ -47,7 +49,7 @@ export async function createTrainerAction(
     trainer = await createTrainer(parsed.data);
   } catch (error: unknown) {
     if (isUniqueError(error)) {
-      return { error: "That email or linked account is already in use." };
+      return { error: translate("duplicate") };
     }
     throw error;
   }
@@ -64,7 +66,7 @@ export async function createTrainerAction(
   }
   // Feeds useActionState — must not revalidatePath (see AGENTS.md); the
   // client refreshes via useActionFeedback.
-  return { ok: true, message: "Trainer created." };
+  return { ok: true, message: translate("created") };
 }
 
 export async function updateTrainerAction(
@@ -72,18 +74,19 @@ export async function updateTrainerAction(
   formData: FormData,
 ): Promise<TrainerActionState> {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
+  const translate = await getTranslations("Trainers.form");
   const trainerId = getField(formData, "trainerId");
 
   const parsed = parseTrainerInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
 
   try {
     await updateTrainer(trainerId, parsed.data);
   } catch (error: unknown) {
     if (isUniqueError(error)) {
-      return { error: "That email or linked account is already in use." };
+      return { error: translate("duplicate") };
     }
     throw error;
   }
@@ -93,7 +96,7 @@ export async function updateTrainerAction(
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_TRAINER, "Trainer", trainerId);
   }
   // Feeds useActionState — must not revalidatePath (see AGENTS.md).
-  return { ok: true, message: "Trainer updated." };
+  return { ok: true, message: translate("updated") };
 }
 
 export async function deleteTrainerAction(formData: FormData) {

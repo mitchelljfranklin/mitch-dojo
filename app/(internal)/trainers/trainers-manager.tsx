@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { ActionForm } from "@/components/action-form";
@@ -65,6 +66,7 @@ function TrainerFields({
   trainer?: TrainerView;
   linkableUsers: LinkableUser[];
 }) {
+  const translate = useTranslations("Trainers.form");
   // Include unlinked users, plus the account already linked to this trainer
   // (so editing shows it rather than blanking it).
   const userOptions = linkableUsers.filter(
@@ -75,7 +77,7 @@ function TrainerFields({
   return (
     <>
       <div className="grid gap-2">
-        <Label htmlFor="trainer-name">Name</Label>
+        <Label htmlFor="trainer-name">{translate("name")}</Label>
         <Input
           id="trainer-name"
           name="name"
@@ -86,7 +88,7 @@ function TrainerFields({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="trainer-email">Email</Label>
+          <Label htmlFor="trainer-email">{translate("email")}</Label>
           <Input
             id="trainer-email"
             name="email"
@@ -95,7 +97,7 @@ function TrainerFields({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="trainer-phone">Phone</Label>
+          <Label htmlFor="trainer-phone">{translate("phone")}</Label>
           <Input
             id="trainer-phone"
             name="phone"
@@ -104,7 +106,7 @@ function TrainerFields({
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="trainer-bio">Bio</Label>
+        <Label htmlFor="trainer-bio">{translate("bio")}</Label>
         <Textarea
           id="trainer-bio"
           name="bio"
@@ -114,15 +116,17 @@ function TrainerFields({
       </div>
       <div className="grid gap-2">
         <Label htmlFor="trainer-user">
-          Linked staff account{" "}
-          <span className="text-muted-foreground font-normal">(optional)</span>
+          {translate("linkedAccount")}{" "}
+          <span className="text-muted-foreground font-normal">
+            {translate("optional")}
+          </span>
         </Label>
         <Select name="userId" defaultValue={trainer?.userId ?? ""}>
           <SelectTrigger id="trainer-user">
-            <SelectValue placeholder="No account" />
+            <SelectValue placeholder={translate("noAccount")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No account</SelectItem>
+            <SelectItem value="">{translate("noAccount")}</SelectItem>
             {userOptions.map((user) => (
               <SelectItem key={user.id} value={user.id}>
                 {user.name} ({user.email})
@@ -130,17 +134,14 @@ function TrainerFields({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-muted-foreground text-xs">
-          Linking an account lets this trainer sign in. Their permissions come
-          from the account&apos;s role, not from being a trainer.
-        </p>
+        <p className="text-muted-foreground text-xs">{translate("linkHint")}</p>
       </div>
       <label className="flex w-fit items-center gap-2 text-sm">
         <Checkbox
           name="isActive"
           defaultChecked={trainer ? trainer.isActive : true}
         />
-        Active
+        {translate("active")}
       </label>
     </>
   );
@@ -153,6 +154,7 @@ function NewTrainerForm({
   linkableUsers: LinkableUser[];
   onClose: () => void;
 }) {
+  const translate = useTranslations("Trainers.form");
   const [state, formAction, isPending] = useActionState(
     createTrainerAction,
     initialState,
@@ -175,10 +177,10 @@ function NewTrainerForm({
       ) : null}
       <SheetFooter className="px-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create trainer"}
+          {isPending ? translate("creating") : translate("create")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {translate("cancel")}
         </Button>
       </SheetFooter>
     </ActionForm>
@@ -194,6 +196,7 @@ function EditTrainerForm({
   linkableUsers: LinkableUser[];
   onClose: () => void;
 }) {
+  const translate = useTranslations("Trainers.form");
   const [state, formAction, isPending] = useActionState(
     updateTrainerAction,
     initialState,
@@ -223,21 +226,20 @@ function EditTrainerForm({
       ) : null}
 
       <div className="grid gap-3 border-t pt-4">
-        <Label>Verifications</Label>
+        <Label>{translate("verifications")}</Label>
         <TrainerVerifications trainerId={trainer.id} />
       </div>
 
       <div className="mt-auto grid gap-2 border-t pt-4">
-        <Label>Danger zone</Label>
+        <Label>{translate("danger")}</Label>
         <form id={`delete-trainer-${trainer.id}`} action={deleteTrainerAction}>
           <input type="hidden" name="trainerId" value={trainer.id} />
           <Button type="submit" size="sm" variant="destructive">
-            Delete trainer
+            {translate("delete")}
           </Button>
         </form>
         <p className="text-muted-foreground text-xs">
-          Courses taught by this trainer keep existing but lose their trainer
-          assignment.
+          {translate("deleteHint")}
         </p>
       </div>
 
@@ -247,10 +249,10 @@ function EditTrainerForm({
           form={`edit-trainer-${trainer.id}`}
           disabled={isPending}
         >
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {translate("cancel")}
         </Button>
       </SheetFooter>
     </div>
@@ -264,6 +266,7 @@ export function TrainersManager({
   trainers: TrainerView[];
   canEdit: boolean;
 }) {
+  const translate = useTranslations("Trainers.manager");
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<EditorTarget | null>(null);
   const [linkableUsers, setLinkableUsers] = useState<LinkableUser[]>([]);
@@ -300,23 +303,21 @@ export function TrainersManager({
       {canEdit ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Input
-            aria-label="Search trainers"
-            placeholder="Search trainers…"
+            aria-label={translate("searchAria")}
+            placeholder={translate("searchPlaceholder")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="max-w-xs"
           />
           <Button size="sm" onClick={() => openEditor("new")}>
-            New trainer
+            {translate("new")}
           </Button>
         </div>
       ) : null}
 
       {filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          {trainers.length === 0
-            ? "No trainers yet."
-            : "No trainers match your search."}
+          {trainers.length === 0 ? translate("empty") : translate("noMatch")}
         </p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
@@ -333,7 +334,7 @@ export function TrainersManager({
                   ) : null}
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  {trainer.email || "No email"}
+                  {trainer.email || translate("noEmail")}
                 </span>
               </>
             );
@@ -357,30 +358,37 @@ export function TrainersManager({
                 )}
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge variant="secondary" className="text-xs">
-                    {trainer.courseCount}{" "}
-                    {trainer.courseCount === 1 ? "course" : "courses"}
+                    {translate("courseCount", {
+                      count: trainer.courseCount,
+                    })}
                   </Badge>
                   {trainer.verifications.expired > 0 ? (
                     <Badge variant="destructive" className="text-xs">
-                      {trainer.verifications.expired} expired
+                      {translate("expired", {
+                        count: trainer.verifications.expired,
+                      })}
                     </Badge>
                   ) : trainer.verifications.expiring > 0 ? (
                     <Badge variant="secondary" className="text-xs">
-                      {trainer.verifications.expiring} expiring
+                      {translate("expiring", {
+                        count: trainer.verifications.expiring,
+                      })}
                     </Badge>
                   ) : trainer.verifications.missing > 0 ? (
                     <Badge variant="outline" className="text-xs">
-                      {trainer.verifications.missing} missing
+                      {translate("missing", {
+                        count: trainer.verifications.missing,
+                      })}
                     </Badge>
                   ) : null}
                   {trainer.userId ? (
                     <Badge variant="outline" className="text-xs">
-                      Has account
+                      {translate("hasAccount")}
                     </Badge>
                   ) : null}
                   {trainer.isActive ? null : (
                     <Badge variant="outline" className="text-xs">
-                      Inactive
+                      {translate("inactive")}
                     </Badge>
                   )}
                 </div>
@@ -400,9 +408,9 @@ export function TrainersManager({
           {editing === "new" ? (
             <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
               <SheetHeader>
-                <SheetTitle>Add trainer</SheetTitle>
+                <SheetTitle>{translate("addTitle")}</SheetTitle>
                 <SheetDescription>
-                  Add an instructor to your roster.
+                  {translate("addDescription")}
                 </SheetDescription>
               </SheetHeader>
               <NewTrainerForm
@@ -418,9 +426,9 @@ export function TrainersManager({
               <SheetHeader>
                 <SheetTitle>{editingTrainer.name}</SheetTitle>
                 <SheetDescription>
-                  {editingTrainer.courseCount}{" "}
-                  {editingTrainer.courseCount === 1 ? "course" : "courses"}{" "}
-                  taught
+                  {translate("taught", {
+                    count: editingTrainer.courseCount,
+                  })}
                 </SheetDescription>
               </SheetHeader>
               <EditTrainerForm

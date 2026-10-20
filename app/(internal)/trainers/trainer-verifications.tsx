@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { ActionForm } from "@/components/action-form";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,6 @@ import {
   saveTrainerVerificationAction,
   type VerificationActionState,
 } from "@/lib/actions/verifications";
-import { formatDateUtc } from "@/lib/utils";
 
 type VerificationRow = {
   typeId: string;
@@ -39,13 +39,6 @@ type VerificationRow = {
   documentKey: string | null;
   notes: string | null;
   status: "VALID" | "EXPIRING" | "EXPIRED" | "MISSING";
-};
-
-const STATUS_LABELS: Record<VerificationRow["status"], string> = {
-  VALID: "Valid",
-  EXPIRING: "Expiring soon",
-  EXPIRED: "Expired",
-  MISSING: "Not recorded",
 };
 
 function statusVariant(status: VerificationRow["status"]) {
@@ -64,6 +57,7 @@ function RecordSheet({
   row: VerificationRow;
   onSaved: () => void;
 }) {
+  const translate = useTranslations("Trainers.verifications");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     VerificationActionState,
@@ -82,7 +76,7 @@ function RecordSheet({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        {row.recordId ? "Edit" : "Record"}
+        {row.recordId ? translate("edit") : translate("record")}
       </Button>
       <Sheet
         open={open}
@@ -94,8 +88,7 @@ function RecordSheet({
           <SheetHeader>
             <SheetTitle>{row.typeName}</SheetTitle>
             <SheetDescription>
-              {row.typeDescription ??
-                "Record the credential details for this trainer."}
+              {row.typeDescription ?? translate("defaultDescription")}
             </SheetDescription>
           </SheetHeader>
           <ActionForm
@@ -106,7 +99,9 @@ function RecordSheet({
             <input type="hidden" name="trainerId" value={trainerId} />
             <input type="hidden" name="typeId" value={row.typeId} />
             <div className="grid gap-2">
-              <Label htmlFor={`ref-${row.typeId}`}>Reference / number</Label>
+              <Label htmlFor={`ref-${row.typeId}`}>
+                {translate("reference")}
+              </Label>
               <Input
                 id={`ref-${row.typeId}`}
                 name="referenceNumber"
@@ -116,7 +111,9 @@ function RecordSheet({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor={`issued-${row.typeId}`}>Issued</Label>
+                <Label htmlFor={`issued-${row.typeId}`}>
+                  {translate("issued")}
+                </Label>
                 <Input
                   id={`issued-${row.typeId}`}
                   name="issuedAt"
@@ -126,7 +123,9 @@ function RecordSheet({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor={`expires-${row.typeId}`}>
-                  Expires{row.requiresExpiry ? "" : " (optional)"}
+                  {row.requiresExpiry
+                    ? translate("expires")
+                    : translate("expiresOptional")}
                 </Label>
                 <Input
                   id={`expires-${row.typeId}`}
@@ -137,7 +136,9 @@ function RecordSheet({
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`doc-${row.typeId}`}>Document (optional)</Label>
+              <Label htmlFor={`doc-${row.typeId}`}>
+                {translate("document")}
+              </Label>
               <Input
                 id={`doc-${row.typeId}`}
                 name="document"
@@ -147,12 +148,14 @@ function RecordSheet({
               />
               {row.documentKey ? (
                 <p className="text-muted-foreground text-xs">
-                  A file is on record — uploading a new one replaces it.
+                  {translate("documentHint")}
                 </p>
               ) : null}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`notes-${row.typeId}`}>Notes</Label>
+              <Label htmlFor={`notes-${row.typeId}`}>
+                {translate("notes")}
+              </Label>
               <Textarea
                 id={`notes-${row.typeId}`}
                 name="notes"
@@ -178,11 +181,11 @@ function RecordSheet({
                     setOpen(false);
                   }}
                 >
-                  Done
+                  {translate("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Saving..." : "Save"}
+                  {isPending ? translate("saving") : translate("save")}
                 </Button>
               )}
               <Button
@@ -190,7 +193,7 @@ function RecordSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>
@@ -207,6 +210,7 @@ function RemoveButton({
   verificationId: string;
   onRemoved: () => void;
 }) {
+  const translate = useTranslations("Trainers.verifications");
   const [state, formAction] = useActionState<VerificationActionState, FormData>(
     deleteTrainerVerificationAction,
     undefined,
@@ -227,13 +231,15 @@ function RemoveButton({
         size="sm"
         className="text-destructive"
       >
-        Remove
+        {translate("remove")}
       </Button>
     </ActionForm>
   );
 }
 
 export function TrainerVerifications({ trainerId }: { trainerId: string }) {
+  const translate = useTranslations("Trainers.verifications");
+  const formatter = useFormatter();
   const [rows, setRows] = useState<VerificationRow[] | null>(null);
 
   const load = useCallback(async () => {
@@ -258,15 +264,13 @@ export function TrainerVerifications({ trainerId }: { trainerId: string }) {
 
   if (rows === null) {
     return (
-      <p className="text-muted-foreground text-sm">Loading verifications…</p>
+      <p className="text-muted-foreground text-sm">{translate("loading")}</p>
     );
   }
 
   if (rows.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No verification types configured. Add some under Admin → Verifications.
-      </p>
+      <p className="text-muted-foreground text-sm">{translate("empty")}</p>
     );
   }
 
@@ -281,14 +285,25 @@ export function TrainerVerifications({ trainerId }: { trainerId: string }) {
             <span className="flex flex-wrap items-center gap-2 font-medium">
               {row.typeName}
               <Badge variant={statusVariant(row.status)}>
-                {STATUS_LABELS[row.status]}
+                {translate(`status.${row.status}`)}
               </Badge>
-              {row.required ? <Badge variant="outline">Required</Badge> : null}
+              {row.required ? (
+                <Badge variant="outline">{translate("required")}</Badge>
+              ) : null}
             </span>
             <span className="text-muted-foreground text-xs">
-              {row.referenceNumber ? `${row.referenceNumber}` : "No reference"}
+              {row.referenceNumber
+                ? row.referenceNumber
+                : translate("noReference")}
               {row.expiresAt
-                ? ` · expires ${formatDateUtc(row.expiresAt)}`
+                ? ` · ${translate("expiresOn", {
+                    date: formatter.dateTime(new Date(row.expiresAt), {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    }),
+                  })}`
                 : ""}
             </span>
           </div>
