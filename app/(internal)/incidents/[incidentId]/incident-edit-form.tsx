@@ -2,6 +2,7 @@
 
 import { ActionForm } from "@/components/action-form";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,11 +21,7 @@ import {
   type IncidentActionState,
   updateIncidentAction,
 } from "@/lib/actions/incidents";
-import {
-  INCIDENT_NONE,
-  INCIDENT_SEVERITIES,
-  INCIDENT_SEVERITY_LABELS,
-} from "@/lib/schemas/incident";
+import { INCIDENT_NONE, INCIDENT_SEVERITIES } from "@/lib/schemas/incident";
 
 type Option = { id: string; name: string };
 
@@ -57,6 +54,9 @@ export function IncidentEditForm({
   students: Option[];
   locations: Option[];
 }) {
+  const translate = useTranslations("Incidents");
+  const translateForm = useTranslations("Incidents.form");
+  const translateEdit = useTranslations("Incidents.edit");
   const [state, formAction, isPending] = useActionState<
     IncidentActionState,
     FormData
@@ -67,7 +67,7 @@ export function IncidentEditForm({
     <ActionForm action={formAction} className="grid gap-4">
       <input type="hidden" name="incidentId" value={incidentId} />
       <div className="grid gap-2">
-        <Label htmlFor="title">Title</Label>
+        <Label htmlFor="title">{translateForm("title")}</Label>
         <Input
           id="title"
           name="title"
@@ -78,7 +78,7 @@ export function IncidentEditForm({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="occurredAt">Date</Label>
+          <Label htmlFor="occurredAt">{translateForm("date")}</Label>
           <Input
             id="occurredAt"
             name="occurredAt"
@@ -88,7 +88,7 @@ export function IncidentEditForm({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="severity">Severity</Label>
+          <Label htmlFor="severity">{translateForm("severity")}</Label>
           <Select name="severity" defaultValue={severity}>
             <SelectTrigger id="severity">
               <SelectValue />
@@ -96,7 +96,7 @@ export function IncidentEditForm({
             <SelectContent>
               {INCIDENT_SEVERITIES.map((value) => (
                 <SelectItem key={value} value={value}>
-                  {INCIDENT_SEVERITY_LABELS[value]}
+                  {translate(`severity.${value}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -105,13 +105,15 @@ export function IncidentEditForm({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="studentId">Student (optional)</Label>
+          <Label htmlFor="studentId">{translateForm("student")}</Label>
           <Select name="studentId" defaultValue={studentId || INCIDENT_NONE}>
             <SelectTrigger id="studentId">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={INCIDENT_NONE}>No student</SelectItem>
+              <SelectItem value={INCIDENT_NONE}>
+                {translateForm("noStudent")}
+              </SelectItem>
               {students.map((student) => (
                 <SelectItem key={student.id} value={student.id}>
                   {student.name}
@@ -121,13 +123,15 @@ export function IncidentEditForm({
           </Select>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="locationId">Location (optional)</Label>
+          <Label htmlFor="locationId">{translateForm("location")}</Label>
           <Select name="locationId" defaultValue={locationId || INCIDENT_NONE}>
             <SelectTrigger id="locationId">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={INCIDENT_NONE}>No location</SelectItem>
+              <SelectItem value={INCIDENT_NONE}>
+                {translateForm("noLocation")}
+              </SelectItem>
               {locations.map((location) => (
                 <SelectItem key={location.id} value={location.id}>
                   {location.name}
@@ -138,7 +142,7 @@ export function IncidentEditForm({
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="description">What happened</Label>
+        <Label htmlFor="description">{translateForm("what")}</Label>
         <Textarea
           id="description"
           name="description"
@@ -148,7 +152,7 @@ export function IncidentEditForm({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="injuryDescription">Injury (optional)</Label>
+        <Label htmlFor="injuryDescription">{translateForm("injury")}</Label>
         <Textarea
           id="injuryDescription"
           name="injuryDescription"
@@ -158,7 +162,7 @@ export function IncidentEditForm({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="treatmentGiven">Treatment given (optional)</Label>
+          <Label htmlFor="treatmentGiven">{translateForm("treatment")}</Label>
           <Input
             id="treatmentGiven"
             name="treatmentGiven"
@@ -170,11 +174,11 @@ export function IncidentEditForm({
             name="medicalAttentionRequired"
             defaultChecked={medicalAttentionRequired}
           />
-          Medical attention was required
+          {translateForm("medical")}
         </label>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="actionsTaken">Actions taken (optional)</Label>
+        <Label htmlFor="actionsTaken">{translateForm("actions")}</Label>
         <Textarea
           id="actionsTaken"
           name="actionsTaken"
@@ -184,7 +188,7 @@ export function IncidentEditForm({
       </div>
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save changes"}
+          {isPending ? translateEdit("saving") : translateEdit("save")}
         </Button>
       </div>
     </ActionForm>

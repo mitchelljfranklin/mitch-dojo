@@ -1312,6 +1312,103 @@
       "invalid": "Check the verification details and try again."
     }
   },
+  "Compliance": {
+    "metaTitle": "Compliance",
+    "title": "Compliance",
+    "subtitle": "Agreements still waiting on a signature. A document counts as outstanding when it has never been signed, or when it has been updated since the last signature.",
+    "stats": {
+      "students": "Students with work to do",
+      "signatures": "Outstanding signatures"
+    },
+    "card": {
+      "title": "Outstanding agreements",
+      "description": "Open a student to record a paper signature or have them sign in the member portal.",
+      "empty": "Every active student is up to date. Nothing to chase.",
+      "reSign": " (re-sign)"
+    }
+  },
+  "Incidents": {
+    "metaTitle": "Incidents",
+    "title": "Incidents",
+    "subtitle": "The accident book — injuries and incidents, optionally linked to a student and location.",
+    "filters": {
+      "open": "Open ({count})",
+      "closed": "Closed",
+      "all": "All"
+    },
+    "bookTitle": "Accident book",
+    "empty": "No incidents recorded.",
+    "table": {
+      "date": "Date",
+      "title": "Title",
+      "student": "Student",
+      "location": "Location",
+      "severity": "Severity",
+      "status": "Status",
+      "view": "View"
+    },
+    "severity": {
+      "MINOR": "Minor",
+      "MODERATE": "Moderate",
+      "SERIOUS": "Serious"
+    },
+    "status": {
+      "OPEN": "Open",
+      "CLOSED": "Closed"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. Ankle sprain during sparring",
+      "date": "Date",
+      "severity": "Severity",
+      "student": "Student (optional)",
+      "noStudent": "No student",
+      "location": "Location (optional)",
+      "noLocation": "No location",
+      "what": "What happened",
+      "injury": "Injury (optional)",
+      "treatment": "Treatment given (optional)",
+      "medical": "Medical attention was required",
+      "actions": "Actions taken (optional)",
+      "invalid": "Check the incident details and try again."
+    },
+    "new": {
+      "button": "Log incident",
+      "title": "Log an incident",
+      "description": "Record what happened while it is fresh. Open incidents stay on the list until you close them.",
+      "saving": "Saving...",
+      "submit": "Log incident",
+      "done": "Done",
+      "cancel": "Cancel",
+      "logged": "Incident logged."
+    },
+    "edit": {
+      "saving": "Saving...",
+      "save": "Save changes",
+      "updated": "Incident updated."
+    },
+    "detail": {
+      "metaTitle": "Incident",
+      "back": "Back to list",
+      "reportedBy": "reported by {name}",
+      "close": "Close incident",
+      "reopen": "Reopen",
+      "deleteTitle": "Delete this incident report?",
+      "deleteDescription": "This permanently removes the report from the accident book. This cannot be undone.",
+      "delete": "Delete",
+      "editTitle": "Edit report",
+      "closed": "Closed {date}.",
+      "auditHint": "Updates are audit-logged.",
+      "reportTitle": "Report",
+      "what": "What happened",
+      "injury": "Injury",
+      "treatment": "Treatment given",
+      "medical": "Medical attention required",
+      "yes": "Yes",
+      "no": "No",
+      "actions": "Actions taken"
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

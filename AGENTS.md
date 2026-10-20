@@ -42,7 +42,8 @@ plan without asking.
   (browser, session sheets, backfill, CSV import), Belts (disciplines,
   ladder, progression, promotions, gradings, CSV import), Memberships (plans,
   enrollment import), Invoices (list, detail, payments), Trials (pipeline,
-  conversion), and Trainers (roster, verifications).
+  conversion), Trainers (roster, verifications), Compliance (outstanding
+  agreements), and Incidents (accident book, reports).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

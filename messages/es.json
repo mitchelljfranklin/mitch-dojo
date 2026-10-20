@@ -1312,6 +1312,103 @@
       "invalid": "Revisa los datos de la verificación e inténtalo de nuevo."
     }
   },
+  "Compliance": {
+    "metaTitle": "Cumplimiento",
+    "title": "Cumplimiento",
+    "subtitle": "Acuerdos pendientes de firma. Un documento cuenta como pendiente cuando nunca se ha firmado o cuando se ha actualizado desde la última firma.",
+    "stats": {
+      "students": "Alumnos con tareas pendientes",
+      "signatures": "Firmas pendientes"
+    },
+    "card": {
+      "title": "Acuerdos pendientes",
+      "description": "Abre un alumno para registrar una firma en papel o haz que firme en el portal del socio.",
+      "empty": "Todos los alumnos activos están al día. Nada que reclamar.",
+      "reSign": " (volver a firmar)"
+    }
+  },
+  "Incidents": {
+    "metaTitle": "Incidentes",
+    "title": "Incidentes",
+    "subtitle": "El libro de accidentes — lesiones e incidentes, opcionalmente vinculados a un alumno y una sede.",
+    "filters": {
+      "open": "Abiertos ({count})",
+      "closed": "Cerrados",
+      "all": "Todos"
+    },
+    "bookTitle": "Libro de accidentes",
+    "empty": "No hay incidentes registrados.",
+    "table": {
+      "date": "Fecha",
+      "title": "Título",
+      "student": "Alumno",
+      "location": "Sede",
+      "severity": "Gravedad",
+      "status": "Estado",
+      "view": "Ver"
+    },
+    "severity": {
+      "MINOR": "Leve",
+      "MODERATE": "Moderado",
+      "SERIOUS": "Grave"
+    },
+    "status": {
+      "OPEN": "Abierto",
+      "CLOSED": "Cerrado"
+    },
+    "form": {
+      "title": "Título",
+      "titlePlaceholder": "p. ej. Esguince de tobillo durante el combate",
+      "date": "Fecha",
+      "severity": "Gravedad",
+      "student": "Alumno (opcional)",
+      "noStudent": "Sin alumno",
+      "location": "Sede (opcional)",
+      "noLocation": "Sin sede",
+      "what": "Qué ocurrió",
+      "injury": "Lesión (opcional)",
+      "treatment": "Tratamiento aplicado (opcional)",
+      "medical": "Se requirió atención médica",
+      "actions": "Acciones tomadas (opcional)",
+      "invalid": "Revisa los datos del incidente e inténtalo de nuevo."
+    },
+    "new": {
+      "button": "Registrar incidente",
+      "title": "Registrar un incidente",
+      "description": "Registra lo ocurrido mientras está fresco. Los incidentes abiertos permanecen en la lista hasta que los cierres.",
+      "saving": "Guardando...",
+      "submit": "Registrar incidente",
+      "done": "Hecho",
+      "cancel": "Cancelar",
+      "logged": "Incidente registrado."
+    },
+    "edit": {
+      "saving": "Guardando...",
+      "save": "Guardar cambios",
+      "updated": "Incidente actualizado."
+    },
+    "detail": {
+      "metaTitle": "Incidente",
+      "back": "Volver a la lista",
+      "reportedBy": "registrado por {name}",
+      "close": "Cerrar incidente",
+      "reopen": "Reabrir",
+      "deleteTitle": "¿Eliminar este informe de incidente?",
+      "deleteDescription": "Esto elimina permanentemente el informe del libro de accidentes. No se puede deshacer.",
+      "delete": "Eliminar",
+      "editTitle": "Editar informe",
+      "closed": "Cerrado {date}.",
+      "auditHint": "Las actualizaciones quedan registradas en la auditoría.",
+      "reportTitle": "Informe",
+      "what": "Qué ocurrió",
+      "injury": "Lesión",
+      "treatment": "Tratamiento aplicado",
+      "medical": "Atención médica requerida",
+      "yes": "Sí",
+      "no": "No",
+      "actions": "Acciones tomadas"
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

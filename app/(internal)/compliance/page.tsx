@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,10 +16,14 @@ import { PERMISSIONS } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Compliance" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Compliance");
+  return { title: translate("metaTitle") };
+}
 
 export default async function CompliancePage() {
   await requirePermission(PERMISSIONS.STUDENTS_VIEW);
+  const translate = await getTranslations("Compliance");
   const students = await listOutstandingAgreements();
 
   const outstandingSignatures = students.reduce(
@@ -28,24 +34,22 @@ export default async function CompliancePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Compliance</h1>
-        <p className="text-muted-foreground text-sm">
-          Agreements still waiting on a signature. A document counts as
-          outstanding when it has never been signed, or when it has been updated
-          since the last signature.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Students with work to do</CardDescription>
+            <CardDescription>{translate("stats.students")}</CardDescription>
             <CardTitle className="text-3xl">{students.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Outstanding signatures</CardDescription>
+            <CardDescription>{translate("stats.signatures")}</CardDescription>
             <CardTitle className="text-3xl">{outstandingSignatures}</CardTitle>
           </CardHeader>
         </Card>
@@ -53,16 +57,13 @@ export default async function CompliancePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Outstanding agreements</CardTitle>
-          <CardDescription>
-            Open a student to record a paper signature or have them sign in the
-            member portal.
-          </CardDescription>
+          <CardTitle>{translate("card.title")}</CardTitle>
+          <CardDescription>{translate("card.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {students.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              Every active student is up to date. Nothing to chase.
+              {translate("card.empty")}
             </p>
           ) : (
             <div className="flex flex-col divide-y">
@@ -86,7 +87,9 @@ export default async function CompliancePage() {
                         }
                       >
                         {document.title}
-                        {document.reSignRequired ? " (re-sign)" : ""}
+                        {document.reSignRequired
+                          ? translate("card.reSign")
+                          : ""}
                       </Badge>
                     ))}
                   </div>

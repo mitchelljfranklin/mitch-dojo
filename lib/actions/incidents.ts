@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -41,10 +42,11 @@ export async function createIncidentAction(
   formData: FormData,
 ): Promise<IncidentActionState> {
   await requirePermission(PERMISSIONS.INCIDENTS_MANAGE);
+  const translate = await getTranslations("Incidents");
 
   const parsed = parseIncidentInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("form.invalid") };
   }
 
   const user = await getCurrentUser();
@@ -65,7 +67,7 @@ export async function createIncidentAction(
   }
   // State-fed action (stay-open sheet) — must not revalidatePath; the client
   // refreshes via useActionFeedback.
-  return { ok: true, message: "Incident logged." };
+  return { ok: true, message: translate("new.logged") };
 }
 
 export async function updateIncidentAction(
@@ -73,11 +75,12 @@ export async function updateIncidentAction(
   formData: FormData,
 ): Promise<IncidentActionState> {
   await requirePermission(PERMISSIONS.INCIDENTS_MANAGE);
+  const translate = await getTranslations("Incidents");
   const incidentId = getField(formData, "incidentId");
 
   const parsed = parseIncidentInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("form.invalid") };
   }
 
   await updateIncident(incidentId, {
@@ -95,7 +98,7 @@ export async function updateIncidentAction(
     );
   }
   // State-fed action — must not revalidatePath (see AGENTS.md).
-  return { ok: true, message: "Incident updated." };
+  return { ok: true, message: translate("edit.updated") };
 }
 
 export async function setIncidentStatusAction(

@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,11 +30,7 @@ import {
   type IncidentActionState,
   createIncidentAction,
 } from "@/lib/actions/incidents";
-import {
-  INCIDENT_NONE,
-  INCIDENT_SEVERITIES,
-  INCIDENT_SEVERITY_LABELS,
-} from "@/lib/schemas/incident";
+import { INCIDENT_NONE, INCIDENT_SEVERITIES } from "@/lib/schemas/incident";
 
 type Option = { id: string; name: string };
 
@@ -51,6 +48,9 @@ export function NewIncidentSheet({
   students: Option[];
   locations: Option[];
 }) {
+  const translate = useTranslations("Incidents");
+  const translateForm = useTranslations("Incidents.form");
+  const translateNew = useTranslations("Incidents.new");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     IncidentActionState,
@@ -62,7 +62,7 @@ export function NewIncidentSheet({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Log incident</Button>
+      <Button onClick={() => setOpen(true)}>{translateNew("button")}</Button>
       <Sheet
         open={open}
         onOpenChange={(next) => {
@@ -71,11 +71,8 @@ export function NewIncidentSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>Log an incident</SheetTitle>
-            <SheetDescription>
-              Record what happened while it is fresh. Open incidents stay on the
-              list until you close them.
-            </SheetDescription>
+            <SheetTitle>{translateNew("title")}</SheetTitle>
+            <SheetDescription>{translateNew("description")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -83,18 +80,20 @@ export function NewIncidentSheet({
             className="flex flex-1 flex-col gap-4 px-4"
           >
             <div className="grid gap-2">
-              <Label htmlFor="incident-title">Title</Label>
+              <Label htmlFor="incident-title">{translateForm("title")}</Label>
               <Input
                 id="incident-title"
                 name="title"
                 required
                 maxLength={120}
-                placeholder="e.g. Ankle sprain during sparring"
+                placeholder={translateForm("titlePlaceholder")}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="incident-occurredAt">Date</Label>
+                <Label htmlFor="incident-occurredAt">
+                  {translateForm("date")}
+                </Label>
                 <Input
                   id="incident-occurredAt"
                   name="occurredAt"
@@ -104,7 +103,9 @@ export function NewIncidentSheet({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="incident-severity">Severity</Label>
+                <Label htmlFor="incident-severity">
+                  {translateForm("severity")}
+                </Label>
                 <Select name="severity" defaultValue="MINOR">
                   <SelectTrigger id="incident-severity">
                     <SelectValue />
@@ -112,7 +113,7 @@ export function NewIncidentSheet({
                   <SelectContent>
                     {INCIDENT_SEVERITIES.map((severity) => (
                       <SelectItem key={severity} value={severity}>
-                        {INCIDENT_SEVERITY_LABELS[severity]}
+                        {translate(`severity.${severity}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -121,13 +122,17 @@ export function NewIncidentSheet({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="incident-student">Student (optional)</Label>
+                <Label htmlFor="incident-student">
+                  {translateForm("student")}
+                </Label>
                 <Select name="studentId" defaultValue={INCIDENT_NONE}>
                   <SelectTrigger id="incident-student">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={INCIDENT_NONE}>No student</SelectItem>
+                    <SelectItem value={INCIDENT_NONE}>
+                      {translateForm("noStudent")}
+                    </SelectItem>
                     {students.map((student) => (
                       <SelectItem key={student.id} value={student.id}>
                         {student.name}
@@ -137,13 +142,17 @@ export function NewIncidentSheet({
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="incident-location">Location (optional)</Label>
+                <Label htmlFor="incident-location">
+                  {translateForm("location")}
+                </Label>
                 <Select name="locationId" defaultValue={INCIDENT_NONE}>
                   <SelectTrigger id="incident-location">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={INCIDENT_NONE}>No location</SelectItem>
+                    <SelectItem value={INCIDENT_NONE}>
+                      {translateForm("noLocation")}
+                    </SelectItem>
                     {locations.map((location) => (
                       <SelectItem key={location.id} value={location.id}>
                         {location.name}
@@ -154,7 +163,9 @@ export function NewIncidentSheet({
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="incident-description">What happened</Label>
+              <Label htmlFor="incident-description">
+                {translateForm("what")}
+              </Label>
               <Textarea
                 id="incident-description"
                 name="description"
@@ -163,7 +174,7 @@ export function NewIncidentSheet({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="incident-injury">Injury (optional)</Label>
+              <Label htmlFor="incident-injury">{translateForm("injury")}</Label>
               <Textarea
                 id="incident-injury"
                 name="injuryDescription"
@@ -173,17 +184,19 @@ export function NewIncidentSheet({
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="incident-treatment">
-                  Treatment given (optional)
+                  {translateForm("treatment")}
                 </Label>
                 <Input id="incident-treatment" name="treatmentGiven" />
               </div>
               <label className="flex w-fit items-center gap-2 self-end text-sm">
                 <Checkbox name="medicalAttentionRequired" />
-                Medical attention was required
+                {translateForm("medical")}
               </label>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="incident-actions">Actions taken (optional)</Label>
+              <Label htmlFor="incident-actions">
+                {translateForm("actions")}
+              </Label>
               <Textarea id="incident-actions" name="actionsTaken" rows={2} />
             </div>
             {state && "error" in state ? (
@@ -199,11 +212,11 @@ export function NewIncidentSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {translateNew("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Saving..." : "Log incident"}
+                  {isPending ? translateNew("saving") : translateNew("submit")}
                 </Button>
               )}
               <Button
@@ -211,7 +224,7 @@ export function NewIncidentSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {translateNew("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

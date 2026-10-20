@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,14 +20,15 @@ import {
   listIncidents,
 } from "@/lib/db/incidents";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
-import { INCIDENT_SEVERITY_LABELS } from "@/lib/schemas/incident";
-import { formatDate } from "@/lib/utils";
 
 import { NewIncidentSheet } from "./new-incident-sheet";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Incidents" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Incidents");
+  return { title: translate("metaTitle") };
+}
 
 type IncidentsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -40,6 +43,8 @@ export default async function IncidentsPage({
     PERMISSIONS.INCIDENTS_MANAGE,
   );
   const query = await searchParams;
+  const translate = await getTranslations("Incidents");
+  const formatter = await getFormatter();
   const statusFilter =
     query.status === "CLOSED"
       ? "CLOSED"
@@ -52,15 +57,22 @@ export default async function IncidentsPage({
     countOpenIncidents(),
     canManage ? listIncidentFormOptions() : Promise.resolve(null),
   ]);
+  const formatDate = (value: Date) =>
+    formatter.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Incidents</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {translate("title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            The accident book — injuries and incidents, optionally linked to a
-            student and location.
+            {translate("subtitle")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -68,16 +80,20 @@ export default async function IncidentsPage({
             asChild
             variant={statusFilter === "OPEN" ? "default" : "outline"}
           >
-            <Link href="/incidents?status=OPEN">Open ({openCount})</Link>
+            <Link href="/incidents?status=OPEN">
+              {translate("filters.open", { count: openCount })}
+            </Link>
           </Button>
           <Button
             asChild
             variant={statusFilter === "CLOSED" ? "default" : "outline"}
           >
-            <Link href="/incidents?status=CLOSED">Closed</Link>
+            <Link href="/incidents?status=CLOSED">
+              {translate("filters.closed")}
+            </Link>
           </Button>
           <Button asChild variant={statusFilter ? "outline" : "default"}>
-            <Link href="/incidents">All</Link>
+            <Link href="/incidents">{translate("filters.all")}</Link>
           </Button>
           {canManage && options ? (
             <NewIncidentSheet
@@ -90,23 +106,23 @@ export default async function IncidentsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Accident book</CardTitle>
+          <CardTitle>{translate("bookTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {incidents.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No incidents recorded.
+              {translate("empty")}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{translate("table.date")}</TableHead>
+                  <TableHead>{translate("table.title")}</TableHead>
+                  <TableHead>{translate("table.student")}</TableHead>
+                  <TableHead>{translate("table.location")}</TableHead>
+                  <TableHead>{translate("table.severity")}</TableHead>
+                  <TableHead>{translate("table.status")}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -129,7 +145,7 @@ export default async function IncidentsPage({
                               : "outline"
                         }
                       >
-                        {INCIDENT_SEVERITY_LABELS[incident.severity]}
+                        {translate(`severity.${incident.severity}`)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -138,12 +154,14 @@ export default async function IncidentsPage({
                           incident.status === "OPEN" ? "default" : "outline"
                         }
                       >
-                        {incident.status === "OPEN" ? "Open" : "Closed"}
+                        {translate(`status.${incident.status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button asChild variant="ghost" size="sm">
-                        <Link href={`/incidents/${incident.id}`}>View</Link>
+                        <Link href={`/incidents/${incident.id}`}>
+                          {translate("table.view")}
+                        </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
