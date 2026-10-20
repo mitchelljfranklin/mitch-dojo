@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,21 +21,17 @@ import {
   recordGradingOutcomeAction,
   sendGradingInvitesAction,
 } from "@/lib/actions/gradings";
-import { formatDateUtc } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Grading" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Belts.gradings.event");
+  return { title: t("metaTitle") };
+}
 
 type GradingEventPageProps = {
   params: Promise<{ disciplineId: string; eventId: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
-};
-
-const OUTCOME_LABELS: Record<string, string> = {
-  PENDING: "Pending",
-  PROMOTED: "Promoted",
-  ABSENT: "Absent",
 };
 
 export default async function GradingEventPage({
@@ -42,6 +40,10 @@ export default async function GradingEventPage({
 }: GradingEventPageProps) {
   const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts.gradings");
+  const eventT = await getTranslations("Belts.gradings.event");
+  const beltsT = await getTranslations("Belts");
+  const format = await getFormatter();
   const { disciplineId, eventId } = await params;
   const sp = await searchParams;
   const event = await getGradingEvent(eventId);
@@ -49,17 +51,26 @@ export default async function GradingEventPage({
     notFound();
   }
   const isOpen = event.status === "OPEN";
+  const day = format.dateTime(event.date, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   return (
     <div className="flex flex-col gap-6">
       {sp.created ? (
-        <FlashToast variant="success" message="Grading created." />
+        <FlashToast variant="success" message={t("created")} />
       ) : null}
       <Breadcrumbs
         segments={[
-          { label: "Belts", href: "/belts" },
+          { label: beltsT("title"), href: "/belts" },
           { label: event.discipline.name, href: `/belts/${disciplineId}` },
-          { label: "Gradings", href: `/belts/${disciplineId}/gradings` },
+          {
+            label: t("metaTitle"),
+            href: `/belts/${disciplineId}/gradings`,
+          },
           { label: event.name },
         ]}
       />
@@ -70,16 +81,14 @@ export default async function GradingEventPage({
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             <Badge variant="outline">{event.discipline.name}</Badge>
-            <span className="text-muted-foreground">
-              {formatDateUtc(event.date)}
-            </span>
+            <span className="text-muted-foreground">{day}</span>
             {event.location ? (
               <span className="text-muted-foreground">
                 {event.location.name}
               </span>
             ) : null}
             <Badge variant={isOpen ? "secondary" : "outline"}>
-              {isOpen ? "Open" : "Closed"}
+              {t(`status.${event.status}`)}
             </Badge>
           </div>
         </div>
@@ -88,13 +97,13 @@ export default async function GradingEventPage({
             <form action={sendGradingInvitesAction}>
               <input type="hidden" name="eventId" value={event.id} />
               <Button type="submit" variant="outline">
-                Email invitations
+                {eventT("emailInvites")}
               </Button>
             </form>
             <form action={closeGradingEventAction}>
               <input type="hidden" name="eventId" value={event.id} />
               <Button type="submit" variant="outline">
-                Close grading
+                {eventT("close")}
               </Button>
             </form>
           </div>
@@ -103,17 +112,12 @@ export default async function GradingEventPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Students</CardTitle>
-          <CardDescription>
-            Eligible students were added with their next belt as the target.
-            Recording a promotion awards it on the grading date.
-          </CardDescription>
+          <CardTitle>{eventT("studentsTitle")}</CardTitle>
+          <CardDescription>{eventT("studentsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {event.students.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No eligible students were added to this grading.
-            </p>
+            <p className="text-muted-foreground text-sm">{eventT("empty")}</p>
           ) : (
             event.students.map((row) => (
               <div
@@ -125,14 +129,16 @@ export default async function GradingEventPage({
                     {row.student.firstName} {row.student.lastName}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    Target: {row.targetBeltRangeEntry?.name ?? "—"}
+                    {eventT("target", {
+                      belt: row.targetBeltRangeEntry?.name ?? "—",
+                    })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge
                     variant={row.outcome === "PROMOTED" ? "default" : "outline"}
                   >
-                    {OUTCOME_LABELS[row.outcome] ?? row.outcome}
+                    {eventT(`outcomes.${row.outcome}`)}
                   </Badge>
                   {canEdit && isOpen ? (
                     <>
@@ -154,7 +160,7 @@ export default async function GradingEventPage({
                             value="PROMOTED"
                           />
                           <Button type="submit" size="sm">
-                            Promote
+                            {eventT("promote")}
                           </Button>
                         </form>
                       ) : null}
@@ -172,7 +178,7 @@ export default async function GradingEventPage({
                           />
                           <input type="hidden" name="outcome" value="ABSENT" />
                           <Button type="submit" size="sm" variant="ghost">
-                            Absent
+                            {eventT("absent")}
                           </Button>
                         </form>
                       ) : (
@@ -189,7 +195,7 @@ export default async function GradingEventPage({
                           />
                           <input type="hidden" name="outcome" value="PENDING" />
                           <Button type="submit" size="sm" variant="ghost">
-                            Reset
+                            {eventT("reset")}
                           </Button>
                         </form>
                       )}

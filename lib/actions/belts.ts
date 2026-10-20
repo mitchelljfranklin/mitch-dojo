@@ -331,6 +331,7 @@ export async function importBeltHistoryAction(
   formData: FormData,
 ): Promise<BeltImportState> {
   const actor = await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts.import");
   const disciplineId = getField(formData, "disciplineId");
 
   const discipline = await prisma.discipline.findUnique({
@@ -338,15 +339,15 @@ export async function importBeltHistoryAction(
     select: { id: true },
   });
   if (!discipline) {
-    return { ok: false, error: "Choose a discipline." };
+    return { ok: false, error: t("chooseDiscipline") };
   }
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, error: "No file selected." };
+    return { ok: false, error: t("missingFile") };
   }
   if (file.size > 1_000_000) {
-    return { ok: false, error: "File is too large (max 1 MB)." };
+    return { ok: false, error: t("tooLarge") };
   }
 
   const text = await file.text();
@@ -354,7 +355,7 @@ export async function importBeltHistoryAction(
   if (rows.length === 0) {
     return {
       ok: false,
-      error: "No rows found in CSV. The first row must be a header.",
+      error: t("noRows"),
     };
   }
 
@@ -389,7 +390,10 @@ export async function importBeltHistoryAction(
     });
     if (!parsed.success) {
       rowErrors.push(
-        `Row ${i + 2}: ${parsed.error.issues[0]?.message ?? "invalid"}`,
+        t("row", {
+          row: i + 2,
+          message: parsed.error.issues[0]?.message ?? "invalid",
+        }),
       );
       continue;
     }
@@ -397,17 +401,13 @@ export async function importBeltHistoryAction(
     const row = parsed.data;
     const belt = beltByName.get(row.belt.toLowerCase());
     if (!belt) {
-      rowErrors.push(
-        `Row ${i + 2}: unknown belt "${row.belt}" — add it to the discipline's ladder first.`,
-      );
+      rowErrors.push(t("unknownBelt", { row: i + 2, belt: row.belt }));
       continue;
     }
 
     const awardedAt = new Date(`${row.awardedAt}T00:00:00`);
     if (awardedAt > endOfToday) {
-      rowErrors.push(
-        `Row ${i + 2}: award dates in the future cannot be imported (${row.awardedAt}).`,
-      );
+      rowErrors.push(t("future", { row: i + 2, date: row.awardedAt }));
       continue;
     }
 
@@ -417,13 +417,13 @@ export async function importBeltHistoryAction(
       lastName: row.lastName,
     });
     if (match.status !== "found") {
-      const reason =
+      const errorKey =
         match.status === "not_found"
-          ? "student not found"
+          ? "studentNotFound"
           : match.status === "ambiguous"
-            ? "student name matches several students"
-            : "student is not at this location";
-      rowErrors.push(`Row ${i + 2}: ${reason}.`);
+            ? "studentAmbiguous"
+            : "studentLocation";
+      rowErrors.push(t(errorKey, { row: i + 2 }));
       continue;
     }
 
@@ -454,13 +454,13 @@ export async function importBeltHistoryAction(
   if (created > 0 || skipped > 0) {
     return {
       ok: true,
-      message: `Imported ${created} promotion${created === 1 ? "" : "s"} (${skipped} duplicates skipped).`,
+      message: t("imported", { created, skipped }),
       created,
       skipped,
     };
   }
   return {
     ok: false,
-    error: `No promotions imported. First error: ${rowErrors[0] ?? "unknown"}`,
+    error: t("none", { error: rowErrors[0] ?? "unknown" }),
   };
 }

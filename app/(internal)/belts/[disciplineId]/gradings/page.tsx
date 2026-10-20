@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,13 +26,15 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { getDiscipline } from "@/lib/db/belts";
 import { listGradingEvents } from "@/lib/db/gradings";
 import { listAssignableLocations } from "@/lib/db/locations";
-import { formatDateUtc } from "@/lib/utils";
 
 import { NewGradingEventSheet } from "./new-grading-event-sheet";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Gradings" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Belts.gradings");
+  return { title: t("metaTitle") };
+}
 
 type GradingsPageProps = {
   params: Promise<{ disciplineId: string }>;
@@ -38,6 +42,9 @@ type GradingsPageProps = {
 
 export default async function GradingsPage({ params }: GradingsPageProps) {
   await requirePermission(PERMISSIONS.BELTS_VIEW);
+  const t = await getTranslations("Belts.gradings");
+  const beltsT = await getTranslations("Belts");
+  const format = await getFormatter();
   const { disciplineId } = await params;
   const [discipline, events, locations] = await Promise.all([
     getDiscipline(disciplineId),
@@ -47,25 +54,29 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
   if (!discipline) {
     notFound();
   }
+  const day = (value: Date) =>
+    format.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Belts", href: "/belts" },
+          { label: beltsT("title"), href: "/belts" },
           { label: discipline.name, href: `/belts/${disciplineId}` },
-          { label: "Gradings" },
+          { label: t("metaTitle") },
         ]}
       />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Gradings — {discipline.name}
+            {t("title", { name: discipline.name })}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Schedule a grading day, invite eligible students, and record the
-            outcomes.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
         <NewGradingEventSheet
           disciplineId={disciplineId}
@@ -79,28 +90,24 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Grading events</CardTitle>
-          <CardDescription>
-            Recording a promotion here awards the belt on the event date.
-          </CardDescription>
+          <CardTitle>{t("eventsTitle")}</CardTitle>
+          <CardDescription>{t("eventsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No gradings yet — create one to get started.
-            </p>
+            <p className="text-muted-foreground text-sm">{t("empty")}</p>
           ) : (
             <div className="rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Promoted</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("table.date")}</TableHead>
+                    <TableHead>{t("table.name")}</TableHead>
+                    <TableHead>{t("table.location")}</TableHead>
+                    <TableHead>{t("table.promoted")}</TableHead>
+                    <TableHead>{t("table.status")}</TableHead>
                     <TableHead>
-                      <span className="sr-only">Open</span>
+                      <span className="sr-only">{t("table.open")}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -108,7 +115,7 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
                   {events.map((event) => (
                     <TableRow key={event.id}>
                       <TableCell className="text-sm font-medium">
-                        {formatDateUtc(event.date)}
+                        {day(event.date)}
                       </TableCell>
                       <TableCell className="text-sm">{event.name}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -123,7 +130,7 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
                             event.status === "OPEN" ? "secondary" : "outline"
                           }
                         >
-                          {event.status === "OPEN" ? "Open" : "Closed"}
+                          {t(`status.${event.status}`)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -131,7 +138,7 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
                           <Link
                             href={`/belts/${disciplineId}/gradings/${event.id}`}
                           >
-                            Open
+                            {t("table.open")}
                           </Link>
                         </Button>
                       </TableCell>

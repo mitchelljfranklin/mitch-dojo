@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ export function NewGradingEventSheet({
   disciplineName,
   locations,
 }: NewGradingEventSheetProps) {
+  const t = useTranslations("Belts.gradings");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     GradingActionState,
@@ -52,16 +54,15 @@ export function NewGradingEventSheet({
   return (
     <>
       <Button type="button" onClick={() => setOpen(true)}>
-        New grading
+        {t("newGrading")}
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>New grading — {disciplineName}</SheetTitle>
-            <SheetDescription>
-              Eligible students are added automatically with their next belt as
-              the target.
-            </SheetDescription>
+            <SheetTitle>
+              {t("sheet.newTitle", { name: disciplineName })}
+            </SheetTitle>
+            <SheetDescription>{t("sheet.description")}</SheetDescription>
           </SheetHeader>
           <form
             key={open ? "open" : "closed"}
@@ -70,17 +71,19 @@ export function NewGradingEventSheet({
           >
             <input type="hidden" name="disciplineId" value={disciplineId} />
             <div className="grid gap-2">
-              <Label htmlFor="grading-name">Name</Label>
+              <Label htmlFor="grading-name">{t("sheet.name")}</Label>
               <Input
                 id="grading-name"
                 name="name"
                 required
                 maxLength={80}
-                defaultValue={`${disciplineName} grading`}
+                defaultValue={t("sheet.nameDefault", {
+                  name: disciplineName,
+                })}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="grading-date">Date</Label>
+              <Label htmlFor="grading-date">{t("sheet.date")}</Label>
               <Input
                 id="grading-date"
                 name="date"
@@ -91,10 +94,10 @@ export function NewGradingEventSheet({
             </div>
             {locations.length > 0 ? (
               <div className="grid gap-2">
-                <Label htmlFor="grading-location">Location (optional)</Label>
+                <Label htmlFor="grading-location">{t("sheet.location")}</Label>
                 <Select name="locationId">
                   <SelectTrigger id="grading-location">
-                    <SelectValue placeholder="No location" />
+                    <SelectValue placeholder={t("sheet.noLocation")} />
                   </SelectTrigger>
                   <SelectContent>
                     {locations.map((location) => (
@@ -107,7 +110,7 @@ export function NewGradingEventSheet({
               </div>
             ) : null}
             <div className="grid gap-2">
-              <Label htmlFor="grading-notes">Notes (optional)</Label>
+              <Label htmlFor="grading-notes">{t("sheet.notes")}</Label>
               <Textarea id="grading-notes" name="notes" rows={2} />
             </div>
             {state && "error" in state ? (
@@ -117,14 +120,14 @@ export function NewGradingEventSheet({
             ) : null}
             <SheetFooter className="px-0">
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create grading"}
+                {isPending ? t("sheet.creating") : t("sheet.create")}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("sheet.cancel")}
               </Button>
             </SheetFooter>
           </form>

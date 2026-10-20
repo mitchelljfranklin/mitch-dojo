@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,21 +17,37 @@ export function BeltImportForm({
 }: {
   disciplines: { id: string; name: string }[];
 }) {
+  const t = useTranslations("Belts.import");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [disciplineId, setDisciplineId] = useState(disciplines[0]?.id ?? "");
   const [state, formAction, isPending] = useActionState<
     BeltImportState,
     FormData
   >(importBeltHistoryAction, undefined);
   useActionFeedback(state);
 
+  // React 19 resets the form after each action; keep the chosen discipline and
+  // (on errors) the chosen file, clearing the file only after a successful run.
+  useEffect(() => {
+    if (state && "ok" in state && state.ok && fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [state]);
+
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form
+      action={formAction}
+      onReset={(event) => event.preventDefault()}
+      className="flex flex-col gap-3"
+    >
       <div className="grid gap-2">
-        <Label htmlFor="belt-import-discipline">Discipline</Label>
+        <Label htmlFor="belt-import-discipline">{t("discipline")}</Label>
         <select
           id="belt-import-discipline"
           name="disciplineId"
           required
-          defaultValue={disciplines[0]?.id ?? ""}
+          value={disciplineId}
+          onChange={(event) => setDisciplineId(event.target.value)}
           className="border-input bg-background h-9 rounded-md border px-3 text-sm"
         >
           {disciplines.map((discipline) => (
@@ -41,8 +58,9 @@ export function BeltImportForm({
         </select>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="belt-import-file">CSV file</Label>
+        <Label htmlFor="belt-import-file">{t("csvFile")}</Label>
         <Input
+          ref={fileInputRef}
           id="belt-import-file"
           name="file"
           type="file"
@@ -63,7 +81,7 @@ export function BeltImportForm({
       ) : null}
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Importing..." : "Import"}
+          {isPending ? t("importing") : t("submit")}
         </Button>
       </div>
     </form>

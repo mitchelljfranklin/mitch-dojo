@@ -1,4 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   Card,
   CardContent,
@@ -14,10 +16,15 @@ import { BeltImportForm } from "./import-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Import belt history" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Belts.import");
+  return { title: t("metaTitle") };
+}
 
 export default async function ImportBeltHistoryPage() {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts.import");
+  const beltsT = await getTranslations("Belts");
   const disciplines = await listDisciplines();
   const activeDisciplines = disciplines.filter((d) => d.isActive);
 
@@ -25,58 +32,44 @@ export default async function ImportBeltHistoryPage() {
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Belts & gradings", href: "/belts" },
-          { label: "Import history" },
+          { label: beltsT("title"), href: "/belts" },
+          { label: t("breadcrumb") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Import belt history
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>CSV import</CardTitle>
-          <CardDescription>
-            Import your students&apos; existing grading history. Promotions are
-            appended to each student&apos;s history — their current belt is the
-            latest dated row.
-          </CardDescription>
+          <CardTitle>{t("cardTitle")}</CardTitle>
+          <CardDescription>{t("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="text-sm">
-            <p className="mb-2 font-medium">Columns</p>
+            <p className="mb-2 font-medium">{t("columns")}</p>
             <ul className="text-muted-foreground list-disc pl-5 text-xs">
               <li>
-                <code>Email</code> — student email, or <code>FirstName</code> +{" "}
-                <code>LastName</code>
+                <code>Email</code> — {t("studentLine")}
               </li>
               <li>
-                <code>Belt</code> — required, exact belt name in the selected
-                discipline&apos;s ladder (belts are not auto-created)
+                <code>Belt</code> — {t("beltLine")}
               </li>
               <li>
-                <code>AwardedAt</code> — required, YYYY-MM-DD (today or earlier)
+                <code>AwardedAt</code> — {t("dateLine")}
               </li>
               <li>
-                <code>Notes</code> — optional
+                <code>Notes</code> — {t("notesLine")}
               </li>
             </ul>
-            <p className="text-muted-foreground mt-2 text-xs">
-              Students are matched school-wide (rank is global per discipline).
-              Rows referring to unknown belts or students are reported as errors
-              and skipped. Duplicate student+belt+date rows are skipped so
-              re-running an import is safe.
-            </p>
+            <p className="text-muted-foreground mt-2 text-xs">{t("note")}</p>
           </div>
           {activeDisciplines.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No disciplines exist yet — create one on the Belts & gradings page
-              first.
+              {t("noDisciplines")}
             </p>
           ) : (
             <BeltImportForm
-              disciplines={activeDisciplines.map((d) => ({
-                id: d.id,
-                name: d.name,
+              disciplines={activeDisciplines.map((discipline) => ({
+                id: discipline.id,
+                name: discipline.name,
               }))}
             />
           )}

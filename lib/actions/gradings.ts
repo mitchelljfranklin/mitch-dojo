@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -23,6 +24,7 @@ export async function createGradingEventAction(
   formData: FormData,
 ): Promise<GradingActionState> {
   const actor = await requirePermission(PERMISSIONS.BELTS_EDIT);
+  const t = await getTranslations("Belts.gradings");
   const disciplineId = getField(formData, "disciplineId");
   const name = getField(formData, "name").trim();
   const date = getField(formData, "date").trim();
@@ -30,10 +32,10 @@ export async function createGradingEventAction(
   const notes = getField(formData, "notes").trim();
 
   if (name.length === 0) {
-    return { error: "Give the grading a name." };
+    return { error: t("errors.nameRequired") };
   }
   if (!isValidIsoDateString(date)) {
-    return { error: "Enter a valid date." };
+    return { error: t("errors.invalidDate") };
   }
 
   const { id } = await createGradingEvent({

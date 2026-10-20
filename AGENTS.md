@@ -40,7 +40,7 @@ plan without asking.
   staff shell/dashboard, the full Students domain (list, form, detail,
   households, CSV import), Classes (courses + weekly schedule), Attendance
   (browser, session sheets, backfill, CSV import), and Belts (disciplines,
-  ladder, progression, promotions).
+  ladder, progression, promotions, gradings, CSV import).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)
