@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  COUNTRIES,
   countryName,
   isValidCountryCode,
   resolveCountryCode,
@@ -17,6 +18,15 @@ describe("countries", () => {
   it("names countries from codes", () => {
     expect(countryName("AU")).toBe("Australia");
     expect(countryName("GB")).toBe("United Kingdom");
+    // Stable across server and browser ICU data — this used to hydrate as
+    // "Falkland Islands (Islas Malvinas)" in Chromium.
+    expect(countryName("FK")).toBe("Falkland Islands");
+  });
+
+  it("names every supported country code", () => {
+    for (const code of COUNTRIES) {
+      expect(countryName(code), code).not.toBe(code);
+    }
   });
 
   it("resolves names and codes to alpha-2", () => {

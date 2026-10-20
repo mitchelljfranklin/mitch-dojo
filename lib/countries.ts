@@ -1,8 +1,11 @@
-// ISO 3166-1 alpha-2 country codes (the full current set). Display names
-// come from Intl.DisplayNames at runtime, so there is no second list of
-// strings to keep in sync. Stored on students as the code; shown as the
-// country's English name; CSV export writes the name and import accepts
-// either the name or the code, case-insensitively.
+// ISO 3166-1 alpha-2 country codes (the full current set). Display names come
+// from a committed, generated map (lib/country-names.ts) so the server and the
+// browser always render the same label — Intl.DisplayNames data differs between
+// runtimes and caused hydration mismatches. Stored on students as the code;
+// shown as the country's English name; CSV export writes the name and import
+// accepts either the name or the code, case-insensitively.
+
+import { COUNTRY_NAMES } from "./country-names";
 
 const COUNTRY_CODES = [
   "AD",
@@ -260,24 +263,14 @@ export type CountryCode = (typeof COUNTRY_CODES)[number];
 
 export const COUNTRIES: readonly CountryCode[] = COUNTRY_CODES;
 
-let displayNames: Intl.DisplayNames | null = null;
-
-function regionNames(): Intl.DisplayNames {
-  displayNames ??= new Intl.DisplayNames(["en"], { type: "region" });
-  return displayNames;
-}
-
 export function isValidCountryCode(value: string): value is CountryCode {
   return (COUNTRY_CODES as readonly string[]).includes(value.toUpperCase());
 }
 
 // English country name for an alpha-2 code ("AU" → "Australia").
 export function countryName(code: string): string {
-  try {
-    return regionNames().of(code.toUpperCase()) ?? code.toUpperCase();
-  } catch {
-    return code.toUpperCase();
-  }
+  const upper = code.toUpperCase();
+  return COUNTRY_NAMES[upper] ?? upper;
 }
 
 // Resolves a CSV import value — country name or alpha-2 code,
