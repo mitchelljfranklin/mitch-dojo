@@ -33,7 +33,7 @@ export function EditHouseholdSheet({
     contactPhone: string | null;
   };
 }) {
-  const t = useTranslations("Students.households");
+  const translate = useTranslations("Students.households");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     HouseholdActionState,
@@ -46,7 +46,7 @@ export function EditHouseholdSheet({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        {t("editButton")}
+        {translate("editButton")}
       </Button>
       <Sheet
         open={open}
@@ -56,8 +56,8 @@ export function EditHouseholdSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>{t("editTitle")}</SheetTitle>
-            <SheetDescription>{t("editDescription")}</SheetDescription>
+            <SheetTitle>{translate("editTitle")}</SheetTitle>
+            <SheetDescription>{translate("editDescription")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -66,7 +66,7 @@ export function EditHouseholdSheet({
           >
             <input type="hidden" name="householdId" value={household.id} />
             <div className="grid gap-2">
-              <Label htmlFor="edit-household-name">{t("name")}</Label>
+              <Label htmlFor="edit-household-name">{translate("name")}</Label>
               <Input
                 id="edit-household-name"
                 name="name"
@@ -77,7 +77,7 @@ export function EditHouseholdSheet({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-household-contact-name">
-                {t("contactName")}
+                {translate("contactName")}
               </Label>
               <Input
                 id="edit-household-contact-name"
@@ -88,7 +88,7 @@ export function EditHouseholdSheet({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-household-contact-email">
-                {t("contactEmail")}
+                {translate("contactEmail")}
               </Label>
               <Input
                 id="edit-household-contact-email"
@@ -100,7 +100,7 @@ export function EditHouseholdSheet({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-household-contact-phone">
-                {t("contactPhone")}
+                {translate("contactPhone")}
               </Label>
               <Input
                 id="edit-household-contact-phone"
@@ -123,11 +123,11 @@ export function EditHouseholdSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  {t("done")}
+                  {translate("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? t("saving") : t("save")}
+                  {isPending ? translate("saving") : translate("save")}
                 </Button>
               )}
               <Button
@@ -135,7 +135,7 @@ export function EditHouseholdSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t("cancel")}
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

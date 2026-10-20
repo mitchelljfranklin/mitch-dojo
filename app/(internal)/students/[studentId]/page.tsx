@@ -68,9 +68,9 @@ export default async function StudentDetailPage({
   searchParams,
 }: StudentDetailPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
-  const t = await getTranslations("Students");
-  const d = await getTranslations("Students.detail");
-  const format = await getFormatter();
+  const translate = await getTranslations("Students");
+  const translateDetail = await getTranslations("Students.detail");
+  const formatter = await getFormatter();
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
   const canViewMedical = hasPermission(
     user.permissions,
@@ -102,7 +102,7 @@ export default async function StudentDetailPage({
   );
 
   const { studentId } = await params;
-  const sp = await searchParams;
+  const query = await searchParams;
   const [
     student,
     attachments,
@@ -162,26 +162,26 @@ export default async function StudentDetailPage({
   const currency = membershipsSettings?.currency ?? "USD";
   const money = (cents: number) => {
     try {
-      return format.number(cents / 100, { style: "currency", currency });
+      return formatter.number(cents / 100, { style: "currency", currency });
     } catch {
       return `${(cents / 100).toFixed(2)} ${currency}`;
     }
   };
-  const day = (value: Date) =>
-    format.dateTime(value, {
+  const formatDay = (value: Date) =>
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
       timeZone: "UTC",
     });
   const localDay = (value: Date) =>
-    format.dateTime(value, {
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   const percent = (value: number) =>
-    format.number(value / 100, {
+    formatter.number(value / 100, {
       style: "percent",
       maximumFractionDigits: 0,
     });
@@ -199,15 +199,15 @@ export default async function StudentDetailPage({
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: d("studentsCrumb"), href: "/students" },
+          { label: translateDetail("studentsCrumb"), href: "/students" },
           { label: fullName },
         ]}
       />
-      {sp.created ? (
-        <FlashToast variant="success" message={d("created")} />
+      {query.created ? (
+        <FlashToast variant="success" message={translateDetail("created")} />
       ) : null}
-      {sp.updated ? (
-        <FlashToast variant="success" message={d("updated")} />
+      {query.updated ? (
+        <FlashToast variant="success" message={translateDetail("updated")} />
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -229,12 +229,14 @@ export default async function StudentDetailPage({
               {fullName}
             </h1>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">{t(`status.${student.status}`)}</Badge>
+              <Badge variant="secondary">
+                {translate(`status.${student.status}`)}
+              </Badge>
               {primaryLink ? (
                 <Badge variant="outline">{primaryLink.location.name}</Badge>
               ) : (
                 <span className="text-muted-foreground text-xs">
-                  {d("noLocation")}
+                  {translateDetail("noLocation")}
                 </span>
               )}
               {student.disciplines.map((link) => (
@@ -243,7 +245,9 @@ export default async function StudentDetailPage({
                 </Badge>
               ))}
               <span className="text-muted-foreground text-xs">
-                {d("joined", { date: localDay(student.joinedAt) })}
+                {translateDetail("joined", {
+                  date: localDay(student.joinedAt),
+                })}
               </span>
             </div>
           </div>
@@ -254,12 +258,14 @@ export default async function StudentDetailPage({
           ) : null}
           <Button asChild variant="outline">
             <a href={`/api/students/${student.id}/report-card`} download>
-              {d("reportCard")}
+              {translateDetail("reportCard")}
             </a>
           </Button>
           {canEdit ? (
             <Button asChild variant="outline">
-              <Link href={`/students/${student.id}/edit`}>{d("edit")}</Link>
+              <Link href={`/students/${student.id}/edit`}>
+                {translateDetail("edit")}
+              </Link>
             </Button>
           ) : null}
           {canDelete ? (
@@ -269,13 +275,15 @@ export default async function StudentDetailPage({
             >
               <input type="hidden" name="studentId" value={student.id} />
               <ConfirmDialog
-                title={d("deleteTitle")}
-                description={d("deleteDescription", { name: fullName })}
-                confirmLabel={d("deleteConfirm")}
+                title={translateDetail("deleteTitle")}
+                description={translateDetail("deleteDescription", {
+                  name: fullName,
+                })}
+                confirmLabel={translateDetail("deleteConfirm")}
                 formId={`delete-student-${student.id}`}
               >
                 <Button type="button" variant="destructive">
-                  {d("delete")}
+                  {translateDetail("delete")}
                 </Button>
               </ConfirmDialog>
             </form>
@@ -286,13 +294,13 @@ export default async function StudentDetailPage({
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>{d("profile")}</CardTitle>
+            <CardTitle>{translateDetail("profile")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            <DetailRow label={d("email")} value={student.email} />
-            <DetailRow label={d("phone")} value={student.phone} />
+            <DetailRow label={translateDetail("email")} value={student.email} />
+            <DetailRow label={translateDetail("phone")} value={student.phone} />
             <DetailRow
-              label={d("address")}
+              label={translateDetail("address")}
               value={
                 [
                   student.addressLine,
@@ -306,7 +314,7 @@ export default async function StudentDetailPage({
               }
             />
             <DetailRow
-              label={d("dateOfBirth")}
+              label={translateDetail("dateOfBirth")}
               value={
                 student.dateOfBirth
                   ? student.dateOfBirth.toISOString().slice(0, 10)
@@ -315,7 +323,7 @@ export default async function StudentDetailPage({
             />
             <div className="mt-2" />
             <DetailRow
-              label={d("guardian")}
+              label={translateDetail("guardian")}
               value={
                 student.guardianName
                   ? [
@@ -329,7 +337,7 @@ export default async function StudentDetailPage({
               }
             />
             <DetailRow
-              label={d("emergency")}
+              label={translateDetail("emergency")}
               value={
                 student.emergencyContactName
                   ? [
@@ -346,13 +354,17 @@ export default async function StudentDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>{d("locationsTitle")}</CardTitle>
-            <CardDescription>{d("locationsDescription")}</CardDescription>
+            <CardTitle>{translateDetail("locationsTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("locationsDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {primaryLink ? (
               <Badge>
-                {d("home", { location: primaryLink.location.name })}
+                {translateDetail("home", {
+                  location: primaryLink.location.name,
+                })}
               </Badge>
             ) : null}
             {otherLinks.map((link) => (
@@ -362,7 +374,7 @@ export default async function StudentDetailPage({
             ))}
             {student.locations.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                {d("noLocations")}
+                {translateDetail("noLocations")}
               </p>
             ) : null}
           </CardContent>
@@ -370,8 +382,10 @@ export default async function StudentDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>{d("householdTitle")}</CardTitle>
-            <CardDescription>{d("householdDescription")}</CardDescription>
+            <CardTitle>{translateDetail("householdTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("householdDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             {household ? (
@@ -384,12 +398,12 @@ export default async function StudentDetailPage({
                     household.contactPhone,
                   ]
                     .filter(Boolean)
-                    .join(" · ") || d("noContact")}
+                    .join(" · ") || translateDetail("noContact")}
                 </span>
                 {household.students.filter((member) => member.id !== student.id)
                   .length > 0 ? (
                   <span className="text-muted-foreground text-xs">
-                    {d("siblings", {
+                    {translateDetail("siblings", {
                       names: household.students
                         .filter((member) => member.id !== student.id)
                         .map(
@@ -403,17 +417,17 @@ export default async function StudentDetailPage({
                   href="/students/households"
                   className="text-primary text-xs hover:underline"
                 >
-                  {d("manageHouseholds")}
+                  {translateDetail("manageHouseholds")}
                 </Link>
               </>
             ) : (
               <p className="text-muted-foreground text-sm">
-                {d("notInHousehold")}{" "}
+                {translateDetail("notInHousehold")}{" "}
                 <Link
                   href="/students/households"
                   className="text-primary hover:underline"
                 >
-                  {d("manageHouseholdsShort")}
+                  {translateDetail("manageHouseholdsShort")}
                 </Link>
               </p>
             )}
@@ -424,27 +438,34 @@ export default async function StudentDetailPage({
       {canViewMedical ? (
         <Card>
           <CardHeader>
-            <CardTitle>{d("medicalTitle")}</CardTitle>
-            <CardDescription>{d("medicalDescription")}</CardDescription>
+            <CardTitle>{translateDetail("medicalTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("medicalDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             <DetailRow
-              label={d("medications")}
+              label={translateDetail("medications")}
               value={student.medicalMedications}
             />
             <DetailRow
-              label={d("conditions")}
+              label={translateDetail("conditions")}
               value={student.medicalConditions}
             />
-            <DetailRow label={d("injuries")} value={student.medicalInjuries} />
+            <DetailRow
+              label={translateDetail("injuries")}
+              value={student.medicalInjuries}
+            />
           </CardContent>
         </Card>
       ) : null}
 
       <Card>
         <CardHeader>
-          <CardTitle>{d("agreementsTitle")}</CardTitle>
-          <CardDescription>{d("agreementsDescription")}</CardDescription>
+          <CardTitle>{translateDetail("agreementsTitle")}</CardTitle>
+          <CardDescription>
+            {translateDetail("agreementsDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {agreementStatuses.map((status) => (
@@ -456,30 +477,36 @@ export default async function StudentDetailPage({
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{status.title}</span>
                   <Badge variant="outline">
-                    {d("version", { version: status.activeVersion })}
+                    {translateDetail("version", {
+                      version: status.activeVersion,
+                    })}
                   </Badge>
                   {status.signed ? (
                     <Badge variant="secondary">
-                      {d("signed", {
+                      {translateDetail("signed", {
                         date: localDay(status.signedAt!),
                       })}
                     </Badge>
                   ) : (
-                    <Badge variant="destructive">{d("notSigned")}</Badge>
+                    <Badge variant="destructive">
+                      {translateDetail("notSigned")}
+                    </Badge>
                   )}
                   {status.reSignRequired ? (
-                    <Badge variant="destructive">{d("reSign")}</Badge>
+                    <Badge variant="destructive">
+                      {translateDetail("reSign")}
+                    </Badge>
                   ) : null}
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
                   {status.signed
-                    ? d(
+                    ? translateDetail(
                         status.method === "PORTAL"
                           ? "signedByPortal"
                           : "signedByStaff",
                         { name: status.signedByName ?? "" },
                       )
-                    : d("awaiting")}
+                    : translateDetail("awaiting")}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -488,7 +515,7 @@ export default async function StudentDetailPage({
                     href={`/api/agreements/${status.documentId}/pdf?studentId=${student.id}`}
                     download
                   >
-                    {d("printForm")}
+                    {translateDetail("printForm")}
                   </a>
                 </Button>
                 {canEdit ? (
@@ -508,13 +535,15 @@ export default async function StudentDetailPage({
       {canViewIncidents ? (
         <Card>
           <CardHeader>
-            <CardTitle>{d("incidentsTitle")}</CardTitle>
-            <CardDescription>{d("incidentsDescription")}</CardDescription>
+            <CardTitle>{translateDetail("incidentsTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("incidentsDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {incidents.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                {d("noIncidents")}
+                {translateDetail("noIncidents")}
               </p>
             ) : (
               incidents.map((incident) => (
@@ -534,14 +563,16 @@ export default async function StudentDetailPage({
                             : "outline"
                       }
                     >
-                      {d(`severity.${incident.severity}`)}
+                      {translateDetail(`severity.${incident.severity}`)}
                     </Badge>
                     {incident.status === "CLOSED" ? (
-                      <Badge variant="outline">{d("closed")}</Badge>
+                      <Badge variant="outline">
+                        {translateDetail("closed")}
+                      </Badge>
                     ) : null}
                   </div>
                   <span className="text-muted-foreground text-xs">
-                    {day(incident.occurredAt)}
+                    {formatDay(incident.occurredAt)}
                   </span>
                 </Link>
               ))
@@ -554,12 +585,12 @@ export default async function StudentDetailPage({
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle>{d("membershipsTitle")}</CardTitle>
+              <CardTitle>{translateDetail("membershipsTitle")}</CardTitle>
               <CardDescription>
-                {d("membershipsDescription")}{" "}
+                {translateDetail("membershipsDescription")}{" "}
                 {suspensionState.suspended ? (
                   <span className="text-destructive font-medium">
-                    {d("suspended", {
+                    {translateDetail("suspended", {
                       days: suspensionState.daysOverdue,
                       limit: suspensionState.suspendAfterDays,
                     })}
@@ -575,7 +606,7 @@ export default async function StudentDetailPage({
             <div className="flex flex-col gap-2">
               {enrollments.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  {d("noEnrollments")}
+                  {translateDetail("noEnrollments")}
                 </p>
               ) : (
                 enrollments.map((enrollment) => (
@@ -589,22 +620,22 @@ export default async function StudentDetailPage({
                       </span>
                       <span className="text-muted-foreground text-xs">
                         {enrollment.status === "ACTIVE"
-                          ? `${d("since", {
+                          ? `${translateDetail("since", {
                               date: localDay(enrollment.startDate),
                             })}${
                               enrollment.nextInvoiceDate
-                                ? ` · ${d("nextInvoice", {
-                                    date: day(enrollment.nextInvoiceDate),
+                                ? ` · ${translateDetail("nextInvoice", {
+                                    date: formatDay(enrollment.nextInvoiceDate),
                                   })}`
                                 : ""
                             }`
                           : enrollment.status === "PAUSED"
-                            ? `${d("onHoldSince", {
+                            ? `${translateDetail("onHoldSince", {
                                 date: localDay(
                                   enrollment.pausedAt ?? enrollment.startDate,
                                 ),
-                              })}${enrollment.resumeAt ? ` · ${d("resumes", { date: day(enrollment.resumeAt) })}` : ""}${enrollment.pauseReason ? ` · ${enrollment.pauseReason}` : ""}`
-                            : d("endedOn", {
+                              })}${enrollment.resumeAt ? ` · ${translateDetail("resumes", { date: formatDay(enrollment.resumeAt) })}` : ""}${enrollment.pauseReason ? ` · ${enrollment.pauseReason}` : ""}`
+                            : translateDetail("endedOn", {
                                 date: enrollment.endDate
                                   ? localDay(enrollment.endDate)
                                   : "",
@@ -617,9 +648,9 @@ export default async function StudentDetailPage({
                         <Badge
                           variant="outline"
                           className="text-xs"
-                          title={d("onlyIfTrainedTitle")}
+                          title={translateDetail("onlyIfTrainedTitle")}
                         >
-                          {d("onlyIfTrained")}
+                          {translateDetail("onlyIfTrained")}
                         </Badge>
                       ) : null}
                       <Badge
@@ -630,10 +661,10 @@ export default async function StudentDetailPage({
                         }
                       >
                         {enrollment.status === "ACTIVE"
-                          ? d("active")
+                          ? translateDetail("active")
                           : enrollment.status === "PAUSED"
-                            ? d("onHold")
-                            : d("ended")}
+                            ? translateDetail("onHold")
+                            : translateDetail("ended")}
                       </Badge>
                       {canManageMemberships &&
                       enrollment.status === "ACTIVE" ? (
@@ -657,7 +688,7 @@ export default async function StudentDetailPage({
                             value={student.id}
                           />
                           <Button type="submit" size="sm" variant="ghost">
-                            {d("resume")}
+                            {translateDetail("resume")}
                           </Button>
                         </form>
                       ) : null}
@@ -672,11 +703,11 @@ export default async function StudentDetailPage({
                             value={enrollment.id}
                           />
                           <ConfirmDialog
-                            title={d("endTitle")}
-                            description={d("endDescription", {
+                            title={translateDetail("endTitle")}
+                            description={translateDetail("endDescription", {
                               plan: enrollment.plan.name,
                             })}
-                            confirmLabel={d("endConfirm")}
+                            confirmLabel={translateDetail("endConfirm")}
                             formId={`end-enrollment-${enrollment.id}`}
                           >
                             <Button
@@ -685,7 +716,7 @@ export default async function StudentDetailPage({
                               variant="ghost"
                               className="text-destructive"
                             >
-                              {d("end")}
+                              {translateDetail("end")}
                             </Button>
                           </ConfirmDialog>
                         </form>
@@ -699,7 +730,7 @@ export default async function StudentDetailPage({
             {studentInvoices.length > 0 ? (
               <div className="flex flex-col gap-2">
                 <p className="text-muted-foreground text-xs font-medium">
-                  {d("recentInvoices")}
+                  {translateDetail("recentInvoices")}
                 </p>
                 {studentInvoices.map((invoice) => {
                   const totalCents = invoice.items.reduce(
@@ -720,14 +751,18 @@ export default async function StudentDetailPage({
                         #{invoice.number}
                       </span>
                       <span className="text-muted-foreground text-xs">
-                        {d("issued", { date: day(invoice.issueDate) })}
+                        {translateDetail("issued", {
+                          date: formatDay(invoice.issueDate),
+                        })}
                       </span>
                       <Badge
                         variant={
                           invoice.status === "PAID" ? "secondary" : "default"
                         }
                       >
-                        {invoice.status === "PAID" ? d("paid") : d("open")}
+                        {invoice.status === "PAID"
+                          ? translateDetail("paid")
+                          : translateDetail("open")}
                       </Badge>
                       <span className="text-right">
                         {money(totalCents - paidCents)}
@@ -757,7 +792,7 @@ export default async function StudentDetailPage({
       {student.notes ? (
         <Card>
           <CardHeader>
-            <CardTitle>{d("notesTitle")}</CardTitle>
+            <CardTitle>{translateDetail("notesTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm whitespace-pre-wrap">{student.notes}</p>
@@ -767,8 +802,10 @@ export default async function StudentDetailPage({
       {beltHistory.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>{d("beltTitle")}</CardTitle>
-            <CardDescription>{d("beltDescription")}</CardDescription>
+            <CardTitle>{translateDetail("beltTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("beltDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {beltHistory.map((record) => (
@@ -785,8 +822,8 @@ export default async function StudentDetailPage({
                   <span className="text-sm font-medium">{record.beltName}</span>
                   <span className="text-muted-foreground truncate text-xs">
                     {record.beltRangeEntry?.discipline.name ??
-                      d("disciplineRemoved")}{" "}
-                    · {day(record.awardedAt)}
+                      translateDetail("disciplineRemoved")}{" "}
+                    · {formatDay(record.awardedAt)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -806,13 +843,16 @@ export default async function StudentDetailPage({
                         value={record.id}
                       />
                       <ConfirmDialog
-                        title={d("deletePromotionTitle")}
-                        description={d("deletePromotionDescription", {
-                          belt: record.beltName,
-                          date: day(record.awardedAt),
-                          name: fullName,
-                        })}
-                        confirmLabel={d("delete")}
+                        title={translateDetail("deletePromotionTitle")}
+                        description={translateDetail(
+                          "deletePromotionDescription",
+                          {
+                            belt: record.beltName,
+                            date: formatDay(record.awardedAt),
+                            name: fullName,
+                          },
+                        )}
+                        confirmLabel={translateDetail("delete")}
                         formId={`delete-promotion-${record.id}`}
                       >
                         <Button
@@ -821,7 +861,7 @@ export default async function StudentDetailPage({
                           variant="ghost"
                           className="text-destructive"
                         >
-                          {d("delete")}
+                          {translateDetail("delete")}
                         </Button>
                       </ConfirmDialog>
                     </form>
@@ -836,13 +876,13 @@ export default async function StudentDetailPage({
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle>{d("attendanceTitle")}</CardTitle>
+              <CardTitle>{translateDetail("attendanceTitle")}</CardTitle>
               <CardDescription>
-                {d("attendanceDescription", {
+                {translateDetail("attendanceDescription", {
                   count: recentAttendance.length,
                 })}
                 {attendanceRate !== null
-                  ? ` ${d("attendanceRate", {
+                  ? ` ${translateDetail("attendanceRate", {
                       rate: percent(attendanceRate),
                     })}`
                   : ""}
@@ -869,7 +909,7 @@ export default async function StudentDetailPage({
                 <div className="flex min-w-0 flex-col">
                   <span>{row.courseName}</span>
                   <span className="text-muted-foreground text-xs">
-                    {day(row.date)} · {row.locationName}
+                    {formatDay(row.date)} · {row.locationName}
                   </span>
                 </div>
                 <Badge
@@ -877,7 +917,7 @@ export default async function StudentDetailPage({
                     row.status === "ABSENT" ? "destructive" : "secondary"
                   }
                 >
-                  {d(`attendanceStatus.${row.status}`)}
+                  {translateDetail(`attendanceStatus.${row.status}`)}
                 </Badge>
               </div>
             ))}

@@ -16,7 +16,7 @@ import { LOCALE_LABELS, LOCALES } from "@/lib/i18n/config";
 
 export function LocaleSwitcher() {
   const locale = useLocale();
-  const t = useTranslations("Common");
+  const translate = useTranslations("Common");
   const router = useRouter();
   const [selectedLocale, setSelectedLocale] = useState(locale);
   const [isPending, startTransition] = useTransition();
@@ -40,7 +40,7 @@ export function LocaleSwitcher() {
       onValueChange={changeLocale}
       disabled={isPending}
     >
-      <SelectTrigger aria-label={t("changeLanguage")} className="w-32">
+      <SelectTrigger aria-label={translate("changeLanguage")} className="w-32">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

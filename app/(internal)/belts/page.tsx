@@ -17,8 +17,8 @@ import { listDisciplines } from "@/lib/db/belts";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Belts");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Belts");
+  return { title: translate("metaTitle") };
 }
 
 type BeltsPageProps = {
@@ -29,31 +29,35 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
   const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
   const disciplines = await listDisciplines();
-  const sp = await searchParams;
-  const t = await getTranslations("Belts");
+  const query = await searchParams;
+  const translate = await getTranslations("Belts");
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: t("title") }]} />
-      {sp.disciplineError ? (
-        <FlashToast variant="error" message={sp.disciplineError} />
+      <Breadcrumbs segments={[{ label: translate("title") }]} />
+      {query.disciplineError ? (
+        <FlashToast variant="error" message={query.disciplineError} />
       ) : null}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title")}
+            {translate("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+          <p className="text-muted-foreground text-sm">
+            {translate("subtitle")}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/classes">{t("actions.viewCourses")}</Link>
+            <Link href="/classes">{translate("actions.viewCourses")}</Link>
           </Button>
           {canEdit ? (
             <>
               <AddDisciplineButton />
               <Button asChild variant="outline">
-                <Link href="/belts/import">{t("actions.importHistory")}</Link>
+                <Link href="/belts/import">
+                  {translate("actions.importHistory")}
+                </Link>
               </Button>
             </>
           ) : null}
@@ -63,11 +67,11 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
       {disciplines.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>{t("empty.title")}</CardTitle>
+            <CardTitle>{translate("empty.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              {t("empty.description")}
+              {translate("empty.description")}
             </p>
           </CardContent>
         </Card>
@@ -84,17 +88,17 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
                       </CardTitle>
                       {discipline.isActive ? null : (
                         <Badge variant="outline" className="shrink-0">
-                          {t("card.inactive")}
+                          {translate("card.inactive")}
                         </Badge>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="text-muted-foreground text-xs">
-                    {t("card.beltCount", {
+                    {translate("card.beltCount", {
                       count: discipline._count.beltRangeEntries,
                     })}{" "}
                     ·{" "}
-                    {t("card.courseCount", {
+                    {translate("card.courseCount", {
                       count: discipline._count.courses,
                     })}
                   </CardContent>
@@ -112,9 +116,9 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
                     value={discipline.id}
                   />
                   <ConfirmDialog
-                    title={t("delete.title", { name: discipline.name })}
-                    description={t("delete.description")}
-                    confirmLabel={t("delete.confirm")}
+                    title={translate("delete.title", { name: discipline.name })}
+                    description={translate("delete.description")}
+                    confirmLabel={translate("delete.confirm")}
                   >
                     <Button
                       type="submit"
@@ -122,7 +126,7 @@ export default async function BeltsPage({ searchParams }: BeltsPageProps) {
                       variant="ghost"
                       className="text-destructive h-7 px-2 text-xs"
                     >
-                      {t("delete.confirm")}
+                      {translate("delete.confirm")}
                     </Button>
                   </ConfirmDialog>
                 </form>

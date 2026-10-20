@@ -12,7 +12,7 @@ import {
 
 // State-fed (no revalidatePath) — toast + refresh via useActionFeedback.
 export function SendPortalLinkButton({ householdId }: { householdId: string }) {
-  const t = useTranslations("Students.portalLink");
+  const translate = useTranslations("Students.portalLink");
   const [state, formAction, isPending] = useActionState<
     PortalLinkState,
     FormData
@@ -23,7 +23,7 @@ export function SendPortalLinkButton({ householdId }: { householdId: string }) {
     <form action={formAction}>
       <input type="hidden" name="householdId" value={householdId} />
       <Button type="submit" size="sm" variant="outline" disabled={isPending}>
-        {isPending ? t("sending") : t("send")}
+        {isPending ? translate("sending") : translate("send")}
       </Button>
     </form>
   );

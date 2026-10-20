@@ -26,7 +26,7 @@ export function PortalAgreementSignForm({
   documentLabel,
 }: PortalAgreementSignFormProps) {
   const router = useRouter();
-  const t = useTranslations("Portal.sign");
+  const translate = useTranslations("Portal.sign");
   const [state, formAction, isPending] = useActionState<
     PortalSignState,
     FormData
@@ -43,16 +43,16 @@ export function PortalAgreementSignForm({
       <input type="hidden" name="documentId" value={documentId} />
       <label className="flex items-start gap-2 text-sm">
         <Checkbox name="confirmed" required />
-        <span>{t("confirmation")}</span>
+        <span>{translate("confirmation")}</span>
       </label>
       <div className="grid gap-2">
-        <Label htmlFor={`signer-${documentId}`}>{t("nameLabel")}</Label>
+        <Label htmlFor={`signer-${documentId}`}>{translate("nameLabel")}</Label>
         <Input
           id={`signer-${documentId}`}
           name="signedByName"
           required
           maxLength={60}
-          placeholder={t("namePlaceholder")}
+          placeholder={translate("namePlaceholder")}
         />
       </div>
       {state && !state.ok ? (
@@ -63,8 +63,8 @@ export function PortalAgreementSignForm({
       <div>
         <Button type="submit" size="sm" disabled={isPending}>
           {isPending
-            ? t("submitting")
-            : t("submit", { document: documentLabel })}
+            ? translate("submitting")
+            : translate("submit", { document: documentLabel })}
         </Button>
       </div>
     </form>

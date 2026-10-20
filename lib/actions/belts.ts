@@ -44,18 +44,18 @@ export async function createDisciplineAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
 
   const name = getField(formData, "name")?.trim();
   if (!name || name.length === 0 || name.length > 80) {
-    return { error: t("errors.disciplineName") };
+    return { error: translate("errors.disciplineName") };
   }
 
   try {
     await createDiscipline(name);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: t("errors.disciplineDuplicate") };
+      return { error: translate("errors.disciplineDuplicate") };
     }
     throw error;
   }
@@ -69,12 +69,12 @@ export async function createDisciplineAction(
       name,
     );
   }
-  return { ok: true, message: t("created") };
+  return { ok: true, message: translate("created") };
 }
 
 export async function deleteDisciplineAction(formData: FormData) {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
   const disciplineId = getField(formData, "disciplineId");
 
   try {
@@ -86,7 +86,7 @@ export async function deleteDisciplineAction(formData: FormData) {
     ) {
       redirect(
         `/belts?disciplineError=${encodeURIComponent(
-          t("errors.disciplineHasCourses"),
+          translate("errors.disciplineHasCourses"),
         )}`,
       );
     }
@@ -122,19 +122,19 @@ export async function createBeltLevelAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
   const disciplineId = getField(formData, "disciplineId");
 
   const parsed = parseBeltInput(formData);
   if (!parsed.success) {
-    return { error: t("errors.beltInvalid") };
+    return { error: translate("errors.beltInvalid") };
   }
 
   try {
     await createBeltRangeEntry(disciplineId, parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: t("errors.beltDuplicate") };
+      return { error: translate("errors.beltDuplicate") };
     }
     throw error;
   }
@@ -149,7 +149,7 @@ export async function createBeltLevelAction(
       { disciplineId },
     );
   }
-  return { ok: true, message: t("beltAdded") };
+  return { ok: true, message: translate("beltAdded") };
 }
 
 // Feeds useActionState — must not revalidatePath (see AGENTS.md).
@@ -158,19 +158,19 @@ export async function updateBeltLevelAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
   const beltLevelId = getField(formData, "beltLevelId");
 
   const parsed = parseBeltInput(formData);
   if (!parsed.success) {
-    return { error: t("errors.beltInvalid") };
+    return { error: translate("errors.beltInvalid") };
   }
 
   try {
     await updateBeltRangeEntry(beltLevelId, parsed.data);
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: t("errors.beltDuplicate") };
+      return { error: translate("errors.beltDuplicate") };
     }
     throw error;
   }
@@ -184,12 +184,12 @@ export async function updateBeltLevelAction(
       beltLevelId,
     );
   }
-  return { ok: true, message: t("beltUpdated") };
+  return { ok: true, message: translate("beltUpdated") };
 }
 
 export async function deleteBeltLevelAction(formData: FormData) {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
   const beltLevelId = getField(formData, "beltLevelId");
   const disciplineId = getField(formData, "disciplineId");
 
@@ -202,7 +202,7 @@ export async function deleteBeltLevelAction(formData: FormData) {
     ) {
       redirect(
         `/belts/${disciplineId}?beltError=${encodeURIComponent(
-          t("errors.beltAwarded"),
+          translate("errors.beltAwarded"),
         )}`,
       );
     }
@@ -229,7 +229,7 @@ export async function recordPromotionAction(
   formData: FormData,
 ): Promise<BeltActionState> {
   const user = await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
   const studentId = getField(formData, "studentId");
 
   const parsed = promotionSchema.safeParse({
@@ -239,7 +239,7 @@ export async function recordPromotionAction(
     trainingsCredit: getField(formData, "trainingsCredit") || "0",
   });
   if (!parsed.success) {
-    return { error: t("errors.promotionInvalid") };
+    return { error: translate("errors.promotionInvalid") };
   }
 
   // Enforce the training requirement unless the instructor explicitly
@@ -252,7 +252,7 @@ export async function recordPromotionAction(
     parsed.data.beltRangeEntryId,
   );
   if (eligibility === null) {
-    return { error: t("errors.beltMissing") };
+    return { error: translate("errors.beltMissing") };
   }
   const requiredTrainings = eligibility.requiredTrainings ?? 0;
   const creditTowardsGate =
@@ -263,7 +263,7 @@ export async function recordPromotionAction(
       getField(formData, "overrideEligibility") === "on";
     if (!overrideConfirmed) {
       return {
-        error: t("errors.eligibility", {
+        error: translate("errors.eligibility", {
           belt: eligibility.targetBeltName,
           required: requiredTrainings,
           count: effectiveTrainings,
@@ -283,7 +283,7 @@ export async function recordPromotionAction(
     });
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes("not found")) {
-      return { error: t("errors.beltMissing") };
+      return { error: translate("errors.beltMissing") };
     }
     throw error;
   }
@@ -295,7 +295,7 @@ export async function recordPromotionAction(
     parsed.data.beltRangeEntryId,
     { studentId },
   );
-  return { ok: true, message: t("promotionRecorded") };
+  return { ok: true, message: translate("promotionRecorded") };
 }
 
 export async function deletePromotionAction(formData: FormData) {
@@ -331,7 +331,7 @@ export async function importBeltHistoryAction(
   formData: FormData,
 ): Promise<BeltImportState> {
   const actor = await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts.import");
+  const translate = await getTranslations("Belts.import");
   const disciplineId = getField(formData, "disciplineId");
 
   const discipline = await prisma.discipline.findUnique({
@@ -339,15 +339,15 @@ export async function importBeltHistoryAction(
     select: { id: true },
   });
   if (!discipline) {
-    return { ok: false, error: t("chooseDiscipline") };
+    return { ok: false, error: translate("chooseDiscipline") };
   }
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, error: t("missingFile") };
+    return { ok: false, error: translate("missingFile") };
   }
   if (file.size > 1_000_000) {
-    return { ok: false, error: t("tooLarge") };
+    return { ok: false, error: translate("tooLarge") };
   }
 
   const text = await file.text();
@@ -355,7 +355,7 @@ export async function importBeltHistoryAction(
   if (rows.length === 0) {
     return {
       ok: false,
-      error: t("noRows"),
+      error: translate("noRows"),
     };
   }
 
@@ -390,7 +390,7 @@ export async function importBeltHistoryAction(
     });
     if (!parsed.success) {
       rowErrors.push(
-        t("row", {
+        translate("row", {
           row: i + 2,
           message: parsed.error.issues[0]?.message ?? "invalid",
         }),
@@ -401,13 +401,13 @@ export async function importBeltHistoryAction(
     const row = parsed.data;
     const belt = beltByName.get(row.belt.toLowerCase());
     if (!belt) {
-      rowErrors.push(t("unknownBelt", { row: i + 2, belt: row.belt }));
+      rowErrors.push(translate("unknownBelt", { row: i + 2, belt: row.belt }));
       continue;
     }
 
     const awardedAt = new Date(`${row.awardedAt}T00:00:00`);
     if (awardedAt > endOfToday) {
-      rowErrors.push(t("future", { row: i + 2, date: row.awardedAt }));
+      rowErrors.push(translate("future", { row: i + 2, date: row.awardedAt }));
       continue;
     }
 
@@ -423,7 +423,7 @@ export async function importBeltHistoryAction(
           : match.status === "ambiguous"
             ? "studentAmbiguous"
             : "studentLocation";
-      rowErrors.push(t(errorKey, { row: i + 2 }));
+      rowErrors.push(translate(errorKey, { row: i + 2 }));
       continue;
     }
 
@@ -454,13 +454,13 @@ export async function importBeltHistoryAction(
   if (created > 0 || skipped > 0) {
     return {
       ok: true,
-      message: t("imported", { created, skipped }),
+      message: translate("imported", { created, skipped }),
       created,
       skipped,
     };
   }
   return {
     ok: false,
-    error: t("none", { error: rowErrors[0] ?? "unknown" }),
+    error: translate("none", { error: rowErrors[0] ?? "unknown" }),
   };
 }

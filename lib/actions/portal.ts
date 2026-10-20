@@ -21,24 +21,24 @@ export async function sendPortalLinkAction(
   formData: FormData,
 ): Promise<PortalLinkState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students.portalLink");
-  const format = await getFormatter();
+  const translate = await getTranslations("Students.portalLink");
+  const formatter = await getFormatter();
   const studentId = String(formData.get("studentId") ?? "");
   if (!studentId) {
-    return { error: t("missingStudent") };
+    return { error: translate("missingStudent") };
   }
 
   const { smtpHost } = await getEmailSettings();
   if (!smtpHost) {
     return {
-      error: t("smtp"),
+      error: translate("smtp"),
     };
   }
 
   const link = await createPortalLink(studentId, env.APP_URL);
   if (link.outcome === "no_recipient") {
     return {
-      error: t("noRecipient"),
+      error: translate("noRecipient"),
     };
   }
 
@@ -79,16 +79,16 @@ export async function sendPortalLinkAction(
   return result.ok
     ? {
         ok: true,
-        message: t("sent", {
+        message: translate("sent", {
           email: link.recipient,
-          date: format.dateTime(link.expiresAt, {
+          date: formatter.dateTime(link.expiresAt, {
             day: "2-digit",
             month: "short",
             year: "numeric",
           }),
         }),
       }
-    : { error: t("failed") };
+    : { error: translate("failed") };
 }
 
 // Household magic link: one login shows every child in the family.
@@ -97,24 +97,24 @@ export async function sendHouseholdPortalLinkAction(
   formData: FormData,
 ): Promise<PortalLinkState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students.portalLink");
-  const format = await getFormatter();
+  const translate = await getTranslations("Students.portalLink");
+  const formatter = await getFormatter();
   const householdId = String(formData.get("householdId") ?? "");
   if (!householdId) {
-    return { error: t("missingHousehold") };
+    return { error: translate("missingHousehold") };
   }
 
   const { smtpHost } = await getEmailSettings();
   if (!smtpHost) {
     return {
-      error: t("smtp"),
+      error: translate("smtp"),
     };
   }
 
   const link = await createHouseholdPortalLink(householdId, env.APP_URL);
   if (link.outcome === "no_recipient") {
     return {
-      error: t("householdNoRecipient"),
+      error: translate("householdNoRecipient"),
     };
   }
 
@@ -153,14 +153,14 @@ export async function sendHouseholdPortalLinkAction(
   return result.ok
     ? {
         ok: true,
-        message: t("householdSent", {
+        message: translate("householdSent", {
           email: link.recipient,
-          date: format.dateTime(link.expiresAt, {
+          date: formatter.dateTime(link.expiresAt, {
             day: "2-digit",
             month: "short",
             year: "numeric",
           }),
         }),
       }
-    : { error: t("failed") };
+    : { error: translate("failed") };
 }

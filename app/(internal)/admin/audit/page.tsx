@@ -35,7 +35,7 @@ export default async function AdminAuditPage({
     PERMISSIONS.SETTINGS_MANAGE,
   );
   const auditRetention = await getAuditRetention();
-  const sp = await searchParams;
+  const query = await searchParams;
   const users = (await listStaffAccounts()).map((account) => ({
     id: account.id,
     name: account.name,
@@ -61,7 +61,7 @@ export default async function AdminAuditPage({
           {/* The audit query is the slowest on this page — stream it so the
               shell renders immediately. */}
           <Suspense fallback={<PageSkeleton.Content height="h-72" />}>
-            <AuditContent sp={sp} users={users} />
+            <AuditContent query={query} users={users} />
           </Suspense>
         </CardContent>
       </Card>
@@ -93,22 +93,22 @@ export default async function AdminAuditPage({
 // Streams the audit log separately so the heavy listAuditLogs query never
 // blocks the page shell.
 async function AuditContent({
-  sp,
+  query,
   users,
 }: {
-  sp: Record<string, string | undefined>;
+  query: Record<string, string | undefined>;
   users: { id: string; name: string }[];
 }) {
   const auditLogs = await listAuditLogs({
-    action: sp.action,
-    userId: sp.userId,
-    fromDate: sp.fromDate,
-    toDate: sp.toDate,
-    page: sp.auditPage ? parseInt(sp.auditPage) : 1,
-    pageSize: sp.auditPageSize ? parseInt(sp.auditPageSize) : undefined,
+    action: query.action,
+    userId: query.userId,
+    fromDate: query.fromDate,
+    toDate: query.toDate,
+    page: query.auditPage ? parseInt(query.auditPage) : 1,
+    pageSize: query.auditPageSize ? parseInt(query.auditPageSize) : undefined,
   });
 
-  const filterEntries = Object.entries(sp).filter(
+  const filterEntries = Object.entries(query).filter(
     ([key, value]) =>
       ["action", "userId", "fromDate", "toDate"].includes(key) && value,
   ) as [string, string][];

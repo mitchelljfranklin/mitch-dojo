@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 export function KioskToggle({ kiosk }: { kiosk: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  const t = useTranslations("Checkin");
+  const translate = useTranslations("Checkin");
 
   function toggle() {
     const params = new URLSearchParams(window.location.search);
@@ -28,7 +28,7 @@ export function KioskToggle({ kiosk }: { kiosk: boolean }) {
 
   return (
     <Button type="button" variant="outline" size="sm" onClick={toggle}>
-      {kiosk ? t("kioskExit") : t("kioskEnter")}
+      {kiosk ? translate("kioskExit") : translate("kioskEnter")}
     </Button>
   );
 }

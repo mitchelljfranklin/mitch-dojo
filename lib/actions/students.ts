@@ -56,28 +56,28 @@ type TranslateError = (key: string) => string;
 // specific translated message so the form can say what is actually missing.
 function studentErrorMessage(
   issues: { path: readonly PropertyKey[]; message: string }[],
-  t: TranslateError,
+  translate: TranslateError,
 ): string {
   const first = issues[0];
   const field = first?.path[0];
   switch (field) {
     case "firstName":
-      return t("firstNameRequired");
+      return translate("firstNameRequired");
     case "lastName":
-      return t("lastNameRequired");
+      return translate("lastNameRequired");
     case "email":
     case "guardianEmail":
-      return t("emailInvalid");
+      return translate("emailInvalid");
     case "locationIds":
-      return t("locationRequired");
+      return translate("locationRequired");
     case "primaryLocationId":
       return first.message.includes("one of the assigned locations")
-        ? t("primaryMismatch")
-        : t("primaryRequired");
+        ? translate("primaryMismatch")
+        : translate("primaryRequired");
     case "disciplineIds":
-      return t("disciplineRequired");
+      return translate("disciplineRequired");
     default:
-      return t("invalid");
+      return translate("invalid");
   }
 }
 
@@ -147,7 +147,7 @@ async function handlePhotoUpload(
   formData: FormData,
   currentPhotoKey: string | null,
 ): Promise<{ photoKey: string | null; error?: string }> {
-  const t = await getTranslations("Students.errors");
+  const translate = await getTranslations("Students.errors");
   const removePhoto = getField(formData, "removePhoto") === "true";
   const photoFile = formData.get("photoFile");
 
@@ -159,26 +159,26 @@ async function handlePhotoUpload(
   }
 
   if (photoFile.size > 2 * 1024 * 1024) {
-    return { photoKey: currentPhotoKey, error: t("photoTooLarge") };
+    return { photoKey: currentPhotoKey, error: translate("photoTooLarge") };
   }
   if (
     !photoFile.type.startsWith("image/") ||
     isDangerousUploadMime(photoFile.type)
   ) {
-    return { photoKey: currentPhotoKey, error: t("photoType") };
+    return { photoKey: currentPhotoKey, error: translate("photoType") };
   }
   const ext = photoFile.name.split(".").pop()?.toLowerCase() ?? "";
   if (!["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) {
     return {
       photoKey: currentPhotoKey,
-      error: t("photoFormat"),
+      error: translate("photoFormat"),
     };
   }
   const buffer = Buffer.from(await photoFile.arrayBuffer());
   if (!validateMagicBytes(ext, buffer)) {
     return {
       photoKey: currentPhotoKey,
-      error: t("photoMismatch"),
+      error: translate("photoMismatch"),
     };
   }
 
@@ -192,11 +192,11 @@ export async function createStudentAction(
   formData: FormData,
 ): Promise<StudentFormState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const t = await getTranslations("Students.errors");
+  const translate = await getTranslations("Students.errors");
 
   const parsed = parseStudentInput(formData);
   if (!parsed.success) {
-    return { error: studentErrorMessage(parsed.error.issues, t) };
+    return { error: studentErrorMessage(parsed.error.issues, translate) };
   }
 
   // Medical PHI is gated by students:medical on the WRITE side too: without
@@ -215,7 +215,7 @@ export async function createStudentAction(
     studentId = await createStudent(data);
   } catch (error: unknown) {
     if (isDuplicateEmailError(error)) {
-      return { error: t("duplicateEmail") };
+      return { error: translate("duplicateEmail") };
     }
     throw error;
   }
@@ -238,11 +238,11 @@ export async function updateStudentAction(
 ): Promise<StudentFormState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
   const studentId = getField(formData, "studentId");
-  const t = await getTranslations("Students.errors");
+  const translate = await getTranslations("Students.errors");
 
   const parsed = parseStudentInput(formData);
   if (!parsed.success) {
-    return { error: studentErrorMessage(parsed.error.issues, t) };
+    return { error: studentErrorMessage(parsed.error.issues, translate) };
   }
 
   const existing = await prisma.student.findUnique({
@@ -270,7 +270,7 @@ export async function updateStudentAction(
     await updateStudent(studentId, data);
   } catch (error: unknown) {
     if (isDuplicateEmailError(error)) {
-      return { error: t("duplicateEmail") };
+      return { error: translate("duplicateEmail") };
     }
     throw error;
   }
@@ -329,17 +329,17 @@ export async function addAttachmentAction(
   formData: FormData,
 ): Promise<{ ok: boolean; message: string } | undefined> {
   await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students.attachments");
+  const translate = await getTranslations("Students.attachments");
   const studentId = getField(formData, "studentId");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: t("missingFile") };
+    return { ok: false, message: translate("missingFile") };
   }
   if (file.size > MAX_ATTACHMENT_BYTES) {
     return {
       ok: false,
-      message: t("tooLarge", {
+      message: translate("tooLarge", {
         mb: Math.round(MAX_ATTACHMENT_BYTES / (1024 * 1024)),
       }),
     };
@@ -350,14 +350,14 @@ export async function addAttachmentAction(
   if (!ALLOWED_ATTACHMENT_EXTS.has(ext)) {
     return {
       ok: false,
-      message: t("badType", { ext }),
+      message: translate("badType", { ext }),
     };
   }
   const buffer = Buffer.from(await file.arrayBuffer());
   if (!validateMagicBytes(ext, buffer)) {
     return {
       ok: false,
-      message: t("mismatch"),
+      message: translate("mismatch"),
     };
   }
 
@@ -381,7 +381,7 @@ export async function addAttachmentAction(
   }
   // No revalidatePath: this feeds useActionState — the client refreshes via
   // useActionFeedback (see AGENTS.md).
-  return { ok: true, message: t("added") };
+  return { ok: true, message: translate("added") };
 }
 
 export async function deleteAttachmentAction(formData: FormData) {
@@ -424,14 +424,14 @@ export async function importStudentsAction(
   formData: FormData,
 ): Promise<StudentsImportState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const t = await getTranslations("Students.import");
+  const translate = await getTranslations("Students.import");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, error: t("missingFile") };
+    return { ok: false, error: translate("missingFile") };
   }
   if (file.size > 1_000_000) {
-    return { ok: false, error: t("tooLarge") };
+    return { ok: false, error: translate("tooLarge") };
   }
 
   const text = await file.text();
@@ -439,7 +439,7 @@ export async function importStudentsAction(
   if (rows.length === 0) {
     return {
       ok: false,
-      error: t("noRows"),
+      error: translate("noRows"),
     };
   }
 
@@ -484,7 +484,7 @@ export async function importStudentsAction(
 
     if (!parsedRow.success) {
       rowErrors.push(
-        t("row", {
+        translate("row", {
           row: i + 2,
           message: parsedRow.error.issues[0]?.message ?? "invalid",
         }),
@@ -498,7 +498,7 @@ export async function importStudentsAction(
     );
     if (unknownLocations.length > 0) {
       rowErrors.push(
-        t("unknownLocations", {
+        translate("unknownLocations", {
           row: i + 2,
           names: unknownLocations.join(", "),
         }),
@@ -512,7 +512,7 @@ export async function importStudentsAction(
     const primaryName = csvRow.primaryLocation || rawLocations[0] || "";
     const primaryLocationId = locationIdByName.get(primaryName.toLowerCase());
     if (!primaryLocationId) {
-      rowErrors.push(t("noLocation", { row: i + 2 }));
+      rowErrors.push(translate("noLocation", { row: i + 2 }));
       continue;
     }
 
@@ -543,7 +543,7 @@ export async function importStudentsAction(
     });
     if (!input.success) {
       rowErrors.push(
-        t("row", {
+        translate("row", {
           row: i + 2,
           message: input.error.issues[0]?.message ?? "invalid",
         }),
@@ -557,7 +557,7 @@ export async function importStudentsAction(
   if (parsedInputs.length === 0) {
     return {
       ok: false,
-      error: t("noValid", { error: rowErrors[0] ?? "unknown" }),
+      error: translate("noValid", { error: rowErrors[0] ?? "unknown" }),
     };
   }
 
@@ -594,11 +594,14 @@ export async function importStudentsAction(
     // useActionFeedback (see AGENTS.md).
     return {
       ok: true,
-      message: t("imported", { count }),
+      message: translate("imported", { count }),
       count,
     };
   }
-  return { ok: false, error: t("noneImported", { error: rowErrors[0] ?? "" }) };
+  return {
+    ok: false,
+    error: translate("noneImported", { error: rowErrors[0] ?? "" }),
+  };
 }
 
 // ---- bulk actions (students list selection bar) -------------------------
@@ -618,14 +621,14 @@ export async function bulkSetStatusAction(
   formData: FormData,
 ): Promise<BulkActionState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students");
+  const translate = await getTranslations("Students");
   const ids = readSelectedIds(formData);
   const status = getField(formData, "status");
   if (ids.length === 0) {
-    return { ok: false, message: t("errors.bulkSelect") };
+    return { ok: false, message: translate("errors.bulkSelect") };
   }
   if (!STUDENT_STATUSES.includes(status as StudentStatus)) {
-    return { ok: false, message: t("errors.statusRequired") };
+    return { ok: false, message: translate("errors.statusRequired") };
   }
 
   await prisma.student.updateMany({
@@ -641,9 +644,9 @@ export async function bulkSetStatusAction(
   );
   return {
     ok: true,
-    message: t("errors.statusDone", {
+    message: translate("errors.statusDone", {
       count: ids.length,
-      status: t(`status.${status}`),
+      status: translate(`status.${status}`),
     }),
   };
 }
@@ -653,7 +656,7 @@ export async function bulkAssignDisciplinesAction(
   formData: FormData,
 ): Promise<BulkActionState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students");
+  const translate = await getTranslations("Students");
   const ids = readSelectedIds(formData);
   const disciplineIds = formData
     .getAll("disciplineIds")
@@ -661,10 +664,10 @@ export async function bulkAssignDisciplinesAction(
       (value): value is string => typeof value === "string" && value.length > 0,
     );
   if (ids.length === 0) {
-    return { ok: false, message: t("errors.bulkSelect") };
+    return { ok: false, message: translate("errors.bulkSelect") };
   }
   if (disciplineIds.length === 0) {
-    return { ok: false, message: t("errors.disciplineRequired") };
+    return { ok: false, message: translate("errors.disciplineRequired") };
   }
 
   const validDisciplines = await prisma.discipline.findMany({
@@ -684,8 +687,8 @@ export async function bulkAssignDisciplinesAction(
     ok: true,
     message:
       added > 0
-        ? t("errors.assigned", { count: added })
-        : t("errors.alreadyAssigned"),
+        ? translate("errors.assigned", { count: added })
+        : translate("errors.alreadyAssigned"),
   };
 }
 
@@ -694,14 +697,14 @@ export async function bulkEnrollAction(
   formData: FormData,
 ): Promise<BulkActionState> {
   const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
-  const t = await getTranslations("Students");
+  const translate = await getTranslations("Students");
   const ids = readSelectedIds(formData);
   const planId = getField(formData, "planId");
   if (ids.length === 0) {
-    return { ok: false, message: t("errors.bulkSelect") };
+    return { ok: false, message: translate("errors.bulkSelect") };
   }
   if (!planId) {
-    return { ok: false, message: t("errors.planRequired") };
+    return { ok: false, message: translate("errors.planRequired") };
   }
 
   const plan = await prisma.membershipPlan.findUnique({
@@ -709,7 +712,7 @@ export async function bulkEnrollAction(
     select: { name: true },
   });
   if (!plan) {
-    return { ok: false, message: t("errors.planMissing") };
+    return { ok: false, message: translate("errors.planMissing") };
   }
 
   const results = await Promise.all(
@@ -717,7 +720,9 @@ export async function bulkEnrollAction(
       enrollStudent({ studentId, planId, startDate: new Date() }),
     ),
   );
-  const created = results.filter((r) => r.outcome === "created").length;
+  const created = results.filter(
+    (result) => result.outcome === "created",
+  ).length;
   await logAudit(
     user.id,
     AUDIT_ACTIONS.CREATE_ENROLLMENT,
@@ -729,8 +734,8 @@ export async function bulkEnrollAction(
     ok: true,
     message:
       created === ids.length
-        ? t("errors.enrolledAll", { count: created, plan: plan.name })
-        : t("errors.enrolledSome", {
+        ? translate("errors.enrolledAll", { count: created, plan: plan.name })
+        : translate("errors.enrolledSome", {
             count: created,
             total: ids.length,
             plan: plan.name,

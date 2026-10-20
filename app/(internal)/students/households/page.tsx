@@ -24,14 +24,14 @@ import { SendPortalLinkButton } from "./send-portal-link-button";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Students.households");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Students.households");
+  return { title: translate("metaTitle") };
 }
 
 export default async function HouseholdsPage() {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
-  const t = await getTranslations("Students.households");
-  const studentsT = await getTranslations("Students");
+  const translate = await getTranslations("Students.households");
+  const translateStudents = await getTranslations("Students");
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
   const households = await listHouseholds();
 
@@ -39,28 +39,32 @@ export default async function HouseholdsPage() {
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: studentsT("title"), href: "/students" },
-          { label: t("title") },
+          { label: translateStudents("title"), href: "/students" },
+          { label: translate("title") },
         ]}
       />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title")}
+            {translate("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+          <p className="text-muted-foreground text-sm">
+            {translate("subtitle")}
+          </p>
         </div>
         {canEdit ? <CreateHouseholdSheet /> : null}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("allTitle")}</CardTitle>
-          <CardDescription>{t("allDescription")}</CardDescription>
+          <CardTitle>{translate("allTitle")}</CardTitle>
+          <CardDescription>{translate("allDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {households.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("empty")}</p>
+            <p className="text-muted-foreground text-sm">
+              {translate("empty")}
+            </p>
           ) : (
             households.map((household) => (
               <div
@@ -76,10 +80,10 @@ export default async function HouseholdsPage() {
                       household.contactPhone,
                     ]
                       .filter(Boolean)
-                      .join(" · ") || t("noContact")}
+                      .join(" · ") || translate("noContact")}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    {t("members", { count: household.members.length })}
+                    {translate("members", { count: household.members.length })}
                     {household.members.length > 0
                       ? `: ${household.members.map((member) => `${member.firstName} ${member.lastName}`).join(", ")}`
                       : ""}
@@ -107,11 +111,11 @@ export default async function HouseholdsPage() {
                         value={household.id}
                       />
                       <ConfirmDialog
-                        title={t("deleteTitle")}
-                        description={t("deleteDescription", {
+                        title={translate("deleteTitle")}
+                        description={translate("deleteDescription", {
                           name: household.name,
                         })}
-                        confirmLabel={t("delete")}
+                        confirmLabel={translate("delete")}
                         formId={`delete-household-${household.id}`}
                       >
                         <Button
@@ -120,7 +124,7 @@ export default async function HouseholdsPage() {
                           variant="ghost"
                           className="text-destructive"
                         >
-                          {t("delete")}
+                          {translate("delete")}
                         </Button>
                       </ConfirmDialog>
                     </form>
@@ -133,11 +137,11 @@ export default async function HouseholdsPage() {
       </Card>
 
       <p className="text-muted-foreground text-xs">
-        {t("tipBefore")}{" "}
+        {translate("tipBefore")}{" "}
         <Link href="/students" className="hover:underline">
-          {t("tipLink")}
+          {translate("tipLink")}
         </Link>
-        {t("tipAfter")}
+        {translate("tipAfter")}
       </p>
     </div>
   );

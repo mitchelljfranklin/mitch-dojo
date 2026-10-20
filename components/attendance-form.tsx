@@ -48,8 +48,8 @@ export function AttendanceForm({
   canMark,
   students,
 }: AttendanceFormProps) {
-  const t = useTranslations("Attendance.form");
-  const statusT = useTranslations("Attendance.status");
+  const translate = useTranslations("Attendance.form");
+  const translateStatus = useTranslations("Attendance.status");
   const [state, formAction, isPending] = useActionState<
     AttendanceActionState,
     FormData
@@ -90,10 +90,10 @@ export function AttendanceForm({
             size="sm"
             onClick={markAllPresent}
           >
-            {t("markAllPresent")}
+            {translate("markAllPresent")}
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? t("saving") : t("save")}
+            {isPending ? translate("saving") : translate("save")}
           </Button>
         </div>
       ) : null}
@@ -121,21 +121,21 @@ export function AttendanceForm({
               </span>
               {student.source === "CHECKIN" ? (
                 <Badge variant="secondary" className="text-[10px]">
-                  {t("qr")}
+                  {translate("qr")}
                 </Badge>
               ) : null}
             </div>
             {canMark ? (
               <select
                 key={`${student.studentId}-${student.status ?? "none"}`}
-                aria-label={t("attendanceAria", { name: student.name })}
+                aria-label={translate("attendanceAria", { name: student.name })}
                 name={`s_${student.studentId}`}
                 defaultValue={student.status ?? "ABSENT"}
                 className={`border-input bg-background h-9 rounded-md border px-3 text-sm ${statusClass(student.status)}`}
               >
                 {ATTENDANCE_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {statusT(status)}
+                    {translateStatus(status)}
                   </option>
                 ))}
               </select>
@@ -144,7 +144,9 @@ export function AttendanceForm({
                 variant={student.status ? "secondary" : "outline"}
                 className={statusClass(student.status)}
               >
-                {student.status ? statusT(student.status) : t("notMarked")}
+                {student.status
+                  ? translateStatus(student.status)
+                  : translate("notMarked")}
               </Badge>
             )}
           </div>

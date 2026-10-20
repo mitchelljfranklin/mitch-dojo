@@ -34,8 +34,8 @@ export function StudentAttachments({
   studentId: string;
   attachments: StudentAttachmentView[];
 }) {
-  const t = useTranslations("Students.attachments");
-  const format = useFormatter();
+  const translate = useTranslations("Students.attachments");
+  const formatter = useFormatter();
   const [state, formAction, isPending] = useActionState(
     addAttachmentAction,
     undefined,
@@ -45,7 +45,7 @@ export function StudentAttachments({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
+        <CardTitle>{translate("title")}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {attachments.length > 0 ? (
@@ -64,7 +64,7 @@ export function StudentAttachments({
                   </a>
                   <span className="text-muted-foreground text-xs">
                     {formatSize(attachment.sizeBytes)} ·{" "}
-                    {format.dateTime(new Date(attachment.createdAt), {
+                    {formatter.dateTime(new Date(attachment.createdAt), {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
@@ -84,20 +84,20 @@ export function StudentAttachments({
                     size="sm"
                     className="text-destructive"
                   >
-                    {t("remove")}
+                    {translate("remove")}
                   </Button>
                 </form>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm">{t("none")}</p>
+          <p className="text-muted-foreground text-sm">{translate("none")}</p>
         )}
 
         <form action={formAction} className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="studentId" value={studentId} />
           <div className="grid gap-1">
-            <Label htmlFor="attachment-file">{t("addFile")}</Label>
+            <Label htmlFor="attachment-file">{translate("addFile")}</Label>
             <Input
               id="attachment-file"
               name="file"
@@ -107,16 +107,18 @@ export function StudentAttachments({
             />
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="attachment-display-name">{t("displayName")}</Label>
+            <Label htmlFor="attachment-display-name">
+              {translate("displayName")}
+            </Label>
             <Input
               id="attachment-display-name"
               name="displayName"
-              placeholder={t("optional")}
+              placeholder={translate("optional")}
               className="w-48"
             />
           </div>
           <Button type="submit" size="sm" disabled={isPending}>
-            {isPending ? t("uploading") : t("upload")}
+            {isPending ? translate("uploading") : translate("upload")}
           </Button>
         </form>
         {state && !state.ok ? (

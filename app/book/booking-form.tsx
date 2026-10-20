@@ -46,8 +46,8 @@ export function BookingForm({
   disciplines,
   sessions,
 }: BookingFormProps) {
-  const t = useTranslations("Book.form");
-  const format = useFormatter();
+  const translate = useTranslations("Book.form");
+  const formatter = useFormatter();
   const [locationId, setLocationId] = useState("");
   const [disciplineId, setDisciplineId] = useState("");
   const [bookingFor, setBookingFor] = useState<"adult" | "child">("adult");
@@ -68,7 +68,7 @@ export function BookingForm({
       {/* Honeypot — hidden from humans and assistive tech; bots fill it and
           are silently rejected. */}
       <div className="hidden" aria-hidden="true">
-        <Label htmlFor="website">{t("honeypotLabel")}</Label>
+        <Label htmlFor="website">{translate("honeypotLabel")}</Label>
         <Input
           id="website"
           name="website"
@@ -79,7 +79,7 @@ export function BookingForm({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="booking-for">{t("whoFor")}</Label>
+        <Label htmlFor="booking-for">{translate("whoFor")}</Label>
         <Select
           name="bookingFor"
           defaultValue="adult"
@@ -89,8 +89,8 @@ export function BookingForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="adult">{t("myself")}</SelectItem>
-            <SelectItem value="child">{t("child")}</SelectItem>
+            <SelectItem value="adult">{translate("myself")}</SelectItem>
+            <SelectItem value="child">{translate("child")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -98,13 +98,13 @@ export function BookingForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="firstName">
-            {forChild ? t("childFirstName") : t("firstName")} *
+            {forChild ? translate("childFirstName") : translate("firstName")} *
           </Label>
           <Input id="firstName" name="firstName" required maxLength={60} />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="lastName">
-            {forChild ? t("childLastName") : t("lastName")} *
+            {forChild ? translate("childLastName") : translate("lastName")} *
           </Label>
           <Input id="lastName" name="lastName" required maxLength={60} />
         </div>
@@ -113,12 +113,12 @@ export function BookingForm({
       {forChild ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="guardianName">{t("guardianName")}</Label>
+            <Label htmlFor="guardianName">{translate("guardianName")}</Label>
             <Input id="guardianName" name="guardianName" maxLength={60} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="guardianRelationship">
-              {t("guardianRelationship")}
+              {translate("guardianRelationship")}
             </Label>
             <select
               id="guardianRelationship"
@@ -126,10 +126,10 @@ export function BookingForm({
               defaultValue=""
               className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             >
-              <option value="">{t("preferNotToSay")}</option>
+              <option value="">{translate("preferNotToSay")}</option>
               {GUARDIAN_RELATIONSHIPS.map((relationship) => (
                 <option key={relationship} value={relationship}>
-                  {t(
+                  {translate(
                     `relationships.${RELATIONSHIP_MESSAGE_KEYS[relationship]}`,
                   )}
                 </option>
@@ -141,25 +141,27 @@ export function BookingForm({
 
       <div className="grid gap-2">
         <Label htmlFor="booking-email">
-          {forChild ? t("guardianEmail") : t("email")}
+          {forChild ? translate("guardianEmail") : translate("email")}
         </Label>
         <Input id="booking-email" name="email" type="email" maxLength={120} />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="booking-phone">
-          {forChild ? t("guardianPhone") : t("phone")}
+          {forChild ? translate("guardianPhone") : translate("phone")}
         </Label>
         <Input id="booking-phone" name="phone" type="tel" maxLength={40} />
       </div>
       <p className="text-muted-foreground text-xs">
-        {forChild ? t("contactNoteChild") : t("contactNoteAdult")}
+        {forChild
+          ? translate("contactNoteChild")
+          : translate("contactNoteAdult")}
       </p>
 
       <div className="grid gap-2">
-        <Label htmlFor="booking-location">{t("location")}</Label>
+        <Label htmlFor="booking-location">{translate("location")}</Label>
         <Select name="locationId" required onValueChange={setLocationId}>
           <SelectTrigger id="booking-location">
-            <SelectValue placeholder={t("chooseLocation")} />
+            <SelectValue placeholder={translate("chooseLocation")} />
           </SelectTrigger>
           <SelectContent>
             {locations.map((location) => (
@@ -171,10 +173,10 @@ export function BookingForm({
         </Select>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="booking-discipline">{t("martialArt")}</Label>
+        <Label htmlFor="booking-discipline">{translate("martialArt")}</Label>
         <Select name="disciplineId" required onValueChange={setDisciplineId}>
           <SelectTrigger id="booking-discipline">
-            <SelectValue placeholder={t("chooseMartialArt")} />
+            <SelectValue placeholder={translate("chooseMartialArt")} />
           </SelectTrigger>
           <SelectContent>
             {disciplines.map((discipline) => (
@@ -186,15 +188,15 @@ export function BookingForm({
         </Select>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="booking-session">{t("preferredClass")}</Label>
+        <Label htmlFor="booking-session">{translate("preferredClass")}</Label>
         <Select name="session" defaultValue="">
           <SelectTrigger id="booking-session">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t("noPreference")}</SelectItem>
+            <SelectItem value="">{translate("noPreference")}</SelectItem>
             {matchingSessions.map((session) => {
-              const dateLabel = format.dateTime(
+              const dateLabel = formatter.dateTime(
                 new Date(`${session.date}T00:00:00Z`),
                 {
                   weekday: "short",
@@ -204,12 +206,12 @@ export function BookingForm({
                 },
               );
               const label = session.full
-                ? t("classOptionFull", {
+                ? translate("classOptionFull", {
                     courseName: session.courseName,
                     date: dateLabel,
                     time: session.startTime,
                   })
-                : t("classOption", {
+                : translate("classOption", {
                     courseName: session.courseName,
                     date: dateLabel,
                     time: session.startTime,
@@ -226,11 +228,13 @@ export function BookingForm({
             })}
           </SelectContent>
         </Select>
-        <p className="text-muted-foreground text-xs">{t("sessionNote")}</p>
+        <p className="text-muted-foreground text-xs">
+          {translate("sessionNote")}
+        </p>
       </div>
 
       <Button type="submit" size="lg">
-        {t("submit")}
+        {translate("submit")}
       </Button>
     </form>
   );

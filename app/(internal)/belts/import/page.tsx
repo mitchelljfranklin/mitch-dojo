@@ -17,53 +17,59 @@ import { BeltImportForm } from "./import-form";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Belts.import");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Belts.import");
+  return { title: translate("metaTitle") };
 }
 
 export default async function ImportBeltHistoryPage() {
   await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts.import");
-  const beltsT = await getTranslations("Belts");
+  const translate = await getTranslations("Belts.import");
+  const translateBelts = await getTranslations("Belts");
   const disciplines = await listDisciplines();
-  const activeDisciplines = disciplines.filter((d) => d.isActive);
+  const activeDisciplines = disciplines.filter(
+    (discipline) => discipline.isActive,
+  );
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: beltsT("title"), href: "/belts" },
-          { label: t("breadcrumb") },
+          { label: translateBelts("title"), href: "/belts" },
+          { label: translate("breadcrumb") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {translate("title")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>{t("cardTitle")}</CardTitle>
-          <CardDescription>{t("cardDescription")}</CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="text-sm">
-            <p className="mb-2 font-medium">{t("columns")}</p>
+            <p className="mb-2 font-medium">{translate("columns")}</p>
             <ul className="text-muted-foreground list-disc pl-5 text-xs">
               <li>
-                <code>Email</code> — {t("studentLine")}
+                <code>Email</code> — {translate("studentLine")}
               </li>
               <li>
-                <code>Belt</code> — {t("beltLine")}
+                <code>Belt</code> — {translate("beltLine")}
               </li>
               <li>
-                <code>AwardedAt</code> — {t("dateLine")}
+                <code>AwardedAt</code> — {translate("dateLine")}
               </li>
               <li>
-                <code>Notes</code> — {t("notesLine")}
+                <code>Notes</code> — {translate("notesLine")}
               </li>
             </ul>
-            <p className="text-muted-foreground mt-2 text-xs">{t("note")}</p>
+            <p className="text-muted-foreground mt-2 text-xs">
+              {translate("note")}
+            </p>
           </div>
           {activeDisciplines.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              {t("noDisciplines")}
+              {translate("noDisciplines")}
             </p>
           ) : (
             <BeltImportForm

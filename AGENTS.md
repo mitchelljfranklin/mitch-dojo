@@ -248,6 +248,9 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 - **Full, descriptive names** — `student`, not `stu`; `calculateBeltEligibility`,
   not `calcBelt`. No single-letter variables (except `i`, `j` loop indices).
+  Translation helpers follow the same rule: `translate`, `translateStatus`,
+  `translateDetail`, never `t`/`d`. Resolved `searchParams` are named `query`,
+  not `sp`, and the next-intl formatter is `formatter`, not `format`.
 - **Small, single-responsibility units.** Guard clauses; early returns.
 - **No magic values.** Named constants/enums for statuses.
 - **Explicit types at boundaries.** No `any` (`unknown` + narrowing); validate

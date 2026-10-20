@@ -19,13 +19,13 @@ import { listTrainers } from "@/lib/db/trainers";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Classes");
-  return { title: t("page.newTitle") };
+  const translate = await getTranslations("Classes");
+  return { title: translate("page.newTitle") };
 }
 
 export default async function NewCoursePage() {
   await requirePermission(PERMISSIONS.CLASSES_EDIT);
-  const t = await getTranslations("Classes");
+  const translate = await getTranslations("Classes");
   const [locations, disciplines, trainers] = await Promise.all([
     listAssignableLocations(),
     listDisciplines(),
@@ -36,32 +36,34 @@ export default async function NewCoursePage() {
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: t("title"), href: "/classes" },
-          { label: t("page.newBreadcrumb") },
+          { label: translate("title"), href: "/classes" },
+          { label: translate("page.newBreadcrumb") },
         ]}
       />
       <h1 className="text-2xl font-semibold tracking-tight">
-        {t("page.newTitle")}
+        {translate("page.newTitle")}
       </h1>
       <Card>
         <CardHeader>
-          <CardTitle>{t("page.detailsTitle")}</CardTitle>
-          <CardDescription>{t("page.createDescription")}</CardDescription>
+          <CardTitle>{translate("page.detailsTitle")}</CardTitle>
+          <CardDescription>
+            {translate("page.createDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <CourseForm
             action={createCourseAction}
             locations={locations}
-            disciplines={disciplines.map((d) => ({
-              id: d.id,
-              name: d.name,
-              isActive: d.isActive,
+            disciplines={disciplines.map((discipline) => ({
+              id: discipline.id,
+              name: discipline.name,
+              isActive: discipline.isActive,
             }))}
             trainers={trainers.map((trainer) => ({
               id: trainer.id,
               name: trainer.name,
             }))}
-            submitLabel={t("form.create")}
+            submitLabel={translate("form.create")}
           />
         </CardContent>
       </Card>

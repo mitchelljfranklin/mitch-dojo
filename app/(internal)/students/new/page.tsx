@@ -20,13 +20,13 @@ import { getOrganizationSettings } from "@/lib/settings";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Students");
-  return { title: t("actions.new") };
+  const translate = await getTranslations("Students");
+  return { title: translate("actions.new") };
 }
 
 export default async function NewStudentPage() {
   const user = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const t = await getTranslations("Students");
+  const translate = await getTranslations("Students");
   const [locations, disciplines, households, organization] = await Promise.all([
     listAssignableLocations(),
     prisma.discipline.findMany({
@@ -42,17 +42,19 @@ export default async function NewStudentPage() {
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: t("title"), href: "/students" },
-          { label: t("actions.new") },
+          { label: translate("title"), href: "/students" },
+          { label: translate("actions.new") },
         ]}
       />
       <h1 className="text-2xl font-semibold tracking-tight">
-        {t("actions.new")}
+        {translate("actions.new")}
       </h1>
       <Card>
         <CardHeader>
-          <CardTitle>{t("form.detailsTitle")}</CardTitle>
-          <CardDescription>{t("form.createDescription")}</CardDescription>
+          <CardTitle>{translate("form.detailsTitle")}</CardTitle>
+          <CardDescription>
+            {translate("form.createDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <StudentForm
@@ -61,7 +63,7 @@ export default async function NewStudentPage() {
             disciplines={disciplines}
             households={households}
             defaultCountry={organization.defaultCountry}
-            submitLabel={t("form.create")}
+            submitLabel={translate("form.create")}
             canViewMedical={hasPermission(
               user.permissions,
               PERMISSIONS.STUDENTS_MEDICAL,

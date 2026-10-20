@@ -22,8 +22,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Dashboard");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Dashboard");
+  return { title: translate("metaTitle") };
 }
 
 export default async function DashboardPage() {
@@ -31,8 +31,8 @@ export default async function DashboardPage() {
   // requiring a permission here would redirect to /dashboard in a loop for
   // roles without it. Gate content, not the page itself.
   const user = await requireUser();
-  const t = await getTranslations("Dashboard");
-  const format = await getFormatter();
+  const translate = await getTranslations("Dashboard");
+  const formatter = await getFormatter();
   const organization = await getOrganizationSettings();
   const canViewMemberships = hasPermission(
     user.permissions,
@@ -47,13 +47,13 @@ export default async function DashboardPage() {
 
   const money = (cents: number) => {
     try {
-      return format.number(cents / 100, { style: "currency", currency });
+      return formatter.number(cents / 100, { style: "currency", currency });
     } catch {
       return `${(cents / 100).toFixed(2)} ${currency}`;
     }
   };
   const formatDueDate = (date: Date) =>
-    format.dateTime(date, {
+    formatter.dateTime(date, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -63,10 +63,12 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {user.name ? t("welcomeNamed", { name: user.name }) : t("welcome")}
+          {user.name
+            ? translate("welcomeNamed", { name: user.name })
+            : translate("welcome")}
         </h1>
         <p className="text-muted-foreground text-sm">
-          {t("overview", { org: organization.name })}
+          {translate("overview", { org: organization.name })}
         </p>
       </div>
 
@@ -77,13 +79,13 @@ export default async function DashboardPage() {
         >
           <div>
             <p className="text-sm font-medium">
-              {t("failedEmails", { count: failedEmails })}
+              {translate("failedEmails", { count: failedEmails })}
             </p>
             <p className="text-muted-foreground text-xs">
-              {t("failedEmailsHint")}
+              {translate("failedEmailsHint")}
             </p>
           </div>
-          <Badge variant="destructive">{t("actionNeeded")}</Badge>
+          <Badge variant="destructive">{translate("actionNeeded")}</Badge>
         </Link>
       ) : null}
 
@@ -91,16 +93,16 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle>{t("overdueTitle")}</CardTitle>
+              <CardTitle>{translate("overdueTitle")}</CardTitle>
               <CardDescription>
-                {t("overdueSummary", { count: overdue.length })}
+                {translate("overdueSummary", { count: overdue.length })}
               </CardDescription>
             </div>
             <Link
               href="/memberships/invoices?status=OVERDUE"
               className="text-sm hover:underline"
             >
-              {t("viewAll")}
+              {translate("viewAll")}
             </Link>
           </CardHeader>
           {overdue.length > 0 ? (
@@ -113,14 +115,14 @@ export default async function DashboardPage() {
                 >
                   <span className="font-medium">{row.studentName}</span>
                   <span className="text-muted-foreground text-xs">
-                    {t("invoiceDue", {
+                    {translate("invoiceDue", {
                       number: row.invoiceNumber,
                       date: formatDueDate(row.dueDate),
                     })}
                   </span>
                   <div className="flex items-center gap-2">
                     <Badge variant="destructive">
-                      {t("daysOverdue", { days: row.daysOverdue })}
+                      {translate("daysOverdue", { days: row.daysOverdue })}
                     </Badge>
                     <span className="text-right">
                       {money(row.balanceCents)}
@@ -135,26 +137,26 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("startsTitle")}</CardTitle>
-          <CardDescription>{t("startsDescription")}</CardDescription>
+          <CardTitle>{translate("startsTitle")}</CardTitle>
+          <CardDescription>{translate("startsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
           <p className="text-muted-foreground">
-            {t("startsBodyBefore")}
+            {translate("startsBodyBefore")}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               Ctrl K
             </kbd>{" "}
-            {t("or")}{" "}
+            {translate("or")}{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ?
             </kbd>
-            {t("startsBodyAfter")}
+            {translate("startsBodyAfter")}
           </p>
           <Link
             href="/style-guide"
             className="text-muted-foreground hover:text-primary mt-2 inline-block text-xs"
           >
-            {t("styleGuide")}
+            {translate("styleGuide")}
           </Link>
         </CardContent>
       </Card>

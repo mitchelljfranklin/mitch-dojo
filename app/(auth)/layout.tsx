@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function AuthLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [appearance, organization, t] = await Promise.all([
+  const [appearance, organization, translate] = await Promise.all([
     getAppearanceSettings(),
     getOrganizationSettings(),
     getTranslations("Auth"),
@@ -58,7 +58,9 @@ export default async function AuthLayout({
             <h1 className="text-2xl font-semibold tracking-tight">
               {organization.name}
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">{t("tagline")}</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {translate("tagline")}
+            </p>
           </div>
         )}
         {children}

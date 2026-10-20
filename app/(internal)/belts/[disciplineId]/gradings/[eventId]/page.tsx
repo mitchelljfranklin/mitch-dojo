@@ -25,8 +25,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Belts.gradings.event");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Belts.gradings.event");
+  return { title: translate("metaTitle") };
 }
 
 type GradingEventPageProps = {
@@ -40,18 +40,18 @@ export default async function GradingEventPage({
 }: GradingEventPageProps) {
   const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts.gradings");
-  const eventT = await getTranslations("Belts.gradings.event");
-  const beltsT = await getTranslations("Belts");
-  const format = await getFormatter();
+  const translate = await getTranslations("Belts.gradings");
+  const translateEvent = await getTranslations("Belts.gradings.event");
+  const translateBelts = await getTranslations("Belts");
+  const formatter = await getFormatter();
   const { disciplineId, eventId } = await params;
-  const sp = await searchParams;
+  const query = await searchParams;
   const event = await getGradingEvent(eventId);
   if (!event) {
     notFound();
   }
   const isOpen = event.status === "OPEN";
-  const day = format.dateTime(event.date, {
+  const formattedDate = formatter.dateTime(event.date, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -60,15 +60,15 @@ export default async function GradingEventPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.created ? (
-        <FlashToast variant="success" message={t("created")} />
+      {query.created ? (
+        <FlashToast variant="success" message={translate("created")} />
       ) : null}
       <Breadcrumbs
         segments={[
-          { label: beltsT("title"), href: "/belts" },
+          { label: translateBelts("title"), href: "/belts" },
           { label: event.discipline.name, href: `/belts/${disciplineId}` },
           {
-            label: t("metaTitle"),
+            label: translate("metaTitle"),
             href: `/belts/${disciplineId}/gradings`,
           },
           { label: event.name },
@@ -81,14 +81,14 @@ export default async function GradingEventPage({
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             <Badge variant="outline">{event.discipline.name}</Badge>
-            <span className="text-muted-foreground">{day}</span>
+            <span className="text-muted-foreground">{formattedDate}</span>
             {event.location ? (
               <span className="text-muted-foreground">
                 {event.location.name}
               </span>
             ) : null}
             <Badge variant={isOpen ? "secondary" : "outline"}>
-              {t(`status.${event.status}`)}
+              {translate(`status.${event.status}`)}
             </Badge>
           </div>
         </div>
@@ -97,13 +97,13 @@ export default async function GradingEventPage({
             <form action={sendGradingInvitesAction}>
               <input type="hidden" name="eventId" value={event.id} />
               <Button type="submit" variant="outline">
-                {eventT("emailInvites")}
+                {translateEvent("emailInvites")}
               </Button>
             </form>
             <form action={closeGradingEventAction}>
               <input type="hidden" name="eventId" value={event.id} />
               <Button type="submit" variant="outline">
-                {eventT("close")}
+                {translateEvent("close")}
               </Button>
             </form>
           </div>
@@ -112,12 +112,16 @@ export default async function GradingEventPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>{eventT("studentsTitle")}</CardTitle>
-          <CardDescription>{eventT("studentsDescription")}</CardDescription>
+          <CardTitle>{translateEvent("studentsTitle")}</CardTitle>
+          <CardDescription>
+            {translateEvent("studentsDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {event.students.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{eventT("empty")}</p>
+            <p className="text-muted-foreground text-sm">
+              {translateEvent("empty")}
+            </p>
           ) : (
             event.students.map((row) => (
               <div
@@ -129,7 +133,7 @@ export default async function GradingEventPage({
                     {row.student.firstName} {row.student.lastName}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    {eventT("target", {
+                    {translateEvent("target", {
                       belt: row.targetBeltRangeEntry?.name ?? "—",
                     })}
                   </span>
@@ -138,7 +142,7 @@ export default async function GradingEventPage({
                   <Badge
                     variant={row.outcome === "PROMOTED" ? "default" : "outline"}
                   >
-                    {eventT(`outcomes.${row.outcome}`)}
+                    {translateEvent(`outcomes.${row.outcome}`)}
                   </Badge>
                   {canEdit && isOpen ? (
                     <>
@@ -160,7 +164,7 @@ export default async function GradingEventPage({
                             value="PROMOTED"
                           />
                           <Button type="submit" size="sm">
-                            {eventT("promote")}
+                            {translateEvent("promote")}
                           </Button>
                         </form>
                       ) : null}
@@ -178,7 +182,7 @@ export default async function GradingEventPage({
                           />
                           <input type="hidden" name="outcome" value="ABSENT" />
                           <Button type="submit" size="sm" variant="ghost">
-                            {eventT("absent")}
+                            {translateEvent("absent")}
                           </Button>
                         </form>
                       ) : (
@@ -195,7 +199,7 @@ export default async function GradingEventPage({
                           />
                           <input type="hidden" name="outcome" value="PENDING" />
                           <Button type="submit" size="sm" variant="ghost">
-                            {eventT("reset")}
+                            {translateEvent("reset")}
                           </Button>
                         </form>
                       )}

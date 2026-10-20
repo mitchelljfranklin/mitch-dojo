@@ -21,7 +21,7 @@ type IdleTimerProps = {
 const COUNTDOWN_SECONDS = 60;
 
 export function IdleTimer({ timeoutMinutes }: IdleTimerProps) {
-  const t = useTranslations("Common");
+  const translate = useTranslations("Common");
   const [countdown, setCountdown] = useState(0);
   const lastActivityRef = useRef<number | null>(null);
   const countdownRef = useRef(0);
@@ -107,14 +107,14 @@ export function IdleTimer({ timeoutMinutes }: IdleTimerProps) {
     <AlertDialog open>
       <AlertDialogContent className="max-w-sm text-center">
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("sessionExpiring")}</AlertDialogTitle>
+          <AlertDialogTitle>{translate("sessionExpiring")}</AlertDialogTitle>
           <AlertDialogDescription aria-live="assertive">
-            {t("sessionExpiringDescription", { count: countdown })}
+            {translate("sessionExpiringDescription", { count: countdown })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="justify-center sm:justify-center">
           <AlertDialogAction onClick={staySignedIn}>
-            {t("staySignedIn")}
+            {translate("staySignedIn")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

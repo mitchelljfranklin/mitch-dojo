@@ -14,8 +14,8 @@ import { WEEKDAY_ORDER } from "@/lib/schemas/course";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Classes.schedule");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Classes.schedule");
+  return { title: translate("metaTitle") };
 }
 
 type ScheduleSlot = {
@@ -30,10 +30,10 @@ type ScheduleSlot = {
 
 function formatTime(
   time: string,
-  format: Awaited<ReturnType<typeof getFormatter>>,
+  formatter: Awaited<ReturnType<typeof getFormatter>>,
 ): string {
   const [hours, minutes] = time.split(":").map(Number);
-  return format.dateTime(
+  return formatter.dateTime(
     new Date(Date.UTC(2000, 0, 1, hours ?? 0, minutes ?? 0)),
     { hour: "numeric", minute: "2-digit", timeZone: "UTC" },
   );
@@ -41,9 +41,9 @@ function formatTime(
 
 export default async function SchedulePage() {
   await requirePermission(PERMISSIONS.CLASSES_VIEW);
-  const t = await getTranslations("Classes.schedule");
-  const classesT = await getTranslations("Classes");
-  const format = await getFormatter();
+  const translate = await getTranslations("Classes.schedule");
+  const translateClasses = await getTranslations("Classes");
+  const formatter = await getFormatter();
   // Generate upcoming sessions on view too (idempotent) so the schedule and
   // check-in always have concrete rows to attach to. The scheduler also runs
   // this every tick, so a dojo that never opens a course page still gets them.
@@ -61,36 +61,38 @@ export default async function SchedulePage() {
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: classesT("title"), href: "/classes" },
-          { label: t("title") },
+          { label: translateClasses("title"), href: "/classes" },
+          { label: translate("title") },
         ]}
       />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title")}
+            {translate("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+          <p className="text-muted-foreground text-sm">
+            {translate("subtitle")}
+          </p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/classes">{classesT("actions.viewCourses")}</Link>
+          <Link href="/classes">{translateClasses("actions.viewCourses")}</Link>
         </Button>
       </div>
 
       {slots.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>{t("emptyTitle")}</CardTitle>
+            <CardTitle>{translate("emptyTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              {t("emptyDescription")}
+              {translate("emptyDescription")}
             </p>
             <Link
               href="/classes/new"
               className="text-primary mt-2 inline-block text-sm hover:underline"
             >
-              {classesT("actions.createCourse")}
+              {translateClasses("actions.createCourse")}
             </Link>
           </CardContent>
         </Card>
@@ -104,12 +106,12 @@ export default async function SchedulePage() {
               <Card key={weekday} className="flex flex-col">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">
-                    {classesT(`weekdays.${weekday}`)}
+                    {translateClasses(`weekdays.${weekday}`)}
                   </CardTitle>
                   <p className="text-muted-foreground text-xs">
                     {daySlots.length === 0
-                      ? t("noClasses")
-                      : t("classCount", { count: daySlots.length })}
+                      ? translate("noClasses")
+                      : translate("classCount", { count: daySlots.length })}
                   </p>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col gap-2">
@@ -123,12 +125,12 @@ export default async function SchedulePage() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-mono text-xs font-medium">
-                          {formatTime(slot.startTime, format)}–
-                          {formatTime(slot.endTime, format)}
+                          {formatTime(slot.startTime, formatter)}–
+                          {formatTime(slot.endTime, formatter)}
                         </span>
                         {slot.isActive ? null : (
                           <Badge variant="outline" className="text-[10px]">
-                            {t("inactive")}
+                            {translate("inactive")}
                           </Badge>
                         )}
                       </div>

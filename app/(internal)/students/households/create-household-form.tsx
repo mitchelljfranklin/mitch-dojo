@@ -23,7 +23,7 @@ import {
 } from "@/lib/actions/households";
 
 export function CreateHouseholdSheet() {
-  const t = useTranslations("Students.households");
+  const translate = useTranslations("Students.households");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     HouseholdActionState,
@@ -35,7 +35,7 @@ export function CreateHouseholdSheet() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>{t("newButton")}</Button>
+      <Button onClick={() => setOpen(true)}>{translate("newButton")}</Button>
       <Sheet
         open={open}
         onOpenChange={(next) => {
@@ -44,8 +44,8 @@ export function CreateHouseholdSheet() {
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>{t("newTitle")}</SheetTitle>
-            <SheetDescription>{t("newDescription")}</SheetDescription>
+            <SheetTitle>{translate("newTitle")}</SheetTitle>
+            <SheetDescription>{translate("newDescription")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -53,27 +53,29 @@ export function CreateHouseholdSheet() {
             className="flex flex-1 flex-col gap-4 px-4"
           >
             <div className="grid gap-2">
-              <Label htmlFor="household-name">{t("name")}</Label>
+              <Label htmlFor="household-name">{translate("name")}</Label>
               <Input
                 id="household-name"
                 name="name"
                 required
                 maxLength={80}
-                placeholder={t("namePlaceholder")}
+                placeholder={translate("namePlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="household-contact-name">{t("contactName")}</Label>
+              <Label htmlFor="household-contact-name">
+                {translate("contactName")}
+              </Label>
               <Input
                 id="household-contact-name"
                 name="contactName"
                 maxLength={80}
-                placeholder={t("contactPlaceholder")}
+                placeholder={translate("contactPlaceholder")}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="household-contact-email">
-                {t("contactEmail")}
+                {translate("contactEmail")}
               </Label>
               <Input
                 id="household-contact-email"
@@ -84,7 +86,7 @@ export function CreateHouseholdSheet() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="household-contact-phone">
-                {t("contactPhone")}
+                {translate("contactPhone")}
               </Label>
               <Input
                 id="household-contact-phone"
@@ -106,11 +108,11 @@ export function CreateHouseholdSheet() {
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  {t("done")}
+                  {translate("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? t("creating") : t("create")}
+                  {isPending ? translate("creating") : translate("create")}
                 </Button>
               )}
               <Button
@@ -118,7 +120,7 @@ export function CreateHouseholdSheet() {
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t("cancel")}
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

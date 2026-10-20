@@ -35,9 +35,9 @@ import { portalSignOutAction } from "./sign-out";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Portal");
+  const translate = await getTranslations("Portal");
   return {
-    title: t("metaTitle"),
+    title: translate("metaTitle"),
     robots: { index: false, follow: false },
   };
 }
@@ -50,9 +50,9 @@ type PortalPageProps = {
 };
 
 export default async function PortalPage({ searchParams }: PortalPageProps) {
-  const sp = await searchParams;
-  const t = await getTranslations("Portal");
-  const format = await getFormatter();
+  const query = await searchParams;
+  const translate = await getTranslations("Portal");
+  const formatter = await getFormatter();
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -61,8 +61,10 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       <PortalShell>
         <Card>
           <CardHeader>
-            <CardTitle>{t("rateLimitedTitle")}</CardTitle>
-            <CardDescription>{t("rateLimitedDescription")}</CardDescription>
+            <CardTitle>{translate("rateLimitedTitle")}</CardTitle>
+            <CardDescription>
+              {translate("rateLimitedDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       </PortalShell>
@@ -78,9 +80,11 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       <PortalShell>
         <Card>
           <CardHeader>
-            <CardTitle>{t("accessTitle")}</CardTitle>
+            <CardTitle>{translate("accessTitle")}</CardTitle>
             <CardDescription>
-              {sp.error === "rate" ? t("accessRate") : t("accessExpired")}
+              {query.error === "rate"
+                ? translate("accessRate")
+                : translate("accessExpired")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -100,8 +104,10 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       <PortalShell>
         <Card>
           <CardHeader>
-            <CardTitle>{t("noMembersTitle")}</CardTitle>
-            <CardDescription>{t("noMembersDescription")}</CardDescription>
+            <CardTitle>{translate("noMembersTitle")}</CardTitle>
+            <CardDescription>
+              {translate("noMembersDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       </PortalShell>
@@ -110,9 +116,9 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
   const activeChildId =
     access.householdId &&
-    sp.child &&
-    children.some((child) => child.id === sp.child)
-      ? sp.child
+    query.child &&
+    children.some((child) => child.id === query.child)
+      ? query.child
       : studentId;
 
   const [
@@ -138,8 +144,10 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       <PortalShell>
         <Card>
           <CardHeader>
-            <CardTitle>{t("notFoundTitle")}</CardTitle>
-            <CardDescription>{t("notFoundDescription")}</CardDescription>
+            <CardTitle>{translate("notFoundTitle")}</CardTitle>
+            <CardDescription>
+              {translate("notFoundDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       </PortalShell>
@@ -147,21 +155,21 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
   }
 
   const formatDay = (value: Date) =>
-    format.dateTime(value, {
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
       timeZone: "UTC",
     });
   const formatLocalDay = (value: Date) =>
-    format.dateTime(value, {
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   const money = (cents: number) => {
     try {
-      return format.number(cents / 100, { style: "currency", currency });
+      return formatter.number(cents / 100, { style: "currency", currency });
     } catch {
       return `${(cents / 100).toFixed(2)} ${currency}`;
     }
@@ -183,14 +191,14 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
   return (
     <PortalShell>
       <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-        {t("label")}
+        {translate("label")}
       </p>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{fullName}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Badge variant="secondary">
-              {t(`statuses.student.${student.status}`)}
+              {translate(`statuses.student.${student.status}`)}
             </Badge>
             {student.locations.map((link) => (
               <Badge key={link.locationId} variant="outline">
@@ -198,19 +206,19 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
               </Badge>
             ))}
             <span className="text-muted-foreground text-xs">
-              {t("memberSince", { date: formatDay(student.joinedAt) })}
+              {translate("memberSince", { date: formatDay(student.joinedAt) })}
             </span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <a href="/portal/calendar" download>
-              {t("addToCalendar")}
+              {translate("addToCalendar")}
             </a>
           </Button>
           <form action={portalSignOutAction}>
             <Button type="submit" variant="outline" size="sm">
-              {t("signOut")}
+              {translate("signOut")}
             </Button>
           </form>
         </div>
@@ -236,15 +244,15 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>{t("progress.title")}</CardTitle>
+            <CardTitle>{translate("progress.title")}</CardTitle>
             <CardDescription>
-              {t("progress.classes", { count: attendance.total })}
+              {translate("progress.classes", { count: attendance.total })}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {currentBelts.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                {t("progress.none")}
+                {translate("progress.none")}
               </p>
             ) : (
               currentBelts.map((belt) => (
@@ -259,7 +267,9 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                   />
                   <span className="font-medium">{belt.beltName}</span>
                   <span className="text-muted-foreground text-xs">
-                    {t("progress.since", { date: formatDay(belt.awardedAt) })}
+                    {translate("progress.since", {
+                      date: formatDay(belt.awardedAt),
+                    })}
                   </span>
                 </div>
               ))
@@ -269,13 +279,15 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("upcoming.title")}</CardTitle>
-            <CardDescription>{t("upcoming.description")}</CardDescription>
+            <CardTitle>{translate("upcoming.title")}</CardTitle>
+            <CardDescription>
+              {translate("upcoming.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {upcoming.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                {t("upcoming.none")}
+                {translate("upcoming.none")}
               </p>
             ) : (
               upcoming.slice(0, 6).map((session) => (
@@ -287,7 +299,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                     <span className="font-medium">{session.courseName}</span>
                     <span className="text-muted-foreground text-xs">
                       {formatDay(session.date)} ·{" "}
-                      {format.dateTime(session.date, {
+                      {formatter.dateTime(session.date, {
                         weekday: "short",
                         timeZone: "UTC",
                       })}{" "}
@@ -306,13 +318,15 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("attendance.title")}</CardTitle>
-            <CardDescription>{t("attendance.description")}</CardDescription>
+            <CardTitle>{translate("attendance.title")}</CardTitle>
+            <CardDescription>
+              {translate("attendance.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {attendance.recent.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                {t("attendance.none")}
+                {translate("attendance.none")}
               </p>
             ) : (
               attendance.recent.map((row, index) => (
@@ -327,7 +341,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                     </span>
                   </div>
                   <Badge variant="secondary">
-                    {t(`statuses.attendance.${row.status}`)}
+                    {translate(`statuses.attendance.${row.status}`)}
                   </Badge>
                 </div>
               ))
@@ -337,17 +351,17 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("account.title")}</CardTitle>
+            <CardTitle>{translate("account.title")}</CardTitle>
             <CardDescription>
               {invoices.outstandingCents > 0
-                ? t("account.balance")
-                : t("account.square")}
+                ? translate("account.balance")
+                : translate("account.square")}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {invoices.rows.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                {t("account.none")}
+                {translate("account.none")}
               </p>
             ) : (
               <>
@@ -365,7 +379,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                       PDF
                     </a>
                     <span className="text-muted-foreground text-xs">
-                      {t("account.due", {
+                      {translate("account.due", {
                         date: formatLocalDay(invoice.dueDate),
                       })}
                     </span>
@@ -375,14 +389,14 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                       }
                     >
                       {invoice.status === "PAID"
-                        ? t("account.paid")
+                        ? translate("account.paid")
                         : money(invoice.totalCents - invoice.paidCents)}
                     </Badge>
                   </div>
                 ))}
                 {invoices.outstandingCents > 0 ? (
                   <div className="flex justify-between border-t pt-2 text-sm font-medium">
-                    <span>{t("account.outstanding")}</span>
+                    <span>{translate("account.outstanding")}</span>
                     <span>{money(invoices.outstandingCents)}</span>
                   </div>
                 ) : null}
@@ -395,14 +409,16 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
       {contact ? (
         <Card>
           <CardHeader>
-            <CardTitle>{t("details.title")}</CardTitle>
-            <CardDescription>{t("details.description")}</CardDescription>
+            <CardTitle>{translate("details.title")}</CardTitle>
+            <CardDescription>
+              {translate("details.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-8">
             <PortalContactForm contact={contact} />
             <div className="border-t pt-6">
               <h3 className="mb-2 text-sm font-medium">
-                {t("details.emailPreferences")}
+                {translate("details.emailPreferences")}
               </h3>
               <PortalPreferencesForm
                 studentId={contact.studentId}
@@ -415,13 +431,15 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("documents.title")}</CardTitle>
-          <CardDescription>{t("documents.description")}</CardDescription>
+          <CardTitle>{translate("documents.title")}</CardTitle>
+          <CardDescription>
+            {translate("documents.description")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {agreementStatuses.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              {t("documents.none")}
+              {translate("documents.none")}
             </p>
           ) : (
             agreementStatuses.map((status) => (
@@ -433,16 +451,18 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                   <span className="font-medium">{status.title}</span>
                   {status.signed && !status.reSignRequired ? (
                     <Badge variant="secondary">
-                      {t("documents.signed", {
+                      {translate("documents.signed", {
                         date: formatLocalDay(status.signedAt!),
                       })}
                     </Badge>
                   ) : status.reSignRequired ? (
                     <Badge variant="destructive">
-                      {t("documents.updated")}
+                      {translate("documents.updated")}
                     </Badge>
                   ) : (
-                    <Badge variant="destructive">{t("documents.needed")}</Badge>
+                    <Badge variant="destructive">
+                      {translate("documents.needed")}
+                    </Badge>
                   )}
                 </summary>
                 <div className="mt-3 flex flex-col gap-2">
@@ -451,7 +471,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                   </div>
                   {status.signed && !status.reSignRequired ? (
                     <p className="text-muted-foreground text-xs">
-                      {t("documents.signedBy", {
+                      {translate("documents.signedBy", {
                         name: status.signedByName ?? "",
                         date: formatLocalDay(status.signedAt!),
                       })}
@@ -467,7 +487,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
                     className="w-fit text-xs underline"
                     download
                   >
-                    {t("documents.download")}
+                    {translate("documents.download")}
                   </a>
                 </div>
               </details>

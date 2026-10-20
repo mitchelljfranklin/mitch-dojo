@@ -29,7 +29,7 @@ export function PauseEnrollmentSheet({
   studentId,
   planName,
 }: PauseEnrollmentSheetProps) {
-  const t = useTranslations("Students.pause");
+  const translate = useTranslations("Students.pause");
   const [open, setOpen] = useState(false);
 
   return (
@@ -40,13 +40,13 @@ export function PauseEnrollmentSheet({
         variant="ghost"
         onClick={() => setOpen(true)}
       >
-        {t("button")}
+        {translate("button")}
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>{t("title", { plan: planName })}</SheetTitle>
-            <SheetDescription>{t("description")}</SheetDescription>
+            <SheetTitle>{translate("title", { plan: planName })}</SheetTitle>
+            <SheetDescription>{translate("description")}</SheetDescription>
           </SheetHeader>
           <form
             key={open ? "open" : "closed"}
@@ -56,27 +56,29 @@ export function PauseEnrollmentSheet({
             <input type="hidden" name="enrollmentId" value={enrollmentId} />
             <input type="hidden" name="studentId" value={studentId} />
             <div className="grid gap-2">
-              <Label htmlFor="pause-reason">{t("reason")}</Label>
+              <Label htmlFor="pause-reason">{translate("reason")}</Label>
               <Input
                 id="pause-reason"
                 name="pauseReason"
                 maxLength={120}
-                placeholder={t("reasonPlaceholder")}
+                placeholder={translate("reasonPlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="pause-resume">{t("resume")}</Label>
+              <Label htmlFor="pause-resume">{translate("resume")}</Label>
               <Input id="pause-resume" name="resumeAt" type="date" />
-              <p className="text-muted-foreground text-xs">{t("resumeNote")}</p>
+              <p className="text-muted-foreground text-xs">
+                {translate("resumeNote")}
+              </p>
             </div>
             <SheetFooter className="px-0">
-              <Button type="submit">{t("submit")}</Button>
+              <Button type="submit">{translate("submit")}</Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t("cancel")}
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </form>

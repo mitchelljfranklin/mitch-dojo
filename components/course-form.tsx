@@ -93,8 +93,8 @@ function CourseFormInner({
   submitLabel,
   courseId,
 }: CourseFormProps) {
-  const t = useTranslations("Classes.form");
-  const classesT = useTranslations("Classes");
+  const translate = useTranslations("Classes.form");
+  const translateClasses = useTranslations("Classes");
   const [state, formAction, isPending] = useActionState<
     CourseFormState,
     FormData
@@ -133,7 +133,7 @@ function CourseFormInner({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="course-name">{t("name")}</Label>
+          <Label htmlFor="course-name">{translate("name")}</Label>
           <Input
             id="course-name"
             name="name"
@@ -143,47 +143,51 @@ function CourseFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="course-location">{t("location")}</Label>
+          <Label htmlFor="course-location">{translate("location")}</Label>
           <Select name="locationId" defaultValue={values?.locationId ?? ""}>
             <SelectTrigger id="course-location">
-              <SelectValue placeholder={t("chooseLocation")} />
+              <SelectValue placeholder={translate("chooseLocation")} />
             </SelectTrigger>
             <SelectContent>
               {locations.map((location) => (
                 <SelectItem key={location.id} value={location.id}>
                   {location.name}
-                  {location.isActive ? null : t("inactiveSuffix")}
+                  {location.isActive ? null : translate("inactiveSuffix")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-muted-foreground text-xs">{t("locationHint")}</p>
+          <p className="text-muted-foreground text-xs">
+            {translate("locationHint")}
+          </p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="course-discipline">{t("discipline")}</Label>
+          <Label htmlFor="course-discipline">{translate("discipline")}</Label>
           <Select name="disciplineId" defaultValue={values?.disciplineId ?? ""}>
             <SelectTrigger id="course-discipline">
-              <SelectValue placeholder={t("chooseDiscipline")} />
+              <SelectValue placeholder={translate("chooseDiscipline")} />
             </SelectTrigger>
             <SelectContent>
               {disciplines.map((discipline) => (
                 <SelectItem key={discipline.id} value={discipline.id}>
                   {discipline.name}
-                  {discipline.isActive ? null : t("inactiveSuffix")}
+                  {discipline.isActive ? null : translate("inactiveSuffix")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-muted-foreground text-xs">{t("disciplineHint")}</p>
+          <p className="text-muted-foreground text-xs">
+            {translate("disciplineHint")}
+          </p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="course-trainer">{t("trainer")}</Label>
+          <Label htmlFor="course-trainer">{translate("trainer")}</Label>
           <Select name="trainerId" defaultValue={values?.trainerId ?? ""}>
             <SelectTrigger id="course-trainer">
-              <SelectValue placeholder={t("noTrainer")} />
+              <SelectValue placeholder={translate("noTrainer")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("noTrainer")}</SelectItem>
+              <SelectItem value="">{translate("noTrainer")}</SelectItem>
               {trainers.map((trainer) => (
                 <SelectItem key={trainer.id} value={trainer.id}>
                   {trainer.name}
@@ -197,12 +201,12 @@ function CourseFormInner({
             name="isActive"
             defaultChecked={values ? values.isActive : true}
           />
-          {t("active")}
+          {translate("active")}
         </label>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="course-description">{t("description")}</Label>
+        <Label htmlFor="course-description">{translate("description")}</Label>
         <Textarea
           id="course-description"
           name="description"
@@ -214,11 +218,13 @@ function CourseFormInner({
       <div className="border-t pt-4">
         <div className="mb-2 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium">{t("weeklyTimes")}</h3>
-            <p className="text-muted-foreground text-xs">{t("weeklyHint")}</p>
+            <h3 className="text-sm font-medium">{translate("weeklyTimes")}</h3>
+            <p className="text-muted-foreground text-xs">
+              {translate("weeklyHint")}
+            </p>
           </div>
           <Button type="button" variant="secondary" size="sm" onClick={addSlot}>
-            {t("addSlot")}
+            {translate("addSlot")}
           </Button>
         </div>
         <div className="flex flex-col gap-2">
@@ -226,7 +232,7 @@ function CourseFormInner({
             <div key={index} className="flex flex-wrap items-center gap-2">
               <input type="hidden" name="slotWeekday" value={slot.weekday} />
               <select
-                aria-label={t("slotDay", { index: index + 1 })}
+                aria-label={translate("slotDay", { index: index + 1 })}
                 value={slot.weekday}
                 onChange={(event) =>
                   updateSlot(index, { weekday: Number(event.target.value) })
@@ -235,12 +241,12 @@ function CourseFormInner({
               >
                 {WEEKDAY_ORDER.map((weekday) => (
                   <option key={weekday} value={weekday}>
-                    {classesT(`weekdays.${weekday}`)}
+                    {translateClasses(`weekdays.${weekday}`)}
                   </option>
                 ))}
               </select>
               <Input
-                aria-label={t("slotStart", { index: index + 1 })}
+                aria-label={translate("slotStart", { index: index + 1 })}
                 name="slotStartTime"
                 type="time"
                 value={slot.startTime}
@@ -250,9 +256,11 @@ function CourseFormInner({
                 className="w-32"
                 required
               />
-              <span className="text-muted-foreground text-xs">{t("to")}</span>
+              <span className="text-muted-foreground text-xs">
+                {translate("to")}
+              </span>
               <Input
-                aria-label={t("slotEnd", { index: index + 1 })}
+                aria-label={translate("slotEnd", { index: index + 1 })}
                 name="slotEndTime"
                 type="time"
                 value={slot.endTime}
@@ -269,18 +277,18 @@ function CourseFormInner({
                   value={slot.trialBookable ? "on" : "off"}
                 />
                 <Checkbox
-                  aria-label={t("slotTrial", { index: index + 1 })}
+                  aria-label={translate("slotTrial", { index: index + 1 })}
                   checked={slot.trialBookable}
                   onCheckedChange={(checked) =>
                     updateSlot(index, { trialBookable: checked === true })
                   }
                 />
-                {t("trialBookable")}
+                {translate("trialBookable")}
               </label>
               <label className="flex items-center gap-1.5 text-xs">
-                {t("capacity")}
+                {translate("capacity")}
                 <Input
-                  aria-label={t("slotCapacity", { index: index + 1 })}
+                  aria-label={translate("slotCapacity", { index: index + 1 })}
                   name="slotCapacity"
                   type="number"
                   min={0}
@@ -305,12 +313,14 @@ function CourseFormInner({
                 onClick={() => removeSlot(index)}
                 disabled={slots.length === 0}
               >
-                {t("remove")}
+                {translate("remove")}
               </Button>
             </div>
           ))}
           {slots.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("noSlots")}</p>
+            <p className="text-muted-foreground text-sm">
+              {translate("noSlots")}
+            </p>
           ) : null}
         </div>
       </div>
@@ -323,7 +333,7 @@ function CourseFormInner({
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? t("saving") : submitLabel}
+          {isPending ? translate("saving") : submitLabel}
         </Button>
       </div>
     </ActionForm>

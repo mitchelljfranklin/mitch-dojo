@@ -203,7 +203,7 @@ export async function enrollStudentAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
-  const t = await getTranslations("Students.enroll");
+  const translate = await getTranslations("Students.enroll");
 
   const parsed = enrollmentSchema.safeParse({
     studentId: getField(formData, "studentId"),
@@ -211,7 +211,7 @@ export async function enrollStudentAction(
     startDate: getField(formData, "startDate"),
   });
   if (!parsed.success) {
-    return { error: t("invalid") };
+    return { error: translate("invalid") };
   }
 
   let outcome: "created" | "already_enrolled";
@@ -224,7 +224,7 @@ export async function enrollStudentAction(
     outcome = result.outcome;
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes("no longer exists")) {
-      return { error: t("missingPlan") };
+      return { error: translate("missingPlan") };
     }
     throw error;
   }
@@ -241,8 +241,8 @@ export async function enrollStudentAction(
   }
 
   return outcome === "created"
-    ? { ok: true, message: t("created") }
-    : { ok: true, message: t("already") };
+    ? { ok: true, message: translate("created") }
+    : { ok: true, message: translate("already") };
 }
 
 export async function endEnrollmentAction(formData: FormData) {

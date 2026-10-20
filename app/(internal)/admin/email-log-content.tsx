@@ -5,24 +5,26 @@ import { EmailLogForm } from "./email-log-form";
 // Streams the email log separately so the query never blocks the page shell.
 // Lives outside page.tsx so the page can stay a thin permission-gated shell.
 export async function EmailLogContent({
-  sp,
+  query,
   canRetry,
 }: {
-  sp: Record<string, string | undefined>;
+  query: Record<string, string | undefined>;
   canRetry: boolean;
 }) {
-  const page = sp.emailLogPage ? parseInt(sp.emailLogPage) : 1;
-  const pageSize = sp.emailLogPageSize ? parseInt(sp.emailLogPageSize) : 10;
+  const page = query.emailLogPage ? parseInt(query.emailLogPage) : 1;
+  const pageSize = query.emailLogPageSize
+    ? parseInt(query.emailLogPageSize)
+    : 10;
   const safePage = Number.isNaN(page) ? 1 : page;
   const safePageSize = Number.isNaN(pageSize) ? 10 : pageSize;
 
   const result = await listEmailLogs(
     {
-      status: sp.emailStatus,
-      type: sp.emailType,
-      recipient: sp.emailRecipient,
-      fromDate: sp.emailFrom,
-      toDate: sp.emailTo,
+      status: query.emailStatus,
+      type: query.emailType,
+      recipient: query.emailRecipient,
+      fromDate: query.emailFrom,
+      toDate: query.emailTo,
     },
     safePage,
     safePageSize,
@@ -32,11 +34,11 @@ export async function EmailLogContent({
     <EmailLogForm
       result={result}
       filters={{
-        emailStatus: sp.emailStatus ?? "",
-        emailType: sp.emailType ?? "",
-        emailRecipient: sp.emailRecipient ?? "",
-        emailFrom: sp.emailFrom ?? "",
-        emailTo: sp.emailTo ?? "",
+        emailStatus: query.emailStatus ?? "",
+        emailType: query.emailType ?? "",
+        emailRecipient: query.emailRecipient ?? "",
+        emailFrom: query.emailFrom ?? "",
+        emailTo: query.emailTo ?? "",
       }}
       page={safePage}
       pageSize={safePageSize}

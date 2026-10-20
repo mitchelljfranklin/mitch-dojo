@@ -29,12 +29,12 @@ export default async function AdminEmailLogPage({
   const user = await requirePermission(PERMISSIONS.AUDIT_VIEW);
   const canRetry = hasPermission(user.permissions, PERMISSIONS.SETTINGS_MANAGE);
   const emailLogRetention = await getEmailLogRetention();
-  const sp = await searchParams;
+  const query = await searchParams;
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.emailError ? (
-        <FlashToast variant="error" message={sp.emailError} />
+      {query.emailError ? (
+        <FlashToast variant="error" message={query.emailError} />
       ) : null}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Email log</h1>
@@ -54,7 +54,7 @@ export default async function AdminEmailLogPage({
           {/* The log query is the slowest on this page — stream it so the
               shell renders immediately. */}
           <Suspense fallback={<PageSkeleton.Content height="h-72" />}>
-            <EmailLogContent sp={sp} canRetry={canRetry} />
+            <EmailLogContent query={query} canRetry={canRetry} />
           </Suspense>
         </CardContent>
       </Card>

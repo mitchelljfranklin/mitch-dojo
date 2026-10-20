@@ -17,10 +17,10 @@ export default async function LegacySettingsRedirect({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const sp = await searchParams;
-  const target = resolveSettingsTabHref(sp.tab) ?? "/admin";
+  const query = await searchParams;
+  const target = resolveSettingsTabHref(query.tab) ?? "/admin";
 
-  const { tab: _tab, ...rest } = sp;
+  const { tab: _tab, ...rest } = query;
   const forwardQuery = buildFilterQueryString(rest);
 
   redirect(forwardQuery ? `${target}?${forwardQuery}` : target);

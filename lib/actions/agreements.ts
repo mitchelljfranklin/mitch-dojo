@@ -16,21 +16,21 @@ export async function recordAgreementSignatureAction(
   formData: FormData,
 ): Promise<AgreementSignatureState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students.signature");
+  const translate = await getTranslations("Students.signature");
   const studentId = String(formData.get("studentId") ?? "");
   const documentId = String(formData.get("documentId") ?? "");
   const signedByName = String(formData.get("signedByName") ?? "").trim();
   const signedAtRaw = String(formData.get("signedAt") ?? "");
 
   if (!studentId || !documentId) {
-    return { ok: false, message: t("missing") };
+    return { ok: false, message: translate("missing") };
   }
   if (!signedByName) {
-    return { ok: false, message: t("whoRequired") };
+    return { ok: false, message: translate("whoRequired") };
   }
   const signedAt = new Date(`${signedAtRaw}T12:00:00`);
   if (Number.isNaN(signedAt.getTime())) {
-    return { ok: false, message: t("invalidDate") };
+    return { ok: false, message: translate("invalidDate") };
   }
 
   await recordStudentSignature({
@@ -47,5 +47,5 @@ export async function recordAgreementSignatureAction(
     studentId,
     { documentId, signedByName },
   );
-  return { ok: true, message: t("recorded") };
+  return { ok: true, message: translate("recorded") };
 }

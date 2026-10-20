@@ -23,7 +23,7 @@ export default async function AdminRolesPage({
 }) {
   await requirePermission(PERMISSIONS.ROLES_MANAGE);
   const roles = await listRoles();
-  const sp = await searchParams;
+  const query = await searchParams;
 
   const roleViews = roles.map((role) => ({
     id: role.id,
@@ -36,8 +36,8 @@ export default async function AdminRolesPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.roleError ? (
-        <FlashToast variant="error" message={sp.roleError} />
+      {query.roleError ? (
+        <FlashToast variant="error" message={query.roleError} />
       ) : null}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Roles</h1>

@@ -34,8 +34,8 @@ import { listDisciplines } from "@/lib/db/belts";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Attendance");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Attendance");
+  return { title: translate("metaTitle") };
 }
 
 const PAGE_SIZE = 25;
@@ -58,17 +58,19 @@ export default async function AttendancePage({
   searchParams,
 }: AttendancePageProps) {
   await requirePermission(PERMISSIONS.ATTENDANCE_VIEW);
-  const t = await getTranslations("Attendance");
-  const format = await getFormatter();
+  const translate = await getTranslations("Attendance");
+  const formatter = await getFormatter();
 
-  const sp = await searchParams;
-  const from = sp.from || isoDaysFromToday(DEFAULT_FROM_DAYS);
-  const to = sp.to || isoDaysFromToday(DEFAULT_TO_DAYS);
-  const location = sp.location || "";
+  const query = await searchParams;
+  const from = query.from || isoDaysFromToday(DEFAULT_FROM_DAYS);
+  const to = query.to || isoDaysFromToday(DEFAULT_TO_DAYS);
+  const location = query.location || "";
   const statusInput =
-    sp.status === "SCHEDULED" || sp.status === "CANCELLED" ? sp.status : "";
+    query.status === "SCHEDULED" || query.status === "CANCELLED"
+      ? query.status
+      : "";
   const statusFilter = statusInput || undefined;
-  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const page = Math.max(1, parseInt(query.page ?? "1", 10) || 1);
 
   // The course filter matches the discipline select on the booking page in
   // spirit — here we list courses directly (they are few in a single dojo).
@@ -77,7 +79,7 @@ export default async function AttendancePage({
     listDisciplines(),
   ]);
 
-  const courseName = sp.course?.trim() ?? "";
+  const courseName = query.course?.trim() ?? "";
   const result = await listSessions({
     fromDate: new Date(`${from}T00:00:00`),
     toDate: new Date(`${to}T00:00:00`),
@@ -87,8 +89,8 @@ export default async function AttendancePage({
     page,
     pageSize: PAGE_SIZE,
   });
-  const day = (value: Date) =>
-    format.dateTime(value, {
+  const formatDay = (value: Date) =>
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -97,21 +99,25 @@ export default async function AttendancePage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: t("title") }]} />
+      <Breadcrumbs segments={[{ label: translate("title") }]} />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("sessionsTitle")}</CardTitle>
-          <CardDescription>{t("sessionsDescription")}</CardDescription>
+          <CardTitle>{translate("sessionsTitle")}</CardTitle>
+          <CardDescription>{translate("sessionsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <form className="flex flex-wrap items-end gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="attendance-from">{t("filters.from")}</Label>
+              <Label htmlFor="attendance-from">
+                {translate("filters.from")}
+              </Label>
               <Input
                 id="attendance-from"
                 name="from"
@@ -121,7 +127,7 @@ export default async function AttendancePage({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="attendance-to">{t("filters.to")}</Label>
+              <Label htmlFor="attendance-to">{translate("filters.to")}</Label>
               <Input
                 id="attendance-to"
                 name="to"
@@ -131,25 +137,27 @@ export default async function AttendancePage({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="attendance-course">{t("filters.course")}</Label>
+              <Label htmlFor="attendance-course">
+                {translate("filters.course")}
+              </Label>
               <Input
                 id="attendance-course"
                 name="course"
-                placeholder={t("filters.coursePlaceholder")}
-                defaultValue={sp.course ?? ""}
+                placeholder={translate("filters.coursePlaceholder")}
+                defaultValue={query.course ?? ""}
                 className="w-44"
               />
             </div>
             <div className="grid w-44 gap-2">
               <Label htmlFor="attendance-location">
-                {t("filters.location")}
+                {translate("filters.location")}
               </Label>
               <AutoSubmitSelect
                 name="location"
                 id="attendance-location"
                 defaultValue={location || "ALL"}
                 options={[
-                  { value: "ALL", label: t("filters.allLocations") },
+                  { value: "ALL", label: translate("filters.allLocations") },
                   ...locations.map((entry) => ({
                     value: entry.id,
                     label: entry.name,
@@ -158,34 +166,36 @@ export default async function AttendancePage({
               />
             </div>
             <div className="grid w-40 gap-2">
-              <Label htmlFor="attendance-status">{t("filters.status")}</Label>
+              <Label htmlFor="attendance-status">
+                {translate("filters.status")}
+              </Label>
               <AutoSubmitSelect
                 name="status"
                 id="attendance-status"
                 defaultValue={statusInput || "ALL"}
                 options={[
-                  { value: "ALL", label: t("filters.allStatuses") },
-                  { value: "SCHEDULED", label: t("filters.scheduled") },
-                  { value: "CANCELLED", label: t("filters.cancelled") },
+                  { value: "ALL", label: translate("filters.allStatuses") },
+                  { value: "SCHEDULED", label: translate("filters.scheduled") },
+                  { value: "CANCELLED", label: translate("filters.cancelled") },
                 ]}
               />
             </div>
             <Button type="submit" size="sm" variant="outline">
-              {t("filters.filter")}
+              {translate("filters.filter")}
             </Button>
             <Link
               href="/attendance"
               className="text-muted-foreground pb-2 text-sm hover:underline"
             >
-              {t("filters.clear")}
+              {translate("filters.clear")}
             </Link>
           </form>
 
           {result.sessions.length === 0 ? (
             <EmptyState
               icon="sessions"
-              title={t("empty.title")}
-              description={t("empty.description")}
+              title={translate("empty.title")}
+              description={translate("empty.description")}
             />
           ) : (
             <>
@@ -193,15 +203,17 @@ export default async function AttendancePage({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t("table.date")}</TableHead>
-                      <TableHead>{t("table.time")}</TableHead>
-                      <TableHead>{t("table.course")}</TableHead>
-                      <TableHead>{t("table.location")}</TableHead>
-                      <TableHead>{t("table.trainer")}</TableHead>
-                      <TableHead>{t("table.status")}</TableHead>
-                      <TableHead>{t("table.marked")}</TableHead>
+                      <TableHead>{translate("table.date")}</TableHead>
+                      <TableHead>{translate("table.time")}</TableHead>
+                      <TableHead>{translate("table.course")}</TableHead>
+                      <TableHead>{translate("table.location")}</TableHead>
+                      <TableHead>{translate("table.trainer")}</TableHead>
+                      <TableHead>{translate("table.status")}</TableHead>
+                      <TableHead>{translate("table.marked")}</TableHead>
                       <TableHead>
-                        <span className="sr-only">{t("table.openSheet")}</span>
+                        <span className="sr-only">
+                          {translate("table.openSheet")}
+                        </span>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -209,7 +221,7 @@ export default async function AttendancePage({
                     {result.sessions.map((session) => (
                       <TableRow key={session.id}>
                         <TableCell className="text-sm font-medium">
-                          {day(session.date)}
+                          {formatDay(session.date)}
                         </TableCell>
                         <TableCell className="text-muted-foreground font-mono text-xs">
                           {session.startTime}–{session.endTime}
@@ -232,14 +244,14 @@ export default async function AttendancePage({
                             }
                           >
                             {session.status === "CANCELLED"
-                              ? t("status.cancelled")
-                              : t("status.scheduled")}
+                              ? translate("status.cancelled")
+                              : translate("status.scheduled")}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs">
                           {session.marked === 0
-                            ? t("table.notMarked")
-                            : t("table.markedSummary", {
+                            ? translate("table.notMarked")
+                            : translate("table.markedSummary", {
                                 marked: session.marked,
                                 trained: session.trained,
                               })}
@@ -247,7 +259,7 @@ export default async function AttendancePage({
                         <TableCell>
                           <Button asChild variant="outline" size="sm">
                             <Link href={`/sessions/${session.id}`}>
-                              {t("table.openSheet")}
+                              {translate("table.openSheet")}
                             </Link>
                           </Button>
                         </TableCell>

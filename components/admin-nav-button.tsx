@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 // highlights while anywhere under /admin.
 export function AdminNavButton() {
   const pathname = usePathname();
-  const t = useTranslations("Nav");
+  const translate = useTranslations("Nav");
   const isActive = pathname === "/admin" || pathname.startsWith("/admin/");
 
   return (
@@ -21,14 +21,14 @@ export function AdminNavButton() {
       size="icon"
       type="button"
       asChild
-      aria-label={t("items.admin")}
+      aria-label={translate("items.admin")}
     >
       <Link
         href="/admin"
         className={isActive ? "border-primary text-primary" : undefined}
       >
         <Settings className="size-4" />
-        <span className="sr-only">{t("items.admin")}</span>
+        <span className="sr-only">{translate("items.admin")}</span>
       </Link>
     </Button>
   );

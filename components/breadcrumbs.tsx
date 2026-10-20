@@ -11,7 +11,7 @@ export async function Breadcrumbs({
 }: {
   segments: BreadcrumbSegment[];
 }) {
-  const t = await getTranslations("Nav");
+  const translate = await getTranslations("Nav");
 
   return (
     <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
@@ -19,7 +19,7 @@ export async function Breadcrumbs({
         href="/dashboard"
         className="text-muted-foreground hover:text-foreground transition-colors"
       >
-        {t("dashboard")}
+        {translate("dashboard")}
       </Link>
       {segments.map((segment) => (
         <span key={segment.label} className="flex min-w-0 items-center gap-1.5">

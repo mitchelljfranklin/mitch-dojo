@@ -13,7 +13,7 @@ import {
 import { useActionFeedback } from "@/hooks/use-action-feedback";
 
 export function AttendanceImportForm() {
-  const t = useTranslations("Attendance.import");
+  const translate = useTranslations("Attendance.import");
   const [state, formAction, isPending] = useActionState<
     AttendanceImportState,
     FormData
@@ -23,7 +23,7 @@ export function AttendanceImportForm() {
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="grid gap-2">
-        <Label htmlFor="attendance-import-file">{t("csvFile")}</Label>
+        <Label htmlFor="attendance-import-file">{translate("csvFile")}</Label>
         <Input
           id="attendance-import-file"
           name="file"
@@ -45,7 +45,7 @@ export function AttendanceImportForm() {
       ) : null}
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? t("importing") : t("submit")}
+          {isPending ? translate("importing") : translate("submit")}
         </Button>
       </div>
     </form>

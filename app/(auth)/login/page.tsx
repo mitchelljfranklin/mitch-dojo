@@ -36,8 +36,8 @@ import { SsoButtons, type SsoButton } from "./sso-buttons";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Auth");
-  return { title: t("login.title") };
+  const translate = await getTranslations("Auth");
+  return { title: translate("login.title") };
 }
 
 type LoginPageProps = {
@@ -121,13 +121,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect("/dashboard");
   }
 
-  const sp = await searchParams;
+  const query = await searchParams;
   const organization = await getOrganizationSettings();
   const ssoSettings = await getSsoSettings();
   const ssoButtons = await enabledSsoButtons();
-  const t = await getTranslations("Auth.login");
+  const translate = await getTranslations("Auth.login");
 
-  const breakGlassValid = await verifyBreakGlassParam(sp.breakGlass);
+  const breakGlassValid = await verifyBreakGlassParam(query.breakGlass);
   const showLocalAuth = shouldShowLocalAuth({
     disableLocalAuth: ssoSettings.disableLocalAuth,
     ssoProviderCount: countConfiguredSsoProviders(ssoSettings),
@@ -138,12 +138,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <Card>
       <CardHeader>
         <CardTitle>{organization.name}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
+        <CardDescription>{translate("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {sp.error ? (
+        {query.error ? (
           <p className="text-destructive text-sm" role="alert">
-            {t("denied")}
+            {translate("denied")}
           </p>
         ) : null}
 
@@ -153,7 +153,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <>
             {ssoButtons.length > 0 ? (
               <p className="text-muted-foreground text-center text-xs">
-                {t("orEmail")}
+                {translate("orEmail")}
               </p>
             ) : null}
             <LoginForm />
@@ -161,14 +161,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               href="/forgot-password"
               className="hover:text-primary text-muted-foreground text-center text-xs hover:underline"
             >
-              {t("forgot")}
+              {translate("forgot")}
             </a>
           </>
         ) : null}
 
         {ssoButtons.length > 0 && !showLocalAuth ? (
           <p className="text-muted-foreground text-center text-xs">
-            {t("ssoOnly")}
+            {translate("ssoOnly")}
           </p>
         ) : null}
       </CardContent>

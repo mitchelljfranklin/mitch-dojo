@@ -51,13 +51,13 @@ export default async function MembershipsPage({
   const canEdit = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
   const plans = await listMembershipPlans();
   const { currency } = await getMembershipsSettings();
-  const sp = await searchParams;
+  const query = await searchParams;
 
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumbs segments={[{ label: "Memberships" }]} />
-      {sp.planError ? (
-        <FlashToast variant="error" message={sp.planError} />
+      {query.planError ? (
+        <FlashToast variant="error" message={query.planError} />
       ) : null}
       <div className="flex items-center justify-between gap-4">
         <div>

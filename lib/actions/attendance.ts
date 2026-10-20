@@ -31,7 +31,7 @@ export async function saveAttendanceAction(
   formData: FormData,
 ): Promise<AttendanceActionState> {
   const user = await requirePermission(PERMISSIONS.ATTENDANCE_MARK);
-  const t = await getTranslations("Attendance.form");
+  const translate = await getTranslations("Attendance.form");
   const sessionId = getField(formData, "sessionId");
 
   const studentIds = getField(formData, "studentIds")
@@ -51,7 +51,7 @@ export async function saveAttendanceAction(
   if (!parsed.success) {
     return {
       ok: false,
-      message: t("invalid"),
+      message: translate("invalid"),
     };
   }
 
@@ -64,7 +64,7 @@ export async function saveAttendanceAction(
     sessionId,
     { entries: parsed.data.entries.length },
   );
-  return { ok: true, message: t("saved") };
+  return { ok: true, message: translate("saved") };
 }
 
 export type PastAttendanceState =
@@ -76,8 +76,8 @@ export async function addPastAttendanceAction(
   formData: FormData,
 ): Promise<PastAttendanceState> {
   const user = await requirePermission(PERMISSIONS.ATTENDANCE_MARK);
-  const t = await getTranslations("Attendance.past");
-  const statusT = await getTranslations("Attendance.status");
+  const translate = await getTranslations("Attendance.past");
+  const translateStatus = await getTranslations("Attendance.status");
   const studentId = getField(formData, "studentId");
 
   const parsed = pastAttendanceSchema.safeParse({
@@ -86,7 +86,7 @@ export async function addPastAttendanceAction(
     status: getField(formData, "status") || "PRESENT",
   });
   if (!parsed.success) {
-    return { error: t("invalid") };
+    return { error: translate("invalid") };
   }
 
   // Historical entries only — future sessions are generated, not backfilled.
@@ -94,7 +94,7 @@ export async function addPastAttendanceAction(
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
   if (date > endOfToday) {
-    return { error: t("future") };
+    return { error: translate("future") };
   }
 
   const course = await prisma.course.findUnique({
@@ -102,7 +102,7 @@ export async function addPastAttendanceAction(
     select: { locationId: true },
   });
   if (!course) {
-    return { error: t("courseMissing") };
+    return { error: translate("courseMissing") };
   }
 
   const membership = await prisma.studentLocation.findUnique({
@@ -115,7 +115,7 @@ export async function addPastAttendanceAction(
   });
   if (!membership) {
     return {
-      error: t("location"),
+      error: translate("location"),
     };
   }
 
@@ -128,8 +128,8 @@ export async function addPastAttendanceAction(
   });
   if (result.outcome === "already_recorded") {
     return {
-      error: t("already", {
-        status: statusT(result.existingStatus.toUpperCase()),
+      error: translate("already", {
+        status: translateStatus(result.existingStatus.toUpperCase()),
       }),
     };
   }
@@ -141,7 +141,7 @@ export async function addPastAttendanceAction(
     result.sessionId,
     { studentId, source: "backfill" },
   );
-  return { ok: true, message: t("added") };
+  return { ok: true, message: translate("added") };
 }
 
 export type AttendanceImportState =
@@ -153,14 +153,14 @@ export async function importAttendanceAction(
   formData: FormData,
 ): Promise<AttendanceImportState> {
   const actor = await requirePermission(PERMISSIONS.ATTENDANCE_MARK);
-  const t = await getTranslations("Attendance.import");
+  const translate = await getTranslations("Attendance.import");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, error: t("missingFile") };
+    return { ok: false, error: translate("missingFile") };
   }
   if (file.size > 1_000_000) {
-    return { ok: false, error: t("tooLarge") };
+    return { ok: false, error: translate("tooLarge") };
   }
 
   const text = await file.text();
@@ -168,7 +168,7 @@ export async function importAttendanceAction(
   if (rows.length === 0) {
     return {
       ok: false,
-      error: t("noRows"),
+      error: translate("noRows"),
     };
   }
 
@@ -223,7 +223,7 @@ export async function importAttendanceAction(
     });
     if (!parsed.success) {
       rowErrors.push(
-        t("row", {
+        translate("row", {
           row: i + 2,
           message: parsed.error.issues[0]?.message ?? "invalid",
         }),
@@ -234,13 +234,15 @@ export async function importAttendanceAction(
     const row = parsed.data;
     const course = courseByName.get(row.course.toLowerCase());
     if (!course) {
-      rowErrors.push(t("unknownCourse", { row: i + 2, course: row.course }));
+      rowErrors.push(
+        translate("unknownCourse", { row: i + 2, course: row.course }),
+      );
       continue;
     }
 
     const date = new Date(`${row.date}T00:00:00`);
     if (date > endOfToday) {
-      rowErrors.push(t("future", { row: i + 2, date: row.date }));
+      rowErrors.push(translate("future", { row: i + 2, date: row.date }));
       continue;
     }
 
@@ -248,7 +250,9 @@ export async function importAttendanceAction(
       row.status.length > 0 &&
       !(ATTENDANCE_STATUSES as readonly string[]).includes(row.status)
     ) {
-      rowErrors.push(t("unknownStatus", { row: i + 2, status: row.status }));
+      rowErrors.push(
+        translate("unknownStatus", { row: i + 2, status: row.status }),
+      );
       continue;
     }
     const status = (
@@ -268,7 +272,7 @@ export async function importAttendanceAction(
           : match.status === "ambiguous"
             ? "studentAmbiguous"
             : "studentLocation";
-      rowErrors.push(t(errorKey, { row: i + 2 }));
+      rowErrors.push(translate(errorKey, { row: i + 2 }));
       continue;
     }
 
@@ -305,11 +309,11 @@ export async function importAttendanceAction(
   if (imported > 0 || skipped > 0) {
     return {
       ok: true,
-      message: t("imported", { imported, skipped }),
+      message: translate("imported", { imported, skipped }),
     };
   }
   return {
     ok: false,
-    error: t("none", { error: rowErrors[0] ?? "unknown" }),
+    error: translate("none", { error: rowErrors[0] ?? "unknown" }),
   };
 }

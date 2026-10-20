@@ -14,7 +14,7 @@ import {
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();
-  const t = useTranslations("Common");
+  const translate = useTranslations("Common");
 
   return (
     <DropdownMenu>
@@ -23,22 +23,22 @@ export function ThemeToggle() {
           variant="outline"
           size="icon"
           type="button"
-          aria-label={t("toggleTheme")}
+          aria-label={translate("toggleTheme")}
         >
           <Sun className="size-4 dark:hidden" />
           <Moon className="hidden size-4 dark:block" />
-          <span className="sr-only">{t("toggleTheme")}</span>
+          <span className="sr-only">{translate("toggleTheme")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          {t("light")}
+          {translate("light")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          {t("dark")}
+          {translate("dark")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
-          {t("system")}
+          {translate("system")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

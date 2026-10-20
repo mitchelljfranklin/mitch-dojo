@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function CopyLink({ value }: { value: string }) {
-  const t = useTranslations("Common");
+  const translate = useTranslations("Common");
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -24,7 +24,7 @@ export function CopyLink({ value }: { value: string }) {
     <div className="flex items-center gap-2">
       <Input readOnly value={value} className="font-mono text-xs" />
       <Button type="button" variant="outline" onClick={copy}>
-        {copied ? t("copied") : t("copy")}
+        {copied ? translate("copied") : translate("copy")}
       </Button>
     </div>
   );

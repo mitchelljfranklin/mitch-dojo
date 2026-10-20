@@ -30,17 +30,19 @@ export default async function InvoicesPage({
   const canEdit = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
   const { currency } = await getMembershipsSettings();
 
-  const sp = await searchParams;
+  const query = await searchParams;
   const statusFilter =
-    sp.status === "OPEN" || sp.status === "PAID" || sp.status === "VOID"
-      ? sp.status
+    query.status === "OPEN" ||
+    query.status === "PAID" ||
+    query.status === "VOID"
+      ? query.status
       : undefined;
-  const overdueOnly = sp.status === "OVERDUE";
-  const studentId = sp.studentId;
-  const search = sp.q?.trim() ?? "";
+  const overdueOnly = query.status === "OVERDUE";
+  const studentId = query.studentId;
+  const search = query.q?.trim() ?? "";
   const locationFilter =
-    sp.location && sp.location !== "ALL" ? sp.location : undefined;
-  const page = Math.max(1, Number(sp.page ?? "1") || 1);
+    query.location && query.location !== "ALL" ? query.location : undefined;
+  const page = Math.max(1, Number(query.page ?? "1") || 1);
 
   const { rows, total } = await listInvoices(
     {
@@ -91,8 +93,8 @@ export default async function InvoicesPage({
           { label: "Invoices" },
         ]}
       />
-      {sp.invoiceError ? (
-        <FlashToast variant="error" message={sp.invoiceError} />
+      {query.invoiceError ? (
+        <FlashToast variant="error" message={query.invoiceError} />
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -118,9 +120,9 @@ export default async function InvoicesPage({
           {search ? <input type="hidden" name="q" value={search} /> : null}
           <div className="w-40">
             <AutoSubmitSelect
-              key={`status-${sp.status ?? "ALL"}`}
+              key={`status-${query.status ?? "ALL"}`}
               name="status"
-              defaultValue={sp.status ?? "ALL"}
+              defaultValue={query.status ?? "ALL"}
               ariaLabel="Filter invoices by status"
               options={[
                 { value: "ALL", label: "All statuses" },

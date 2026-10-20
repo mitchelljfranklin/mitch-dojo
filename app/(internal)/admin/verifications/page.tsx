@@ -24,12 +24,14 @@ export default async function AdminVerificationsPage({
   searchParams,
 }: AdminVerificationsPageProps) {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
-  const sp = await searchParams;
+  const query = await searchParams;
   const types = await listVerificationTypes();
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.error ? <FlashToast message={sp.error} variant="error" /> : null}
+      {query.error ? (
+        <FlashToast message={query.error} variant="error" />
+      ) : null}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Verifications</h1>
         <p className="text-muted-foreground text-sm">

@@ -74,8 +74,8 @@ export function StudentsTable({
   plans,
 }: StudentsTableProps) {
   const router = useRouter();
-  const t = useTranslations("Students");
-  const format = useFormatter();
+  const translate = useTranslations("Students");
+  const formatter = useFormatter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [statusState, statusAction, statusPending] = useActionState<
     BulkActionState,
@@ -115,7 +115,8 @@ export function StudentsTable({
   const end = Math.min(page * pageSize, totalCount);
   const selectedCount = selectedIds.size;
   const allPageSelected =
-    students.length > 0 && students.every((s) => selectedIds.has(s.id));
+    students.length > 0 &&
+    students.every((student) => selectedIds.has(student.id));
 
   function toggleAll() {
     if (allPageSelected) {
@@ -146,16 +147,16 @@ export function StudentsTable({
               {canEdit ? (
                 <TableHead className="w-10">
                   <Checkbox
-                    aria-label={t("table.selectAll")}
+                    aria-label={translate("table.selectAll")}
                     checked={allPageSelected}
                     onCheckedChange={toggleAll}
                   />
                 </TableHead>
               ) : null}
-              <TableHead>{t("table.student")}</TableHead>
-              <TableHead>{t("table.status")}</TableHead>
-              <TableHead>{t("table.homeDojo")}</TableHead>
-              <TableHead>{t("table.joined")}</TableHead>
+              <TableHead>{translate("table.student")}</TableHead>
+              <TableHead>{translate("table.status")}</TableHead>
+              <TableHead>{translate("table.homeDojo")}</TableHead>
+              <TableHead>{translate("table.joined")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -164,7 +165,7 @@ export function StudentsTable({
                 {canEdit ? (
                   <TableCell>
                     <Checkbox
-                      aria-label={t("table.select", {
+                      aria-label={translate("table.select", {
                         name: `${student.firstName} ${student.lastName}`,
                       })}
                       checked={selectedIds.has(student.id)}
@@ -203,7 +204,7 @@ export function StudentsTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANTS[student.status]}>
-                    {t(`status.${student.status}`)}
+                    {translate(`status.${student.status}`)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-sm">
@@ -211,12 +212,14 @@ export function StudentsTable({
                   {student.locationCount > 1 ? (
                     <span className="text-muted-foreground">
                       {" "}
-                      {t("table.more", { count: student.locationCount - 1 })}
+                      {translate("table.more", {
+                        count: student.locationCount - 1,
+                      })}
                     </span>
                   ) : null}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {format.dateTime(new Date(student.joinedAt), {
+                  {formatter.dateTime(new Date(student.joinedAt), {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -227,7 +230,7 @@ export function StudentsTable({
           </TableBody>
         </Table>
         <p className="text-muted-foreground border-t px-4 py-2 text-xs">
-          {t("table.showing", { start, end, total: totalCount })}
+          {translate("table.showing", { start, end, total: totalCount })}
         </p>
       </div>
 
@@ -235,7 +238,7 @@ export function StudentsTable({
         <div className="bg-background fixed inset-x-0 bottom-0 z-40 border-t shadow-lg">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
             <span className="text-sm font-medium">
-              {t("table.selected", { count: selectedCount })}
+              {translate("table.selected", { count: selectedCount })}
             </span>
             <form action={statusAction} className="flex items-center gap-2">
               {Array.from(selectedIds).map((id) => (
@@ -246,14 +249,14 @@ export function StudentsTable({
                 required
                 defaultValue=""
                 className="border-input bg-background h-8 rounded-md border px-2 text-xs"
-                aria-label={t("table.statusAria")}
+                aria-label={translate("table.statusAria")}
               >
                 <option value="" disabled>
-                  {t("table.setStatus")}
+                  {translate("table.setStatus")}
                 </option>
                 {STUDENT_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {t(`status.${status}`)}
+                    {translate(`status.${status}`)}
                   </option>
                 ))}
               </select>
@@ -263,7 +266,9 @@ export function StudentsTable({
                 variant="outline"
                 disabled={statusPending}
               >
-                {statusPending ? t("table.applying") : t("table.apply")}
+                {statusPending
+                  ? translate("table.applying")
+                  : translate("table.apply")}
               </Button>
             </form>
             {disciplines.length > 0 ? (
@@ -279,10 +284,10 @@ export function StudentsTable({
                   required
                   defaultValue=""
                   className="border-input bg-background h-8 rounded-md border px-2 text-xs"
-                  aria-label={t("table.disciplineAria")}
+                  aria-label={translate("table.disciplineAria")}
                 >
                   <option value="" disabled>
-                    {t("table.assignDiscipline")}
+                    {translate("table.assignDiscipline")}
                   </option>
                   {disciplines.map((discipline) => (
                     <option key={discipline.id} value={discipline.id}>
@@ -297,8 +302,8 @@ export function StudentsTable({
                   disabled={disciplinesPending}
                 >
                   {disciplinesPending
-                    ? t("table.assigning")
-                    : t("table.assign")}
+                    ? translate("table.assigning")
+                    : translate("table.assign")}
                 </Button>
               </form>
             ) : null}
@@ -312,10 +317,10 @@ export function StudentsTable({
                   required
                   defaultValue=""
                   className="border-input bg-background h-8 rounded-md border px-2 text-xs"
-                  aria-label={t("table.planAria")}
+                  aria-label={translate("table.planAria")}
                 >
                   <option value="" disabled>
-                    {t("table.enrollPlan")}
+                    {translate("table.enrollPlan")}
                   </option>
                   {plans.map((plan) => (
                     <option key={plan.id} value={plan.id}>
@@ -329,7 +334,9 @@ export function StudentsTable({
                   variant="outline"
                   disabled={enrollPending}
                 >
-                  {enrollPending ? t("table.enrolling") : t("table.enroll")}
+                  {enrollPending
+                    ? translate("table.enrolling")
+                    : translate("table.enroll")}
                 </Button>
               </form>
             ) : null}
@@ -339,7 +346,7 @@ export function StudentsTable({
               variant="ghost"
               onClick={() => setSelectedIds(new Set())}
             >
-              {t("table.clear")}
+              {translate("table.clear")}
             </Button>
           </div>
         </div>

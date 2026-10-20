@@ -25,9 +25,9 @@ import { KioskToggle } from "./kiosk-toggle";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Checkin");
+  const translate = await getTranslations("Checkin");
   return {
-    title: t("metaTitle"),
+    title: translate("metaTitle"),
     robots: { index: false, follow: false },
   };
 }
@@ -44,8 +44,8 @@ export default async function CheckinPage({
   searchParams,
 }: CheckinPageProps) {
   const { token } = await params;
-  const sp = await searchParams;
-  const t = await getTranslations("Checkin");
+  const query = await searchParams;
+  const translate = await getTranslations("Checkin");
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -54,8 +54,10 @@ export default async function CheckinPage({
       <div className="mx-auto max-w-md p-8">
         <Card>
           <CardHeader>
-            <CardTitle>{t("rateLimitedTitle")}</CardTitle>
-            <CardDescription>{t("rateLimitedDescription")}</CardDescription>
+            <CardTitle>{translate("rateLimitedTitle")}</CardTitle>
+            <CardDescription>
+              {translate("rateLimitedDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -68,7 +70,7 @@ export default async function CheckinPage({
   }
 
   const { locationName, sessions } = await getCheckinPageData(locationId);
-  const kiosk = sp.kiosk === "1";
+  const kiosk = query.kiosk === "1";
 
   return (
     // Kiosk mode drops the brand chrome and goes edge-to-edge so the roster
@@ -89,29 +91,35 @@ export default async function CheckinPage({
               : "text-2xl font-semibold tracking-tight"
           }
         >
-          {t("title", { location: locationName ?? "" })}
+          {translate("title", { location: locationName ?? "" })}
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t("subtitle")}</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {translate("subtitle")}
+        </p>
       </div>
 
-      {sp.error === "suspended" ? (
+      {query.error === "suspended" ? (
         <Card className="border-destructive/40 mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-base">
-              {t("suspendedTitle")}
+              {translate("suspendedTitle")}
             </CardTitle>
-            <CardDescription>{t("suspendedDescription")}</CardDescription>
+            <CardDescription>
+              {translate("suspendedDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       ) : null}
 
-      {sp.error === "agreements" ? (
+      {query.error === "agreements" ? (
         <Card className="border-destructive/40 mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-base">
-              {t("agreementsTitle")}
+              {translate("agreementsTitle")}
             </CardTitle>
-            <CardDescription>{t("agreementsDescription")}</CardDescription>
+            <CardDescription>
+              {translate("agreementsDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       ) : null}
@@ -119,8 +127,10 @@ export default async function CheckinPage({
       {sessions.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>{t("noClassesTitle")}</CardTitle>
-            <CardDescription>{t("noClassesDescription")}</CardDescription>
+            <CardTitle>{translate("noClassesTitle")}</CardTitle>
+            <CardDescription>
+              {translate("noClassesDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -146,7 +156,7 @@ export default async function CheckinPage({
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-2 text-xs">
-                  {t("tapToCheckIn")}
+                  {translate("tapToCheckIn")}
                 </p>
                 <CheckinSessionGroup
                   token={token}
@@ -154,7 +164,7 @@ export default async function CheckinPage({
                   students={session.students}
                   action={checkInAction}
                   kiosk={kiosk}
-                  emptyLabel={t("noStudents")}
+                  emptyLabel={translate("noStudents")}
                 />
               </CardContent>
             </Card>

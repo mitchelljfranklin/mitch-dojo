@@ -121,8 +121,8 @@ function StudentFormInner({
   studentId,
   canViewMedical,
 }: StudentFormProps) {
-  const t = useTranslations("Students.form");
-  const statusT = useTranslations("Students.status");
+  const translate = useTranslations("Students.form");
+  const translateStatus = useTranslations("Students.status");
   const [state, formAction, isPending] = useActionState<
     StudentFormState,
     FormData
@@ -166,7 +166,7 @@ function StudentFormInner({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="firstName">{t("firstName")}</Label>
+          <Label htmlFor="firstName">{translate("firstName")}</Label>
           <Input
             id="firstName"
             name="firstName"
@@ -175,7 +175,7 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="lastName">{t("lastName")}</Label>
+          <Label htmlFor="lastName">{translate("lastName")}</Label>
           <Input
             id="lastName"
             name="lastName"
@@ -184,7 +184,7 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email">{t("email")}</Label>
+          <Label htmlFor="email">{translate("email")}</Label>
           <Input
             id="email"
             name="email"
@@ -193,11 +193,11 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="phone">{t("phone")}</Label>
+          <Label htmlFor="phone">{translate("phone")}</Label>
           <Input id="phone" name="phone" defaultValue={values?.phone ?? ""} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="dateOfBirth">{t("dateOfBirth")}</Label>
+          <Label htmlFor="dateOfBirth">{translate("dateOfBirth")}</Label>
           <Input
             id="dateOfBirth"
             name="dateOfBirth"
@@ -207,7 +207,7 @@ function StudentFormInner({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="status">{t("status")}</Label>
+          <Label htmlFor="status">{translate("status")}</Label>
           <select
             id="status"
             name="status"
@@ -216,7 +216,7 @@ function StudentFormInner({
           >
             {STUDENT_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {statusT(status)}
+                {translateStatus(status)}
               </option>
             ))}
           </select>
@@ -224,10 +224,10 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">{t("address")}</h3>
+        <h3 className="mb-2 text-sm font-medium">{translate("address")}</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2 sm:col-span-3 sm:grid-cols-1">
-            <Label htmlFor="addressLine">{t("street")}</Label>
+            <Label htmlFor="addressLine">{translate("street")}</Label>
             <Input
               id="addressLine"
               name="addressLine"
@@ -236,7 +236,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="city">{t("city")}</Label>
+            <Label htmlFor="city">{translate("city")}</Label>
             <Input
               id="city"
               name="city"
@@ -245,7 +245,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="state">{t("state")}</Label>
+            <Label htmlFor="state">{translate("state")}</Label>
             <Input
               id="state"
               name="state"
@@ -254,7 +254,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="postcode">{t("postcode")}</Label>
+            <Label htmlFor="postcode">{translate("postcode")}</Label>
             <Input
               id="postcode"
               name="postcode"
@@ -263,14 +263,14 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2 sm:col-span-3">
-            <Label htmlFor="country">{t("country")}</Label>
+            <Label htmlFor="country">{translate("country")}</Label>
             <select
               id="country"
               name="country"
               defaultValue={values?.country ?? defaultCountry}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             >
-              <option value="">{t("none")}</option>
+              <option value="">{translate("none")}</option>
               {COUNTRIES.map((code) => (
                 <option key={code} value={code}>
                   {countryName(code)}
@@ -282,10 +282,10 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">{t("guardian")}</h3>
+        <h3 className="mb-2 text-sm font-medium">{translate("guardian")}</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
-            <Label htmlFor="guardianName">{t("name")}</Label>
+            <Label htmlFor="guardianName">{translate("name")}</Label>
             <Input
               id="guardianName"
               name="guardianName"
@@ -293,7 +293,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="guardianEmail">{t("email")}</Label>
+            <Label htmlFor="guardianEmail">{translate("email")}</Label>
             <Input
               id="guardianEmail"
               name="guardianEmail"
@@ -302,7 +302,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="guardianPhone">{t("phone")}</Label>
+            <Label htmlFor="guardianPhone">{translate("phone")}</Label>
             <Input
               id="guardianPhone"
               name="guardianPhone"
@@ -312,17 +312,19 @@ function StudentFormInner({
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
-            <Label htmlFor="guardianRelationship">{t("relationship")}</Label>
+            <Label htmlFor="guardianRelationship">
+              {translate("relationship")}
+            </Label>
             <select
               id="guardianRelationship"
               name="guardianRelationship"
               defaultValue={values?.guardianRelationship ?? ""}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             >
-              <option value="">{t("notStated")}</option>
+              <option value="">{translate("notStated")}</option>
               {GUARDIAN_RELATIONSHIPS.map((relationship) => (
                 <option key={relationship} value={relationship}>
-                  {t(
+                  {translate(
                     `relationships.${RELATIONSHIP_MESSAGE_KEYS[relationship]}`,
                   )}
                 </option>
@@ -335,14 +337,16 @@ function StudentFormInner({
       {canViewMedical ? (
         <div className="border-t pt-4">
           <h3 className="mb-2 text-sm font-medium">
-            {t("medical")}{" "}
+            {translate("medical")}{" "}
             <span className="text-muted-foreground text-xs font-normal">
-              {t("medicalNote")}
+              {translate("medicalNote")}
             </span>
           </h3>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="medicalMedications">{t("medications")}</Label>
+              <Label htmlFor="medicalMedications">
+                {translate("medications")}
+              </Label>
               <Textarea
                 id="medicalMedications"
                 name="medicalMedications"
@@ -351,7 +355,9 @@ function StudentFormInner({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="medicalConditions">{t("conditions")}</Label>
+              <Label htmlFor="medicalConditions">
+                {translate("conditions")}
+              </Label>
               <Textarea
                 id="medicalConditions"
                 name="medicalConditions"
@@ -360,7 +366,7 @@ function StudentFormInner({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="medicalInjuries">{t("injuries")}</Label>
+              <Label htmlFor="medicalInjuries">{translate("injuries")}</Label>
               <Textarea
                 id="medicalInjuries"
                 name="medicalInjuries"
@@ -373,10 +379,10 @@ function StudentFormInner({
       ) : null}
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">{t("emergency")}</h3>
+        <h3 className="mb-2 text-sm font-medium">{translate("emergency")}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="emergencyContactName">{t("name")}</Label>
+            <Label htmlFor="emergencyContactName">{translate("name")}</Label>
             <Input
               id="emergencyContactName"
               name="emergencyContactName"
@@ -384,7 +390,7 @@ function StudentFormInner({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="emergencyContactPhone">{t("phone")}</Label>
+            <Label htmlFor="emergencyContactPhone">{translate("phone")}</Label>
             <Input
               id="emergencyContactPhone"
               name="emergencyContactPhone"
@@ -395,9 +401,9 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="text-sm font-medium">{t("locations")}</h3>
+        <h3 className="text-sm font-medium">{translate("locations")}</h3>
         <p className="text-muted-foreground mb-2 text-xs">
-          {t("locationsHint")}
+          {translate("locationsHint")}
         </p>
         <div className="flex flex-col gap-2">
           <div className="grid gap-2 sm:grid-cols-2">
@@ -421,7 +427,7 @@ function StudentFormInner({
                     {location.isActive ? null : (
                       <span className="text-muted-foreground">
                         {" "}
-                        {t("inactive")}
+                        {translate("inactive")}
                       </span>
                     )}
                   </span>
@@ -430,11 +436,13 @@ function StudentFormInner({
             })}
           </div>
           {locations.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("noLocations")}</p>
+            <p className="text-muted-foreground text-sm">
+              {translate("noLocations")}
+            </p>
           ) : null}
         </div>
         <div className="mt-4 grid max-w-xs gap-2">
-          <Label htmlFor="primaryLocationId">{t("primary")}</Label>
+          <Label htmlFor="primaryLocationId">{translate("primary")}</Label>
           <select
             id="primaryLocationId"
             name="primaryLocationId"
@@ -442,7 +450,7 @@ function StudentFormInner({
             onChange={(event) => setPrimaryLocationId(event.target.value)}
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
           >
-            <option value="">{t("choose")}</option>
+            <option value="">{translate("choose")}</option>
             {locations
               .filter((location) => selectedLocationIds.includes(location.id))
               .map((location) => (
@@ -455,9 +463,9 @@ function StudentFormInner({
       </div>
 
       <div className="border-t pt-4">
-        <h3 className="text-sm font-medium">{t("disciplines")}</h3>
+        <h3 className="text-sm font-medium">{translate("disciplines")}</h3>
         <p className="text-muted-foreground mb-2 text-xs">
-          {t("disciplinesHint")}
+          {translate("disciplinesHint")}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
           {disciplines.map((discipline) => {
@@ -480,7 +488,7 @@ function StudentFormInner({
                   {discipline.isActive ? null : (
                     <span className="text-muted-foreground">
                       {" "}
-                      {t("inactive")}
+                      {translate("inactive")}
                     </span>
                   )}
                 </span>
@@ -489,15 +497,17 @@ function StudentFormInner({
           })}
         </div>
         {disciplines.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t("noDisciplines")}</p>
+          <p className="text-muted-foreground text-sm">
+            {translate("noDisciplines")}
+          </p>
         ) : null}
       </div>
 
       {households.length > 0 ? (
         <div className="border-t pt-4">
-          <h3 className="mb-2 text-sm font-medium">{t("household")}</h3>
+          <h3 className="mb-2 text-sm font-medium">{translate("household")}</h3>
           <p className="text-muted-foreground mb-2 text-xs">
-            {t("householdHint")}
+            {translate("householdHint")}
           </p>
           <select
             id="householdId"
@@ -505,7 +515,7 @@ function StudentFormInner({
             defaultValue={values?.householdId ?? ""}
             className="border-input bg-background h-9 w-full max-w-xs rounded-md border px-3 text-sm"
           >
-            <option value="">{t("noHousehold")}</option>
+            <option value="">{translate("noHousehold")}</option>
             {households.map((household) => (
               <option key={household.id} value={household.id}>
                 {household.name}
@@ -516,12 +526,12 @@ function StudentFormInner({
       ) : null}
 
       <div className="border-t pt-4">
-        <h3 className="mb-2 text-sm font-medium">{t("photo")}</h3>
+        <h3 className="mb-2 text-sm font-medium">{translate("photo")}</h3>
         {values?.photoKey ? (
           <div className="flex items-center gap-3">
             <img
               src={`/api/students/${values.id}/photo?v=${values.photoKey}`}
-              alt={t("photoAlt")}
+              alt={translate("photoAlt")}
               className="size-16 rounded-md border object-cover"
             />
             <Button
@@ -536,12 +546,12 @@ function StudentFormInner({
                 if (input) input.value = "true";
               }}
             >
-              {t("removePhoto")}
+              {translate("removePhoto")}
             </Button>
           </div>
         ) : null}
         <div className="grid max-w-sm gap-2">
-          <Label htmlFor="photoFile">{t("uploadPhoto")}</Label>
+          <Label htmlFor="photoFile">{translate("uploadPhoto")}</Label>
           <Input
             id="photoFile"
             name="photoFile"
@@ -549,12 +559,14 @@ function StudentFormInner({
             accept="image/*"
             className="cursor-pointer"
           />
-          <p className="text-muted-foreground text-xs">{t("photoHint")}</p>
+          <p className="text-muted-foreground text-xs">
+            {translate("photoHint")}
+          </p>
         </div>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="notes">{t("notes")}</Label>
+        <Label htmlFor="notes">{translate("notes")}</Label>
         <Textarea
           id="notes"
           name="notes"
@@ -571,7 +583,7 @@ function StudentFormInner({
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? t("saving") : submitLabel}
+          {isPending ? translate("saving") : submitLabel}
         </Button>
       </div>
     </ActionForm>

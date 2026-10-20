@@ -24,7 +24,7 @@ type BeltActionState =
 const initialState: BeltActionState = undefined;
 
 export function AddDisciplineButton() {
-  const t = useTranslations("Belts");
+  const translate = useTranslations("Belts");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
@@ -40,7 +40,7 @@ export function AddDisciplineButton() {
   return (
     <>
       <Button size="sm" onClick={() => setOpen(true)}>
-        {t("actions.newDiscipline")}
+        {translate("actions.newDiscipline")}
       </Button>
       <Sheet
         open={open}
@@ -50,18 +50,20 @@ export function AddDisciplineButton() {
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>{t("sheet.newTitle")}</SheetTitle>
-            <SheetDescription>{t("sheet.newDescription")}</SheetDescription>
+            <SheetTitle>{translate("sheet.newTitle")}</SheetTitle>
+            <SheetDescription>
+              {translate("sheet.newDescription")}
+            </SheetDescription>
           </SheetHeader>
           <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
             <div className="grid gap-2">
-              <Label htmlFor="discipline-name">{t("sheet.name")}</Label>
+              <Label htmlFor="discipline-name">{translate("sheet.name")}</Label>
               <Input
                 id="discipline-name"
                 name="name"
                 required
                 maxLength={80}
-                placeholder={t("sheet.namePlaceholder")}
+                placeholder={translate("sheet.namePlaceholder")}
               />
             </div>
             {state && "error" in state ? (
@@ -77,11 +79,13 @@ export function AddDisciplineButton() {
             <SheetFooter className="px-4">
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  {t("sheet.done")}
+                  {translate("sheet.done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? t("sheet.creating") : t("sheet.create")}
+                  {isPending
+                    ? translate("sheet.creating")
+                    : translate("sheet.create")}
                 </Button>
               )}
               <Button
@@ -89,7 +93,7 @@ export function AddDisciplineButton() {
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t("sheet.cancel")}
+                {translate("sheet.cancel")}
               </Button>
             </SheetFooter>
           </form>

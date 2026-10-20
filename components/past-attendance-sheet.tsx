@@ -42,8 +42,8 @@ export function PastAttendanceSheet({
   courses: BackfillCourse[];
   canMark: boolean;
 }) {
-  const t = useTranslations("Attendance.past");
-  const statusT = useTranslations("Attendance.status");
+  const translate = useTranslations("Attendance.past");
+  const translateStatus = useTranslations("Attendance.status");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     PastAttendanceState,
@@ -71,20 +71,20 @@ export function PastAttendanceSheet({
         variant="outline"
         onClick={() => setOpen(true)}
       >
-        {t("button")}
+        {translate("button")}
       </Button>
 
       <SheetContent className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>{t("title")}</SheetTitle>
+          <SheetTitle>{translate("title")}</SheetTitle>
           <SheetDescription>
-            {t("description", { name: studentName })}
+            {translate("description", { name: studentName })}
           </SheetDescription>
         </SheetHeader>
         <form action={formAction} className="flex flex-1 flex-col gap-4 px-4">
           <input type="hidden" name="studentId" value={studentId} />
           <div className="grid gap-2">
-            <Label htmlFor="backfill-course">{t("course")}</Label>
+            <Label htmlFor="backfill-course">{translate("course")}</Label>
             <select
               id="backfill-course"
               name="courseId"
@@ -94,16 +94,18 @@ export function PastAttendanceSheet({
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.name} ({course.locationName})
-                  {course.isActive ? "" : t("inactive")}
+                  {course.isActive ? "" : translate("inactive")}
                 </option>
               ))}
             </select>
             {courses.length === 0 ? (
-              <p className="text-muted-foreground text-xs">{t("noCourses")}</p>
+              <p className="text-muted-foreground text-xs">
+                {translate("noCourses")}
+              </p>
             ) : null}
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="backfill-date">{t("date")}</Label>
+            <Label htmlFor="backfill-date">{translate("date")}</Label>
             <Input
               id="backfill-date"
               name="date"
@@ -113,7 +115,7 @@ export function PastAttendanceSheet({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="backfill-status">{t("status")}</Label>
+            <Label htmlFor="backfill-status">{translate("status")}</Label>
             <select
               id="backfill-status"
               name="status"
@@ -122,7 +124,7 @@ export function PastAttendanceSheet({
             >
               {ATTENDANCE_STATUSES.map((status) => (
                 <option key={status} value={status}>
-                  {statusT(status)}
+                  {translateStatus(status)}
                 </option>
               ))}
             </select>
@@ -134,17 +136,17 @@ export function PastAttendanceSheet({
           ) : null}
           {saved && state && "message" in state ? (
             <p className="text-success text-sm" role="status">
-              {state.message} {t("savedHint")}
+              {state.message} {translate("savedHint")}
             </p>
           ) : null}
           <SheetFooter className="px-0">
             {saved ? (
               <Button type="button" onClick={() => setOpen(false)}>
-                {t("done")}
+                {translate("done")}
               </Button>
             ) : (
               <Button type="submit" disabled={isPending}>
-                {isPending ? t("saving") : t("save")}
+                {isPending ? translate("saving") : translate("save")}
               </Button>
             )}
             <Button
@@ -152,7 +154,7 @@ export function PastAttendanceSheet({
               variant="outline"
               onClick={() => setOpen(false)}
             >
-              {t("cancel")}
+              {translate("cancel")}
             </Button>
           </SheetFooter>
         </form>

@@ -22,8 +22,8 @@ import { notFound } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Students");
-  return { title: t("form.editTitle") };
+  const translate = await getTranslations("Students");
+  return { title: translate("form.editTitle") };
 }
 
 type EditStudentPageProps = {
@@ -34,7 +34,7 @@ export default async function EditStudentPage({
   params,
 }: EditStudentPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
-  const t = await getTranslations("Students");
+  const translate = await getTranslations("Students");
   const { studentId } = await params;
   const [student, locations, disciplines, households, organization] =
     await Promise.all([
@@ -55,21 +55,21 @@ export default async function EditStudentPage({
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: t("title"), href: "/students" },
+          { label: translate("title"), href: "/students" },
           {
             label: `${student.firstName} ${student.lastName}`,
             href: `/students/${student.id}`,
           },
-          { label: t("form.editCrumb") },
+          { label: translate("form.editCrumb") },
         ]}
       />
       <h1 className="text-2xl font-semibold tracking-tight">
-        {t("form.editTitle")}
+        {translate("form.editTitle")}
       </h1>
       <Card>
         <CardHeader>
-          <CardTitle>{t("form.detailsTitle")}</CardTitle>
-          <CardDescription>{t("form.editDescription")}</CardDescription>
+          <CardTitle>{translate("form.detailsTitle")}</CardTitle>
+          <CardDescription>{translate("form.editDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <StudentForm
@@ -79,7 +79,7 @@ export default async function EditStudentPage({
             disciplines={disciplines}
             households={households}
             defaultCountry={organization.defaultCountry}
-            submitLabel={t("form.save")}
+            submitLabel={translate("form.save")}
             canViewMedical={hasPermission(
               user.permissions,
               PERMISSIONS.STUDENTS_MEDICAL,

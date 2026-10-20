@@ -17,7 +17,7 @@ type ViewToggleProps = {
 
 export function ViewToggle({ value, cookieName, ariaLabel }: ViewToggleProps) {
   const router = useRouter();
-  const t = useTranslations("Common");
+  const translate = useTranslations("Common");
 
   const setView = useCallback(
     (next: ListView) => {
@@ -29,8 +29,8 @@ export function ViewToggle({ value, cookieName, ariaLabel }: ViewToggleProps) {
   );
 
   const options: { view: ListView; label: string; Icon: typeof List }[] = [
-    { view: "rows", label: t("rowView"), Icon: List },
-    { view: "cards", label: t("cardView"), Icon: LayoutGrid },
+    { view: "rows", label: translate("rowView"), Icon: List },
+    { view: "cards", label: translate("cardView"), Icon: LayoutGrid },
   ];
 
   return (

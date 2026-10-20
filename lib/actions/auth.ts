@@ -27,14 +27,14 @@ export async function sendResetEmailAction(
   previousState: ForgotPasswordState,
   formData: FormData,
 ): Promise<ForgotPasswordState> {
-  const t = await getTranslations("Auth.forgot");
+  const translate = await getTranslations("Auth.forgot");
   const parsed = forgotPasswordSchema.safeParse({
     email: formData.get("email"),
   });
   if (!parsed.success) {
     return {
       ok: false,
-      message: t("invalidEmail"),
+      message: translate("invalidEmail"),
     };
   }
 
@@ -44,7 +44,7 @@ export async function sendResetEmailAction(
   if (!rateLimit("resetPassword", email.toLowerCase(), passwordResetPerMin)) {
     return {
       ok: true,
-      message: t("rateLimited"),
+      message: translate("rateLimited"),
     };
   }
 
@@ -54,7 +54,7 @@ export async function sendResetEmailAction(
     // SSO-only accounts have no local password to reset; that is the IdP's role.
     return {
       ok: true,
-      message: t("sent"),
+      message: translate("sent"),
     };
   }
 
@@ -70,7 +70,7 @@ export async function sendResetEmailAction(
 
   return {
     ok: true,
-    message: t("sent"),
+    message: translate("sent"),
   };
 }
 
@@ -80,10 +80,10 @@ export async function resetPasswordAction(
   previousState: ResetPasswordState,
   formData: FormData,
 ): Promise<ResetPasswordState> {
-  const t = await getTranslations("Auth.reset");
+  const translate = await getTranslations("Auth.reset");
   const token = formData.get("token") as string;
   if (!token) {
-    return { ok: false, message: t("invalidLink") };
+    return { ok: false, message: translate("invalidLink") };
   }
 
   const parsed = resetPasswordSchema.safeParse({
@@ -93,13 +93,13 @@ export async function resetPasswordAction(
   if (!parsed.success) {
     return {
       ok: false,
-      message: t("invalidPassword"),
+      message: translate("invalidPassword"),
     };
   }
 
   const userId = await consumeResetToken(token);
   if (!userId) {
-    return { ok: false, message: t("expiredToken") };
+    return { ok: false, message: translate("expiredToken") };
   }
 
   await resetUserPassword(userId, parsed.data.password);

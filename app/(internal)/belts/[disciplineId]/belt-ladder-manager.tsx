@@ -54,7 +54,7 @@ function BeltFields({
   belt?: BeltRangeView;
   defaultOrder: number;
 }) {
-  const t = useTranslations("Belts.ladder");
+  const translate = useTranslations("Belts.ladder");
   const [color, setColor] = useState(belt?.colorHex ?? "#FFFFFF");
 
   return (
@@ -62,7 +62,7 @@ function BeltFields({
       <input type="hidden" name="colorHex" value={color} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="belt-name">{t("name")}</Label>
+          <Label htmlFor="belt-name">{translate("name")}</Label>
           <Input
             id="belt-name"
             name="name"
@@ -72,7 +72,7 @@ function BeltFields({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="belt-color">{t("colour")}</Label>
+          <Label htmlFor="belt-color">{translate("colour")}</Label>
           <div className="flex items-center gap-2">
             <input
               id="belt-color"
@@ -80,7 +80,7 @@ function BeltFields({
               value={normalizeHexForPicker(color)}
               onChange={(event) => setColor(event.target.value.toUpperCase())}
               className="h-9 w-14 cursor-pointer rounded border p-1"
-              aria-label={t("colourPalette")}
+              aria-label={translate("colourPalette")}
             />
             <Input
               id="belt-color-hex"
@@ -91,14 +91,14 @@ function BeltFields({
                 setColor(normalizeHexForPicker(event.target.value))
               }
               className="w-28 font-mono"
-              aria-label={t("colourHex")}
+              aria-label={translate("colourHex")}
               pattern="^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
               required
             />
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="belt-order">{t("orderLabel")}</Label>
+          <Label htmlFor="belt-order">{translate("orderLabel")}</Label>
           <Input
             id="belt-order"
             name="order"
@@ -111,7 +111,7 @@ function BeltFields({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="belt-required">{t("required")}</Label>
+          <Label htmlFor="belt-required">{translate("required")}</Label>
           <Input
             id="belt-required"
             name="requiredTrainings"
@@ -122,7 +122,9 @@ function BeltFields({
             required
             className="w-24"
           />
-          <p className="text-muted-foreground text-xs">{t("requiredHint")}</p>
+          <p className="text-muted-foreground text-xs">
+            {translate("requiredHint")}
+          </p>
         </div>
       </div>
     </>
@@ -138,7 +140,7 @@ function NewBeltForm({
   nextOrder: number;
   onClose: () => void;
 }) {
-  const t = useTranslations("Belts.ladder");
+  const translate = useTranslations("Belts.ladder");
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
     FormData
@@ -162,10 +164,10 @@ function NewBeltForm({
       ) : null}
       <SheetFooter className="px-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? t("adding") : t("addSubmit")}
+          {isPending ? translate("adding") : translate("addSubmit")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          {t("cancel")}
+          {translate("cancel")}
         </Button>
       </SheetFooter>
     </form>
@@ -181,7 +183,7 @@ function EditBeltForm({
   belt: BeltRangeView;
   onClose: () => void;
 }) {
-  const t = useTranslations("Belts.ladder");
+  const translate = useTranslations("Belts.ladder");
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
     FormData
@@ -211,18 +213,18 @@ function EditBeltForm({
       ) : null}
 
       <div className="mt-auto grid gap-2 border-t pt-4">
-        <Label>{t("danger")}</Label>
+        <Label>{translate("danger")}</Label>
         <form id={`delete-belt-${belt.id}`} action={deleteBeltLevelAction}>
           <input type="hidden" name="beltLevelId" value={belt.id} />
           <input type="hidden" name="disciplineId" value={disciplineId} />
           <ConfirmDialog
-            title={t("removeTitle")}
-            description={t("removeDescription", { name: belt.name })}
-            confirmLabel={t("remove")}
+            title={translate("removeTitle")}
+            description={translate("removeDescription", { name: belt.name })}
+            confirmLabel={translate("remove")}
             formId={`delete-belt-${belt.id}`}
           >
             <Button type="button" size="sm" variant="destructive">
-              {t("remove")}
+              {translate("remove")}
             </Button>
           </ConfirmDialog>
         </form>
@@ -234,10 +236,10 @@ function EditBeltForm({
           form={`edit-belt-${belt.id}`}
           disabled={isPending}
         >
-          {isPending ? t("saving") : t("save")}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
-          {t("cancel")}
+          {translate("cancel")}
         </Button>
       </SheetFooter>
     </div>
@@ -253,7 +255,7 @@ export function BeltLadderManager({
   belts: BeltRangeView[];
   canEdit: boolean;
 }) {
-  const t = useTranslations("Belts.ladder");
+  const translate = useTranslations("Belts.ladder");
   const [editing, setEditing] = useState<EditorTarget | null>(null);
 
   const editingBelt =
@@ -268,18 +270,20 @@ export function BeltLadderManager({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-medium">{t("title")}</h3>
-          <p className="text-muted-foreground text-xs">{t("description")}</p>
+          <h3 className="text-sm font-medium">{translate("title")}</h3>
+          <p className="text-muted-foreground text-xs">
+            {translate("description")}
+          </p>
         </div>
         {canEdit ? (
           <Button size="sm" onClick={() => setEditing("new")}>
-            {t("add")}
+            {translate("add")}
           </Button>
         ) : null}
       </div>
 
       {belts.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t("empty")}</p>
+        <p className="text-muted-foreground text-sm">{translate("empty")}</p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
           {belts.map((belt) => {
@@ -295,11 +299,11 @@ export function BeltLadderManager({
                     {belt.name}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    {t("order", { order: belt.order })}
+                    {translate("order", { order: belt.order })}
                   </span>
                 </div>
                 <Badge variant="secondary" className="text-xs">
-                  {t("trainings", { count: belt.requiredTrainings })}
+                  {translate("trainings", { count: belt.requiredTrainings })}
                 </Badge>
               </>
             );
@@ -334,8 +338,8 @@ export function BeltLadderManager({
         {editing === "new" ? (
           <SheetContent className="w-full overflow-y-auto sm:max-w-md">
             <SheetHeader>
-              <SheetTitle>{t("addTitle")}</SheetTitle>
-              <SheetDescription>{t("addDescription")}</SheetDescription>
+              <SheetTitle>{translate("addTitle")}</SheetTitle>
+              <SheetDescription>{translate("addDescription")}</SheetDescription>
             </SheetHeader>
             <NewBeltForm
               disciplineId={disciplineId}
@@ -350,7 +354,9 @@ export function BeltLadderManager({
           >
             <SheetHeader>
               <SheetTitle>{editingBelt.name}</SheetTitle>
-              <SheetDescription>{t("editDescription")}</SheetDescription>
+              <SheetDescription>
+                {translate("editDescription")}
+              </SheetDescription>
             </SheetHeader>
             <EditBeltForm
               disciplineId={disciplineId}

@@ -23,7 +23,7 @@ export default async function AdminLocationsPage({
 }) {
   await requirePermission(PERMISSIONS.LOCATIONS_EDIT);
   const locations = await listLocationsWithCounts();
-  const sp = await searchParams;
+  const query = await searchParams;
 
   const locationViews = locations.map((location) => ({
     id: location.id,
@@ -39,8 +39,8 @@ export default async function AdminLocationsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {sp.locationError ? (
-        <FlashToast variant="error" message={sp.locationError} />
+      {query.locationError ? (
+        <FlashToast variant="error" message={query.locationError} />
       ) : null}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Locations</h1>

@@ -27,14 +27,14 @@ const PORTAL_WRITES_PER_MIN = 10;
 async function authorizeStudent(
   formData: FormData,
 ): Promise<{ studentId: string } | { error: PortalContactState }> {
-  const t = await getTranslations("Portal.contact");
+  const translate = await getTranslations("Portal.contact");
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
   if (!rateLimit("portal-write", clientIp, PORTAL_WRITES_PER_MIN)) {
     return {
       error: {
         ok: false,
-        message: t("rateLimited"),
+        message: translate("rateLimited"),
       },
     };
   }
@@ -46,7 +46,7 @@ async function authorizeStudent(
     return {
       error: {
         ok: false,
-        message: t("expired"),
+        message: translate("expired"),
       },
     };
   }
@@ -57,7 +57,7 @@ export async function updatePortalContactAction(
   _previousState: PortalContactState,
   formData: FormData,
 ): Promise<PortalContactState> {
-  const t = await getTranslations("Portal.contact");
+  const translate = await getTranslations("Portal.contact");
   const authorized = await authorizeStudent(formData);
   if ("error" in authorized) return authorized.error;
   const { studentId } = authorized;
@@ -80,7 +80,7 @@ export async function updatePortalContactAction(
   if (!parsed.success) {
     return {
       ok: false,
-      message: t("invalid"),
+      message: translate("invalid"),
     };
   }
 
@@ -91,14 +91,14 @@ export async function updatePortalContactAction(
     studentId,
     { method: "PORTAL" },
   );
-  return { ok: true, message: t("saved") };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function updatePortalPreferencesAction(
   _previousState: PortalContactState,
   formData: FormData,
 ): Promise<PortalContactState> {
-  const t = await getTranslations("Portal.preferences");
+  const translate = await getTranslations("Portal.preferences");
   const authorized = await authorizeStudent(formData);
   if ("error" in authorized) return authorized.error;
   const { studentId } = authorized;
@@ -107,7 +107,7 @@ export async function updatePortalPreferencesAction(
     emailOptOut: getField(formData, "emailOptOut") === "on",
   });
   if (!parsed.success) {
-    return { ok: false, message: t("invalid") };
+    return { ok: false, message: translate("invalid") };
   }
 
   await updatePortalEmailPreference(studentId, parsed.data.emailOptOut);
@@ -117,5 +117,5 @@ export async function updatePortalPreferencesAction(
     studentId,
     { method: "PORTAL", emailOptOut: parsed.data.emailOptOut },
   );
-  return { ok: true, message: t("saved") };
+  return { ok: true, message: translate("saved") };
 }

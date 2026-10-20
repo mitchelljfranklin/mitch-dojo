@@ -186,7 +186,7 @@ type NavGroup = {
 };
 
 function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
-  const t = useTranslations("Nav");
+  const translate = useTranslations("Nav");
   const canManage = hasAnyPermission(permissions, MANAGE_PERMISSIONS);
   const canStudents = hasPermission(permissions, PERMISSIONS.STUDENTS_VIEW);
   const canIncidents = hasPermission(permissions, PERMISSIONS.INCIDENTS_VIEW);
@@ -329,7 +329,7 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
               <SidebarMenuButton asChild isActive={dashboardActive}>
                 <Link href="/dashboard">
                   <LayoutDashboard />
-                  <span>{t("dashboard")}</span>
+                  <span>{translate("dashboard")}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -344,7 +344,9 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
         return (
           <SidebarGroup key={group.key}>
             {group.key ? (
-              <SidebarGroupLabel>{t(`groups.${group.key}`)}</SidebarGroupLabel>
+              <SidebarGroupLabel>
+                {translate(`groups.${group.key}`)}
+              </SidebarGroupLabel>
             ) : null}
             <SidebarGroupContent>
               <SidebarMenu>
@@ -368,7 +370,7 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
                       <SidebarMenuButton asChild isActive={isActive}>
                         <Link href={item.href}>
                           <item.icon />
-                          <span>{t(`items.${item.key}`)}</span>
+                          <span>{translate(`items.${item.key}`)}</span>
                           {item.badge ? (
                             <span className="bg-primary text-primary-foreground ml-auto rounded-full px-2 py-0.5 text-[11px] leading-none font-medium">
                               {item.badge > 99 ? "99+" : item.badge}
@@ -392,8 +394,8 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
 // component; the async auth.ts helper has a different signature.
 
 function AdminNav({ permissions }: { permissions: string[] }) {
-  const t = useTranslations("Nav");
-  const adminT = useTranslations("Nav.admin");
+  const translate = useTranslations("Nav");
+  const translateAdmin = useTranslations("Nav.admin");
 
   return (
     <>
@@ -401,10 +403,10 @@ function AdminNav({ permissions }: { permissions: string[] }) {
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={t("backToWorkspace")}>
+              <SidebarMenuButton asChild tooltip={translate("backToWorkspace")}>
                 <Link href="/dashboard">
                   <ArrowLeft />
-                  <span>{t("backToWorkspace")}</span>
+                  <span>{translate("backToWorkspace")}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -421,7 +423,7 @@ function AdminNav({ permissions }: { permissions: string[] }) {
         return (
           <SidebarGroup key={group.labelKey}>
             <SidebarGroupLabel>
-              {adminT(`groups.${group.labelKey}`)}
+              {translateAdmin(`groups.${group.labelKey}`)}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -432,7 +434,9 @@ function AdminNav({ permissions }: { permissions: string[] }) {
                       <SidebarMenuButton asChild>
                         <Link href={section.href}>
                           <Icon />
-                          <span>{adminT(`sections.${section.labelKey}`)}</span>
+                          <span>
+                            {translateAdmin(`sections.${section.labelKey}`)}
+                          </span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

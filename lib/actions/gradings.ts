@@ -24,7 +24,7 @@ export async function createGradingEventAction(
   formData: FormData,
 ): Promise<GradingActionState> {
   const actor = await requirePermission(PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts.gradings");
+  const translate = await getTranslations("Belts.gradings");
   const disciplineId = getField(formData, "disciplineId");
   const name = getField(formData, "name").trim();
   const date = getField(formData, "date").trim();
@@ -32,10 +32,10 @@ export async function createGradingEventAction(
   const notes = getField(formData, "notes").trim();
 
   if (name.length === 0) {
-    return { error: t("errors.nameRequired") };
+    return { error: translate("errors.nameRequired") };
   }
   if (!isValidIsoDateString(date)) {
-    return { error: t("errors.invalidDate") };
+    return { error: translate("errors.invalidDate") };
   }
 
   const { id } = await createGradingEvent({

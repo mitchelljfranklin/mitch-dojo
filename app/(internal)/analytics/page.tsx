@@ -56,9 +56,9 @@ export default async function AnalyticsPage({
 }: AnalyticsPageProps) {
   await requirePermission(PERMISSIONS.ANALYTICS_VIEW);
 
-  const sp = await searchParams;
+  const query = await searchParams;
   const locationId =
-    sp.location && sp.location !== "ALL" ? sp.location : undefined;
+    query.location && query.location !== "ALL" ? query.location : undefined;
 
   const [
     overview,
@@ -102,7 +102,7 @@ export default async function AnalyticsPage({
         <form className="w-48">
           <AutoSubmitSelect
             name="location"
-            defaultValue={sp.location ?? "ALL"}
+            defaultValue={query.location ?? "ALL"}
             ariaLabel="Filter attendance by location"
             options={[
               { value: "ALL", label: "All locations" },

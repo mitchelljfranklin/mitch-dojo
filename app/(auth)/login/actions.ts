@@ -20,10 +20,10 @@ export async function authenticate(
 
   const settings = await getOperationsSettings();
   const rateLimitPerMin = settings.loginRateLimitPerMin ?? 10;
-  const t = await getTranslations("Auth.login");
+  const translate = await getTranslations("Auth.login");
 
   if (!rateLimit("login", ip, rateLimitPerMin)) {
-    return { error: t("tooMany") };
+    return { error: translate("tooMany") };
   }
 
   try {
@@ -35,7 +35,7 @@ export async function authenticate(
     return undefined;
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: t("invalid") };
+      return { error: translate("invalid") };
     }
     throw error;
   }

@@ -18,8 +18,8 @@ import { ProgressTable } from "./progress-table";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Belts");
-  return { title: t("discipline.metaTitle") };
+  const translate = await getTranslations("Belts");
+  return { title: translate("discipline.metaTitle") };
 }
 
 type DisciplineProgressPageProps = {
@@ -33,10 +33,10 @@ export default async function DisciplineProgressPage({
 }: DisciplineProgressPageProps) {
   const user = await requirePermission(PERMISSIONS.BELTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.BELTS_EDIT);
-  const t = await getTranslations("Belts");
+  const translate = await getTranslations("Belts");
 
   const { disciplineId } = await params;
-  const sp = await searchParams;
+  const query = await searchParams;
   const [progress, withBelts] = await Promise.all([
     getDisciplineProgress(disciplineId),
     getDisciplineWithBelts(disciplineId),
@@ -49,12 +49,12 @@ export default async function DisciplineProgressPage({
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: t("title"), href: "/belts" },
+          { label: translate("title"), href: "/belts" },
           { label: progress.discipline.name },
         ]}
       />
-      {sp.beltError ? (
-        <FlashToast variant="error" message={sp.beltError} />
+      {query.beltError ? (
+        <FlashToast variant="error" message={query.beltError} />
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -64,16 +64,20 @@ export default async function DisciplineProgressPage({
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Badge variant="outline">
-              {t("discipline.beltsBadge", { count: progress.belts.length })}
+              {translate("discipline.beltsBadge", {
+                count: progress.belts.length,
+              })}
             </Badge>
             {progress.discipline.isActive ? null : (
-              <Badge variant="outline">{t("discipline.inactive")}</Badge>
+              <Badge variant="outline">
+                {translate("discipline.inactive")}
+              </Badge>
             )}
           </div>
         </div>
         <Button asChild variant="outline">
           <Link href={`/belts/${disciplineId}/gradings`}>
-            {t("discipline.gradings")}
+            {translate("discipline.gradings")}
           </Link>
         </Button>
       </div>

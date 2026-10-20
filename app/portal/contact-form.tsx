@@ -17,7 +17,7 @@ import {
 } from "./contact-actions";
 
 export function PortalContactForm({ contact }: { contact: PortalContact }) {
-  const t = useTranslations("Portal.contact");
+  const translate = useTranslations("Portal.contact");
   const [state, formAction, isPending] = useActionState<
     PortalContactState,
     FormData
@@ -29,7 +29,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       <input type="hidden" name="studentId" value={contact.studentId} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="email">{t("email")}</Label>
+          <Label htmlFor="email">{translate("email")}</Label>
           <Input
             id="email"
             name="email"
@@ -38,12 +38,12 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="phone">{t("phone")}</Label>
+          <Label htmlFor="phone">{translate("phone")}</Label>
           <Input id="phone" name="phone" defaultValue={contact.phone ?? ""} />
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="addressLine">{t("address")}</Label>
+        <Label htmlFor="addressLine">{translate("address")}</Label>
         <Input
           id="addressLine"
           name="addressLine"
@@ -52,15 +52,15 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="grid gap-2">
-          <Label htmlFor="city">{t("city")}</Label>
+          <Label htmlFor="city">{translate("city")}</Label>
           <Input id="city" name="city" defaultValue={contact.city ?? ""} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="state">{t("state")}</Label>
+          <Label htmlFor="state">{translate("state")}</Label>
           <Input id="state" name="state" defaultValue={contact.state ?? ""} />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="postcode">{t("postcode")}</Label>
+          <Label htmlFor="postcode">{translate("postcode")}</Label>
           <Input
             id="postcode"
             name="postcode"
@@ -69,17 +69,19 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="country">{t("country")}</Label>
+        <Label htmlFor="country">{translate("country")}</Label>
         <Input
           id="country"
           name="country"
           maxLength={2}
           defaultValue={contact.country ?? ""}
-          placeholder={t("countryPlaceholder")}
+          placeholder={translate("countryPlaceholder")}
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="emergencyContactName">{t("emergencyName")}</Label>
+        <Label htmlFor="emergencyContactName">
+          {translate("emergencyName")}
+        </Label>
         <Input
           id="emergencyContactName"
           name="emergencyContactName"
@@ -87,7 +89,9 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="emergencyContactPhone">{t("emergencyPhone")}</Label>
+        <Label htmlFor="emergencyContactPhone">
+          {translate("emergencyPhone")}
+        </Label>
         <Input
           id="emergencyContactPhone"
           name="emergencyContactPhone"
@@ -96,7 +100,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="guardianName">{t("guardianName")}</Label>
+          <Label htmlFor="guardianName">{translate("guardianName")}</Label>
           <Input
             id="guardianName"
             name="guardianName"
@@ -105,7 +109,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
         </div>
         <div className="grid gap-2">
           <Label htmlFor="guardianRelationship">
-            {t("guardianRelationship")}
+            {translate("guardianRelationship")}
           </Label>
           <Input
             id="guardianRelationship"
@@ -116,7 +120,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="guardianEmail">{t("guardianEmail")}</Label>
+          <Label htmlFor="guardianEmail">{translate("guardianEmail")}</Label>
           <Input
             id="guardianEmail"
             name="guardianEmail"
@@ -125,7 +129,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="guardianPhone">{t("guardianPhone")}</Label>
+          <Label htmlFor="guardianPhone">{translate("guardianPhone")}</Label>
           <Input
             id="guardianPhone"
             name="guardianPhone"
@@ -135,7 +139,7 @@ export function PortalContactForm({ contact }: { contact: PortalContact }) {
       </div>
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? t("saving") : t("save")}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>
@@ -149,7 +153,7 @@ export function PortalPreferencesForm({
   studentId: string;
   emailOptOut: boolean;
 }) {
-  const t = useTranslations("Portal.preferences");
+  const translate = useTranslations("Portal.preferences");
   const [state, formAction, isPending] = useActionState<
     PortalContactState,
     FormData
@@ -161,12 +165,12 @@ export function PortalPreferencesForm({
       <input type="hidden" name="studentId" value={studentId} />
       <label className="flex w-fit items-center gap-2 text-sm">
         <Checkbox name="emailOptOut" defaultChecked={emailOptOut} />
-        {t("pause")}
+        {translate("pause")}
       </label>
-      <p className="text-muted-foreground text-xs">{t("note")}</p>
+      <p className="text-muted-foreground text-xs">{translate("note")}</p>
       <div>
         <Button type="submit" variant="outline" disabled={isPending}>
-          {isPending ? t("saving") : t("save")}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>

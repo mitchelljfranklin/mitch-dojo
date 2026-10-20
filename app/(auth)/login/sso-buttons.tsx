@@ -10,7 +10,7 @@ export type SsoButton = { id: string; label: string };
 // Auth.js handles the redirect to the IdP; failures bounce back with
 // ?error= which the login page renders.
 export async function SsoButtons({ providers }: { providers: SsoButton[] }) {
-  const t = await getTranslations("Auth.login");
+  const translate = await getTranslations("Auth.login");
 
   return (
     <div className="grid gap-2">
@@ -18,7 +18,7 @@ export async function SsoButtons({ providers }: { providers: SsoButton[] }) {
         <form key={provider.id} action={ssoSignInAction}>
           <input type="hidden" name="provider" value={provider.id} />
           <SubmitButton variant="outline" className="w-full">
-            {t("ssoWith", { provider: provider.label })}
+            {translate("ssoWith", { provider: provider.label })}
           </SubmitButton>
         </form>
       ))}

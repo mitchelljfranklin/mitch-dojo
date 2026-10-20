@@ -16,8 +16,8 @@ import { SetupForm } from "./setup-form";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Auth");
-  return { title: t("setup.title") };
+  const translate = await getTranslations("Auth");
+  return { title: translate("setup.title") };
 }
 
 export default async function SetupPage() {
@@ -25,13 +25,13 @@ export default async function SetupPage() {
     redirect("/login");
   }
 
-  const t = await getTranslations("Auth.setup");
+  const translate = await getTranslations("Auth.setup");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
+        <CardTitle>{translate("title")}</CardTitle>
+        <CardDescription>{translate("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <SetupForm />

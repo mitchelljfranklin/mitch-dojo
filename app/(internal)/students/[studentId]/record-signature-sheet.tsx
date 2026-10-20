@@ -40,7 +40,7 @@ export function RecordSignatureSheet({
   documentLabel,
   activeVersion,
 }: RecordSignatureSheetProps) {
-  const t = useTranslations("Students.signature");
+  const translate = useTranslations("Students.signature");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     AgreementSignatureState,
@@ -56,7 +56,7 @@ export function RecordSignatureSheet({
         variant="outline"
         onClick={() => setOpen(true)}
       >
-        {t("record")}
+        {translate("record")}
       </Button>
       <Sheet
         open={open}
@@ -69,23 +69,29 @@ export function RecordSignatureSheet({
           className="w-full overflow-y-auto sm:max-w-md"
         >
           <SheetHeader>
-            <SheetTitle>{t("title", { document: documentLabel })}</SheetTitle>
-            <SheetDescription>{t("description")}</SheetDescription>
+            <SheetTitle>
+              {translate("title", { document: documentLabel })}
+            </SheetTitle>
+            <SheetDescription>{translate("description")}</SheetDescription>
           </SheetHeader>
           <form action={formAction} className="flex flex-col gap-4">
             <input type="hidden" name="studentId" value={studentId} />
             <input type="hidden" name="documentId" value={documentId} />
             <div className="grid gap-2">
-              <Label htmlFor={`signedBy-${documentId}`}>{t("who")}</Label>
+              <Label htmlFor={`signedBy-${documentId}`}>
+                {translate("who")}
+              </Label>
               <Input
                 id={`signedBy-${documentId}`}
                 name="signedByName"
                 required
-                placeholder={t("whoPlaceholder")}
+                placeholder={translate("whoPlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`signedAt-${documentId}`}>{t("date")}</Label>
+              <Label htmlFor={`signedAt-${documentId}`}>
+                {translate("date")}
+              </Label>
               <Input
                 id={`signedAt-${documentId}`}
                 name="signedAt"
@@ -95,7 +101,7 @@ export function RecordSignatureSheet({
               />
             </div>
             <p className="text-muted-foreground text-xs">
-              {t("versionNote", { version: activeVersion })}
+              {translate("versionNote", { version: activeVersion })}
             </p>
             {state && !state.ok ? (
               <p className="text-destructive text-sm" role="alert">
@@ -104,7 +110,7 @@ export function RecordSignatureSheet({
             ) : null}
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? t("recording") : t("submit")}
+                {isPending ? translate("recording") : translate("submit")}
               </Button>
             </SheetFooter>
           </form>

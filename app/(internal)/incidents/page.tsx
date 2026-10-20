@@ -39,11 +39,11 @@ export default async function IncidentsPage({
     user.permissions,
     PERMISSIONS.INCIDENTS_MANAGE,
   );
-  const sp = await searchParams;
+  const query = await searchParams;
   const statusFilter =
-    sp.status === "CLOSED"
+    query.status === "CLOSED"
       ? "CLOSED"
-      : sp.status === "OPEN"
+      : query.status === "OPEN"
         ? "OPEN"
         : undefined;
 

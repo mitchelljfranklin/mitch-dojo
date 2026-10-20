@@ -21,8 +21,8 @@ import { AttendanceForm } from "@/components/attendance-form";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Attendance");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Attendance");
+  return { title: translate("metaTitle") };
 }
 
 type SessionAttendancePageProps = {
@@ -35,23 +35,23 @@ export default async function SessionAttendancePage({
   searchParams,
 }: SessionAttendancePageProps) {
   const user = await requirePermission(PERMISSIONS.ATTENDANCE_VIEW);
-  const t = await getTranslations("Attendance.session");
-  const attendanceT = await getTranslations("Attendance");
-  const format = await getFormatter();
+  const translate = await getTranslations("Attendance.session");
+  const translateAttendance = await getTranslations("Attendance");
+  const formatter = await getFormatter();
   const canMark = hasPermission(user.permissions, PERMISSIONS.ATTENDANCE_MARK);
 
   const { sessionId } = await params;
-  const sp = await searchParams;
+  const query = await searchParams;
   // Default: only students training this course's discipline. `?scope=all`
   // widens to everyone at the location for drop-ins.
-  const includeAll = sp.scope === "all";
+  const includeAll = query.scope === "all";
   const { session, roster } = await getSessionRoster(sessionId, {
     includeAll,
   });
   if (!session) {
     notFound();
   }
-  const day = format.dateTime(session.date, {
+  const formattedDate = formatter.dateTime(session.date, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -62,9 +62,9 @@ export default async function SessionAttendancePage({
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: attendanceT("title"), href: "/attendance" },
+          { label: translateAttendance("title"), href: "/attendance" },
           { label: session.courseName, href: `/classes/${session.courseId}` },
-          { label: day },
+          { label: formattedDate },
         ]}
       />
 
@@ -80,11 +80,11 @@ export default async function SessionAttendancePage({
               {session.startTime}–{session.endTime}
             </span>
             {session.status === "CANCELLED" ? (
-              <Badge variant="destructive">{t("cancelled")}</Badge>
+              <Badge variant="destructive">{translate("cancelled")}</Badge>
             ) : null}
             {session.trainerName ? (
               <span className="text-muted-foreground text-xs">
-                {t("trainer", { name: session.trainerName })}
+                {translate("trainer", { name: session.trainerName })}
               </span>
             ) : null}
           </div>
@@ -98,7 +98,9 @@ export default async function SessionAttendancePage({
                   : `/sessions/${session.id}?scope=all`
               }
             >
-              {includeAll ? t("showDiscipline") : t("showEveryone")}
+              {includeAll
+                ? translate("showDiscipline")
+                : translate("showEveryone")}
             </Link>
           </Button>
           <Button asChild variant="outline">
@@ -106,12 +108,12 @@ export default async function SessionAttendancePage({
               href={`/api/sessions/${session.id}/attendance-pdf${includeAll ? "?scope=all" : ""}`}
               download
             >
-              {t("downloadPdf")}
+              {translate("downloadPdf")}
             </a>
           </Button>
           <Button asChild variant="outline">
             <Link href={`/classes/${session.courseId}`}>
-              {t("backToCourse")}
+              {translate("backToCourse")}
             </Link>
           </Button>
         </div>
@@ -119,22 +121,22 @@ export default async function SessionAttendancePage({
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("attendanceTitle")}</CardTitle>
+          <CardTitle>{translate("attendanceTitle")}</CardTitle>
           <CardDescription>
             {roster.length === 0
               ? includeAll
-                ? t("emptyAll", { location: session.locationName })
-                : t("emptyDiscipline", {
+                ? translate("emptyAll", { location: session.locationName })
+                : translate("emptyDiscipline", {
                     discipline: session.disciplineName,
                     location: session.locationName,
                   })
               : canMark
                 ? includeAll
-                  ? t("markAll")
-                  : t("markDiscipline", {
+                  ? translate("markAll")
+                  : translate("markDiscipline", {
                       discipline: session.disciplineName,
                     })
-                : t("readOnly")}
+                : translate("readOnly")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -152,7 +154,7 @@ export default async function SessionAttendancePage({
             />
           ) : (
             <p className="text-muted-foreground text-sm">
-              {t("assignHint", {
+              {translate("assignHint", {
                 discipline: session.disciplineName,
                 location: session.locationName,
               })}

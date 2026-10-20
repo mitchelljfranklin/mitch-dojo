@@ -17,7 +17,7 @@ export function BeltImportForm({
 }: {
   disciplines: { id: string; name: string }[];
 }) {
-  const t = useTranslations("Belts.import");
+  const translate = useTranslations("Belts.import");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [disciplineId, setDisciplineId] = useState(disciplines[0]?.id ?? "");
   const [state, formAction, isPending] = useActionState<
@@ -41,7 +41,9 @@ export function BeltImportForm({
       className="flex flex-col gap-3"
     >
       <div className="grid gap-2">
-        <Label htmlFor="belt-import-discipline">{t("discipline")}</Label>
+        <Label htmlFor="belt-import-discipline">
+          {translate("discipline")}
+        </Label>
         <select
           id="belt-import-discipline"
           name="disciplineId"
@@ -58,7 +60,7 @@ export function BeltImportForm({
         </select>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="belt-import-file">{t("csvFile")}</Label>
+        <Label htmlFor="belt-import-file">{translate("csvFile")}</Label>
         <Input
           ref={fileInputRef}
           id="belt-import-file"
@@ -81,7 +83,7 @@ export function BeltImportForm({
       ) : null}
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? t("importing") : t("submit")}
+          {isPending ? translate("importing") : translate("submit")}
         </Button>
       </div>
     </form>

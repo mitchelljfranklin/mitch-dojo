@@ -16,47 +16,51 @@ import { AttendanceImportForm } from "./import-form";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Attendance.import");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Attendance.import");
+  return { title: translate("metaTitle") };
 }
 
 export default async function ImportAttendancePage() {
   await requirePermission(PERMISSIONS.ATTENDANCE_MARK);
-  const t = await getTranslations("Attendance.import");
-  const classesT = await getTranslations("Classes");
+  const translate = await getTranslations("Attendance.import");
+  const translateClasses = await getTranslations("Classes");
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: classesT("title"), href: "/classes" },
-          { label: t("breadcrumb") },
+          { label: translateClasses("title"), href: "/classes" },
+          { label: translate("breadcrumb") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {translate("title")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>{t("cardTitle")}</CardTitle>
-          <CardDescription>{t("cardDescription")}</CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="text-sm">
-            <p className="mb-2 font-medium">{t("columns")}</p>
+            <p className="mb-2 font-medium">{translate("columns")}</p>
             <ul className="text-muted-foreground list-disc pl-5 text-xs">
               <li>
-                <code>Date</code> — {t("dateLine")}
+                <code>Date</code> — {translate("dateLine")}
               </li>
               <li>
-                <code>Course</code> — {t("courseLine")}
+                <code>Course</code> — {translate("courseLine")}
               </li>
               <li>
-                <code>Email</code> — {t("studentLine")}
+                <code>Email</code> — {translate("studentLine")}
               </li>
               <li>
-                <code>Status</code> — {t("statusLine")}
+                <code>Status</code> — {translate("statusLine")}
               </li>
             </ul>
-            <p className="text-muted-foreground mt-2 text-xs">{t("note")}</p>
+            <p className="text-muted-foreground mt-2 text-xs">
+              {translate("note")}
+            </p>
           </div>
           <AttendanceImportForm />
         </CardContent>

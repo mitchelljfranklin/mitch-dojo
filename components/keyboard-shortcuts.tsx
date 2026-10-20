@@ -132,7 +132,7 @@ type CommandPaletteProps = {
 };
 
 export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
-  const t = useTranslations("CommandPalette");
+  const translate = useTranslations("CommandPalette");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -143,10 +143,10 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
     () =>
       ALL_ITEMS.map((item) => ({
         ...item,
-        label: t(`items.${item.key}.label`),
-        subtitle: t(`items.${item.key}.subtitle`),
+        label: translate(`items.${item.key}.label`),
+        subtitle: translate(`items.${item.key}.subtitle`),
       })),
-    [t],
+    [translate],
   );
 
   const filteredItems = useMemo(() => {
@@ -270,15 +270,15 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? undefined : close())}>
       <DialogContent
-        aria-label={t("ariaLabel")}
+        aria-label={translate("ariaLabel")}
         className="top-[15vh] max-w-lg translate-y-0 gap-0 p-0"
       >
-        <DialogTitle className="sr-only">{t("ariaLabel")}</DialogTitle>
+        <DialogTitle className="sr-only">{translate("ariaLabel")}</DialogTitle>
         <div className="border-b px-3 py-3">
           <Input
             ref={inputRef}
             type="text"
-            placeholder={t("searchPlaceholder")}
+            placeholder={translate("searchPlaceholder")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="border-none shadow-none focus-visible:ring-0"
@@ -298,7 +298,7 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
         >
           {filteredItems.length === 0 ? (
             <p className="text-muted-foreground px-3 py-6 text-center text-sm">
-              {t("noResults")}
+              {translate("noResults")}
             </p>
           ) : (
             filteredItems.map((item, index) => (
@@ -328,21 +328,21 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ↑↓
             </kbd>{" "}
-            {t("navigate")} ·{" "}
+            {translate("navigate")} ·{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ↵
             </kbd>{" "}
-            {t("open")} ·{" "}
+            {translate("open")} ·{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               esc
             </kbd>{" "}
-            {t("close")}
+            {translate("close")}
           </span>
           <span>
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ⌘K
             </kbd>{" "}
-            {t("or")}{" "}
+            {translate("or")}{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ?
             </kbd>

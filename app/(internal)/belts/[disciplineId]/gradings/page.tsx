@@ -32,8 +32,8 @@ import { NewGradingEventSheet } from "./new-grading-event-sheet";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Belts.gradings");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Belts.gradings");
+  return { title: translate("metaTitle") };
 }
 
 type GradingsPageProps = {
@@ -42,9 +42,9 @@ type GradingsPageProps = {
 
 export default async function GradingsPage({ params }: GradingsPageProps) {
   await requirePermission(PERMISSIONS.BELTS_VIEW);
-  const t = await getTranslations("Belts.gradings");
-  const beltsT = await getTranslations("Belts");
-  const format = await getFormatter();
+  const translate = await getTranslations("Belts.gradings");
+  const translateBelts = await getTranslations("Belts");
+  const formatter = await getFormatter();
   const { disciplineId } = await params;
   const [discipline, events, locations] = await Promise.all([
     getDiscipline(disciplineId),
@@ -54,8 +54,8 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
   if (!discipline) {
     notFound();
   }
-  const day = (value: Date) =>
-    format.dateTime(value, {
+  const formatDay = (value: Date) =>
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -66,17 +66,19 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: beltsT("title"), href: "/belts" },
+          { label: translateBelts("title"), href: "/belts" },
           { label: discipline.name, href: `/belts/${disciplineId}` },
-          { label: t("metaTitle") },
+          { label: translate("metaTitle") },
         ]}
       />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title", { name: discipline.name })}
+            {translate("title", { name: discipline.name })}
           </h1>
-          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+          <p className="text-muted-foreground text-sm">
+            {translate("subtitle")}
+          </p>
         </div>
         <NewGradingEventSheet
           disciplineId={disciplineId}
@@ -90,24 +92,26 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("eventsTitle")}</CardTitle>
-          <CardDescription>{t("eventsDescription")}</CardDescription>
+          <CardTitle>{translate("eventsTitle")}</CardTitle>
+          <CardDescription>{translate("eventsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("empty")}</p>
+            <p className="text-muted-foreground text-sm">
+              {translate("empty")}
+            </p>
           ) : (
             <div className="rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("table.date")}</TableHead>
-                    <TableHead>{t("table.name")}</TableHead>
-                    <TableHead>{t("table.location")}</TableHead>
-                    <TableHead>{t("table.promoted")}</TableHead>
-                    <TableHead>{t("table.status")}</TableHead>
+                    <TableHead>{translate("table.date")}</TableHead>
+                    <TableHead>{translate("table.name")}</TableHead>
+                    <TableHead>{translate("table.location")}</TableHead>
+                    <TableHead>{translate("table.promoted")}</TableHead>
+                    <TableHead>{translate("table.status")}</TableHead>
                     <TableHead>
-                      <span className="sr-only">{t("table.open")}</span>
+                      <span className="sr-only">{translate("table.open")}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -115,7 +119,7 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
                   {events.map((event) => (
                     <TableRow key={event.id}>
                       <TableCell className="text-sm font-medium">
-                        {day(event.date)}
+                        {formatDay(event.date)}
                       </TableCell>
                       <TableCell className="text-sm">{event.name}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -130,7 +134,7 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
                             event.status === "OPEN" ? "secondary" : "outline"
                           }
                         >
-                          {t(`status.${event.status}`)}
+                          {translate(`status.${event.status}`)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -138,7 +142,7 @@ export default async function GradingsPage({ params }: GradingsPageProps) {
                           <Link
                             href={`/belts/${disciplineId}/gradings/${event.id}`}
                           >
-                            {t("table.open")}
+                            {translate("table.open")}
                           </Link>
                         </Button>
                       </TableCell>

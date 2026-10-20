@@ -36,9 +36,9 @@ export default async function CourseDetailPage({
   searchParams,
 }: CourseDetailPageProps) {
   const user = await requirePermission(PERMISSIONS.CLASSES_VIEW);
-  const t = await getTranslations("Classes");
-  const d = await getTranslations("Classes.detail");
-  const format = await getFormatter();
+  const translate = await getTranslations("Classes");
+  const translateDetail = await getTranslations("Classes.detail");
+  const formatter = await getFormatter();
   const canViewAttendance = hasPermission(
     user.permissions,
     PERMISSIONS.ATTENDANCE_VIEW,
@@ -46,7 +46,7 @@ export default async function CourseDetailPage({
   const canEdit = hasPermission(user.permissions, PERMISSIONS.CLASSES_EDIT);
 
   const { courseId } = await params;
-  const sp = await searchParams;
+  const query = await searchParams;
   const course = await getCourse(courseId);
   if (!course) {
     notFound();
@@ -63,8 +63,8 @@ export default async function CourseDetailPage({
   const attendanceCounts = await getAttendanceCountsBySession(
     upcoming.sessions.map((session) => session.id),
   );
-  const day = (value: Date) =>
-    format.dateTime(value, {
+  const formatDay = (value: Date) =>
+    formatter.dateTime(value, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -75,12 +75,12 @@ export default async function CourseDetailPage({
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: t("title"), href: "/classes" },
+          { label: translate("title"), href: "/classes" },
           { label: course.name },
         ]}
       />
-      {sp.created ? (
-        <FlashToast variant="success" message={d("created")} />
+      {query.created ? (
+        <FlashToast variant="success" message={translateDetail("created")} />
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -95,11 +95,11 @@ export default async function CourseDetailPage({
               <Badge variant="secondary">{course.trainer.name}</Badge>
             ) : (
               <span className="text-muted-foreground text-xs">
-                {d("noTrainer")}
+                {translateDetail("noTrainer")}
               </span>
             )}
             {course.isActive ? null : (
-              <Badge variant="outline">{d("inactive")}</Badge>
+              <Badge variant="outline">{translateDetail("inactive")}</Badge>
             )}
           </div>
           {course.description ? (
@@ -112,7 +112,9 @@ export default async function CourseDetailPage({
           {canEdit ? (
             <>
               <Button asChild variant="outline">
-                <Link href={`/classes/${course.id}/edit`}>{d("edit")}</Link>
+                <Link href={`/classes/${course.id}/edit`}>
+                  {translateDetail("edit")}
+                </Link>
               </Button>
               <form
                 id={`delete-course-${course.id}`}
@@ -120,13 +122,15 @@ export default async function CourseDetailPage({
               >
                 <input type="hidden" name="courseId" value={course.id} />
                 <ConfirmDialog
-                  title={d("deleteTitle")}
-                  description={d("deleteDescription", { name: course.name })}
-                  confirmLabel={d("deleteConfirm")}
+                  title={translateDetail("deleteTitle")}
+                  description={translateDetail("deleteDescription", {
+                    name: course.name,
+                  })}
+                  confirmLabel={translateDetail("deleteConfirm")}
                   formId={`delete-course-${course.id}`}
                 >
                   <Button type="button" variant="destructive">
-                    {d("delete")}
+                    {translateDetail("delete")}
                   </Button>
                 </ConfirmDialog>
               </form>
@@ -138,12 +142,16 @@ export default async function CourseDetailPage({
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>{d("weeklyTitle")}</CardTitle>
-            <CardDescription>{d("weeklyDescription")}</CardDescription>
+            <CardTitle>{translateDetail("weeklyTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("weeklyDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {course.trainingTimes.length === 0 ? (
-              <p className="text-muted-foreground text-sm">{d("noWeekly")}</p>
+              <p className="text-muted-foreground text-sm">
+                {translateDetail("noWeekly")}
+              </p>
             ) : (
               course.trainingTimes.map((slot) => (
                 <div
@@ -151,11 +159,13 @@ export default async function CourseDetailPage({
                   className="flex items-center justify-between gap-4 rounded-md border p-2 text-sm"
                 >
                   <span className="font-medium">
-                    {t(`weekdays.${slot.weekday}`)}
+                    {translate(`weekdays.${slot.weekday}`)}
                   </span>
                   <span className="flex items-center gap-2">
                     {!slot.trialBookable ? (
-                      <Badge variant="outline">{d("notTrial")}</Badge>
+                      <Badge variant="outline">
+                        {translateDetail("notTrial")}
+                      </Badge>
                     ) : null}
                     <span className="text-muted-foreground font-mono text-xs">
                       {slot.startTime} – {slot.endTime}
@@ -169,12 +179,16 @@ export default async function CourseDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>{d("upcomingTitle")}</CardTitle>
-            <CardDescription>{d("upcomingDescription")}</CardDescription>
+            <CardTitle>{translateDetail("upcomingTitle")}</CardTitle>
+            <CardDescription>
+              {translateDetail("upcomingDescription")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {upcoming.sessions.length === 0 ? (
-              <p className="text-muted-foreground text-sm">{d("noUpcoming")}</p>
+              <p className="text-muted-foreground text-sm">
+                {translateDetail("noUpcoming")}
+              </p>
             ) : (
               upcoming.sessions.map((session) => {
                 const counts = attendanceCounts.get(session.id) ?? {
@@ -188,7 +202,7 @@ export default async function CourseDetailPage({
                   >
                     <div className="flex min-w-0 flex-col">
                       <span>
-                        {day(session.date)} ·{" "}
+                        {formatDay(session.date)} ·{" "}
                         <span className="font-mono text-xs">
                           {session.startTime}–{session.endTime}
                         </span>
@@ -196,7 +210,7 @@ export default async function CourseDetailPage({
                       <span className="text-muted-foreground text-xs">
                         {session.locationName}
                         {counts.total > 0
-                          ? ` · ${d("attended", {
+                          ? ` · ${translateDetail("attended", {
                               trained: counts.trained,
                               total: counts.total,
                             })}`
@@ -207,7 +221,7 @@ export default async function CourseDetailPage({
                       {canViewAttendance ? (
                         <Button asChild size="sm" variant="outline">
                           <Link href={`/sessions/${session.id}`}>
-                            {d("attendance")}
+                            {translateDetail("attendance")}
                           </Link>
                         </Button>
                       ) : null}
@@ -247,8 +261,8 @@ export default async function CourseDetailPage({
                             }
                           >
                             {session.status === "CANCELLED"
-                              ? d("restore")
-                              : d("cancel")}
+                              ? translateDetail("restore")
+                              : translateDetail("cancel")}
                           </Button>
                         </form>
                       ) : (
@@ -260,8 +274,8 @@ export default async function CourseDetailPage({
                           }
                         >
                           {session.status === "CANCELLED"
-                            ? d("cancelled")
-                            : d("scheduled")}
+                            ? translateDetail("cancelled")
+                            : translateDetail("scheduled")}
                         </Badge>
                       )}
                     </div>

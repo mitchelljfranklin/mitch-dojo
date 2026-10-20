@@ -16,14 +16,14 @@ import { listLocations } from "@/lib/db/locations";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Students.import");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Students.import");
+  return { title: translate("metaTitle") };
 }
 
 export default async function ImportStudentsPage() {
   await requirePermission(PERMISSIONS.STUDENTS_CREATE);
-  const t = await getTranslations("Students.import");
-  const studentsT = await getTranslations("Students");
+  const translate = await getTranslations("Students.import");
+  const translateStudents = await getTranslations("Students");
   const locations = await listLocations();
   const locationNames = locations.map((location) => location.name);
 
@@ -31,22 +31,27 @@ export default async function ImportStudentsPage() {
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: studentsT("title"), href: "/students" },
-          { label: t("submit") },
+          { label: translateStudents("title"), href: "/students" },
+          { label: translate("submit") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {translate("title")}
+      </h1>
       <Card>
         <CardHeader>
-          <CardTitle>{t("cardTitle")}</CardTitle>
-          <CardDescription>{t("cardDescription")}</CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="text-muted-foreground text-sm">
-            <p className="text-foreground mb-2 font-medium">{t("columns")}</p>
+            <p className="text-foreground mb-2 font-medium">
+              {translate("columns")}
+            </p>
             <ul className="text-muted-foreground list-disc pl-5 text-xs">
               <li>
-                <code>FirstName</code>, <code>LastName</code> — {t("required")}
+                <code>FirstName</code>, <code>LastName</code> —{" "}
+                {translate("required")}
               </li>
               <li>
                 <code>Email</code>, <code>Phone</code>, <code>DateOfBirth</code>{" "}
@@ -61,14 +66,14 @@ export default async function ImportStudentsPage() {
                 <code>EmergencyContactPhone</code>
               </li>
               <li>
-                <code>Status</code> — {t("statusLine")}
+                <code>Status</code> — {translate("statusLine")}
               </li>
               <li>
-                <code>Locations</code> — {t("locationsLine")}{" "}
+                <code>Locations</code> — {translate("locationsLine")}{" "}
                 <code>Main Dojo;Northside Dojo</code>
               </li>
               <li>
-                <code>PrimaryLocation</code> — {t("primaryLine")}
+                <code>PrimaryLocation</code> — {translate("primaryLine")}
               </li>
               <li>
                 <code>Notes</code>
@@ -76,8 +81,10 @@ export default async function ImportStudentsPage() {
             </ul>
           </div>
           <p className="text-muted-foreground text-xs">
-            {t("available")}{" "}
-            {locationNames.length > 0 ? locationNames.join(", ") : t("noneYet")}
+            {translate("available")}{" "}
+            {locationNames.length > 0
+              ? locationNames.join(", ")
+              : translate("noneYet")}
           </p>
           <StudentImportForm />
         </CardContent>

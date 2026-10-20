@@ -21,8 +21,8 @@ import { BookingForm } from "./booking-form";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Book");
-  return { title: t("metaTitle") };
+  const translate = await getTranslations("Book");
+  return { title: translate("metaTitle") };
 }
 
 const BOOKING_PAGE_LOADS_PER_MIN = 20;
@@ -48,8 +48,8 @@ type BookPageProps = {
 };
 
 export default async function BookPage({ searchParams }: BookPageProps) {
-  const sp = await searchParams;
-  const t = await getTranslations("Book");
+  const query = await searchParams;
+  const translate = await getTranslations("Book");
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -58,8 +58,10 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       <div className="mx-auto max-w-md p-8">
         <Card>
           <CardHeader>
-            <CardTitle>{t("tooManyRequestsTitle")}</CardTitle>
-            <CardDescription>{t("tooManyRequestsDescription")}</CardDescription>
+            <CardTitle>{translate("tooManyRequestsTitle")}</CardTitle>
+            <CardDescription>
+              {translate("tooManyRequestsDescription")}
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -72,7 +74,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
     getAppearanceSettings(),
   ]);
 
-  const errorCode = isBookingErrorCode(sp.error) ? sp.error : undefined;
+  const errorCode = isBookingErrorCode(query.error) ? query.error : undefined;
 
   return (
     <div className="mx-auto max-w-lg p-6">
@@ -89,22 +91,26 @@ export default async function BookPage({ searchParams }: BookPageProps) {
         </p>
       </div>
 
-      {sp.booked ? (
+      {query.booked ? (
         <Card className="border-success/40 mb-4">
           <CardHeader>
-            <CardTitle className="text-success">{t("bookedTitle")}</CardTitle>
-            <CardDescription>{t("bookedDescription")}</CardDescription>
+            <CardTitle className="text-success">
+              {translate("bookedTitle")}
+            </CardTitle>
+            <CardDescription>{translate("bookedDescription")}</CardDescription>
           </CardHeader>
         </Card>
       ) : null}
-      {sp.error ? (
+      {query.error ? (
         <Card className="border-destructive/40 mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-base">
-              {t("errorTitle")}
+              {translate("errorTitle")}
             </CardTitle>
             <CardDescription>
-              {errorCode ? t(`errors.${errorCode}`) : t("errorFallback")}
+              {errorCode
+                ? translate(`errors.${errorCode}`)
+                : translate("errorFallback")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -113,7 +119,9 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       <Card>
         <CardContent className="pt-6">
           {locations.length === 0 || disciplines.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("unavailable")}</p>
+            <p className="text-muted-foreground text-sm">
+              {translate("unavailable")}
+            </p>
           ) : (
             <BookingForm
               locations={locations}

@@ -71,7 +71,7 @@ export function ProgressTable({
   rows,
   canEdit,
 }: ProgressTableProps) {
-  const t = useTranslations("Belts.progress");
+  const translate = useTranslations("Belts.progress");
   const [promoting, setPromoting] = useState<ProgressRow | null>(null);
   const [defaultBeltId, setDefaultBeltId] = useState("");
   // Client-side filters: the rows are already in memory, so filtering
@@ -88,7 +88,8 @@ export function ProgressTable({
         if (row.currentBeltName) return false;
       } else if (beltFilter !== "ALL") {
         if (
-          row.currentBeltName !== belts.find((b) => b.id === beltFilter)?.name
+          row.currentBeltName !==
+          belts.find((belt) => belt.id === beltFilter)?.name
         )
           return false;
       }
@@ -110,31 +111,35 @@ export function ProgressTable({
     <Card>
       <div className="flex items-center justify-between px-6 pt-6">
         <div>
-          <h2 className="text-base font-semibold">{t("title")}</h2>
-          <p className="text-muted-foreground text-xs">{t("description")}</p>
+          <h2 className="text-base font-semibold">{translate("title")}</h2>
+          <p className="text-muted-foreground text-xs">
+            {translate("description")}
+          </p>
         </div>
       </div>
       <CardContent className="pt-4">
         {rows.length === 0 ? (
-          <p className="text-muted-foreground pb-2 text-sm">{t("empty")}</p>
+          <p className="text-muted-foreground pb-2 text-sm">
+            {translate("empty")}
+          </p>
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-end gap-2">
               <Input
-                aria-label={t("searchAria")}
-                placeholder={t("searchPlaceholder")}
+                aria-label={translate("searchAria")}
+                placeholder={translate("searchPlaceholder")}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 className="h-9 w-52"
               />
               <select
-                aria-label={t("beltAria")}
+                aria-label={translate("beltAria")}
                 value={beltFilter}
                 onChange={(event) => setBeltFilter(event.target.value)}
                 className="border-input bg-background h-9 rounded-md border px-3 text-sm"
               >
-                <option value="ALL">{t("allBelts")}</option>
-                <option value="UNRANKED">{t("unranked")}</option>
+                <option value="ALL">{translate("allBelts")}</option>
+                <option value="UNRANKED">{translate("unranked")}</option>
                 {belts.map((belt) => (
                   <option key={belt.id} value={belt.id}>
                     {belt.name}
@@ -142,14 +147,14 @@ export function ProgressTable({
                 ))}
               </select>
               <select
-                aria-label={t("eligibilityAria")}
+                aria-label={translate("eligibilityAria")}
                 value={eligibilityFilter}
                 onChange={(event) => setEligibilityFilter(event.target.value)}
                 className="border-input bg-background h-9 rounded-md border px-3 text-sm"
               >
-                <option value="ALL">{t("allStudents")}</option>
-                <option value="ELIGIBLE">{t("eligible")}</option>
-                <option value="NEEDS">{t("needs")}</option>
+                <option value="ALL">{translate("allStudents")}</option>
+                <option value="ELIGIBLE">{translate("eligible")}</option>
+                <option value="NEEDS">{translate("needs")}</option>
               </select>
               {filtersActive ? (
                 <Button
@@ -162,17 +167,19 @@ export function ProgressTable({
                     setEligibilityFilter("ALL");
                   }}
                 >
-                  {t("clear")}
+                  {translate("clear")}
                 </Button>
               ) : null}
             </div>
             {filteredRows.length === 0 ? (
-              <p className="text-muted-foreground pb-2 text-sm">{t("none")}</p>
+              <p className="text-muted-foreground pb-2 text-sm">
+                {translate("none")}
+              </p>
             ) : (
               <>
                 {filtersActive && filteredRows.length < rows.length ? (
                   <p className="text-muted-foreground mb-2 text-xs">
-                    {t("showing", {
+                    {translate("showing", {
                       filtered: filteredRows.length,
                       total: rows.length,
                     })}
@@ -190,8 +197,10 @@ export function ProgressTable({
                         </span>
                         <span className="text-muted-foreground text-xs">
                           {row.currentBeltName
-                            ? t("trainings", { count: row.trainingsTotal })
-                            : t("noBelt")}
+                            ? translate("trainings", {
+                                count: row.trainingsTotal,
+                              })
+                            : translate("noBelt")}
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -202,7 +211,7 @@ export function ProgressTable({
                           />
                         ) : (
                           <Badge variant="outline" className="text-xs">
-                            {t("unranked")}
+                            {translate("unranked")}
                           </Badge>
                         )}
                         {row.nextBeltName && row.requiredTrainings !== null ? (
@@ -211,8 +220,10 @@ export function ProgressTable({
                             className="text-xs"
                           >
                             {row.isEligible
-                              ? t("eligibleBadge", { belt: row.nextBeltName })
-                              : t("progressBadge", {
+                              ? translate("eligibleBadge", {
+                                  belt: row.nextBeltName,
+                                })
+                              : translate("progressBadge", {
                                   belt: row.nextBeltName,
                                   current: row.trainingsTotal,
                                   required: row.requiredTrainings,
@@ -229,7 +240,7 @@ export function ProgressTable({
                               setDefaultBeltId(defaultBeltIdFor(row, belts));
                             }}
                           >
-                            {t("promote")}
+                            {translate("promote")}
                           </Button>
                         ) : null}
                       </div>
@@ -279,7 +290,7 @@ function PromotionSheet({
   defaultBeltId: string;
   onClose: () => void;
 }) {
-  const t = useTranslations("Belts.promotion");
+  const translate = useTranslations("Belts.promotion");
   const [state, formAction, isPending] = useActionState<
     BeltActionState,
     FormData
@@ -315,9 +326,9 @@ function PromotionSheet({
   return (
     <SheetContent className="w-full overflow-y-auto sm:max-w-md">
       <SheetHeader>
-        <SheetTitle>{t("title")}</SheetTitle>
+        <SheetTitle>{translate("title")}</SheetTitle>
         <SheetDescription>
-          {t(student.isEligible ? "eligible" : "notEligible", {
+          {translate(student.isEligible ? "eligible" : "notEligible", {
             name: student.name,
           })}
         </SheetDescription>
@@ -326,7 +337,7 @@ function PromotionSheet({
         <input type="hidden" name="studentId" value={student.studentId} />
         <input type="hidden" name="disciplineId" value={disciplineId} />
         <div className="grid gap-2">
-          <Label htmlFor="promotion-belt">{t("belt")}</Label>
+          <Label htmlFor="promotion-belt">{translate("belt")}</Label>
           {/* Uncontrolled with a mount-time default: React 19 resets forms
               after every action, which would revert a controlled select to
               the browser default between attempts. */}
@@ -341,15 +352,19 @@ function PromotionSheet({
             {belts.map((belt) => (
               <option key={belt.id} value={belt.id}>
                 {belt.name}
-                {student.currentBeltName === belt.name ? t("current") : ""}
+                {student.currentBeltName === belt.name
+                  ? translate("current")
+                  : ""}
               </option>
             ))}
           </select>
-          <p className="text-muted-foreground text-xs">{t("skipHint")}</p>
+          <p className="text-muted-foreground text-xs">
+            {translate("skipHint")}
+          </p>
         </div>
         {isFirstBelt ? (
           <div className="grid gap-2">
-            <Label htmlFor="promotion-credit">{t("credit")}</Label>
+            <Label htmlFor="promotion-credit">{translate("credit")}</Label>
             <Input
               id="promotion-credit"
               name="trainingsCredit"
@@ -365,15 +380,15 @@ function PromotionSheet({
               }}
             />
             <p className="text-muted-foreground text-xs">
-              {t("creditHint", {
-                belt: selectedBelt?.name ?? t("belt"),
+              {translate("creditHint", {
+                belt: selectedBelt?.name ?? translate("belt"),
                 count: creditDefault,
               })}
             </p>
           </div>
         ) : null}
         <div className="grid gap-2">
-          <Label htmlFor="promotion-date">{t("date")}</Label>
+          <Label htmlFor="promotion-date">{translate("date")}</Label>
           <Input
             id="promotion-date"
             name="awardedAt"
@@ -383,12 +398,12 @@ function PromotionSheet({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="promotion-notes">{t("notes")}</Label>
+          <Label htmlFor="promotion-notes">{translate("notes")}</Label>
           <Textarea
             id="promotion-notes"
             name="notes"
             rows={4}
-            placeholder={t("notesPlaceholder")}
+            placeholder={translate("notesPlaceholder")}
           />
         </div>
         {needsOverride ? (
@@ -399,12 +414,12 @@ function PromotionSheet({
               className="mt-0.5"
             />
             <span>
-              <span className="font-medium">{t("override")}</span>
+              <span className="font-medium">{translate("override")}</span>
               <span className="text-muted-foreground block text-xs">
-                {t("overrideHint", {
+                {translate("overrideHint", {
                   current: effectiveTrainings,
                   required: selectedRequired,
-                  belt: selectedBelt?.name ?? t("belt"),
+                  belt: selectedBelt?.name ?? translate("belt"),
                 })}
               </span>
             </span>
@@ -417,21 +432,21 @@ function PromotionSheet({
         ) : null}
         {promotionSaved && state && "message" in state ? (
           <p className="text-success text-sm" role="status">
-            {state.message} {t("savedHint")}
+            {state.message} {translate("savedHint")}
           </p>
         ) : null}
         <SheetFooter className="px-0">
           {promotionSaved ? (
             <Button type="button" onClick={onClose}>
-              {t("done")}
+              {translate("done")}
             </Button>
           ) : (
             <Button type="submit" disabled={isPending}>
-              {isPending ? t("recording") : t("record")}
+              {isPending ? translate("recording") : translate("record")}
             </Button>
           )}
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("cancel")}
+            {translate("cancel")}
           </Button>
         </SheetFooter>
       </form>

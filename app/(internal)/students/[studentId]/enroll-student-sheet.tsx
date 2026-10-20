@@ -47,7 +47,7 @@ export function EnrollStudentSheet({
   studentId,
   plans,
 }: StudentMembershipsSheetProps) {
-  const t = useTranslations("Students.enroll");
+  const translate = useTranslations("Students.enroll");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
@@ -60,7 +60,7 @@ export function EnrollStudentSheet({
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        {t("button")}
+        {translate("button")}
       </Button>
       <Sheet
         open={open}
@@ -70,8 +70,8 @@ export function EnrollStudentSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>{t("title")}</SheetTitle>
-            <SheetDescription>{t("description")}</SheetDescription>
+            <SheetTitle>{translate("title")}</SheetTitle>
+            <SheetDescription>{translate("description")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -80,23 +80,23 @@ export function EnrollStudentSheet({
           >
             <input type="hidden" name="studentId" value={studentId} />
             <div className="grid gap-2">
-              <Label htmlFor="enroll-plan">{t("plan")}</Label>
+              <Label htmlFor="enroll-plan">{translate("plan")}</Label>
               <Select name="planId" required>
                 <SelectTrigger id="enroll-plan">
-                  <SelectValue placeholder={t("choosePlan")} />
+                  <SelectValue placeholder={translate("choosePlan")} />
                 </SelectTrigger>
                 <SelectContent>
                   {plans.map((plan) => (
                     <SelectItem key={plan.id} value={plan.id}>
                       {plan.name}
-                      {plan.planType === "ITEM" ? t("oneOff") : ""}
+                      {plan.planType === "ITEM" ? translate("oneOff") : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="enroll-start">{t("start")}</Label>
+              <Label htmlFor="enroll-start">{translate("start")}</Label>
               <Input
                 id="enroll-start"
                 name="startDate"
@@ -104,7 +104,9 @@ export function EnrollStudentSheet({
                 required
                 defaultValue={todayIsoDate()}
               />
-              <p className="text-muted-foreground text-xs">{t("note")}</p>
+              <p className="text-muted-foreground text-xs">
+                {translate("note")}
+              </p>
             </div>
             {state && "error" in state ? (
               <p className="text-destructive text-sm" role="alert">
@@ -119,11 +121,11 @@ export function EnrollStudentSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  {t("done")}
+                  {translate("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? t("enrolling") : t("submit")}
+                  {isPending ? translate("enrolling") : translate("submit")}
                 </Button>
               )}
               <Button
@@ -131,7 +133,7 @@ export function EnrollStudentSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t("cancel")}
+                {translate("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

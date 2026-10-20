@@ -23,13 +23,13 @@ export async function signPortalAgreementAction(
   _previousState: PortalSignState,
   formData: FormData,
 ): Promise<PortalSignState> {
-  const t = await getTranslations("Portal.sign");
+  const translate = await getTranslations("Portal.sign");
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
   if (!rateLimit("portal-sign", clientIp, PORTAL_SIGNS_PER_MIN)) {
     return {
       ok: false,
-      message: t("rateLimited"),
+      message: translate("rateLimited"),
     };
   }
 
@@ -40,7 +40,7 @@ export async function signPortalAgreementAction(
   if (!studentId) {
     return {
       ok: false,
-      message: t("expired"),
+      message: translate("expired"),
     };
   }
 
@@ -50,13 +50,13 @@ export async function signPortalAgreementAction(
   if (!documentId || !signedByName || !confirmed) {
     return {
       ok: false,
-      message: t("incomplete"),
+      message: translate("incomplete"),
     };
   }
 
   const document = await getAgreementDocumentById(documentId);
   if (!document || !document.enabled) {
-    return { ok: false, message: t("unavailable") };
+    return { ok: false, message: translate("unavailable") };
   }
 
   await signAgreementViaPortal({ studentId, documentId, signedByName });
@@ -66,5 +66,5 @@ export async function signPortalAgreementAction(
     documentTitle: document.title,
   });
 
-  return { ok: true, message: t("signed", { name: signedByName }) };
+  return { ok: true, message: translate("signed", { name: signedByName }) };
 }

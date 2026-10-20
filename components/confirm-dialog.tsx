@@ -32,7 +32,7 @@ export function ConfirmDialog({
   formId,
   children,
 }: ConfirmDialogProps) {
-  const t = useTranslations("Common");
+  const translate = useTranslations("Common");
 
   return (
     <AlertDialog>
@@ -43,7 +43,7 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel>{translate("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             form={formId}
             type={formId ? "submit" : "button"}
@@ -51,7 +51,7 @@ export function ConfirmDialog({
               variant: variant === "destructive" ? "destructive" : "default",
             })}
           >
-            {confirmLabel ?? t("delete")}
+            {confirmLabel ?? translate("delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

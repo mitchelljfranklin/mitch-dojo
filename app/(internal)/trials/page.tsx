@@ -66,8 +66,8 @@ export default async function TrialsPage({ searchParams }: TrialsPageProps) {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
   const canBill = hasPermission(user.permissions, PERMISSIONS.MEMBERSHIPS_EDIT);
-  const sp = await searchParams;
-  const stageFilter = STAGE_ORDER.find((stage) => stage === sp.stage);
+  const query = await searchParams;
+  const stageFilter = STAGE_ORDER.find((stage) => stage === query.stage);
 
   const { rows, convertedThisMonth, lostCount } = await listTrials();
   const plans = canBill ? await listActivePlansForSelection() : [];

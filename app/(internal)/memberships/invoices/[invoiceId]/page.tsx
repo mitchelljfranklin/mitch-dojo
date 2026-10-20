@@ -44,7 +44,7 @@ export default async function InvoiceDetailPage({
   const { currency } = await getMembershipsSettings();
 
   const { invoiceId } = await params;
-  const sp = await searchParams;
+  const query = await searchParams;
   const invoice = await getInvoiceDetail(invoiceId);
   if (!invoice) {
     notFound();
@@ -59,8 +59,8 @@ export default async function InvoiceDetailPage({
           { label: `#${invoice.number}` },
         ]}
       />
-      {sp.invoiceError ? (
-        <FlashToast variant="error" message={sp.invoiceError} />
+      {query.invoiceError ? (
+        <FlashToast variant="error" message={query.invoiceError} />
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4">

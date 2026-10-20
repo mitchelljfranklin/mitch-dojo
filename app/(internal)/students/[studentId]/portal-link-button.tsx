@@ -19,7 +19,7 @@ export function PortalLinkButton({
   studentId,
   studentName,
 }: PortalLinkButtonProps) {
-  const t = useTranslations("Students.portalLink");
+  const translate = useTranslations("Students.portalLink");
   const [state, formAction, isPending] = useActionState<
     PortalLinkState,
     FormData
@@ -30,7 +30,7 @@ export function PortalLinkButton({
     <form action={formAction} className="flex flex-col items-end gap-1">
       <input type="hidden" name="studentId" value={studentId} />
       <Button type="submit" variant="outline" disabled={isPending}>
-        {isPending ? t("sending") : t("send")}
+        {isPending ? translate("sending") : translate("send")}
       </Button>
       {state && "error" in state ? (
         <p
@@ -46,7 +46,7 @@ export function PortalLinkButton({
         </p>
       ) : null}
       <span className="text-muted-foreground sr-only">
-        {t("sr", { name: studentName })}
+        {translate("sr", { name: studentName })}
       </span>
     </form>
   );

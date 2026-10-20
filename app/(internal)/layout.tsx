@@ -49,7 +49,7 @@ export default async function InternalLayout({
       getOperationsSettings(),
       canStudents ? countNewTrials() : Promise.resolve(0),
     ]);
-  const t = await getTranslations("Common");
+  const translate = await getTranslations("Common");
 
   return (
     <>
@@ -67,14 +67,14 @@ export default async function InternalLayout({
         />
         <SidebarInset>
           <header className="bg-background sticky top-0 z-10 flex h-14 items-center gap-2 border-b px-4">
-            <SidebarTrigger label={t("toggleSidebar")} />
+            <SidebarTrigger label={translate("toggleSidebar")} />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <div className="flex-1" />
             {canAccessAdmin ? <AdminNavButton /> : null}
             <LocaleSwitcher />
             <ThemeToggle />
             <UserMenu
-              name={user.name ?? user.email ?? t("account")}
+              name={user.name ?? user.email ?? translate("account")}
               email={user.email ?? ""}
               role={user.roleName}
             />
