@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import {
   Sidebar,
@@ -172,7 +173,7 @@ type NavProps = {
 };
 
 type NavItem = {
-  title: string;
+  key: string;
   href: string;
   icon: ComponentType;
   visible: boolean;
@@ -180,11 +181,12 @@ type NavItem = {
 };
 
 type NavGroup = {
-  label: string | null;
+  key: string | null;
   items: NavItem[];
 };
 
 function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
+  const t = useTranslations("Nav");
   const canManage = hasAnyPermission(permissions, MANAGE_PERMISSIONS);
   const canStudents = hasPermission(permissions, PERMISSIONS.STUDENTS_VIEW);
   const canIncidents = hasPermission(permissions, PERMISSIONS.INCIDENTS_VIEW);
@@ -203,16 +205,16 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
   // permission-driven, never greyed out.
   const groups: NavGroup[] = [
     {
-      label: "Overview",
+      key: "overview",
       items: [
         {
-          title: "Analytics",
+          key: "analytics",
           href: "/analytics",
           icon: BarChart3,
           visible: canAnalytics,
         },
         {
-          title: "Reports",
+          key: "reports",
           href: "/reports",
           icon: FileBarChart,
           visible: canAnalytics,
@@ -220,28 +222,28 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
       ],
     },
     {
-      label: "Operations",
+      key: "operations",
       items: [
         {
-          title: "Schedule",
+          key: "schedule",
           href: "/classes/schedule",
           icon: Clock,
           visible: canClasses,
         },
         {
-          title: "Classes",
+          key: "classes",
           href: "/classes",
           icon: CalendarDays,
           visible: canClasses,
         },
         {
-          title: "Attendance",
+          key: "attendance",
           href: "/attendance",
           icon: ClipboardCheck,
           visible: canAttendance,
         },
         {
-          title: "Belts & Gradings",
+          key: "belts",
           href: "/belts",
           icon: GraduationCap,
           visible: canBelts,
@@ -249,41 +251,41 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
       ],
     },
     {
-      label: "People",
+      key: "people",
       items: [
         {
-          title: "Students",
+          key: "students",
           href: "/students",
           icon: Users,
           visible: canStudents,
         },
         {
-          title: "Households",
+          key: "households",
           href: "/students/households",
           icon: House,
           visible: canStudents,
         },
         {
-          title: "Trials",
+          key: "trials",
           href: "/trials",
           icon: UserPlus,
           visible: canStudents,
           badge: newTrialsCount > 0 ? newTrialsCount : null,
         },
         {
-          title: "Compliance",
+          key: "compliance",
           href: "/compliance",
           icon: ShieldCheck,
           visible: canStudents,
         },
         {
-          title: "Incidents",
+          key: "incidents",
           href: "/incidents",
           icon: ShieldAlert,
           visible: canIncidents,
         },
         {
-          title: "Trainers",
+          key: "trainers",
           href: "/trainers",
           icon: UserCheck,
           visible: canClasses,
@@ -291,22 +293,22 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
       ],
     },
     {
-      label: "Management",
+      key: "management",
       items: [
         {
-          title: "Memberships",
+          key: "memberships",
           href: "/memberships",
           icon: Wallet,
           visible: canMemberships,
         },
         {
-          title: "Invoices",
+          key: "invoices",
           href: "/memberships/invoices",
           icon: Receipt,
           visible: canMemberships,
         },
         {
-          title: "Admin",
+          key: "admin",
           href: "/admin",
           icon: Settings,
           visible: canManage,
@@ -327,7 +329,7 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
               <SidebarMenuButton asChild isActive={dashboardActive}>
                 <Link href="/dashboard">
                   <LayoutDashboard />
-                  <span>Dashboard</span>
+                  <span>{t("dashboard")}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -340,9 +342,9 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
         if (items.length === 0) return null;
 
         return (
-          <SidebarGroup key={group.label}>
-            {group.label ? (
-              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroup key={group.key}>
+            {group.key ? (
+              <SidebarGroupLabel>{t(`groups.${group.key}`)}</SidebarGroupLabel>
             ) : null}
             <SidebarGroupContent>
               <SidebarMenu>
@@ -366,7 +368,7 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
                       <SidebarMenuButton asChild isActive={isActive}>
                         <Link href={item.href}>
                           <item.icon />
-                          <span>{item.title}</span>
+                          <span>{t(`items.${item.key}`)}</span>
                           {item.badge ? (
                             <span className="bg-primary text-primary-foreground ml-auto rounded-full px-2 py-0.5 text-[11px] leading-none font-medium">
                               {item.badge > 99 ? "99+" : item.badge}
@@ -390,16 +392,19 @@ function WorkspaceNav({ permissions, pathname, newTrialsCount }: NavProps) {
 // component; the async auth.ts helper has a different signature.
 
 function AdminNav({ permissions }: { permissions: string[] }) {
+  const t = useTranslations("Nav");
+  const adminT = useTranslations("Nav.admin");
+
   return (
     <>
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Back to workspace">
+              <SidebarMenuButton asChild tooltip={t("backToWorkspace")}>
                 <Link href="/dashboard">
                   <ArrowLeft />
-                  <span>Back to workspace</span>
+                  <span>{t("backToWorkspace")}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -414,8 +419,10 @@ function AdminNav({ permissions }: { permissions: string[] }) {
         if (sections.length === 0) return null;
 
         return (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroup key={group.labelKey}>
+            <SidebarGroupLabel>
+              {adminT(`groups.${group.labelKey}`)}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {sections.map((section) => {
@@ -425,7 +432,7 @@ function AdminNav({ permissions }: { permissions: string[] }) {
                       <SidebarMenuButton asChild>
                         <Link href={section.href}>
                           <Icon />
-                          <span>{section.label}</span>
+                          <span>{adminT(`sections.${section.labelKey}`)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

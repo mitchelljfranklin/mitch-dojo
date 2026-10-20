@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,10 +19,11 @@ export function Pagination({
   pageSize,
   totalCount,
   pageParam = "page",
-  itemLabel = "items",
+  itemLabel,
 }: PaginationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("Common");
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   function hrefForPage(target: number): string {
@@ -35,29 +37,34 @@ export function Pagination({
   return (
     <div className="flex items-center justify-between gap-3">
       <p className="text-muted-foreground text-xs" aria-live="polite">
-        Page {page} of {totalPages} · {totalCount} {itemLabel}
+        {t("pageOf", {
+          page,
+          totalPages,
+          totalCount,
+          itemLabel: itemLabel ?? t("items"),
+        })}
       </p>
       <div className="flex items-center gap-2">
         {page > 1 ? (
           <Button asChild variant="outline" size="sm">
             <Link href={hrefForPage(page - 1)} rel="prev">
-              Previous
+              {t("previous")}
             </Link>
           </Button>
         ) : (
           <Button variant="outline" size="sm" disabled>
-            Previous
+            {t("previous")}
           </Button>
         )}
         {page < totalPages ? (
           <Button asChild variant="outline" size="sm">
             <Link href={hrefForPage(page + 1)} rel="next">
-              Next
+              {t("next")}
             </Link>
           </Button>
         ) : (
           <Button variant="outline" size="sm" disabled>
-            Next
+            {t("next")}
           </Button>
         )}
       </div>

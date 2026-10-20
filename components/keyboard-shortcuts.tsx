@@ -2,142 +2,128 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PERMISSIONS, hasPermission, type Permission } from "@/lib/permissions";
 
 type PaletteItem = {
-  label: string;
-  subtitle?: string;
+  key: string;
   href: string;
   permission?: string;
 };
 
 const ALL_ITEMS: PaletteItem[] = [
-  { label: "Dashboard", subtitle: "Dojo overview", href: "/dashboard" },
+  { key: "dashboard", href: "/dashboard" },
   {
-    label: "Analytics",
-    subtitle: "Trends & retention",
+    key: "analytics",
     href: "/analytics",
     permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   {
-    label: "Weekly schedule",
-    subtitle: "Timetable",
+    key: "weeklySchedule",
     href: "/classes/schedule",
     permission: PERMISSIONS.CLASSES_VIEW,
   },
   {
-    label: "Classes",
-    subtitle: "Courses & sessions",
+    key: "classes",
     href: "/classes",
     permission: PERMISSIONS.CLASSES_VIEW,
   },
   {
-    label: "Attendance",
-    subtitle: "Every session, past & upcoming",
+    key: "attendance",
     href: "/attendance",
     permission: PERMISSIONS.ATTENDANCE_VIEW,
   },
   {
-    label: "Belts & Gradings",
-    subtitle: "Progression",
+    key: "belts",
     href: "/belts",
     permission: PERMISSIONS.BELTS_VIEW,
   },
   {
-    label: "Students",
-    subtitle: "Manage students",
+    key: "students",
     href: "/students",
     permission: PERMISSIONS.STUDENTS_VIEW,
   },
   {
-    label: "Trials",
-    subtitle: "Trial pipeline",
+    key: "trials",
     href: "/trials",
     permission: PERMISSIONS.STUDENTS_VIEW,
   },
   {
-    label: "Trainers",
-    subtitle: "Instructor roster",
+    key: "trainers",
     href: "/trainers",
     permission: PERMISSIONS.CLASSES_VIEW,
   },
   {
-    label: "Memberships",
-    subtitle: "Plans & billing rules",
+    key: "memberships",
     href: "/memberships",
     permission: PERMISSIONS.MEMBERSHIPS_VIEW,
   },
   {
-    label: "Invoices",
-    subtitle: "Billing history & payments",
+    key: "invoices",
     href: "/memberships/invoices",
     permission: PERMISSIONS.MEMBERSHIPS_VIEW,
   },
-  { label: "Profile", subtitle: "Your account", href: "/profile" },
+  { key: "profile", href: "/profile" },
   {
-    label: "Admin · General",
-    subtitle: "Organization identity",
+    key: "adminGeneral",
     href: "/admin/general",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
   {
-    label: "Admin · Appearance",
-    subtitle: "Logo, colours & booking copy",
+    key: "adminAppearance",
     href: "/admin/appearance",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
   {
-    label: "Admin · Users",
-    subtitle: "Staff accounts",
+    key: "adminUsers",
     href: "/admin/users",
     permission: PERMISSIONS.USERS_MANAGE,
   },
   {
-    label: "Admin · Roles",
-    subtitle: "Permissions",
+    key: "adminRoles",
     href: "/admin/roles",
     permission: PERMISSIONS.ROLES_MANAGE,
   },
   {
-    label: "Admin · Sign-in & SSO",
-    subtitle: "Identity providers, break glass & rate limits",
+    key: "adminSignIn",
     href: "/admin/sign-in",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
   {
-    label: "Admin · Templates",
-    subtitle: "Email template copy",
+    key: "adminTemplates",
     href: "/admin/templates",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
   {
-    label: "Admin · Audit",
-    subtitle: "Audit log",
+    key: "adminAudit",
     href: "/admin/audit",
     permission: PERMISSIONS.AUDIT_VIEW,
   },
   {
-    label: "Admin · Email log",
-    subtitle: "Delivery status",
+    key: "adminEmailLog",
     href: "/admin/email-log",
     permission: PERMISSIONS.AUDIT_VIEW,
   },
   {
-    label: "Admin · Scheduling",
-    subtitle: "Scheduler & reminders",
+    key: "adminScheduling",
     href: "/admin/scheduling",
     permission: PERMISSIONS.SETTINGS_MANAGE,
   },
 ];
 
-function fuzzyMatch(item: PaletteItem, query: string): boolean {
+type TranslatedPaletteItem = PaletteItem & {
+  label: string;
+  subtitle: string;
+};
+
+function fuzzyMatch(item: TranslatedPaletteItem, query: string): boolean {
   const lower = query.toLowerCase();
   const tokens = lower.split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return true;
-  const target = `${item.label} ${item.subtitle ?? ""}`.toLowerCase();
+  const target = `${item.label} ${item.subtitle}`.toLowerCase();
   return tokens.every((token) => target.includes(token));
 }
 
@@ -146,14 +132,25 @@ type CommandPaletteProps = {
 };
 
 export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
+  const t = useTranslations("CommandPalette");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  const items = useMemo<TranslatedPaletteItem[]>(
+    () =>
+      ALL_ITEMS.map((item) => ({
+        ...item,
+        label: t(`items.${item.key}.label`),
+        subtitle: t(`items.${item.key}.subtitle`),
+      })),
+    [t],
+  );
+
   const filteredItems = useMemo(() => {
-    return ALL_ITEMS.filter((item) => {
+    return items.filter((item) => {
       if (
         item.permission &&
         !hasPermission(permissions, item.permission as Permission)
@@ -162,7 +159,7 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
       }
       return fuzzyMatch(item, query);
     });
-  }, [permissions, query]);
+  }, [items, permissions, query]);
 
   const safeIndex = Math.max(
     0,
@@ -273,15 +270,15 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? undefined : close())}>
       <DialogContent
-        aria-label="Command palette"
+        aria-label={t("ariaLabel")}
         className="top-[15vh] max-w-lg translate-y-0 gap-0 p-0"
       >
-        <DialogTitle className="sr-only">Command palette</DialogTitle>
+        <DialogTitle className="sr-only">{t("ariaLabel")}</DialogTitle>
         <div className="border-b px-3 py-3">
           <Input
             ref={inputRef}
             type="text"
-            placeholder="Search pages..."
+            placeholder={t("searchPlaceholder")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="border-none shadow-none focus-visible:ring-0"
@@ -301,7 +298,7 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
         >
           {filteredItems.length === 0 ? (
             <p className="text-muted-foreground px-3 py-6 text-center text-sm">
-              No results.
+              {t("noResults")}
             </p>
           ) : (
             filteredItems.map((item, index) => (
@@ -331,21 +328,21 @@ export function KeyboardShortcuts({ permissions }: CommandPaletteProps) {
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ↑↓
             </kbd>{" "}
-            navigate ·{" "}
+            {t("navigate")} ·{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ↵
             </kbd>{" "}
-            open ·{" "}
+            {t("open")} ·{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               esc
             </kbd>{" "}
-            close
+            {t("close")}
           </span>
           <span>
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ⌘K
             </kbd>{" "}
-            or{" "}
+            {t("or")}{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ?
             </kbd>

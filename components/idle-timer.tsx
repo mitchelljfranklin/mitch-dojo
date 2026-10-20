@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   AlertDialog,
@@ -20,6 +21,7 @@ type IdleTimerProps = {
 const COUNTDOWN_SECONDS = 60;
 
 export function IdleTimer({ timeoutMinutes }: IdleTimerProps) {
+  const t = useTranslations("Common");
   const [countdown, setCountdown] = useState(0);
   const lastActivityRef = useRef<number | null>(null);
   const countdownRef = useRef(0);
@@ -105,16 +107,14 @@ export function IdleTimer({ timeoutMinutes }: IdleTimerProps) {
     <AlertDialog open>
       <AlertDialogContent className="max-w-sm text-center">
         <AlertDialogHeader>
-          <AlertDialogTitle>Session expiring</AlertDialogTitle>
+          <AlertDialogTitle>{t("sessionExpiring")}</AlertDialogTitle>
           <AlertDialogDescription aria-live="assertive">
-            You will be signed out in {countdown} second
-            {countdown !== 1 ? "s" : ""} due to inactivity. Move your mouse or
-            press any key to stay signed in.
+            {t("sessionExpiringDescription", { count: countdown })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="justify-center sm:justify-center">
           <AlertDialogAction onClick={staySignedIn}>
-            Stay signed in
+            {t("staySignedIn")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

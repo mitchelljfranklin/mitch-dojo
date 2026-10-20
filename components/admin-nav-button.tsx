@@ -3,6 +3,7 @@
 import { Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 // highlights while anywhere under /admin.
 export function AdminNavButton() {
   const pathname = usePathname();
+  const t = useTranslations("Nav");
   const isActive = pathname === "/admin" || pathname.startsWith("/admin/");
 
   return (
@@ -19,14 +21,14 @@ export function AdminNavButton() {
       size="icon"
       type="button"
       asChild
-      aria-label="Admin"
+      aria-label={t("items.admin")}
     >
       <Link
         href="/admin"
         className={isActive ? "border-primary text-primary" : undefined}
       >
         <Settings className="size-4" />
-        <span className="sr-only">Admin</span>
+        <span className="sr-only">{t("items.admin")}</span>
       </Link>
     </Button>
   );

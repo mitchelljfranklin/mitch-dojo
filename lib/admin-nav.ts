@@ -6,140 +6,141 @@ import { type Permission, PERMISSIONS, hasPermission } from "@/lib/permissions";
 // sections exist and who can see them.
 //
 // Sections carry the same permission keys the old settings tabs enforced.
-// A section the user cannot access is hidden, never greyed out.
+// A section the user cannot access is hidden, never greyed out. Labels live in
+// the message catalogs under Nav.admin, keyed by labelKey.
 
 export type AdminSection = {
-  label: string;
+  labelKey: string;
   href: string;
   permission: Permission;
 };
 
 export type AdminSectionGroup = {
-  label: string;
+  labelKey: string;
   sections: AdminSection[];
 };
 
 export const ADMIN_SECTION_GROUPS: readonly AdminSectionGroup[] = [
   {
-    label: "Workspace",
+    labelKey: "workspace",
     sections: [
       {
-        label: "General",
+        labelKey: "general",
         href: "/admin/general",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
-        label: "Appearance",
+        labelKey: "appearance",
         href: "/admin/appearance",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
     ],
   },
   {
-    label: "Storage",
+    labelKey: "storage",
     sections: [
       {
-        label: "Storage",
+        labelKey: "storage",
         href: "/admin/storage",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
     ],
   },
   {
-    label: "Programs",
+    labelKey: "programs",
     sections: [
       {
-        label: "Memberships",
+        labelKey: "memberships",
         href: "/admin/memberships",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
-        label: "Communication",
+        labelKey: "communications",
         href: "/admin/communications",
         permission: PERMISSIONS.COMMUNICATIONS_EDIT,
       },
       {
-        label: "Documents",
+        labelKey: "documents",
         href: "/admin/documents",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
-        label: "Verifications",
+        labelKey: "verifications",
         href: "/admin/verifications",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
     ],
   },
   {
-    label: "Email",
+    labelKey: "email",
     sections: [
       {
-        label: "Email",
+        labelKey: "email",
         href: "/admin/email",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
-        label: "Templates",
+        labelKey: "templates",
         href: "/admin/templates",
         permission: PERMISSIONS.COMMUNICATIONS_EDIT,
       },
       {
-        label: "Campaigns",
+        labelKey: "campaigns",
         href: "/admin/campaigns",
         permission: PERMISSIONS.COMMUNICATIONS_EDIT,
       },
       {
-        label: "Email log",
+        labelKey: "emailLog",
         href: "/admin/email-log",
         permission: PERMISSIONS.AUDIT_VIEW,
       },
     ],
   },
   {
-    label: "Locations",
+    labelKey: "locations",
     sections: [
       {
-        label: "Locations",
+        labelKey: "locations",
         href: "/admin/locations",
         permission: PERMISSIONS.LOCATIONS_EDIT,
       },
     ],
   },
   {
-    label: "Access & security",
+    labelKey: "access",
     sections: [
       {
-        label: "Users",
+        labelKey: "users",
         href: "/admin/users",
         permission: PERMISSIONS.USERS_MANAGE,
       },
       {
-        label: "Roles",
+        labelKey: "roles",
         href: "/admin/roles",
         permission: PERMISSIONS.ROLES_MANAGE,
       },
       {
-        label: "Sign-in & SSO",
+        labelKey: "signIn",
         href: "/admin/sign-in",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
     ],
   },
   {
-    label: "Platform",
+    labelKey: "platform",
     sections: [
       {
-        label: "Audit log",
+        labelKey: "audit",
         href: "/admin/audit",
         permission: PERMISSIONS.AUDIT_VIEW,
       },
       {
-        label: "Scheduling",
+        labelKey: "scheduling",
         href: "/admin/scheduling",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },
       {
-        label: "Health",
+        labelKey: "health",
         href: "/admin/health",
         permission: PERMISSIONS.SETTINGS_MANAGE,
       },

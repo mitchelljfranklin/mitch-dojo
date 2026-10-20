@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,17 +18,21 @@ import {
   getMembershipsSettings,
   getOrganizationSettings,
 } from "@/lib/settings";
-import { formatDate, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Dashboard" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Dashboard");
+  return { title: t("metaTitle") };
+}
 
 export default async function DashboardPage() {
   // The dashboard is the landing page every signed-in staff member reaches —
   // requiring a permission here would redirect to /dashboard in a loop for
   // roles without it. Gate content, not the page itself.
   const user = await requireUser();
+  const t = await getTranslations("Dashboard");
+  const format = await getFormatter();
   const organization = await getOrganizationSettings();
   const canViewMemberships = hasPermission(
     user.permissions,
@@ -39,14 +45,28 @@ export default async function DashboardPage() {
     : { currency: "USD" };
   const failedEmails = canViewAudit ? await getFailedEmailCount() : 0;
 
+  const money = (cents: number) => {
+    try {
+      return format.number(cents / 100, { style: "currency", currency });
+    } catch {
+      return `${(cents / 100).toFixed(2)} ${currency}`;
+    }
+  };
+  const formatDueDate = (date: Date) =>
+    format.dateTime(date, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Welcome{user.name ? `, ${user.name}` : ""}
+          {user.name ? t("welcomeNamed", { name: user.name }) : t("welcome")}
         </h1>
         <p className="text-muted-foreground text-sm">
-          {organization.name} — dojo management overview.
+          {t("overview", { org: organization.name })}
         </p>
       </div>
 
@@ -57,13 +77,13 @@ export default async function DashboardPage() {
         >
           <div>
             <p className="text-sm font-medium">
-              {failedEmails} failed email{failedEmails === 1 ? "" : "s"} (24h)
+              {t("failedEmails", { count: failedEmails })}
             </p>
             <p className="text-muted-foreground text-xs">
-              Review and retry them from the email log.
+              {t("failedEmailsHint")}
             </p>
           </div>
-          <Badge variant="destructive">Action needed</Badge>
+          <Badge variant="destructive">{t("actionNeeded")}</Badge>
         </Link>
       ) : null}
 
@@ -71,18 +91,16 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle>Overdue payments</CardTitle>
+              <CardTitle>{t("overdueTitle")}</CardTitle>
               <CardDescription>
-                {overdue.length === 0
-                  ? "No overdue invoices — all memberships are current."
-                  : `${overdue.length} overdue invoice${overdue.length === 1 ? "" : "s"}.`}
+                {t("overdueSummary", { count: overdue.length })}
               </CardDescription>
             </div>
             <Link
               href="/memberships/invoices?status=OVERDUE"
               className="text-sm hover:underline"
             >
-              View all →
+              {t("viewAll")}
             </Link>
           </CardHeader>
           {overdue.length > 0 ? (
@@ -95,14 +113,17 @@ export default async function DashboardPage() {
                 >
                   <span className="font-medium">{row.studentName}</span>
                   <span className="text-muted-foreground text-xs">
-                    #{row.invoiceNumber} · due {formatDate(row.dueDate)}
+                    {t("invoiceDue", {
+                      number: row.invoiceNumber,
+                      date: formatDueDate(row.dueDate),
+                    })}
                   </span>
                   <div className="flex items-center gap-2">
                     <Badge variant="destructive">
-                      {row.daysOverdue}d overdue
+                      {t("daysOverdue", { days: row.daysOverdue })}
                     </Badge>
                     <span className="text-right">
-                      {formatMoney(row.balanceCents, currency)}
+                      {money(row.balanceCents)}
                     </span>
                   </div>
                 </Link>
@@ -114,30 +135,26 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your dojo starts here</CardTitle>
-          <CardDescription>
-            Use the sidebar to manage students, classes, attendance, belts, and
-            memberships.
-          </CardDescription>
+          <CardTitle>{t("startsTitle")}</CardTitle>
+          <CardDescription>{t("startsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
           <p className="text-muted-foreground">
-            The scaffold is live: authentication, roles, settings, audit log,
-            and the scheduler are running. Use the command palette (
+            {t("startsBodyBefore")}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               Ctrl K
             </kbd>{" "}
-            or{" "}
+            {t("or")}{" "}
             <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">
               ?
             </kbd>
-            ) to jump between pages.
+            {t("startsBodyAfter")}
           </p>
           <Link
             href="/style-guide"
             className="text-muted-foreground hover:text-primary mt-2 inline-block text-xs"
           >
-            View the component style guide →
+            {t("styleGuide")}
           </Link>
         </CardContent>
       </Card>

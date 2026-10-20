@@ -1,5 +1,8 @@
+import { getTranslations } from "next-intl/server";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import { AdminNavButton } from "@/components/admin-nav-button";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ADMIN_AREA_PERMISSIONS } from "@/lib/admin-nav";
 import { hasAnyPermission } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -46,6 +49,7 @@ export default async function InternalLayout({
       getOperationsSettings(),
       canStudents ? countNewTrials() : Promise.resolve(0),
     ]);
+  const t = await getTranslations("Common");
 
   return (
     <>
@@ -63,13 +67,14 @@ export default async function InternalLayout({
         />
         <SidebarInset>
           <header className="bg-background sticky top-0 z-10 flex h-14 items-center gap-2 border-b px-4">
-            <SidebarTrigger />
+            <SidebarTrigger label={t("toggleSidebar")} />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <div className="flex-1" />
             {canAccessAdmin ? <AdminNavButton /> : null}
+            <LocaleSwitcher />
             <ThemeToggle />
             <UserMenu
-              name={user.name ?? user.email ?? "Account"}
+              name={user.name ?? user.email ?? t("account")}
               email={user.email ?? ""}
               role={user.roleName}
             />

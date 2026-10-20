@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import en from "../messages/en.json";
+import es from "../messages/es.json";
 import {
   ADMIN_SECTION_GROUPS,
   ALL_ADMIN_SECTIONS,
@@ -38,7 +40,9 @@ describe("admin nav definition", () => {
 
   it("resolves every section by its own href", () => {
     for (const section of ALL_ADMIN_SECTIONS) {
-      expect(findAdminSectionByHref(section.href)?.label).toBe(section.label);
+      expect(findAdminSectionByHref(section.href)?.labelKey).toBe(
+        section.labelKey,
+      );
     }
   });
 
@@ -92,7 +96,29 @@ describe("admin nav definition", () => {
   });
 
   it("keeps group labels unique", () => {
-    const labels = ADMIN_SECTION_GROUPS.map((group) => group.label);
+    const labels = ADMIN_SECTION_GROUPS.map((group) => group.labelKey);
     expect(new Set(labels).size).toBe(labels.length);
+  });
+
+  it("has a translated group and section label in every catalog", () => {
+    const groupLabels = en.Nav.admin.groups as Record<string, string>;
+    const sectionLabels = en.Nav.admin.sections as Record<string, string>;
+    const spanishGroupLabels = es.Nav.admin.groups as Record<string, string>;
+    const spanishSectionLabels = es.Nav.admin.sections as Record<
+      string,
+      string
+    >;
+
+    for (const group of ADMIN_SECTION_GROUPS) {
+      expect(groupLabels[group.labelKey], group.labelKey).toBeTruthy();
+      expect(spanishGroupLabels[group.labelKey], group.labelKey).toBeTruthy();
+      for (const section of group.sections) {
+        expect(sectionLabels[section.labelKey], section.labelKey).toBeTruthy();
+        expect(
+          spanishSectionLabels[section.labelKey],
+          section.labelKey,
+        ).toBeTruthy();
+      }
+    }
   });
 });

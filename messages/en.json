@@ -1,6 +1,198 @@
 {
   "Common": {
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "toggleSidebar": "Toggle sidebar",
+    "profile": "Profile",
+    "signOut": "Sign out",
+    "account": "Account",
+    "toggleTheme": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "copy": "Copy",
+    "copied": "Copied",
+    "rowView": "Row view",
+    "cardView": "Card view",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages} · {totalCount} {itemLabel}",
+    "items": "items",
+    "sessionExpiring": "Session expiring",
+    "sessionExpiringDescription": "{count, plural, one {You will be signed out in # second} other {You will be signed out in # seconds}} due to inactivity. Move your mouse or press any key to stay signed in.",
+    "staySignedIn": "Stay signed in"
+  },
+  "Nav": {
+    "dashboard": "Dashboard",
+    "backToWorkspace": "Back to workspace",
+    "groups": {
+      "overview": "Overview",
+      "operations": "Operations",
+      "people": "People",
+      "management": "Management"
+    },
+    "items": {
+      "analytics": "Analytics",
+      "reports": "Reports",
+      "schedule": "Schedule",
+      "classes": "Classes",
+      "attendance": "Attendance",
+      "belts": "Belts & Gradings",
+      "students": "Students",
+      "households": "Households",
+      "trials": "Trials",
+      "compliance": "Compliance",
+      "incidents": "Incidents",
+      "trainers": "Trainers",
+      "memberships": "Memberships",
+      "invoices": "Invoices",
+      "admin": "Admin"
+    },
+    "admin": {
+      "groups": {
+        "workspace": "Workspace",
+        "storage": "Storage",
+        "programs": "Programs",
+        "email": "Email",
+        "locations": "Locations",
+        "access": "Access & security",
+        "platform": "Platform"
+      },
+      "sections": {
+        "general": "General",
+        "appearance": "Appearance",
+        "storage": "Storage",
+        "memberships": "Memberships",
+        "communications": "Communication",
+        "documents": "Documents",
+        "verifications": "Verifications",
+        "email": "Email",
+        "templates": "Templates",
+        "campaigns": "Campaigns",
+        "emailLog": "Email log",
+        "locations": "Locations",
+        "users": "Users",
+        "roles": "Roles",
+        "signIn": "Sign-in & SSO",
+        "audit": "Audit log",
+        "scheduling": "Scheduling",
+        "health": "Health"
+      }
+    }
+  },
+  "Dashboard": {
+    "metaTitle": "Dashboard",
+    "welcome": "Welcome",
+    "welcomeNamed": "Welcome, {name}",
+    "overview": "{org} — dojo management overview.",
+    "failedEmails": "{count, plural, one {# failed email (24h)} other {# failed emails (24h)}}",
+    "failedEmailsHint": "Review and retry them from the email log.",
+    "actionNeeded": "Action needed",
+    "overdueTitle": "Overdue payments",
+    "overdueSummary": "{count, plural, =0 {No overdue invoices — all memberships are current.} one {# overdue invoice.} other {# overdue invoices.}}",
+    "viewAll": "View all →",
+    "invoiceDue": "#{number} · due {date}",
+    "daysOverdue": "{days, plural, one {# day overdue} other {# days overdue}}",
+    "startsTitle": "Your dojo starts here",
+    "startsDescription": "Use the sidebar to manage students, classes, attendance, belts, and memberships.",
+    "startsBodyBefore": "The scaffold is live: authentication, roles, settings, audit log, and the scheduler are running. Use the command palette (",
+    "startsBodyAfter": ") to jump between pages.",
+    "or": "or",
+    "styleGuide": "View the component style guide →"
+  },
+  "CommandPalette": {
+    "ariaLabel": "Command palette",
+    "searchPlaceholder": "Search pages...",
+    "noResults": "No results.",
+    "navigate": "navigate",
+    "open": "open",
+    "close": "close",
+    "or": "or",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "subtitle": "Dojo overview"
+      },
+      "analytics": {
+        "label": "Analytics",
+        "subtitle": "Trends & retention"
+      },
+      "weeklySchedule": {
+        "label": "Weekly schedule",
+        "subtitle": "Timetable"
+      },
+      "classes": {
+        "label": "Classes",
+        "subtitle": "Courses & sessions"
+      },
+      "attendance": {
+        "label": "Attendance",
+        "subtitle": "Every session, past & upcoming"
+      },
+      "belts": {
+        "label": "Belts & Gradings",
+        "subtitle": "Progression"
+      },
+      "students": {
+        "label": "Students",
+        "subtitle": "Manage students"
+      },
+      "trials": {
+        "label": "Trials",
+        "subtitle": "Trial pipeline"
+      },
+      "trainers": {
+        "label": "Trainers",
+        "subtitle": "Instructor roster"
+      },
+      "memberships": {
+        "label": "Memberships",
+        "subtitle": "Plans & billing rules"
+      },
+      "invoices": {
+        "label": "Invoices",
+        "subtitle": "Billing history & payments"
+      },
+      "profile": {
+        "label": "Profile",
+        "subtitle": "Your account"
+      },
+      "adminGeneral": {
+        "label": "Admin · General",
+        "subtitle": "Organization identity"
+      },
+      "adminAppearance": {
+        "label": "Admin · Appearance",
+        "subtitle": "Logo, colours & booking copy"
+      },
+      "adminUsers": {
+        "label": "Admin · Users",
+        "subtitle": "Staff accounts"
+      },
+      "adminRoles": {
+        "label": "Admin · Roles",
+        "subtitle": "Permissions"
+      },
+      "adminSignIn": {
+        "label": "Admin · Sign-in & SSO",
+        "subtitle": "Identity providers, break glass & rate limits"
+      },
+      "adminTemplates": {
+        "label": "Admin · Templates",
+        "subtitle": "Email template copy"
+      },
+      "adminAudit": {
+        "label": "Admin · Audit",
+        "subtitle": "Audit log"
+      },
+      "adminEmailLog": {
+        "label": "Admin · Email log",
+        "subtitle": "Delivery status"
+      },
+      "adminScheduling": {
+        "label": "Admin · Scheduling",
+        "subtitle": "Scheduler & reminders"
+      }
+    }
   },
   "Book": {
     "metaTitle": "Book a free trial class",

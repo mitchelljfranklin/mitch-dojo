@@ -1,6 +1,198 @@
 {
   "Common": {
-    "changeLanguage": "Cambiar idioma"
+    "changeLanguage": "Cambiar idioma",
+    "toggleSidebar": "Alternar barra lateral",
+    "profile": "Perfil",
+    "signOut": "Cerrar sesión",
+    "account": "Cuenta",
+    "toggleTheme": "Cambiar tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "rowView": "Vista de filas",
+    "cardView": "Vista de tarjetas",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageOf": "Página {page} de {totalPages} · {totalCount} {itemLabel}",
+    "items": "elementos",
+    "sessionExpiring": "La sesión está por caducar",
+    "sessionExpiringDescription": "{count, plural, one {Se cerrará tu sesión en # segundo} other {Se cerrará tu sesión en # segundos}} por inactividad. Mueve el ratón o pulsa cualquier tecla para seguir conectado.",
+    "staySignedIn": "Seguir conectado"
+  },
+  "Nav": {
+    "dashboard": "Panel",
+    "backToWorkspace": "Volver al espacio de trabajo",
+    "groups": {
+      "overview": "Resumen",
+      "operations": "Operaciones",
+      "people": "Personas",
+      "management": "Gestión"
+    },
+    "items": {
+      "analytics": "Analítica",
+      "reports": "Informes",
+      "schedule": "Horario",
+      "classes": "Clases",
+      "attendance": "Asistencia",
+      "belts": "Cinturones y grados",
+      "students": "Alumnos",
+      "households": "Hogares",
+      "trials": "Pruebas",
+      "compliance": "Cumplimiento",
+      "incidents": "Incidentes",
+      "trainers": "Instructores",
+      "memberships": "Membresías",
+      "invoices": "Facturas",
+      "admin": "Administración"
+    },
+    "admin": {
+      "groups": {
+        "workspace": "Espacio de trabajo",
+        "storage": "Almacenamiento",
+        "programs": "Programas",
+        "email": "Correo",
+        "locations": "Sedes",
+        "access": "Acceso y seguridad",
+        "platform": "Plataforma"
+      },
+      "sections": {
+        "general": "General",
+        "appearance": "Apariencia",
+        "storage": "Almacenamiento",
+        "memberships": "Membresías",
+        "communications": "Comunicación",
+        "documents": "Documentos",
+        "verifications": "Verificaciones",
+        "email": "Correo",
+        "templates": "Plantillas",
+        "campaigns": "Campañas",
+        "emailLog": "Registro de correo",
+        "locations": "Sedes",
+        "users": "Usuarios",
+        "roles": "Roles",
+        "signIn": "Inicio de sesión y SSO",
+        "audit": "Registro de auditoría",
+        "scheduling": "Programación",
+        "health": "Estado"
+      }
+    }
+  },
+  "Dashboard": {
+    "metaTitle": "Panel",
+    "welcome": "Bienvenido",
+    "welcomeNamed": "Bienvenido, {name}",
+    "overview": "{org} — resumen de gestión del dojo.",
+    "failedEmails": "{count, plural, one {# correo fallido (24 h)} other {# correos fallidos (24 h)}}",
+    "failedEmailsHint": "Revísalos y reinténtalos desde el registro de correo.",
+    "actionNeeded": "Acción necesaria",
+    "overdueTitle": "Pagos vencidos",
+    "overdueSummary": "{count, plural, =0 {No hay facturas vencidas — todas las membresías están al día.} one {# factura vencida.} other {# facturas vencidas.}}",
+    "viewAll": "Ver todo →",
+    "invoiceDue": "#{number} · vence {date}",
+    "daysOverdue": "{days, plural, one {# día vencido} other {# días vencidos}}",
+    "startsTitle": "Tu dojo empieza aquí",
+    "startsDescription": "Usa la barra lateral para gestionar alumnos, clases, asistencia, cinturones y membresías.",
+    "startsBodyBefore": "La base ya está activa: autenticación, roles, ajustes, registro de auditoría y programador en marcha. Usa la paleta de comandos (",
+    "startsBodyAfter": ") para saltar entre páginas.",
+    "or": "o",
+    "styleGuide": "Ver la guía de componentes →"
+  },
+  "CommandPalette": {
+    "ariaLabel": "Paleta de comandos",
+    "searchPlaceholder": "Buscar páginas...",
+    "noResults": "Sin resultados.",
+    "navigate": "navegar",
+    "open": "abrir",
+    "close": "cerrar",
+    "or": "o",
+    "items": {
+      "dashboard": {
+        "label": "Panel",
+        "subtitle": "Resumen del dojo"
+      },
+      "analytics": {
+        "label": "Analítica",
+        "subtitle": "Tendencias y retención"
+      },
+      "weeklySchedule": {
+        "label": "Horario semanal",
+        "subtitle": "Calendario"
+      },
+      "classes": {
+        "label": "Clases",
+        "subtitle": "Cursos y sesiones"
+      },
+      "attendance": {
+        "label": "Asistencia",
+        "subtitle": "Todas las sesiones, pasadas y futuras"
+      },
+      "belts": {
+        "label": "Cinturones y grados",
+        "subtitle": "Progresión"
+      },
+      "students": {
+        "label": "Alumnos",
+        "subtitle": "Gestionar alumnos"
+      },
+      "trials": {
+        "label": "Pruebas",
+        "subtitle": "Pipeline de pruebas"
+      },
+      "trainers": {
+        "label": "Instructores",
+        "subtitle": "Plantilla de instructores"
+      },
+      "memberships": {
+        "label": "Membresías",
+        "subtitle": "Planes y reglas de facturación"
+      },
+      "invoices": {
+        "label": "Facturas",
+        "subtitle": "Historial de facturación y pagos"
+      },
+      "profile": {
+        "label": "Perfil",
+        "subtitle": "Tu cuenta"
+      },
+      "adminGeneral": {
+        "label": "Administración · General",
+        "subtitle": "Identidad de la organización"
+      },
+      "adminAppearance": {
+        "label": "Administración · Apariencia",
+        "subtitle": "Logotipo, colores y texto de reservas"
+      },
+      "adminUsers": {
+        "label": "Administración · Usuarios",
+        "subtitle": "Cuentas del personal"
+      },
+      "adminRoles": {
+        "label": "Administración · Roles",
+        "subtitle": "Permisos"
+      },
+      "adminSignIn": {
+        "label": "Administración · Inicio de sesión y SSO",
+        "subtitle": "Proveedores de identidad, acceso de emergencia y límites"
+      },
+      "adminTemplates": {
+        "label": "Administración · Plantillas",
+        "subtitle": "Texto de plantillas de correo"
+      },
+      "adminAudit": {
+        "label": "Administración · Auditoría",
+        "subtitle": "Registro de auditoría"
+      },
+      "adminEmailLog": {
+        "label": "Administración · Registro de correo",
+        "subtitle": "Estado de entrega"
+      },
+      "adminScheduling": {
+        "label": "Administración · Programación",
+        "subtitle": "Programador y recordatorios"
+      }
+    }
   },
   "Book": {
     "metaTitle": "Reserva una clase de prueba gratis",

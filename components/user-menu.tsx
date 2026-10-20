@@ -2,6 +2,7 @@
 
 import { ChevronsUpDown, LogOut, User } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,8 @@ type UserMenuProps = {
 };
 
 export function UserMenu({ name, email, role }: UserMenuProps) {
+  const t = useTranslations("Common");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -46,7 +49,7 @@ export function UserMenu({ name, email, role }: UserMenuProps) {
             className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
           >
             <User className="size-4" />
-            Profile
+            {t("profile")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -60,7 +63,7 @@ export function UserMenu({ name, email, role }: UserMenuProps) {
               className="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
             >
               <LogOut className="size-4" />
-              Sign out
+              {t("signOut")}
             </button>
           </DropdownMenuItem>
         </form>
