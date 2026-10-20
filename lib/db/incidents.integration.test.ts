@@ -108,8 +108,12 @@ describe.skipIf(!hasTestDatabase)("incidents", () => {
     expect(mine.some((row) => row.id === incidentId)).toBe(true);
 
     const options = await listIncidentFormOptions();
-    expect(options.students.some((s) => s.id === studentId)).toBe(true);
-    expect(options.locations.some((l) => l.id === locationId)).toBe(true);
+    expect(options.students.some((student) => student.id === studentId)).toBe(
+      true,
+    );
+    expect(
+      options.locations.some((location) => location.id === locationId),
+    ).toBe(true);
   });
 
   it("updates the report", async () => {

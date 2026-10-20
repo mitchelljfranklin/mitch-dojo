@@ -807,7 +807,7 @@ describe.skipIf(!hasTestDatabase)("charge only with attendance", () => {
     });
     // The cycle whose window contains the training bills; the next skips
     // ([that cycle, next) has no training).
-    expect(afterSecond.map((i) => i.issueDate.getTime())).toEqual([
+    expect(afterSecond.map((invoice) => invoice.issueDate.getTime())).toEqual([
       cycle1.getTime(),
       cycle3.getTime(),
     ]);

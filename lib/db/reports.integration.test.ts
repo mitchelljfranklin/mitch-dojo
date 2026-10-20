@@ -230,11 +230,13 @@ describe.skipIf(!hasTestDatabase)("reports", () => {
 
   it("lists this month's birthdays and anniversaries", async () => {
     const celebrations = await getCelebrations();
-    expect(celebrations.birthdays.some((r) => r.studentId === studentId)).toBe(
-      true,
-    );
+    expect(
+      celebrations.birthdays.some(
+        (birthday) => birthday.studentId === studentId,
+      ),
+    ).toBe(true);
     const anniversary = celebrations.anniversaries.find(
-      (r) => r.studentId === studentId,
+      (entry) => entry.studentId === studentId,
     );
     expect(anniversary).toBeDefined();
     expect(anniversary!.years).toBeGreaterThanOrEqual(1);
@@ -242,11 +244,13 @@ describe.skipIf(!hasTestDatabase)("reports", () => {
 
   it("breaks revenue down by plan and estimates recurring revenue", async () => {
     const report = await getRevenueReport(6);
-    const collected = report.byPlan.find((r) => r.planId === planId);
+    const collected = report.byPlan.find((plan) => plan.planId === planId);
     expect(collected).toBeDefined();
     expect(collected!.collectedCents).toBe(5000);
 
-    const recurring = report.recurring.byPlan.find((r) => r.planId === planId);
+    const recurring = report.recurring.byPlan.find(
+      (plan) => plan.planId === planId,
+    );
     expect(recurring).toBeDefined();
     expect(recurring!.monthlyCents).toBe(10000);
     expect(recurring!.activeEnrollments).toBeGreaterThanOrEqual(1);

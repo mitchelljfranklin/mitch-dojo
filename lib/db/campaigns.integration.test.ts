@@ -121,7 +121,7 @@ describe.skipIf(!hasTestDatabase)("campaigns", () => {
       select: { recipients: true },
     });
     const addresses = (allRow!.recipients as { email: string }[]).map(
-      (r) => r.email,
+      (recipient) => recipient.email,
     );
     const ours = addresses.filter((email) => email.includes(suffix));
     expect(ours.sort()).toEqual(
@@ -201,7 +201,9 @@ describe.skipIf(!hasTestDatabase)("campaigns", () => {
       select: { recipients: true },
     });
     expect(
-      (allRow!.recipients as { email: string }[]).map((r) => r.email),
+      (allRow!.recipients as { email: string }[]).map(
+        (recipient) => recipient.email,
+      ),
     ).not.toContain(`echo-${suffix}@example.com`);
 
     // Overdue audience is tax-aware: items cover the subtotal, tax remains.
@@ -242,7 +244,9 @@ describe.skipIf(!hasTestDatabase)("campaigns", () => {
       select: { recipients: true },
     });
     expect(
-      (overdueRow!.recipients as { email: string }[]).map((r) => r.email),
+      (overdueRow!.recipients as { email: string }[]).map(
+        (recipient) => recipient.email,
+      ),
     ).toContain(`foxtrot-${suffix}@example.com`);
   });
 });
