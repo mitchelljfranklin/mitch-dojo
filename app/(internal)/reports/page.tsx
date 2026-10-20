@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,17 +26,22 @@ import {
   getCelebrations,
   getRevenueReport,
 } from "@/lib/db/reports";
-import { formatMoney, formatPercent } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Reports" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Reports");
+  return { title: translate("metaTitle") };
+}
 
 const ATTENDANCE_WINDOW_DAYS = 30;
 const REVENUE_WINDOW_MONTHS = 6;
 
 export default async function ReportsPage() {
   await requirePermission(PERMISSIONS.ANALYTICS_VIEW);
+  const translate = await getTranslations("Reports");
+  const translateMemberships = await getTranslations("Memberships");
+  const formatter = await getFormatter();
 
   const [attendance, celebrations, revenue, memberships] = await Promise.all([
     getAttendanceRates(ATTENDANCE_WINDOW_DAYS),
@@ -43,49 +50,60 @@ export default async function ReportsPage() {
     getMembershipsSettings(),
   ]);
   const currency = memberships.currency;
+  const formatMoney = (cents: number) =>
+    formatter.number(cents / 100, { style: "currency", currency });
+  const formatPercent = (ratio: number) =>
+    formatter.number(ratio, { style: "percent", maximumFractionDigits: 0 });
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
-        <p className="text-muted-foreground text-sm">
-          Attendance, celebrations, and revenue. Every report exports to CSV.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <div>
-            <CardTitle>Attendance rate</CardTitle>
+            <CardTitle>{translate("attendance.title")}</CardTitle>
             <CardDescription>
-              Attended ÷ eligible sessions over the last{" "}
-              {ATTENDANCE_WINDOW_DAYS} days.{" "}
+              {translate("attendance.description", {
+                days: ATTENDANCE_WINDOW_DAYS,
+              })}{" "}
               {attendance.averageRatePercent !== null
-                ? `School average ${formatPercent(
-                    attendance.averageRatePercent / 100,
-                  )}.`
+                ? translate("attendance.average", {
+                    percent: formatPercent(attendance.averageRatePercent / 100),
+                  })
                 : ""}
             </CardDescription>
           </div>
           <Button asChild variant="outline" size="sm">
             <a href="/api/reports/attendance-rates" download>
-              Export CSV
+              {translate("exportCsv")}
             </a>
           </Button>
         </CardHeader>
         <CardContent>
           {attendance.rows.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              No eligible sessions in the period.
+              {translate("attendance.empty")}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead className="text-right">Attended</TableHead>
-                  <TableHead className="text-right">Eligible</TableHead>
-                  <TableHead className="text-right">Rate</TableHead>
+                  <TableHead>{translate("attendance.student")}</TableHead>
+                  <TableHead className="text-right">
+                    {translate("attendance.attended")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {translate("attendance.eligible")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {translate("attendance.rate")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,21 +136,21 @@ export default async function ReportsPage() {
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle>Birthdays this month</CardTitle>
+              <CardTitle>{translate("birthdays.title")}</CardTitle>
               <CardDescription>
-                Active and trial students with a birthday this month.
+                {translate("birthdays.description")}
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
               <a href="/api/reports/celebrations?variant=birthdays" download>
-                Export CSV
+                {translate("exportCsv")}
               </a>
             </Button>
           </CardHeader>
           <CardContent>
             {celebrations.birthdays.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No birthdays this month.
+                {translate("birthdays.empty")}
               </p>
             ) : (
               <ul className="flex flex-col gap-2 text-sm">
@@ -145,7 +163,10 @@ export default async function ReportsPage() {
                       {row.name}
                     </Link>
                     <span className="text-muted-foreground">
-                      Day {row.day} · turns {row.years}
+                      {translate("birthdays.day", {
+                        day: row.day,
+                        years: row.years,
+                      })}
                     </span>
                   </li>
                 ))}
@@ -157,9 +178,9 @@ export default async function ReportsPage() {
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
-              <CardTitle>Training anniversaries</CardTitle>
+              <CardTitle>{translate("anniversaries.title")}</CardTitle>
               <CardDescription>
-                Students marking a year or more with the school this month.
+                {translate("anniversaries.description")}
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
@@ -167,14 +188,14 @@ export default async function ReportsPage() {
                 href="/api/reports/celebrations?variant=anniversaries"
                 download
               >
-                Export CSV
+                {translate("exportCsv")}
               </a>
             </Button>
           </CardHeader>
           <CardContent>
             {celebrations.anniversaries.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No anniversaries this month.
+                {translate("anniversaries.empty")}
               </p>
             ) : (
               <ul className="flex flex-col gap-2 text-sm">
@@ -187,8 +208,10 @@ export default async function ReportsPage() {
                       {row.name}
                     </Link>
                     <span className="text-muted-foreground">
-                      Day {row.day} · {row.years}{" "}
-                      {row.years === 1 ? "year" : "years"}
+                      {translate("anniversaries.day", {
+                        day: row.day,
+                        years: row.years,
+                      })}
                     </span>
                   </li>
                 ))}
@@ -201,17 +224,17 @@ export default async function ReportsPage() {
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <div>
-            <CardTitle>Revenue</CardTitle>
+            <CardTitle>{translate("revenue.title")}</CardTitle>
             <CardDescription>
-              Recorded payments by plan over the last {REVENUE_WINDOW_MONTHS}{" "}
-              months ({formatMoney(revenue.totalCollectedCents, currency)}{" "}
-              total), plus the estimated monthly recurring revenue from active
-              recurring enrollments.
+              {translate("revenue.description", {
+                months: REVENUE_WINDOW_MONTHS,
+                total: formatMoney(revenue.totalCollectedCents),
+              })}
             </CardDescription>
           </div>
           <Button asChild variant="outline" size="sm">
             <a href="/api/reports/revenue" download>
-              Export CSV
+              {translate("exportCsv")}
             </a>
           </Button>
         </CardHeader>
@@ -219,40 +242,48 @@ export default async function ReportsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-md border p-4">
               <p className="text-muted-foreground text-xs">
-                Estimated monthly recurring revenue
+                {translate("revenue.recurringLabel")}
               </p>
               <p className="text-2xl font-semibold">
-                {formatMoney(revenue.recurring.monthlyCents, currency)}
+                {formatMoney(revenue.recurring.monthlyCents)}
               </p>
               <p className="text-muted-foreground text-xs">
-                {revenue.recurring.activeEnrollments} active recurring
-                enrollment
-                {revenue.recurring.activeEnrollments === 1 ? "" : "s"}
+                {translate("revenue.activeEnrollments", {
+                  count: revenue.recurring.activeEnrollments,
+                })}
               </p>
             </div>
             <div className="rounded-md border p-4">
               <p className="text-muted-foreground text-xs">
-                Collected (last {REVENUE_WINDOW_MONTHS} months)
+                {translate("revenue.collectedLabel", {
+                  months: REVENUE_WINDOW_MONTHS,
+                })}
               </p>
               <p className="text-2xl font-semibold">
-                {formatMoney(revenue.totalCollectedCents, currency)}
+                {formatMoney(revenue.totalCollectedCents)}
               </p>
             </div>
           </div>
 
           <div>
-            <h3 className="mb-2 text-sm font-medium">By plan (collected)</h3>
+            <h3 className="mb-2 text-sm font-medium">
+              {translate("revenue.byPlan")}
+            </h3>
             {revenue.byPlan.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No payments in the period.
+                {translate("revenue.noPayments")}
               </p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Plan</TableHead>
-                    <TableHead className="text-right">Payments</TableHead>
-                    <TableHead className="text-right">Collected</TableHead>
+                    <TableHead>{translate("revenue.plan")}</TableHead>
+                    <TableHead className="text-right">
+                      {translate("revenue.payments")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {translate("revenue.collected")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -263,7 +294,7 @@ export default async function ReportsPage() {
                         {row.payments}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatMoney(row.collectedCents, currency)}
+                        {formatMoney(row.collectedCents)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -275,27 +306,37 @@ export default async function ReportsPage() {
           {revenue.recurring.byPlan.length > 0 ? (
             <div>
               <h3 className="mb-2 text-sm font-medium">
-                Recurring estimate by plan
+                {translate("revenue.recurringByPlan")}
               </h3>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Billing</TableHead>
-                    <TableHead className="text-right">Enrollments</TableHead>
-                    <TableHead className="text-right">Monthly</TableHead>
+                    <TableHead>{translate("revenue.plan")}</TableHead>
+                    <TableHead>{translate("revenue.billing")}</TableHead>
+                    <TableHead className="text-right">
+                      {translate("revenue.enrollments")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {translate("revenue.monthly")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {revenue.recurring.byPlan.map((row) => (
                     <TableRow key={row.planId}>
                       <TableCell>{row.planName}</TableCell>
-                      <TableCell>{row.billingPeriod ?? "—"}</TableCell>
+                      <TableCell>
+                        {row.billingPeriod
+                          ? translateMemberships(
+                              `billingPeriod.${row.billingPeriod}`,
+                            )
+                          : "—"}
+                      </TableCell>
                       <TableCell className="text-right">
                         {row.activeEnrollments}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatMoney(row.monthlyCents, currency)}
+                        {formatMoney(row.monthlyCents)}
                       </TableCell>
                     </TableRow>
                   ))}

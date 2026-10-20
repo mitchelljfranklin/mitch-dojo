@@ -1409,6 +1409,119 @@
       "actions": "Acciones tomadas"
     }
   },
+  "Analytics": {
+    "metaTitle": "Analítica",
+    "title": "Analítica",
+    "subtitle": "Socios, asistencia, retención e ingresos de un vistazo.",
+    "filters": {
+      "locationAria": "Filtrar asistencia por sede",
+      "allLocations": "Todas las sedes",
+      "locationHint": "Filtro de sede activo — las facturas de todo el centro (recurrentes) se excluyen del gráfico de ingresos; no tienen sede."
+    },
+    "stats": {
+      "activeMembers": "Socios activos",
+      "trials": "Pruebas",
+      "activeMemberships": "Membresías activas",
+      "revenue": "Ingresos este mes"
+    },
+    "retention": {
+      "title": "Retención — socios en riesgo",
+      "description": "Socios activos sin ninguna sesión entrenada en los últimos 14 días (o ninguna desde que se unieron), primero los peores.",
+      "empty": "Todos entrenan con regularidad — nada que señalar.",
+      "lastSeen": "Visto por última vez el {date}",
+      "joined": "Se unió hace {days} días, nunca ha entrenado",
+      "days": "{count}d"
+    },
+    "locations": {
+      "title": "Socios por sede",
+      "description": "Alumnos activos y de prueba asignados a cada sede.",
+      "location": "Sede",
+      "members": "Socios"
+    },
+    "charts": {
+      "attendanceTitle": "Asistencia — últimas 12 semanas",
+      "attendanceDescription": "Marcas por semana (Presente/Tarde). Un socio que entrena dos clases en una semana cuenta una vez por clase — el segundo color muestra socios únicos. La semana actual está incompleta.",
+      "attendanceEmpty": "Aún no hay asistencia registrada en este periodo.",
+      "attendances": "Asistencias",
+      "uniqueMembers": "Socios únicos",
+      "revenueTitle": "Ingresos — últimos 6 meses",
+      "revenueDescription": "Pagos registrados por mes (base de caja).",
+      "revenueEmpty": "Aún no hay pagos registrados en este periodo.",
+      "collected": "Cobrado"
+    }
+  },
+  "Reports": {
+    "metaTitle": "Informes",
+    "title": "Informes",
+    "subtitle": "Asistencia, celebraciones e ingresos. Todos los informes se exportan a CSV.",
+    "exportCsv": "Exportar CSV",
+    "attendance": {
+      "title": "Tasa de asistencia",
+      "description": "Asistencias ÷ sesiones elegibles en los últimos {days} días.",
+      "average": "Media del centro {percent}.",
+      "empty": "No hay sesiones elegibles en el periodo.",
+      "student": "Alumno",
+      "attended": "Asistió",
+      "eligible": "Elegibles",
+      "rate": "Tasa"
+    },
+    "birthdays": {
+      "title": "Cumpleaños este mes",
+      "description": "Alumnos activos y de prueba que cumplen años este mes.",
+      "empty": "No hay cumpleaños este mes.",
+      "day": "Día {day} · cumple {years}"
+    },
+    "anniversaries": {
+      "title": "Aniversarios de entrenamiento",
+      "description": "Alumnos que cumplen un año o más con el centro este mes.",
+      "empty": "No hay aniversarios este mes.",
+      "day": "Día {day} · {years, plural, one {# año} other {# años}}"
+    },
+    "revenue": {
+      "title": "Ingresos",
+      "description": "Pagos registrados por plan en los últimos {months} meses ({total} en total), más los ingresos recurrentes mensuales estimados de las inscripciones recurrentes activas.",
+      "recurringLabel": "Ingresos recurrentes mensuales estimados",
+      "activeEnrollments": "{count, plural, one {# inscripción recurrente activa} other {# inscripciones recurrentes activas}}",
+      "collectedLabel": "Cobrado (últimos {months} meses)",
+      "byPlan": "Por plan (cobrado)",
+      "noPayments": "No hay pagos en el periodo.",
+      "recurringByPlan": "Estimación recurrente por plan",
+      "plan": "Plan",
+      "payments": "Pagos",
+      "collected": "Cobrado",
+      "billing": "Facturación",
+      "enrollments": "Inscripciones",
+      "monthly": "Mensual"
+    }
+  },
+  "Profile": {
+    "metaTitle": "Perfil",
+    "title": "Perfil",
+    "subtitle": "Gestiona los datos de tu cuenta.",
+    "account": {
+      "title": "Datos de la cuenta",
+      "description": "Tu nombre y correo de acceso.",
+      "name": "Nombre",
+      "email": "Correo"
+    },
+    "password": {
+      "title": "Contraseña",
+      "description": "Debes introducir tu contraseña actual para hacer cualquier cambio.",
+      "current": "Contraseña actual",
+      "new": "Nueva contraseña",
+      "optional": "(opcional)",
+      "confirm": "Confirmar nueva contraseña",
+      "noLocal": "Esta cuenta no tiene contraseña local, así que no hay nada que cambiar aquí."
+    },
+    "saving": "Guardando...",
+    "save": "Guardar cambios",
+    "updated": "Perfil actualizado.",
+    "notAuthenticated": "No autenticado.",
+    "accountNotFound": "Cuenta no encontrada.",
+    "invalid": "Revisa tus datos e inténtalo de nuevo.",
+    "currentIncorrect": "La contraseña actual es incorrecta.",
+    "emailTaken": "Este correo ya está en uso."
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

@@ -45,6 +45,8 @@ type StatCardProps = {
   format?: "number" | "percent";
   // Fraction digits for money-style values (e.g. 2 for currency cents).
   decimals?: number;
+  // Pre-formatted (locale-aware) value; bypasses the numeric display.
+  formattedValue?: string;
   colorClass?: string;
   trend?: "up" | "down" | "stable";
   sparklineData?: number[];
@@ -56,6 +58,7 @@ export function StatCard({
   suffix,
   format = "number",
   decimals = 0,
+  formattedValue,
   colorClass,
   trend,
   sparklineData,
@@ -66,11 +69,12 @@ export function StatCard({
 
   const amount = animated.toFixed(decimals);
   const display =
-    format === "percent"
+    formattedValue ??
+    (format === "percent"
       ? `${amount}%`
       : suffix
         ? `${amount} ${suffix}`
-        : amount;
+        : amount);
 
   return (
     <Card>

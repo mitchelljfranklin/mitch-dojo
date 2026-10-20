@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useFormatter, useTranslations } from "next-intl";
 
 import {
   Card,
@@ -28,33 +29,27 @@ type RevenueChartProps = {
   data: RevenueChartPoint[];
 };
 
-function formatMoney(cents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
+export function RevenueChart({ data }: RevenueChartProps) {
+  const translate = useTranslations("Analytics.charts");
+  const formatter = useFormatter();
+  const currency = data[0]?.currency ?? "USD";
+  const formatMoney = (cents: number) =>
+    formatter.number(cents / 100, {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
-    }).format(cents / 100);
-  } catch {
-    return `${(cents / 100).toFixed(0)} ${currency}`;
-  }
-}
-
-export function RevenueChart({ data }: RevenueChartProps) {
-  const currency = data[0]?.currency ?? "USD";
+    });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revenue — last 6 months</CardTitle>
-        <CardDescription>
-          Payments recorded per month (cash basis).
-        </CardDescription>
+        <CardTitle>{translate("revenueTitle")}</CardTitle>
+        <CardDescription>{translate("revenueDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         {data.every((point) => point.collected === 0) ? (
           <p className="text-muted-foreground py-12 text-center text-sm">
-            No payments recorded in this period yet.
+            {translate("revenueEmpty")}
           </p>
         ) : (
           <div className="h-72 w-full">
@@ -72,16 +67,12 @@ export function RevenueChart({ data }: RevenueChartProps) {
                   tickLine={false}
                   axisLine={false}
                   fontSize={11}
-                  tickFormatter={(value: number) =>
-                    formatMoney(value, currency)
-                  }
+                  tickFormatter={(value: number) => formatMoney(value)}
                 />
-                <Tooltip
-                  formatter={(value) => formatMoney(Number(value), currency)}
-                />
+                <Tooltip formatter={(value) => formatMoney(Number(value))} />
                 <Bar
                   dataKey="collected"
-                  name="Collected"
+                  name={translate("collected")}
                   fill="var(--primary)"
                   radius={[4, 4, 0, 0]}
                 />

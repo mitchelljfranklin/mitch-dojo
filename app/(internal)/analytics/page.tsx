@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,24 +34,17 @@ import {
 } from "@/lib/db/analytics";
 import { listAssignableLocations } from "@/lib/db/locations";
 import { getMembershipsSettings } from "@/lib/settings";
-import { formatDate, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Analytics" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Analytics");
+  return { title: translate("metaTitle") };
+}
 
 type AnalyticsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
 };
-
-function shortWeekLabel(isoDate: string): string {
-  const date = new Date(`${isoDate}T00:00:00Z`);
-  return date.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
-}
 
 export default async function AnalyticsPage({
   searchParams,
@@ -57,6 +52,8 @@ export default async function AnalyticsPage({
   await requirePermission(PERMISSIONS.ANALYTICS_VIEW);
 
   const query = await searchParams;
+  const translate = await getTranslations("Analytics");
+  const formatter = await getFormatter();
   const locationId =
     query.location && query.location !== "ALL" ? query.location : undefined;
 
@@ -79,7 +76,11 @@ export default async function AnalyticsPage({
   ]);
 
   const attendanceData = attendanceTrend.map((bucket) => ({
-    label: shortWeekLabel(bucket.weekStart),
+    label: formatter.dateTime(new Date(`${bucket.weekStart}T00:00:00Z`), {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    }),
     attendances: bucket.attendances,
     uniqueAttendees: bucket.uniqueAttendees,
   }));
@@ -88,24 +89,34 @@ export default async function AnalyticsPage({
     collected: bucket.collectedCents,
     currency,
   }));
+  const formatDate = (value: Date) =>
+    formatter.dateTime(value, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  const formatMoney = (cents: number) =>
+    formatter.number(cents / 100, { style: "currency", currency });
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: "Analytics" }]} />
+      <Breadcrumbs segments={[{ label: translate("title") }]} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {translate("title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            Members, attendance, retention, and revenue at a glance.
+            {translate("subtitle")}
           </p>
         </div>
         <form className="w-48">
           <AutoSubmitSelect
             name="location"
             defaultValue={query.location ?? "ALL"}
-            ariaLabel="Filter attendance by location"
+            ariaLabel={translate("filters.locationAria")}
             options={[
-              { value: "ALL", label: "All locations" },
+              { value: "ALL", label: translate("filters.allLocations") },
               ...locations.map((location) => ({
                 value: location.id,
                 label: location.name,
@@ -116,17 +127,22 @@ export default async function AnalyticsPage({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active members" value={overview.activeStudents} />
-        <StatCard label="Trials" value={overview.trialStudents} />
         <StatCard
-          label="Active memberships"
+          label={translate("stats.activeMembers")}
+          value={overview.activeStudents}
+        />
+        <StatCard
+          label={translate("stats.trials")}
+          value={overview.trialStudents}
+        />
+        <StatCard
+          label={translate("stats.activeMemberships")}
           value={overview.activeEnrollments}
         />
         <StatCard
-          label="Revenue this month"
+          label={translate("stats.revenue")}
           value={overview.revenueThisMonthCents / 100}
-          decimals={2}
-          suffix={currency}
+          formattedValue={formatMoney(overview.revenueThisMonthCents)}
         />
       </div>
 
@@ -135,8 +151,7 @@ export default async function AnalyticsPage({
         <div className="flex flex-col gap-2">
           {locationId ? (
             <p className="text-muted-foreground text-xs">
-              Location filter active — school-wide (recurring) invoices are
-              excluded from the revenue chart; they carry no location.
+              {translate("filters.locationHint")}
             </p>
           ) : null}
           <RevenueChart data={revenueData} />
@@ -146,16 +161,15 @@ export default async function AnalyticsPage({
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Retention — at-risk members</CardTitle>
+            <CardTitle>{translate("retention.title")}</CardTitle>
             <CardDescription>
-              Active members with no trained session in the last 14 days (or
-              none since joining), worst first.
+              {translate("retention.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {atRisk.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                Everyone is training regularly — nothing to flag.
+                {translate("retention.empty")}
               </p>
             ) : (
               atRisk.map((row) => (
@@ -168,10 +182,18 @@ export default async function AnalyticsPage({
                   <span className="flex items-center gap-2">
                     <span className="text-muted-foreground text-xs">
                       {row.lastAttendedAt
-                        ? `Last seen ${formatDate(row.lastAttendedAt)}`
-                        : `Joined ${row.daysSince} days ago, never trained`}
+                        ? translate("retention.lastSeen", {
+                            date: formatDate(row.lastAttendedAt),
+                          })
+                        : translate("retention.joined", {
+                            days: row.daysSince,
+                          })}
                     </span>
-                    <Badge variant="destructive">{row.daysSince}d</Badge>
+                    <Badge variant="destructive">
+                      {translate("retention.days", {
+                        count: row.daysSince,
+                      })}
+                    </Badge>
                   </span>
                 </Link>
               ))
@@ -181,17 +203,19 @@ export default async function AnalyticsPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Members per location</CardTitle>
+            <CardTitle>{translate("locations.title")}</CardTitle>
             <CardDescription>
-              Active and trial students assigned to each dojo site.
+              {translate("locations.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="px-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Location</TableHead>
-                  <TableHead className="text-right">Members</TableHead>
+                  <TableHead>{translate("locations.location")}</TableHead>
+                  <TableHead className="text-right">
+                    {translate("locations.members")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -1409,6 +1409,119 @@
       "actions": "Actions taken"
     }
   },
+  "Analytics": {
+    "metaTitle": "Analytics",
+    "title": "Analytics",
+    "subtitle": "Members, attendance, retention, and revenue at a glance.",
+    "filters": {
+      "locationAria": "Filter attendance by location",
+      "allLocations": "All locations",
+      "locationHint": "Location filter active — school-wide (recurring) invoices are excluded from the revenue chart; they carry no location."
+    },
+    "stats": {
+      "activeMembers": "Active members",
+      "trials": "Trials",
+      "activeMemberships": "Active memberships",
+      "revenue": "Revenue this month"
+    },
+    "retention": {
+      "title": "Retention — at-risk members",
+      "description": "Active members with no trained session in the last 14 days (or none since joining), worst first.",
+      "empty": "Everyone is training regularly — nothing to flag.",
+      "lastSeen": "Last seen {date}",
+      "joined": "Joined {days} days ago, never trained",
+      "days": "{count}d"
+    },
+    "locations": {
+      "title": "Members per location",
+      "description": "Active and trial students assigned to each dojo site.",
+      "location": "Location",
+      "members": "Members"
+    },
+    "charts": {
+      "attendanceTitle": "Attendance — last 12 weeks",
+      "attendanceDescription": "Marks per week (Present/Late). A member training two classes in a week counts once per class — the second colour shows unique members. The current week is partial.",
+      "attendanceEmpty": "No attendance recorded in this period yet.",
+      "attendances": "Attendances",
+      "uniqueMembers": "Unique members",
+      "revenueTitle": "Revenue — last 6 months",
+      "revenueDescription": "Payments recorded per month (cash basis).",
+      "revenueEmpty": "No payments recorded in this period yet.",
+      "collected": "Collected"
+    }
+  },
+  "Reports": {
+    "metaTitle": "Reports",
+    "title": "Reports",
+    "subtitle": "Attendance, celebrations, and revenue. Every report exports to CSV.",
+    "exportCsv": "Export CSV",
+    "attendance": {
+      "title": "Attendance rate",
+      "description": "Attended ÷ eligible sessions over the last {days} days.",
+      "average": "School average {percent}.",
+      "empty": "No eligible sessions in the period.",
+      "student": "Student",
+      "attended": "Attended",
+      "eligible": "Eligible",
+      "rate": "Rate"
+    },
+    "birthdays": {
+      "title": "Birthdays this month",
+      "description": "Active and trial students with a birthday this month.",
+      "empty": "No birthdays this month.",
+      "day": "Day {day} · turns {years}"
+    },
+    "anniversaries": {
+      "title": "Training anniversaries",
+      "description": "Students marking a year or more with the school this month.",
+      "empty": "No anniversaries this month.",
+      "day": "Day {day} · {years, plural, one {# year} other {# years}}"
+    },
+    "revenue": {
+      "title": "Revenue",
+      "description": "Recorded payments by plan over the last {months} months ({total} total), plus the estimated monthly recurring revenue from active recurring enrollments.",
+      "recurringLabel": "Estimated monthly recurring revenue",
+      "activeEnrollments": "{count, plural, one {# active recurring enrollment} other {# active recurring enrollments}}",
+      "collectedLabel": "Collected (last {months} months)",
+      "byPlan": "By plan (collected)",
+      "noPayments": "No payments in the period.",
+      "recurringByPlan": "Recurring estimate by plan",
+      "plan": "Plan",
+      "payments": "Payments",
+      "collected": "Collected",
+      "billing": "Billing",
+      "enrollments": "Enrollments",
+      "monthly": "Monthly"
+    }
+  },
+  "Profile": {
+    "metaTitle": "Profile",
+    "title": "Profile",
+    "subtitle": "Manage your account details.",
+    "account": {
+      "title": "Account details",
+      "description": "Your name and sign-in email.",
+      "name": "Name",
+      "email": "Email"
+    },
+    "password": {
+      "title": "Password",
+      "description": "You must enter your current password to make any changes.",
+      "current": "Current password",
+      "new": "New password",
+      "optional": "(optional)",
+      "confirm": "Confirm new password",
+      "noLocal": "This account has no local password, so there is nothing to change here."
+    },
+    "saving": "Saving...",
+    "save": "Save changes",
+    "updated": "Profile updated.",
+    "notAuthenticated": "Not authenticated.",
+    "accountNotFound": "Account not found.",
+    "invalid": "Check your details and try again.",
+    "currentIncorrect": "Current password is incorrect.",
+    "emailTaken": "This email is already taken."
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

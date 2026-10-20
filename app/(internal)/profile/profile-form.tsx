@@ -2,6 +2,7 @@
 
 import { ActionForm } from "@/components/action-form";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,7 @@ export function ProfileForm(props: ProfileFormProps) {
 }
 
 function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
+  const translate = useTranslations("Profile");
   const [state, formAction, isPending] = useActionState(
     updateProfileAction,
     initialState,
@@ -40,16 +42,16 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
     <ActionForm action={formAction} className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Account details</CardTitle>
-          <CardDescription>Your name and sign-in email.</CardDescription>
+          <CardTitle>{translate("account.title")}</CardTitle>
+          <CardDescription>{translate("account.description")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{translate("account.name")}</Label>
             <Input id="name" name="name" defaultValue={name} required />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{translate("account.email")}</Label>
             <Input
               id="email"
               name="email"
@@ -69,14 +71,16 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
       {hasLocalPassword ? (
         <Card>
           <CardHeader>
-            <CardTitle>Password</CardTitle>
+            <CardTitle>{translate("password.title")}</CardTitle>
             <CardDescription>
-              You must enter your current password to make any changes.
+              {translate("password.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="currentPassword">Current password</Label>
+              <Label htmlFor="currentPassword">
+                {translate("password.current")}
+              </Label>
               <Input
                 id="currentPassword"
                 name="currentPassword"
@@ -88,9 +92,9 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="newPassword">
-                  New password{" "}
+                  {translate("password.new")}{" "}
                   <span className="text-muted-foreground font-normal">
-                    (optional)
+                    {translate("password.optional")}
                   </span>
                 </Label>
                 <Input
@@ -102,7 +106,9 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="confirmNewPassword">Confirm new password</Label>
+                <Label htmlFor="confirmNewPassword">
+                  {translate("password.confirm")}
+                </Label>
                 <Input
                   id="confirmNewPassword"
                   name="confirmNewPassword"
@@ -116,8 +122,7 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
         </Card>
       ) : (
         <p className="text-muted-foreground text-sm">
-          This account has no local password, so there is nothing to change
-          here.
+          {translate("password.noLocal")}
         </p>
       )}
 
@@ -129,7 +134,7 @@ function ProfileFormInner({ name, email, hasLocalPassword }: ProfileFormProps) {
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save changes"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </ActionForm>

@@ -43,7 +43,9 @@ plan without asking.
   ladder, progression, promotions, gradings, CSV import), Memberships (plans,
   enrollment import), Invoices (list, detail, payments), Trials (pipeline,
   conversion), Trainers (roster, verifications), Compliance (outstanding
-  agreements), and Incidents (accident book, reports).
+  agreements), Incidents (accident book, reports), Analytics (overview,
+  charts), Reports (attendance, celebrations, revenue), and Profile
+  (account, password).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTranslations } from "next-intl";
 
 import {
   Card,
@@ -30,20 +31,17 @@ type AttendanceChartProps = {
 };
 
 export function AttendanceChart({ data }: AttendanceChartProps) {
+  const translate = useTranslations("Analytics.charts");
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Attendance — last 12 weeks</CardTitle>
-        <CardDescription>
-          Marks per week (Present/Late). A member training two classes in a week
-          counts once per class — the second colour shows unique members. The
-          current week is partial.
-        </CardDescription>
+        <CardTitle>{translate("attendanceTitle")}</CardTitle>
+        <CardDescription>{translate("attendanceDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         {data.every((point) => point.attendances === 0) ? (
           <p className="text-muted-foreground py-12 text-center text-sm">
-            No attendance recorded in this period yet.
+            {translate("attendanceEmpty")}
           </p>
         ) : (
           <div className="h-72 w-full">
@@ -65,13 +63,13 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
                 <Tooltip />
                 <Bar
                   dataKey="attendances"
-                  name="Attendances"
+                  name={translate("attendances")}
                   fill="var(--color-chart-1)"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="uniqueAttendees"
-                  name="Unique members"
+                  name={translate("uniqueMembers")}
                   fill="var(--color-chart-2)"
                   radius={[4, 4, 0, 0]}
                 />
