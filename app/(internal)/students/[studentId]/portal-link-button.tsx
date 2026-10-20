@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,7 @@ export function PortalLinkButton({
   studentId,
   studentName,
 }: PortalLinkButtonProps) {
+  const t = useTranslations("Students.portalLink");
   const [state, formAction, isPending] = useActionState<
     PortalLinkState,
     FormData
@@ -28,7 +30,7 @@ export function PortalLinkButton({
     <form action={formAction} className="flex flex-col items-end gap-1">
       <input type="hidden" name="studentId" value={studentId} />
       <Button type="submit" variant="outline" disabled={isPending}>
-        {isPending ? "Sending…" : "Send portal link"}
+        {isPending ? t("sending") : t("send")}
       </Button>
       {state && "error" in state ? (
         <p
@@ -44,7 +46,7 @@ export function PortalLinkButton({
         </p>
       ) : null}
       <span className="text-muted-foreground sr-only">
-        Emails {studentName} a member portal magic link
+        {t("sr", { name: studentName })}
       </span>
     </form>
   );

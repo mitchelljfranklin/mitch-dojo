@@ -328,16 +328,19 @@ export async function addAttachmentAction(
   formData: FormData,
 ): Promise<{ ok: boolean; message: string } | undefined> {
   await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students.attachments");
   const studentId = getField(formData, "studentId");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: "No file selected." };
+    return { ok: false, message: t("missingFile") };
   }
   if (file.size > MAX_ATTACHMENT_BYTES) {
     return {
       ok: false,
-      message: `File is too large (max ${Math.round(MAX_ATTACHMENT_BYTES / (1024 * 1024))} MB).`,
+      message: t("tooLarge", {
+        mb: Math.round(MAX_ATTACHMENT_BYTES / (1024 * 1024)),
+      }),
     };
   }
 
@@ -346,14 +349,14 @@ export async function addAttachmentAction(
   if (!ALLOWED_ATTACHMENT_EXTS.has(ext)) {
     return {
       ok: false,
-      message: `File type .${ext} is not allowed.`,
+      message: t("badType", { ext }),
     };
   }
   const buffer = Buffer.from(await file.arrayBuffer());
   if (!validateMagicBytes(ext, buffer)) {
     return {
       ok: false,
-      message: "File content does not match its extension.",
+      message: t("mismatch"),
     };
   }
 
@@ -377,7 +380,7 @@ export async function addAttachmentAction(
   }
   // No revalidatePath: this feeds useActionState — the client refreshes via
   // useActionFeedback (see AGENTS.md).
-  return { ok: true, message: "Attachment added." };
+  return { ok: true, message: t("added") };
 }
 
 export async function deleteAttachmentAction(formData: FormData) {

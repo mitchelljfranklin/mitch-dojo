@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ export function EnrollStudentSheet({
   studentId,
   plans,
 }: StudentMembershipsSheetProps) {
+  const t = useTranslations("Students.enroll");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
@@ -58,7 +60,7 @@ export function EnrollStudentSheet({
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Enroll in plan
+        {t("button")}
       </Button>
       <Sheet
         open={open}
@@ -68,11 +70,8 @@ export function EnrollStudentSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Enroll in plan</SheetTitle>
-            <SheetDescription>
-              Memberships are school-wide — one subscription covers all of the
-              student&apos;s training.
-            </SheetDescription>
+            <SheetTitle>{t("title")}</SheetTitle>
+            <SheetDescription>{t("description")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -81,23 +80,23 @@ export function EnrollStudentSheet({
           >
             <input type="hidden" name="studentId" value={studentId} />
             <div className="grid gap-2">
-              <Label htmlFor="enroll-plan">Plan</Label>
+              <Label htmlFor="enroll-plan">{t("plan")}</Label>
               <Select name="planId" required>
                 <SelectTrigger id="enroll-plan">
-                  <SelectValue placeholder="Choose a plan" />
+                  <SelectValue placeholder={t("choosePlan")} />
                 </SelectTrigger>
                 <SelectContent>
                   {plans.map((plan) => (
                     <SelectItem key={plan.id} value={plan.id}>
                       {plan.name}
-                      {plan.planType === "ITEM" ? " (one-off)" : ""}
+                      {plan.planType === "ITEM" ? t("oneOff") : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="enroll-start">Start date</Label>
+              <Label htmlFor="enroll-start">{t("start")}</Label>
               <Input
                 id="enroll-start"
                 name="startDate"
@@ -105,11 +104,7 @@ export function EnrollStudentSheet({
                 required
                 defaultValue={todayIsoDate()}
               />
-              <p className="text-muted-foreground text-xs">
-                Recurring plans bill from this date — a backdated start
-                generates the missed cycles (immediately due) on the next
-                scheduler run.
-              </p>
+              <p className="text-muted-foreground text-xs">{t("note")}</p>
             </div>
             {state && "error" in state ? (
               <p className="text-destructive text-sm" role="alert">
@@ -124,11 +119,11 @@ export function EnrollStudentSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {t("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Enrolling..." : "Enroll"}
+                  {isPending ? t("enrolling") : t("submit")}
                 </Button>
               )}
               <Button
@@ -136,7 +131,7 @@ export function EnrollStudentSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

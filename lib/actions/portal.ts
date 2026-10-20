@@ -2,13 +2,13 @@
 
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { createPortalLink, createHouseholdPortalLink } from "@/lib/db/portal";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { sendEmail } from "@/lib/email/mailer";
 import { getEmailSettings, getOrganizationSettings } from "@/lib/settings";
 import { env } from "@/lib/env";
-import { formatDate } from "@/lib/utils";
 
 export type PortalLinkState =
   { error: string } | { ok: true; message: string } | undefined;
@@ -21,23 +21,24 @@ export async function sendPortalLinkAction(
   formData: FormData,
 ): Promise<PortalLinkState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students.portalLink");
+  const format = await getFormatter();
   const studentId = String(formData.get("studentId") ?? "");
   if (!studentId) {
-    return { error: "Missing student." };
+    return { error: t("missingStudent") };
   }
 
   const { smtpHost } = await getEmailSettings();
   if (!smtpHost) {
     return {
-      error: "SMTP is not configured — set it up under Settings → Email first.",
+      error: t("smtp"),
     };
   }
 
   const link = await createPortalLink(studentId, env.APP_URL);
   if (link.outcome === "no_recipient") {
     return {
-      error:
-        "This student has no email address on file (and no guardian email).",
+      error: t("noRecipient"),
     };
   }
 
@@ -78,9 +79,16 @@ export async function sendPortalLinkAction(
   return result.ok
     ? {
         ok: true,
-        message: `Portal link emailed to ${link.recipient} (expires ${formatDate(link.expiresAt)}).`,
+        message: t("sent", {
+          email: link.recipient,
+          date: format.dateTime(link.expiresAt, {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+        }),
       }
-    : { error: "The email failed to send — check the email log." };
+    : { error: t("failed") };
 }
 
 // Household magic link: one login shows every child in the family.
@@ -89,23 +97,24 @@ export async function sendHouseholdPortalLinkAction(
   formData: FormData,
 ): Promise<PortalLinkState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students.portalLink");
+  const format = await getFormatter();
   const householdId = String(formData.get("householdId") ?? "");
   if (!householdId) {
-    return { error: "Missing household." };
+    return { error: t("missingHousehold") };
   }
 
   const { smtpHost } = await getEmailSettings();
   if (!smtpHost) {
     return {
-      error: "SMTP is not configured — set it up under Settings → Email first.",
+      error: t("smtp"),
     };
   }
 
   const link = await createHouseholdPortalLink(householdId, env.APP_URL);
   if (link.outcome === "no_recipient") {
     return {
-      error:
-        "This household has no contact email (and no member with one on file).",
+      error: t("householdNoRecipient"),
     };
   }
 
@@ -144,7 +153,14 @@ export async function sendHouseholdPortalLinkAction(
   return result.ok
     ? {
         ok: true,
-        message: `Household portal link emailed to ${link.recipient} (expires ${formatDate(link.expiresAt)}).`,
+        message: t("householdSent", {
+          email: link.recipient,
+          date: format.dateTime(link.expiresAt, {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+        }),
       }
-    : { error: "The email failed to send — check the email log." };
+    : { error: t("failed") };
 }

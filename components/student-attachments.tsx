@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,6 @@ import {
   deleteAttachmentAction,
 } from "@/lib/actions/students";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
-import { formatDate } from "@/lib/utils";
 
 export type StudentAttachmentView = {
   id: string;
@@ -34,6 +34,8 @@ export function StudentAttachments({
   studentId: string;
   attachments: StudentAttachmentView[];
 }) {
+  const t = useTranslations("Students.attachments");
+  const format = useFormatter();
   const [state, formAction, isPending] = useActionState(
     addAttachmentAction,
     undefined,
@@ -43,7 +45,7 @@ export function StudentAttachments({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Attachments</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {attachments.length > 0 ? (
@@ -62,7 +64,11 @@ export function StudentAttachments({
                   </a>
                   <span className="text-muted-foreground text-xs">
                     {formatSize(attachment.sizeBytes)} ·{" "}
-                    {formatDate(attachment.createdAt)}
+                    {format.dateTime(new Date(attachment.createdAt), {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </span>
                 </div>
                 <form action={deleteAttachmentAction}>
@@ -78,23 +84,20 @@ export function StudentAttachments({
                     size="sm"
                     className="text-destructive"
                   >
-                    Remove
+                    {t("remove")}
                   </Button>
                 </form>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            No attachments yet. Add grading certificates, membership forms, or
-            other documents.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("none")}</p>
         )}
 
         <form action={formAction} className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="studentId" value={studentId} />
           <div className="grid gap-1">
-            <Label htmlFor="attachment-file">Add file</Label>
+            <Label htmlFor="attachment-file">{t("addFile")}</Label>
             <Input
               id="attachment-file"
               name="file"
@@ -104,16 +107,16 @@ export function StudentAttachments({
             />
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="attachment-display-name">Display name</Label>
+            <Label htmlFor="attachment-display-name">{t("displayName")}</Label>
             <Input
               id="attachment-display-name"
               name="displayName"
-              placeholder="Optional"
+              placeholder={t("optional")}
               className="w-48"
             />
           </div>
           <Button type="submit" size="sm" disabled={isPending}>
-            {isPending ? "Uploading..." : "Upload"}
+            {isPending ? t("uploading") : t("upload")}
           </Button>
         </form>
         {state && !state.ok ? (

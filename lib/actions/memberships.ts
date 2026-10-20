@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -202,6 +203,7 @@ export async function enrollStudentAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const t = await getTranslations("Students.enroll");
 
   const parsed = enrollmentSchema.safeParse({
     studentId: getField(formData, "studentId"),
@@ -209,7 +211,7 @@ export async function enrollStudentAction(
     startDate: getField(formData, "startDate"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: t("invalid") };
   }
 
   let outcome: "created" | "already_enrolled";
@@ -222,7 +224,7 @@ export async function enrollStudentAction(
     outcome = result.outcome;
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes("no longer exists")) {
-      return { error: error.message };
+      return { error: t("missingPlan") };
     }
     throw error;
   }
@@ -239,8 +241,8 @@ export async function enrollStudentAction(
   }
 
   return outcome === "created"
-    ? { ok: true, message: "Member enrolled." }
-    : { ok: true, message: "The student is already enrolled in that plan." };
+    ? { ok: true, message: t("created") }
+    : { ok: true, message: t("already") };
 }
 
 export async function endEnrollmentAction(formData: FormData) {

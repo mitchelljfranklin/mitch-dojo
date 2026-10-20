@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ export function RecordSignatureSheet({
   documentLabel,
   activeVersion,
 }: RecordSignatureSheetProps) {
+  const t = useTranslations("Students.signature");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     AgreementSignatureState,
@@ -54,7 +56,7 @@ export function RecordSignatureSheet({
         variant="outline"
         onClick={() => setOpen(true)}
       >
-        Record signature
+        {t("record")}
       </Button>
       <Sheet
         open={open}
@@ -67,26 +69,23 @@ export function RecordSignatureSheet({
           className="w-full overflow-y-auto sm:max-w-md"
         >
           <SheetHeader>
-            <SheetTitle>Record signature — {documentLabel}</SheetTitle>
-            <SheetDescription>
-              For paper signings done in person. Record who signed and when; the
-              digital portal signing does not need this.
-            </SheetDescription>
+            <SheetTitle>{t("title", { document: documentLabel })}</SheetTitle>
+            <SheetDescription>{t("description")}</SheetDescription>
           </SheetHeader>
           <form action={formAction} className="flex flex-col gap-4">
             <input type="hidden" name="studentId" value={studentId} />
             <input type="hidden" name="documentId" value={documentId} />
             <div className="grid gap-2">
-              <Label htmlFor={`signedBy-${documentId}`}>Who signed</Label>
+              <Label htmlFor={`signedBy-${documentId}`}>{t("who")}</Label>
               <Input
                 id={`signedBy-${documentId}`}
                 name="signedByName"
                 required
-                placeholder="Student or guardian name"
+                placeholder={t("whoPlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`signedAt-${documentId}`}>Date signed</Label>
+              <Label htmlFor={`signedAt-${documentId}`}>{t("date")}</Label>
               <Input
                 id={`signedAt-${documentId}`}
                 name="signedAt"
@@ -96,8 +95,7 @@ export function RecordSignatureSheet({
               />
             </div>
             <p className="text-muted-foreground text-xs">
-              Recorded against version {activeVersion}. The student&apos;s
-              portal shows this document as signed.
+              {t("versionNote", { version: activeVersion })}
             </p>
             {state && !state.ok ? (
               <p className="text-destructive text-sm" role="alert">
@@ -106,7 +104,7 @@ export function RecordSignatureSheet({
             ) : null}
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Recording…" : "Record signature"}
+                {isPending ? t("recording") : t("submit")}
               </Button>
             </SheetFooter>
           </form>

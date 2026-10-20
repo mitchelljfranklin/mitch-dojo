@@ -2,6 +2,7 @@
 
 import { requirePermission, getCurrentUser } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { getTranslations } from "next-intl/server";
 import { recordStudentSignature } from "@/lib/db/agreements";
 import { logAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 
@@ -15,20 +16,21 @@ export async function recordAgreementSignatureAction(
   formData: FormData,
 ): Promise<AgreementSignatureState> {
   const user = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students.signature");
   const studentId = String(formData.get("studentId") ?? "");
   const documentId = String(formData.get("documentId") ?? "");
   const signedByName = String(formData.get("signedByName") ?? "").trim();
   const signedAtRaw = String(formData.get("signedAt") ?? "");
 
   if (!studentId || !documentId) {
-    return { ok: false, message: "Missing student or document." };
+    return { ok: false, message: t("missing") };
   }
   if (!signedByName) {
-    return { ok: false, message: "Enter who signed (student or guardian)." };
+    return { ok: false, message: t("whoRequired") };
   }
   const signedAt = new Date(`${signedAtRaw}T12:00:00`);
   if (Number.isNaN(signedAt.getTime())) {
-    return { ok: false, message: "Enter a valid signing date." };
+    return { ok: false, message: t("invalidDate") };
   }
 
   await recordStudentSignature({
@@ -45,5 +47,5 @@ export async function recordAgreementSignatureAction(
     studentId,
     { documentId, signedByName },
   );
-  return { ok: true, message: "Signature recorded." };
+  return { ok: true, message: t("recorded") };
 }
