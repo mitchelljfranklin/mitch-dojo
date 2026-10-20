@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import {
 } from "@/lib/actions/memberships";
 
 export function EnrollmentImportForm() {
+  const translate = useTranslations("Memberships.import");
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
     FormData
@@ -21,7 +23,7 @@ export function EnrollmentImportForm() {
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="grid gap-2">
-        <Label htmlFor="enrollment-import-file">CSV file</Label>
+        <Label htmlFor="enrollment-import-file">{translate("csvFile")}</Label>
         <Input
           id="enrollment-import-file"
           name="file"
@@ -33,7 +35,7 @@ export function EnrollmentImportForm() {
       </div>
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Importing…" : "Import enrollments"}
+          {isPending ? translate("importing") : translate("submit")}
         </Button>
       </div>
     </form>

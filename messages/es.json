@@ -937,6 +937,110 @@
       "eligibility": "{belt} requiere {required} entrenamientos — el alumno cuenta {count}. Marca «Anular el requisito de elegibilidad» para registrarlo igualmente."
     }
   },
+  "Memberships": {
+    "metaTitle": "Membresías",
+    "title": "Membresías",
+    "subtitle": "Planes a los que se suscriben los socios. Para todo el centro: una membresía cubre todo el entrenamiento del alumno.",
+    "actions": {
+      "invoices": "Facturas",
+      "import": "Importar",
+      "generateNow": "Generar ahora",
+      "generating": "Generando…"
+    },
+    "empty": {
+      "title": "Aún no hay planes",
+      "description": "Crea membresías recurrentes (p. ej. «Entrenamiento mensual») o conceptos puntuales (p. ej. tasas de grado)."
+    },
+    "table": {
+      "plan": "Plan",
+      "type": "Tipo",
+      "price": "Precio",
+      "activeMembers": "Socios activos",
+      "actions": "Acciones"
+    },
+    "planType": {
+      "recurring": "Recurrente",
+      "oneOff": "Puntual",
+      "oneOffItem": "Concepto puntual",
+      "attendanceGated": "Con control de asistencia",
+      "attendanceGatedHint": "Las facturas recurrentes solo se generan cuando el socio ha entrenado desde la factura anterior"
+    },
+    "billingPeriod": {
+      "WEEKLY": "Semanal",
+      "MONTHLY": "Mensual",
+      "QUARTERLY": "Trimestral",
+      "YEARLY": "Anual"
+    },
+    "plan": {
+      "new": "Nuevo plan",
+      "edit": "Editar",
+      "editTitle": "Editar {name}",
+      "description": "Los planes recurrentes generan facturas en cada ciclo. Los conceptos puntuales (tasas de grado, equipamiento) se facturan manualmente.",
+      "name": "Nombre",
+      "namePlaceholder": "p. ej. Entrenamiento mensual",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Opcional",
+      "type": "Tipo",
+      "billingPeriod": "Periodo de facturación",
+      "chargeOnly": "Cobrar solo con asistencia",
+      "chargeOnlyHint": "Genera la factura recurrente solo cuando el socio tenga al menos una sesión entrenada desde la factura anterior. La primera factura tras la inscripción siempre se cobra.",
+      "price": "Precio ({currency})",
+      "pricePlaceholder": "p. ej. 89.50",
+      "saving": "Guardando...",
+      "create": "Crear plan",
+      "save": "Guardar cambios",
+      "done": "Hecho",
+      "cancel": "Cancelar",
+      "created": "Plan creado.",
+      "updated": "Plan actualizado."
+    },
+    "row": {
+      "deactivate": "Desactivar",
+      "activate": "Activar",
+      "deleteTitle": "¿Eliminar {name}?",
+      "deleteDescription": "El plan se eliminará de forma permanente. Los planes con inscripciones no se pueden eliminar.",
+      "delete": "Eliminar"
+    },
+    "errors": {
+      "invalid": "Revisa los datos del plan e inténtalo de nuevo.",
+      "duplicate": "Ya existe un plan con ese nombre.",
+      "hasEnrollments": "Este plan todavía tiene inscripciones — finalízalas antes de eliminarlo."
+    },
+    "generate": {
+      "disabled": "La generación automática de facturas está desactivada en Administración → Membresías.",
+      "nothing": "No hay nada que generar — todos los ciclos están al día.",
+      "generatedOnly": "Se generaron {count, plural, one {# factura} other {# facturas}}.",
+      "skippedOnly": "Se omitieron {count, plural, one {# ciclo} other {# ciclos}} sin asistencia (planes con control de asistencia).",
+      "generatedAndSkipped": "Se generaron {generated, plural, one {# factura} other {# facturas}}; se omitieron {skipped, plural, one {# ciclo} other {# ciclos}} sin asistencia (planes con control de asistencia)."
+    },
+    "import": {
+      "metaTitle": "Importar inscripciones",
+      "title": "Importar inscripciones",
+      "subtitle": "Inscribe en bloque a alumnos existentes en planes de membresía desde un CSV.",
+      "back": "Volver a membresías",
+      "formatTitle": "Formato CSV",
+      "formatDescription": "Una fila por alumno, con fila de cabecera. El plan debe coincidir exactamente con un plan existente.",
+      "studentLine": "Identifica al alumno por <strong>Email</strong>, o por <strong>Nombre + Apellido</strong> cuando no haya correo.",
+      "planLine": "<strong>Plan</strong> debe coincidir exactamente con el nombre de un plan (ver la página Membresías).",
+      "dateLine": "<strong>StartDate</strong> es opcional (AAAA-MM-DD); en blanco = hoy.",
+      "skipLine": "Los alumnos ya inscritos en el plan se omiten, no se duplican.",
+      "uploadTitle": "Subir",
+      "csvFile": "Archivo CSV",
+      "importing": "Importando…",
+      "submit": "Importar inscripciones",
+      "missingFile": "No se ha seleccionado ningún archivo.",
+      "tooLarge": "El archivo es demasiado grande (máx. 1 MB).",
+      "noRows": "No se encontraron filas en el CSV. La primera fila debe ser una cabecera.",
+      "invalidRow": "Fila {row}: revisa los valores de la fila.",
+      "unknownPlan": "Fila {row}: no existe ningún plan llamado \"{plan}\".",
+      "studentNotFound": "Fila {row}: alumno no encontrado.",
+      "studentAmbiguous": "Fila {row}: la coincidencia del alumno es ambigua.",
+      "enrollFailed": "Fila {row}: no se pudo inscribir.",
+      "summary": "Inscripciones importadas: {created} ({skipped} ya inscritos).",
+      "problems": "{summary} {count, plural, one {# fila} other {# filas}} con problemas — {preview}",
+      "more": " …"
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Paleta de comandos",
     "searchPlaceholder": "Buscar páginas...",

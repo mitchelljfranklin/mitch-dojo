@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,6 +31,7 @@ import {
   type MembershipActionState,
 } from "@/lib/actions/memberships";
 import { useActionFeedback } from "@/hooks/use-action-feedback";
+import { BILLING_PERIODS } from "@/lib/schemas/membership";
 
 type PlanFormValues = {
   id: string;
@@ -47,6 +49,7 @@ type PlanFormSheetProps =
   | { mode: "edit"; currency: string; plan: PlanFormValues };
 
 export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
+  const translate = useTranslations("Memberships");
   const [open, setOpen] = useState(false);
   const [planType, setPlanType] = useState<"RECURRING" | "ITEM">(
     plan?.planType ?? "RECURRING",
@@ -69,7 +72,7 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
         className={mode === "edit" ? "h-8 px-2 text-xs" : undefined}
         onClick={() => setOpen(true)}
       >
-        {mode === "create" ? "New plan" : "Edit"}
+        {mode === "create" ? translate("plan.new") : translate("plan.edit")}
       </Button>
       <Sheet
         open={open}
@@ -80,12 +83,11 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
             <SheetTitle>
-              {mode === "create" ? "New plan" : `Edit ${plan?.name}`}
+              {mode === "create"
+                ? translate("plan.new")
+                : translate("plan.editTitle", { name: plan?.name ?? "" })}
             </SheetTitle>
-            <SheetDescription>
-              Recurring plans generate invoices each cycle. One-off items
-              (grading fees, gear) are invoiced manually.
-            </SheetDescription>
+            <SheetDescription>{translate("plan.description")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -96,29 +98,31 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
               <input type="hidden" name="planId" value={plan.id} />
             ) : null}
             <div className="grid gap-2">
-              <Label htmlFor="plan-name">Name</Label>
+              <Label htmlFor="plan-name">{translate("plan.name")}</Label>
               <Input
                 id="plan-name"
                 name="name"
                 required
                 maxLength={80}
                 defaultValue={plan?.name}
-                placeholder="e.g. Monthly training"
+                placeholder={translate("plan.namePlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="plan-description">Description</Label>
+              <Label htmlFor="plan-description">
+                {translate("plan.descriptionLabel")}
+              </Label>
               <Textarea
                 id="plan-description"
                 name="description"
                 maxLength={500}
                 rows={2}
                 defaultValue={plan?.description}
-                placeholder="Optional"
+                placeholder={translate("plan.descriptionPlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="plan-type">Type</Label>
+              <Label htmlFor="plan-type">{translate("plan.type")}</Label>
               <input type="hidden" name="planType" value={planType} />
               <Select
                 value={planType}
@@ -130,15 +134,21 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="RECURRING">Recurring</SelectItem>
-                  <SelectItem value="ITEM">One-off item</SelectItem>
+                  <SelectItem value="RECURRING">
+                    {translate("planType.recurring")}
+                  </SelectItem>
+                  <SelectItem value="ITEM">
+                    {translate("planType.oneOffItem")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {planType === "RECURRING" ? (
               <>
                 <div className="grid gap-2">
-                  <Label htmlFor="plan-billing-period">Billing period</Label>
+                  <Label htmlFor="plan-billing-period">
+                    {translate("plan.billingPeriod")}
+                  </Label>
                   <Select
                     name="billingPeriod"
                     defaultValue={plan?.billingPeriod ?? "MONTHLY"}
@@ -147,10 +157,11 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="WEEKLY">Weekly</SelectItem>
-                      <SelectItem value="MONTHLY">Monthly</SelectItem>
-                      <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                      <SelectItem value="YEARLY">Yearly</SelectItem>
+                      {BILLING_PERIODS.map((period) => (
+                        <SelectItem key={period} value={period}>
+                          {translate(`billingPeriod.${period}`)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -161,26 +172,26 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
                       defaultChecked={plan?.chargeOnlyWithAttendance ?? false}
                     />
                     <span className="font-medium">
-                      Charge only with attendance
+                      {translate("plan.chargeOnly")}
                     </span>
                   </span>
                   <span className="text-muted-foreground block text-xs">
-                    Generate the recurring invoice only when the member has at
-                    least one trained session since the previous invoice. The
-                    first invoice after enrolling always bills.
+                    {translate("plan.chargeOnlyHint")}
                   </span>
                 </label>
               </>
             ) : null}
             <div className="grid gap-2">
-              <Label htmlFor="plan-price">Price ({currency})</Label>
+              <Label htmlFor="plan-price">
+                {translate("plan.price", { currency })}
+              </Label>
               <Input
                 id="plan-price"
                 name="price"
                 required
                 inputMode="decimal"
                 defaultValue={plan?.price}
-                placeholder="e.g. 89.50"
+                placeholder={translate("plan.pricePlaceholder")}
               />
             </div>
             {state && "error" in state ? (
@@ -196,15 +207,15 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {translate("plan.done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
                   {isPending
-                    ? "Saving..."
+                    ? translate("plan.saving")
                     : mode === "create"
-                      ? "Create plan"
-                      : "Save changes"}
+                      ? translate("plan.create")
+                      : translate("plan.save")}
                 </Button>
               )}
               <Button
@@ -212,7 +223,7 @@ export function PlanFormSheet({ mode, currency, plan }: PlanFormSheetProps) {
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {translate("plan.cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

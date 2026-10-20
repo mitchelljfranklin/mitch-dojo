@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,34 +17,35 @@ import { EnrollmentImportForm } from "./enrollment-import-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Import enrollments" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Memberships.import");
+  return { title: translate("metaTitle") };
+}
 
 export default async function ImportEnrollmentsPage() {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships.import");
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Import enrollments
+            {translate("title")}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Bulk-enroll existing students onto membership plans from a CSV.
+            {translate("subtitle")}
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/memberships">Back to memberships</Link>
+          <Link href="/memberships">{translate("back")}</Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>CSV format</CardTitle>
-          <CardDescription>
-            One row per student, with a header row. The plan must match an
-            existing plan name exactly.
-          </CardDescription>
+          <CardTitle>{translate("formatTitle")}</CardTitle>
+          <CardDescription>{translate("formatDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
           <div className="overflow-x-auto rounded-md border p-3 font-mono text-xs">
@@ -54,27 +57,28 @@ export default async function ImportEnrollmentsPage() {
           </div>
           <ul className="text-muted-foreground list-disc pl-5 text-xs">
             <li>
-              Identify the student by <strong>Email</strong>, or by{" "}
-              <strong>FirstName + LastName</strong> when no email is given.
+              {translate.rich("studentLine", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </li>
             <li>
-              <strong>Plan</strong> must match a plan name exactly (see the
-              Memberships page).
+              {translate.rich("planLine", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </li>
             <li>
-              <strong>StartDate</strong> is optional (YYYY-MM-DD); blank =
-              today.
+              {translate.rich("dateLine", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </li>
-            <li>
-              Students already enrolled on the plan are skipped, not duplicated.
-            </li>
+            <li>{translate("skipLine")}</li>
           </ul>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Upload</CardTitle>
+          <CardTitle>{translate("uploadTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <EnrollmentImportForm />

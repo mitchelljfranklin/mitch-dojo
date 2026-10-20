@@ -937,6 +937,110 @@
       "eligibility": "{belt} requires {required} trainings — the student counts {count}. Tick \"Override eligibility\" to record anyway."
     }
   },
+  "Memberships": {
+    "metaTitle": "Memberships",
+    "title": "Memberships",
+    "subtitle": "Plans members subscribe to. School-wide — one membership covers all of a student's training.",
+    "actions": {
+      "invoices": "Invoices",
+      "import": "Import",
+      "generateNow": "Generate now",
+      "generating": "Generating…"
+    },
+    "empty": {
+      "title": "No plans yet",
+      "description": "Create recurring memberships (e.g. \"Monthly training\") or one-off items (e.g. grading fees)."
+    },
+    "table": {
+      "plan": "Plan",
+      "type": "Type",
+      "price": "Price",
+      "activeMembers": "Active members",
+      "actions": "Actions"
+    },
+    "planType": {
+      "recurring": "Recurring",
+      "oneOff": "One-off",
+      "oneOffItem": "One-off item",
+      "attendanceGated": "Attendance-gated",
+      "attendanceGatedHint": "Recurring invoices generate only when the member has trained since the previous invoice"
+    },
+    "billingPeriod": {
+      "WEEKLY": "Weekly",
+      "MONTHLY": "Monthly",
+      "QUARTERLY": "Quarterly",
+      "YEARLY": "Yearly"
+    },
+    "plan": {
+      "new": "New plan",
+      "edit": "Edit",
+      "editTitle": "Edit {name}",
+      "description": "Recurring plans generate invoices each cycle. One-off items (grading fees, gear) are invoiced manually.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Monthly training",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional",
+      "type": "Type",
+      "billingPeriod": "Billing period",
+      "chargeOnly": "Charge only with attendance",
+      "chargeOnlyHint": "Generate the recurring invoice only when the member has at least one trained session since the previous invoice. The first invoice after enrolling always bills.",
+      "price": "Price ({currency})",
+      "pricePlaceholder": "e.g. 89.50",
+      "saving": "Saving...",
+      "create": "Create plan",
+      "save": "Save changes",
+      "done": "Done",
+      "cancel": "Cancel",
+      "created": "Plan created.",
+      "updated": "Plan updated."
+    },
+    "row": {
+      "deactivate": "Deactivate",
+      "activate": "Activate",
+      "deleteTitle": "Delete {name}?",
+      "deleteDescription": "The plan will be permanently removed. Plans with enrollments cannot be deleted.",
+      "delete": "Delete"
+    },
+    "errors": {
+      "invalid": "Check the plan details and try again.",
+      "duplicate": "A plan with that name already exists.",
+      "hasEnrollments": "This plan still has enrollments — end them before deleting the plan."
+    },
+    "generate": {
+      "disabled": "Automatic invoice generation is disabled in Settings → Memberships.",
+      "nothing": "Nothing to generate — all cycles are current.",
+      "generatedOnly": "Generated {count, plural, one {# invoice} other {# invoices}}.",
+      "skippedOnly": "Skipped {count, plural, one {# cycle} other {# cycles}} with no attendance (attendance-gated plans).",
+      "generatedAndSkipped": "Generated {generated, plural, one {# invoice} other {# invoices}}; skipped {skipped, plural, one {# cycle} other {# cycles}} with no attendance (attendance-gated plans)."
+    },
+    "import": {
+      "metaTitle": "Import enrollments",
+      "title": "Import enrollments",
+      "subtitle": "Bulk-enroll existing students onto membership plans from a CSV.",
+      "back": "Back to memberships",
+      "formatTitle": "CSV format",
+      "formatDescription": "One row per student, with a header row. The plan must match an existing plan name exactly.",
+      "studentLine": "Identify the student by <strong>Email</strong>, or by <strong>FirstName + LastName</strong> when no email is given.",
+      "planLine": "<strong>Plan</strong> must match a plan name exactly (see the Memberships page).",
+      "dateLine": "<strong>StartDate</strong> is optional (YYYY-MM-DD); blank = today.",
+      "skipLine": "Students already enrolled on the plan are skipped, not duplicated.",
+      "uploadTitle": "Upload",
+      "csvFile": "CSV file",
+      "importing": "Importing…",
+      "submit": "Import enrollments",
+      "missingFile": "No file selected.",
+      "tooLarge": "File is too large (max 1 MB).",
+      "noRows": "No rows found in CSV. The first row must be a header.",
+      "invalidRow": "Row {row}: check the row values.",
+      "unknownPlan": "Row {row}: no plan named \"{plan}\".",
+      "studentNotFound": "Row {row}: student not found.",
+      "studentAmbiguous": "Row {row}: student match is ambiguous.",
+      "enrollFailed": "Row {row}: could not enroll.",
+      "summary": "Imported enrollments: {created} ({skipped} already enrolled).",
+      "problems": "{summary} {count, plural, one {# row} other {# rows}} had problems — {preview}",
+      "more": " …"
+    }
+  },
   "CommandPalette": {
     "ariaLabel": "Command palette",
     "searchPlaceholder": "Search pages...",

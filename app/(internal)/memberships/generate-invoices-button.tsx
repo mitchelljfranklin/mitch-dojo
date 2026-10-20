@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 // admin doesn't have to wait for the next tick (and can see how many gated
 // cycles were skipped for lack of attendance).
 export function GenerateInvoicesButton() {
+  const translate = useTranslations("Memberships");
   const [state, formAction, isPending] = useActionState<
     MembershipActionState,
     FormData
@@ -23,7 +25,9 @@ export function GenerateInvoicesButton() {
   return (
     <ActionForm action={formAction}>
       <Button type="submit" variant="outline" disabled={isPending}>
-        {isPending ? "Generating…" : "Generate now"}
+        {isPending
+          ? translate("actions.generating")
+          : translate("actions.generateNow")}
       </Button>
     </ActionForm>
   );

@@ -67,10 +67,11 @@ export async function createMembershipPlanAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships");
 
   const parsed = parsePlanInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("errors.invalid") };
   }
 
   try {
@@ -88,7 +89,7 @@ export async function createMembershipPlanAction(
     });
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A plan with that name already exists." };
+      return { error: translate("errors.duplicate") };
     }
     throw error;
   }
@@ -102,7 +103,7 @@ export async function createMembershipPlanAction(
       parsed.data.name,
     );
   }
-  return { ok: true, message: "Plan created." };
+  return { ok: true, message: translate("plan.created") };
 }
 
 // Feeds useActionState — must not revalidatePath (see AGENTS.md).
@@ -111,11 +112,12 @@ export async function updateMembershipPlanAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships");
   const planId = getField(formData, "planId");
 
   const parsed = parsePlanInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("errors.invalid") };
   }
 
   try {
@@ -133,7 +135,7 @@ export async function updateMembershipPlanAction(
     });
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A plan with that name already exists." };
+      return { error: translate("errors.duplicate") };
     }
     throw error;
   }
@@ -147,7 +149,7 @@ export async function updateMembershipPlanAction(
       planId,
     );
   }
-  return { ok: true, message: "Plan updated." };
+  return { ok: true, message: translate("plan.updated") };
 }
 
 export async function toggleMembershipPlanActiveAction(formData: FormData) {
@@ -172,13 +174,18 @@ export async function toggleMembershipPlanActiveAction(formData: FormData) {
 
 export async function deleteMembershipPlanAction(formData: FormData) {
   await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships");
   const planId = getField(formData, "planId");
 
   try {
     await deleteMembershipPlan(planId);
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("cannot be deleted")) {
-      redirect(`/memberships?planError=${encodeURIComponent(error.message)}`);
+    if (error instanceof Error && error.message.includes("enrollments")) {
+      redirect(
+        `/memberships?planError=${encodeURIComponent(
+          translate("errors.hasEnrollments"),
+        )}`,
+      );
     }
     throw error;
   }
@@ -459,14 +466,12 @@ export async function generateInvoicesNowAction(
   _formData: FormData,
 ): Promise<MembershipActionState> {
   const user = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships");
 
   const { autoGenerateInvoices, invoiceDueDays } =
     await getMembershipsSettings();
   if (!autoGenerateInvoices) {
-    return {
-      error:
-        "Automatic invoice generation is disabled in Settings → Memberships.",
-    };
+    return { error: translate("generate.disabled") };
   }
 
   const { generated, skipped } = await generateDueInvoices(
@@ -482,19 +487,27 @@ export async function generateInvoicesNowAction(
   );
 
   if (generated === 0 && skipped === 0) {
+    return { ok: true, message: translate("generate.nothing") };
+  }
+  if (generated > 0 && skipped > 0) {
     return {
       ok: true,
-      message: "Nothing to generate — all cycles are current.",
+      message: translate("generate.generatedAndSkipped", {
+        generated,
+        skipped,
+      }),
     };
   }
-  const parts: string[] = [];
-  if (generated > 0) parts.push(`Generated ${generated} invoice(s)`);
-  if (skipped > 0) {
-    parts.push(
-      `skipped ${skipped} cycle(s) with no attendance (attendance-gated plans)`,
-    );
+  if (generated > 0) {
+    return {
+      ok: true,
+      message: translate("generate.generatedOnly", { count: generated }),
+    };
   }
-  return { ok: true, message: `${parts.join("; ")}.` };
+  return {
+    ok: true,
+    message: translate("generate.skippedOnly", { count: skipped }),
+  };
 }
 
 // --------------- enrollment import ---------------
@@ -506,20 +519,19 @@ export async function importEnrollmentsAction(
   formData: FormData,
 ): Promise<MembershipActionState> {
   const actor = await requirePermission(PERMISSIONS.MEMBERSHIPS_EDIT);
+  const translate = await getTranslations("Memberships.import");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "No file selected." };
+    return { error: translate("missingFile") };
   }
   if (file.size > 1_000_000) {
-    return { error: "File is too large (max 1 MB)." };
+    return { error: translate("tooLarge") };
   }
 
   const rows = parseCsvWithHeaders(await file.text());
   if (rows.length === 0) {
-    return {
-      error: "No rows found in CSV. The first row must be a header.",
-    };
+    return { error: translate("noRows") };
   }
 
   const plans = await listMembershipPlans();
@@ -543,15 +555,18 @@ export async function importEnrollmentsAction(
     });
     const rowLabel = index + 2;
     if (!parsed.success) {
-      errors.push(
-        `Row ${rowLabel}: ${parsed.error.issues[0]?.message ?? "invalid"}`,
-      );
+      errors.push(translate("invalidRow", { row: rowLabel }));
       continue;
     }
 
     const planId = planIdByName.get(parsed.data.plan.toLowerCase());
     if (!planId) {
-      errors.push(`Row ${rowLabel}: no plan named "${parsed.data.plan}"`);
+      errors.push(
+        translate("unknownPlan", {
+          row: rowLabel,
+          plan: parsed.data.plan,
+        }),
+      );
       continue;
     }
 
@@ -561,11 +576,9 @@ export async function importEnrollmentsAction(
       lastName: parsed.data.lastName || undefined,
     });
     if (match.status !== "found") {
-      errors.push(
-        `Row ${rowLabel}: student ${
-          match.status === "ambiguous" ? "match is ambiguous" : "not found"
-        }`,
-      );
+      const errorKey =
+        match.status === "ambiguous" ? "studentAmbiguous" : "studentNotFound";
+      errors.push(translate(errorKey, { row: rowLabel }));
       continue;
     }
 
@@ -582,12 +595,8 @@ export async function importEnrollmentsAction(
       });
       if (result.outcome === "created") created++;
       else skipped++;
-    } catch (error: unknown) {
-      errors.push(
-        `Row ${rowLabel}: ${
-          error instanceof Error ? error.message : "could not enroll"
-        }`,
-      );
+    } catch {
+      errors.push(translate("enrollFailed", { row: rowLabel }));
     }
   }
 
@@ -599,13 +608,17 @@ export async function importEnrollmentsAction(
     { created, skipped, errors: errors.length },
   );
 
-  const summary = `Imported ${created} enrollment(s); ${skipped} already enrolled.`;
+  const summary = translate("summary", { created, skipped });
   if (errors.length > 0) {
     const preview = errors.slice(0, 3).join("; ");
+    const suffix = errors.length > 3 ? translate("more") : "";
     return {
-      error: `${summary} ${errors.length} row(s) had problems — ${preview}${
-        errors.length > 3 ? " …" : ""
-      }`,
+      error:
+        translate("problems", {
+          summary,
+          count: errors.length,
+          preview,
+        }) + suffix,
     };
   }
   return { ok: true, message: summary };

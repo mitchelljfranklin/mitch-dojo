@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,15 +32,14 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { listMembershipPlans } from "@/lib/db/memberships";
 import { getMembershipsSettings } from "@/lib/settings";
-import {
-  BILLING_PERIOD_LABELS,
-  type BillingPeriod,
-} from "@/lib/schemas/membership";
-import { formatMoney } from "@/lib/utils";
+import type { BillingPeriod } from "@/lib/schemas/membership";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Memberships" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Memberships");
+  return { title: translate("metaTitle") };
+}
 
 type MembershipsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -52,28 +53,42 @@ export default async function MembershipsPage({
   const plans = await listMembershipPlans();
   const { currency } = await getMembershipsSettings();
   const query = await searchParams;
+  const translate = await getTranslations("Memberships");
+  const formatter = await getFormatter();
+  const money = (cents: number) => {
+    try {
+      return formatter.number(cents / 100, { style: "currency", currency });
+    } catch {
+      return `${(cents / 100).toFixed(2)} ${currency}`;
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs segments={[{ label: "Memberships" }]} />
+      <Breadcrumbs segments={[{ label: translate("title") }]} />
       {query.planError ? (
         <FlashToast variant="error" message={query.planError} />
       ) : null}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Memberships</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {translate("title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            Plans members subscribe to. School-wide — one membership covers all
-            of a student&apos;s training.
+            {translate("subtitle")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/memberships/invoices">Invoices</Link>
+            <Link href="/memberships/invoices">
+              {translate("actions.invoices")}
+            </Link>
           </Button>
           {canEdit ? (
             <Button asChild variant="outline">
-              <Link href="/memberships/import">Import</Link>
+              <Link href="/memberships/import">
+                {translate("actions.import")}
+              </Link>
             </Button>
           ) : null}
           {canEdit ? <GenerateInvoicesButton /> : null}
@@ -84,11 +99,8 @@ export default async function MembershipsPage({
       {plans.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No plans yet</CardTitle>
-            <CardDescription>
-              Create recurring memberships (e.g. &quot;Monthly training&quot;)
-              or one-off items (e.g. grading fees).
-            </CardDescription>
+            <CardTitle>{translate("empty.title")}</CardTitle>
+            <CardDescription>{translate("empty.description")}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -97,12 +109,14 @@ export default async function MembershipsPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Active members</TableHead>
+                  <TableHead>{translate("table.plan")}</TableHead>
+                  <TableHead>{translate("table.type")}</TableHead>
+                  <TableHead>{translate("table.price")}</TableHead>
+                  <TableHead>{translate("table.activeMembers")}</TableHead>
                   {canEdit ? (
-                    <TableHead className="w-40">Actions</TableHead>
+                    <TableHead className="w-40">
+                      {translate("table.actions")}
+                    </TableHead>
                   ) : null}
                 </TableRow>
               </TableHeader>
@@ -117,9 +131,9 @@ export default async function MembershipsPage({
                           <Badge
                             variant="outline"
                             className="text-xs"
-                            title="Recurring invoices generate only when the member has trained since the previous invoice"
+                            title={translate("planType.attendanceGatedHint")}
                           >
-                            Attendance-gated
+                            {translate("planType.attendanceGated")}
                           </Badge>
                         ) : null}
                       </div>
@@ -132,18 +146,18 @@ export default async function MembershipsPage({
                     <TableCell>
                       {plan.planType === "RECURRING" ? (
                         <Badge variant="secondary">
-                          Recurring ·{" "}
-                          {BILLING_PERIOD_LABELS[
-                            plan.billingPeriod as BillingPeriod
-                          ] ?? plan.billingPeriod}
+                          {translate("planType.recurring")} ·{" "}
+                          {translate(
+                            `billingPeriod.${plan.billingPeriod as BillingPeriod}`,
+                          )}
                         </Badge>
                       ) : (
-                        <Badge variant="outline">One-off</Badge>
+                        <Badge variant="outline">
+                          {translate("planType.oneOff")}
+                        </Badge>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {formatMoney(plan.priceCents, currency)}
-                    </TableCell>
+                    <TableCell>{money(plan.priceCents)}</TableCell>
                     <TableCell>{plan._count.enrollments}</TableCell>
                     {canEdit ? (
                       <TableCell>
@@ -183,7 +197,9 @@ export default async function MembershipsPage({
                               variant="ghost"
                               className="h-8 px-2 text-xs"
                             >
-                              {plan.isActive ? "Deactivate" : "Activate"}
+                              {plan.isActive
+                                ? translate("row.deactivate")
+                                : translate("row.activate")}
                             </Button>
                           </form>
                           <form
@@ -196,9 +212,11 @@ export default async function MembershipsPage({
                               value={plan.id}
                             />
                             <ConfirmDialog
-                              title={`Delete ${plan.name}?`}
-                              description="The plan will be permanently removed. Plans with enrollments cannot be deleted."
-                              confirmLabel="Delete"
+                              title={translate("row.deleteTitle", {
+                                name: plan.name,
+                              })}
+                              description={translate("row.deleteDescription")}
+                              confirmLabel={translate("row.delete")}
                               formId={`delete-plan-${plan.id}`}
                             >
                               <Button
@@ -207,7 +225,7 @@ export default async function MembershipsPage({
                                 variant="ghost"
                                 className="text-destructive h-8 px-2 text-xs"
                               >
-                                Delete
+                                {translate("row.delete")}
                               </Button>
                             </ConfirmDialog>
                           </form>
