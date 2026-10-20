@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ export function EditHouseholdSheet({
     contactPhone: string | null;
   };
 }) {
+  const t = useTranslations("Students.households");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     HouseholdActionState,
@@ -44,7 +46,7 @@ export function EditHouseholdSheet({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        Edit
+        {t("editButton")}
       </Button>
       <Sheet
         open={open}
@@ -54,11 +56,8 @@ export function EditHouseholdSheet({
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Edit household</SheetTitle>
-            <SheetDescription>
-              Update the family contact. Blank guardian details on a member are
-              inherited from here.
-            </SheetDescription>
+            <SheetTitle>{t("editTitle")}</SheetTitle>
+            <SheetDescription>{t("editDescription")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -67,7 +66,7 @@ export function EditHouseholdSheet({
           >
             <input type="hidden" name="householdId" value={household.id} />
             <div className="grid gap-2">
-              <Label htmlFor="edit-household-name">Household name *</Label>
+              <Label htmlFor="edit-household-name">{t("name")}</Label>
               <Input
                 id="edit-household-name"
                 name="name"
@@ -77,7 +76,9 @@ export function EditHouseholdSheet({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-household-contact-name">Contact name</Label>
+              <Label htmlFor="edit-household-contact-name">
+                {t("contactName")}
+              </Label>
               <Input
                 id="edit-household-contact-name"
                 name="contactName"
@@ -87,7 +88,7 @@ export function EditHouseholdSheet({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-household-contact-email">
-                Contact email
+                {t("contactEmail")}
               </Label>
               <Input
                 id="edit-household-contact-email"
@@ -99,7 +100,7 @@ export function EditHouseholdSheet({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-household-contact-phone">
-                Contact phone
+                {t("contactPhone")}
               </Label>
               <Input
                 id="edit-household-contact-phone"
@@ -122,11 +123,11 @@ export function EditHouseholdSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {t("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Saving..." : "Save changes"}
+                  {isPending ? t("saving") : t("save")}
                 </Button>
               )}
               <Button
@@ -134,7 +135,7 @@ export function EditHouseholdSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

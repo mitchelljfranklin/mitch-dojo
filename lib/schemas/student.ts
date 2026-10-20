@@ -66,56 +66,75 @@ const optionalDate = z
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   });
 
-export const studentSchema = z
-  .object({
-    firstName: z.string().trim().min(1, "First name is required"),
-    lastName: z.string().trim().min(1, "Last name is required"),
-    email: optionalEmail,
-    phone: optionalString,
-    dateOfBirth: optionalDate,
-    emergencyContactName: optionalString,
-    emergencyContactPhone: optionalString,
-    guardianName: optionalString,
-    guardianEmail: optionalEmail,
-    guardianPhone: optionalString,
-    guardianRelationship: optionalString,
-    // Optional family grouping (undefined = not provided).
-    householdId: z.string().trim().optional(),
-    // PHI — free text per prompt. Visibility is permission-gated upstream.
-    medicalMedications: optionalString,
-    medicalConditions: optionalString,
-    medicalInjuries: optionalString,
-    addressLine: optionalString,
-    city: optionalString,
-    state: optionalString,
-    postcode: optionalString,
-    // Stored as an ISO 3166-1 alpha-2 code (validated); empty → null.
-    country: z
-      .string()
-      .optional()
-      .default("")
-      .transform((value) => {
-        const upper = value.trim().toUpperCase();
-        return isValidCountryCode(upper) ? upper : null;
-      }),
-    status: z.enum(STUDENT_STATUSES).default("TRIAL"),
-    notes: z
-      .string()
-      .optional()
-      .default("")
-      .transform((value) => (value.length > 0 ? value : null)),
-    locationIds: z
-      .array(z.string())
-      .min(1, "Assign the student to at least one location"),
-    primaryLocationId: z.string().min(1, "Choose a primary (home) dojo"),
+export const studentBaseSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required"),
+  lastName: z.string().trim().min(1, "Last name is required"),
+  email: optionalEmail,
+  phone: optionalString,
+  dateOfBirth: optionalDate,
+  emergencyContactName: optionalString,
+  emergencyContactPhone: optionalString,
+  guardianName: optionalString,
+  guardianEmail: optionalEmail,
+  guardianPhone: optionalString,
+  guardianRelationship: optionalString,
+  // Optional family grouping (undefined = not provided).
+  householdId: z.string().trim().optional(),
+  // PHI — free text per prompt. Visibility is permission-gated upstream.
+  medicalMedications: optionalString,
+  medicalConditions: optionalString,
+  medicalInjuries: optionalString,
+  addressLine: optionalString,
+  city: optionalString,
+  state: optionalString,
+  postcode: optionalString,
+  // Stored as an ISO 3166-1 alpha-2 code (validated); empty → null.
+  country: z
+    .string()
+    .optional()
+    .default("")
+    .transform((value) => {
+      const upper = value.trim().toUpperCase();
+      return isValidCountryCode(upper) ? upper : null;
+    }),
+  status: z.enum(STUDENT_STATUSES).default("TRIAL"),
+  notes: z
+    .string()
+    .optional()
+    .default("")
+    .transform((value) => (value.length > 0 ? value : null)),
+  locationIds: z
+    .array(z.string())
+    .min(1, "Assign the student to at least one location"),
+  primaryLocationId: z.string().min(1, "Choose a primary (home) dojo"),
+  // The staff form requires a discipline; CSV import intentionally does not
+  // (the link is assigned later via attendance/belt backfill or manually).
+  disciplineIds: z.array(z.string()),
+});
+
+const requiresPrimaryLocation = (data: {
+  locationIds: string[];
+  primaryLocationId: string;
+}) => data.locationIds.includes(data.primaryLocationId);
+
+const PRIMARY_LOCATION_REFINE = {
+  message: "The primary dojo must be one of the assigned locations",
+  path: ["primaryLocationId"] as string[],
+};
+
+export const studentSchema = studentBaseSchema
+  .extend({
     disciplineIds: z
       .array(z.string())
       .min(1, "Assign the student to at least one discipline"),
   })
-  .refine((data) => data.locationIds.includes(data.primaryLocationId), {
-    message: "The primary dojo must be one of the assigned locations",
-    path: ["primaryLocationId"],
-  });
+  .refine(requiresPrimaryLocation, PRIMARY_LOCATION_REFINE);
+
+// CSV import has no discipline column, so empty discipline links are valid.
+export const studentImportSchema = studentBaseSchema.refine(
+  requiresPrimaryLocation,
+  PRIMARY_LOCATION_REFINE,
+);
 
 export type StudentInput = z.infer<typeof studentSchema>;
 

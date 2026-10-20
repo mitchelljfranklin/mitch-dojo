@@ -2,12 +2,37 @@ import { describe, expect, it } from "vitest";
 
 import {
   studentSchema,
+  studentImportSchema,
   studentCsvRowSchema,
   STUDENT_STATUSES,
   applyMedicalPermission,
   type StudentInput,
 } from "@/lib/schemas/student";
 import { locationSchema } from "@/lib/schemas/location";
+
+describe("studentImportSchema", () => {
+  it("accepts a CSV row with no discipline links", () => {
+    const result = studentImportSchema.safeParse({
+      firstName: "Aiko",
+      lastName: "Tanaka",
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-1",
+      disciplineIds: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("still requires the primary location to be assigned", () => {
+    const result = studentImportSchema.safeParse({
+      firstName: "Aiko",
+      lastName: "Tanaka",
+      locationIds: ["loc-1"],
+      primaryLocationId: "loc-2",
+      disciplineIds: [],
+    });
+    expect(result.success).toBe(false);
+  });
+});
 
 describe("studentSchema", () => {
   const baseInput = {

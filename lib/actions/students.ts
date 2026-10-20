@@ -35,6 +35,7 @@ import {
 import { parseCsvWithHeaders } from "@/lib/csv-parser";
 import {
   studentSchema,
+  studentImportSchema,
   studentCsvRowSchema,
   STUDENT_STATUSES,
   applyMedicalPermission,
@@ -423,13 +424,14 @@ export async function importStudentsAction(
   formData: FormData,
 ): Promise<StudentsImportState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_CREATE);
+  const t = await getTranslations("Students.import");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, error: "No file selected." };
+    return { ok: false, error: t("missingFile") };
   }
   if (file.size > 1_000_000) {
-    return { ok: false, error: "File is too large (max 1 MB)." };
+    return { ok: false, error: t("tooLarge") };
   }
 
   const text = await file.text();
@@ -437,7 +439,7 @@ export async function importStudentsAction(
   if (rows.length === 0) {
     return {
       ok: false,
-      error: "No rows found in CSV. The first row must be a header.",
+      error: t("noRows"),
     };
   }
 
@@ -482,7 +484,10 @@ export async function importStudentsAction(
 
     if (!parsedRow.success) {
       rowErrors.push(
-        `Row ${i + 2}: ${parsedRow.error.issues[0]?.message ?? "invalid"}`,
+        t("row", {
+          row: i + 2,
+          message: parsedRow.error.issues[0]?.message ?? "invalid",
+        }),
       );
       continue;
     }
@@ -493,7 +498,10 @@ export async function importStudentsAction(
     );
     if (unknownLocations.length > 0) {
       rowErrors.push(
-        `Row ${i + 2}: unknown location(s): ${unknownLocations.join(", ")}. Create them in Settings first.`,
+        t("unknownLocations", {
+          row: i + 2,
+          names: unknownLocations.join(", "),
+        }),
       );
       continue;
     }
@@ -504,11 +512,11 @@ export async function importStudentsAction(
     const primaryName = csvRow.primaryLocation || rawLocations[0] || "";
     const primaryLocationId = locationIdByName.get(primaryName.toLowerCase());
     if (!primaryLocationId) {
-      rowErrors.push(`Row ${i + 2}: no location assigned.`);
+      rowErrors.push(t("noLocation", { row: i + 2 }));
       continue;
     }
 
-    const input = studentSchema.safeParse({
+    const input = studentImportSchema.safeParse({
       firstName: csvRow.firstName,
       lastName: csvRow.lastName,
       email: csvRow.email,
@@ -535,7 +543,10 @@ export async function importStudentsAction(
     });
     if (!input.success) {
       rowErrors.push(
-        `Row ${i + 2}: ${input.error.issues[0]?.message ?? "invalid"}`,
+        t("row", {
+          row: i + 2,
+          message: input.error.issues[0]?.message ?? "invalid",
+        }),
       );
       continue;
     }
@@ -546,8 +557,7 @@ export async function importStudentsAction(
   if (parsedInputs.length === 0) {
     return {
       ok: false,
-      error:
-        "No valid students found. First error: " + (rowErrors[0] ?? "unknown"),
+      error: t("noValid", { error: rowErrors[0] ?? "unknown" }),
     };
   }
 
@@ -584,11 +594,11 @@ export async function importStudentsAction(
     // useActionFeedback (see AGENTS.md).
     return {
       ok: true,
-      message: `Imported ${count} student${count === 1 ? "" : "s"}.`,
+      message: t("imported", { count }),
       count,
     };
   }
-  return { ok: false, error: "No students imported. " + rowErrors[0] };
+  return { ok: false, error: t("noneImported", { error: rowErrors[0] ?? "" }) };
 }
 
 // ---- bulk actions (students list selection bar) -------------------------

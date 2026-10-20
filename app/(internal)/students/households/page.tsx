@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import {
   Card,
@@ -21,10 +23,15 @@ import { SendPortalLinkButton } from "./send-portal-link-button";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Households" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Students.households");
+  return { title: t("metaTitle") };
+}
 
 export default async function HouseholdsPage() {
   const user = await requirePermission(PERMISSIONS.STUDENTS_VIEW);
+  const t = await getTranslations("Students.households");
+  const studentsT = await getTranslations("Students");
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
   const households = await listHouseholds();
 
@@ -32,31 +39,28 @@ export default async function HouseholdsPage() {
     <div className="flex flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Students", href: "/students" },
-          { label: "Households" },
+          { label: studentsT("title"), href: "/students" },
+          { label: t("title") },
         ]}
       />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Households</h1>
-          <p className="text-muted-foreground text-sm">
-            Group siblings under one family contact. Assign a student to a
-            household from their record (edit form).
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t("title")}
+          </h1>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
         {canEdit ? <CreateHouseholdSheet /> : null}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All households</CardTitle>
-          <CardDescription>
-            Sibling contact is inherited when a student joins a household.
-          </CardDescription>
+          <CardTitle>{t("allTitle")}</CardTitle>
+          <CardDescription>{t("allDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {households.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No households yet.</p>
+            <p className="text-muted-foreground text-sm">{t("empty")}</p>
           ) : (
             households.map((household) => (
               <div
@@ -72,11 +76,10 @@ export default async function HouseholdsPage() {
                       household.contactPhone,
                     ]
                       .filter(Boolean)
-                      .join(" · ") || "No contact details"}
+                      .join(" · ") || t("noContact")}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    {household.members.length} member
-                    {household.members.length === 1 ? "" : "s"}
+                    {t("members", { count: household.members.length })}
                     {household.members.length > 0
                       ? `: ${household.members.map((member) => `${member.firstName} ${member.lastName}`).join(", ")}`
                       : ""}
@@ -104,9 +107,11 @@ export default async function HouseholdsPage() {
                         value={household.id}
                       />
                       <ConfirmDialog
-                        title="Delete household?"
-                        description={`${household.name} will be removed. Members keep their student records.`}
-                        confirmLabel="Delete"
+                        title={t("deleteTitle")}
+                        description={t("deleteDescription", {
+                          name: household.name,
+                        })}
+                        confirmLabel={t("delete")}
                         formId={`delete-household-${household.id}`}
                       >
                         <Button
@@ -115,7 +120,7 @@ export default async function HouseholdsPage() {
                           variant="ghost"
                           className="text-destructive"
                         >
-                          Delete
+                          {t("delete")}
                         </Button>
                       </ConfirmDialog>
                     </form>
@@ -128,11 +133,11 @@ export default async function HouseholdsPage() {
       </Card>
 
       <p className="text-muted-foreground text-xs">
-        Tip: assign a student to a household from their{" "}
+        {t("tipBefore")}{" "}
         <Link href="/students" className="hover:underline">
-          record
+          {t("tipLink")}
         </Link>
-        &apos;s Edit form.
+        {t("tipAfter")}
       </p>
     </div>
   );

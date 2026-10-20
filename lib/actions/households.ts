@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -38,16 +39,17 @@ export async function createHouseholdAction(
   formData: FormData,
 ): Promise<HouseholdActionState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students.households");
   const input = parseHousehold(formData);
   if (!input) {
-    return { error: "Enter a household name and a valid contact email." };
+    return { error: t("errorInvalid") };
   }
 
   const id = await createHousehold(input);
   await logAudit(actor.id, AUDIT_ACTIONS.UPDATE_STUDENT, "Household", id, {
     created: input.name,
   });
-  return { ok: true, message: "Household created." };
+  return { ok: true, message: t("created") };
 }
 
 export async function updateHouseholdAction(
@@ -55,13 +57,14 @@ export async function updateHouseholdAction(
   formData: FormData,
 ): Promise<HouseholdActionState> {
   const actor = await requirePermission(PERMISSIONS.STUDENTS_EDIT);
+  const t = await getTranslations("Students.households");
   const householdId = getField(formData, "householdId");
   if (!householdId) {
-    return { error: "Household not found." };
+    return { error: t("errorNotFound") };
   }
   const input = parseHousehold(formData);
   if (!input) {
-    return { error: "Enter a household name and a valid contact email." };
+    return { error: t("errorInvalid") };
   }
 
   await updateHousehold(householdId, input);
@@ -72,7 +75,7 @@ export async function updateHouseholdAction(
     householdId,
   );
   // State-fed action — must not revalidatePath (see AGENTS.md).
-  return { ok: true, message: "Household updated." };
+  return { ok: true, message: t("updated") };
 }
 
 export async function deleteHouseholdAction(formData: FormData) {

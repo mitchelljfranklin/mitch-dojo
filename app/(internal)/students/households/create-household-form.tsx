@@ -3,6 +3,7 @@
 import { ActionForm } from "@/components/action-form";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/actions/households";
 
 export function CreateHouseholdSheet() {
+  const t = useTranslations("Students.households");
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<
     HouseholdActionState,
@@ -33,7 +35,7 @@ export function CreateHouseholdSheet() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>New household</Button>
+      <Button onClick={() => setOpen(true)}>{t("newButton")}</Button>
       <Sheet
         open={open}
         onOpenChange={(next) => {
@@ -42,11 +44,8 @@ export function CreateHouseholdSheet() {
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>New household</SheetTitle>
-            <SheetDescription>
-              Group siblings under one family contact. Assign students to it
-              from their edit form.
-            </SheetDescription>
+            <SheetTitle>{t("newTitle")}</SheetTitle>
+            <SheetDescription>{t("newDescription")}</SheetDescription>
           </SheetHeader>
           <ActionForm
             key={open ? "open" : "closed"}
@@ -54,26 +53,28 @@ export function CreateHouseholdSheet() {
             className="flex flex-1 flex-col gap-4 px-4"
           >
             <div className="grid gap-2">
-              <Label htmlFor="household-name">Household name *</Label>
+              <Label htmlFor="household-name">{t("name")}</Label>
               <Input
                 id="household-name"
                 name="name"
                 required
                 maxLength={80}
-                placeholder="e.g. The Smiths"
+                placeholder={t("namePlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="household-contact-name">Contact name</Label>
+              <Label htmlFor="household-contact-name">{t("contactName")}</Label>
               <Input
                 id="household-contact-name"
                 name="contactName"
                 maxLength={80}
-                placeholder="Parent / guardian"
+                placeholder={t("contactPlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="household-contact-email">Contact email</Label>
+              <Label htmlFor="household-contact-email">
+                {t("contactEmail")}
+              </Label>
               <Input
                 id="household-contact-email"
                 name="contactEmail"
@@ -82,7 +83,9 @@ export function CreateHouseholdSheet() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="household-contact-phone">Contact phone</Label>
+              <Label htmlFor="household-contact-phone">
+                {t("contactPhone")}
+              </Label>
               <Input
                 id="household-contact-phone"
                 name="contactPhone"
@@ -103,11 +106,11 @@ export function CreateHouseholdSheet() {
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {t("done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Creating..." : "Create household"}
+                  {isPending ? t("creating") : t("create")}
                 </Button>
               )}
               <Button
@@ -115,7 +118,7 @@ export function CreateHouseholdSheet() {
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>

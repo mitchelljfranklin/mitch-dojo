@@ -1,4 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -13,10 +15,15 @@ import { listLocations } from "@/lib/db/locations";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Import students" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Students.import");
+  return { title: t("metaTitle") };
+}
 
 export default async function ImportStudentsPage() {
   await requirePermission(PERMISSIONS.STUDENTS_CREATE);
+  const t = await getTranslations("Students.import");
+  const studentsT = await getTranslations("Students");
   const locations = await listLocations();
   const locationNames = locations.map((location) => location.name);
 
@@ -24,25 +31,22 @@ export default async function ImportStudentsPage() {
     <div className="flex max-w-3xl flex-col gap-6">
       <Breadcrumbs
         segments={[
-          { label: "Students", href: "/students" },
-          { label: "Import" },
+          { label: studentsT("title"), href: "/students" },
+          { label: t("submit") },
         ]}
       />
-      <h1 className="text-2xl font-semibold tracking-tight">Import students</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>CSV import</CardTitle>
-          <CardDescription>
-            Bulk-create students from a CSV file. The first row must be a
-            header.
-          </CardDescription>
+          <CardTitle>{t("cardTitle")}</CardTitle>
+          <CardDescription>{t("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="text-muted-foreground text-sm">
-            <p className="text-foreground mb-2 font-medium">Columns</p>
+            <p className="text-foreground mb-2 font-medium">{t("columns")}</p>
             <ul className="text-muted-foreground list-disc pl-5 text-xs">
               <li>
-                <code>FirstName</code>, <code>LastName</code> — required
+                <code>FirstName</code>, <code>LastName</code> — {t("required")}
               </li>
               <li>
                 <code>Email</code>, <code>Phone</code>, <code>DateOfBirth</code>{" "}
@@ -57,15 +61,14 @@ export default async function ImportStudentsPage() {
                 <code>EmergencyContactPhone</code>
               </li>
               <li>
-                <code>Status</code> — Trial (default), Active, Inactive, Alumni
+                <code>Status</code> — {t("statusLine")}
               </li>
               <li>
-                <code>Locations</code> — semicolon-separated existing location
-                names, e.g. <code>Main Dojo;Northside Dojo</code>
+                <code>Locations</code> — {t("locationsLine")}{" "}
+                <code>Main Dojo;Northside Dojo</code>
               </li>
               <li>
-                <code>PrimaryLocation</code> — optional; defaults to the first
-                listed location
+                <code>PrimaryLocation</code> — {t("primaryLine")}
               </li>
               <li>
                 <code>Notes</code>
@@ -73,8 +76,8 @@ export default async function ImportStudentsPage() {
             </ul>
           </div>
           <p className="text-muted-foreground text-xs">
-            Available locations:{" "}
-            {locationNames.length > 0 ? locationNames.join(", ") : "none yet"}
+            {t("available")}{" "}
+            {locationNames.length > 0 ? locationNames.join(", ") : t("noneYet")}
           </p>
           <StudentImportForm />
         </CardContent>
