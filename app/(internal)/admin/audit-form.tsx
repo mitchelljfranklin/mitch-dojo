@@ -22,7 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AUDIT_ACTION_LABELS, type AuditLogResult } from "@/lib/db/audit-types";
+import {
+  AUDIT_ACTION_LABELS,
+  type AuditLogEntry,
+  type AuditLogResult,
+} from "@/lib/db/audit-types";
 import type { Prisma } from "../../../prisma/generated/prisma/client";
 
 function entityLink(entityType: string, entityId: string): string {
@@ -143,6 +147,22 @@ export function AuditForm({
     translate.has(`actions.${action}`)
       ? translate(`actions.${action}`)
       : (AUDIT_ACTION_LABELS[action] ?? action);
+  const entityLabel = (log: AuditLogEntry) => {
+    const key = log.entityId ?? "";
+    if (log.entityType === "Setting" && key) {
+      if (key.startsWith("agreement.")) return translate("settings.agreement");
+      const alias =
+        key === "communications.sample"
+          ? "communicationsSample"
+          : key === "sso.breakGlass"
+            ? "ssoBreakGlass"
+            : key;
+      if (!alias.includes(".") && translate.has(`settings.${alias}`)) {
+        return translate(`settings.${alias}`);
+      }
+    }
+    return log.entityName ?? translate("deleted");
+  };
   const hasFilters =
     Boolean(searchParams.get("action")) ||
     Boolean(searchParams.get("userId")) ||
@@ -312,7 +332,7 @@ export function AuditForm({
                       })}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {log.user.name}
+                      {log.user.id ? log.user.name : translate("deletedUser")}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -329,7 +349,7 @@ export function AuditForm({
                             href={entityLink(log.entityType, log.entityId)}
                             className="text-primary hover:underline"
                           >
-                            {log.entityName ?? translate("deleted")}
+                            {entityLabel(log)}
                           </Link>
                         ) : (
                           <span>{log.entityType ?? "—"}</span>

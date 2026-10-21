@@ -51,6 +51,25 @@ export default async function AdminCampaignsPage() {
       year: "numeric",
     });
 
+  const campaignAudienceLabel = (campaign: (typeof campaigns)[number]) => {
+    const key = `audiences.${campaign.audienceType}`;
+    if (!translate.has(key)) return campaign.audienceLabel;
+    const base = translate(key);
+    if (!campaign.audienceRefId) return base;
+    const options =
+      campaign.audienceType === "LOCATION"
+        ? locations
+        : campaign.audienceType === "DISCIPLINE"
+          ? disciplines
+          : campaign.audienceType === "COURSE"
+            ? courses
+            : [];
+    const name = options.find(
+      (option) => option.id === campaign.audienceRefId,
+    )?.name;
+    return name ? `${base} · ${name}` : base;
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -104,7 +123,7 @@ export default async function AdminCampaignsPage() {
                         {campaign.subject}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {campaign.audienceLabel}
+                        {campaignAudienceLabel(campaign)}
                       </TableCell>
                       <TableCell className="text-sm">
                         {campaign.sentCount}/{campaign.recipientCount}

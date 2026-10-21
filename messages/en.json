@@ -23,7 +23,21 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "save": "Save",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "close": "Close",
+    "sidebar": "Sidebar",
+    "sidebarDescription": "Displays the mobile sidebar.",
+    "breadcrumb": "Breadcrumb",
+    "scrollToTop": "Scroll to top",
+    "skipToContent": "Skip to content"
+  },
+  "Errors": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again or contact support.",
+    "profileDescription": "Your profile could not be loaded. Please try again or contact support.",
+    "tryAgain": "Try again",
+    "notFoundDescription": "The page you are looking for does not exist or has been moved.",
+    "backToDashboard": "Back to dashboard"
   },
   "Email": {
     "footer": "This email was sent by your dojo. If the button does not work, copy and paste the link into your browser.",
@@ -2088,6 +2102,24 @@
         "entity": "Entity"
       },
       "deleted": "Deleted",
+      "deletedUser": "Deleted user",
+      "settings": {
+        "organization": "Organization",
+        "appearance": "Appearance",
+        "sign-in": "Sign-in & SSO",
+        "audit-retention": "Audit retention",
+        "email-log-retention": "Email log retention",
+        "scheduling": "Scheduling",
+        "email": "Email",
+        "memberships": "Membership settings",
+        "communications": "Communication",
+        "email-templates": "Email templates",
+        "communicationsSample": "Sample email",
+        "storage": "Storage",
+        "sso": "Single sign-on",
+        "ssoBreakGlass": "Break-glass URL",
+        "agreement": "Agreement document"
+      },
       "page": "Page {page} of {totalPages} ({count, plural, one {# entry} other {# entries}})",
       "meta": {
         "clarificationRequested": "clarification requested"
@@ -2228,6 +2260,24 @@
         "requiresProvider": "Enable at least one SSO provider (with client ID and secret) before disabling local sign-in.",
         "ssoSaved": "SSO settings saved.",
         "sessionsSaved": "Sign-in security saved."
+      }
+    },
+    "scheduling": {
+      "metaTitle": "Admin — Scheduling",
+      "title": "Scheduling",
+      "subtitle": "The built-in scheduler and its reminders.",
+      "cardTitle": "Scheduler",
+      "cardDescription": "Class, payment, birthday, and trial reminders; recurring invoice generation; log pruning; the orphaned-file sweep.",
+      "form": {
+        "runInside": "Run scheduled jobs inside the app",
+        "hint": "When enabled, the application checks every five minutes for class, payment, birthday, and trial reminders, recurring invoices, log pruning, and orphaned file cleanup — no external cron job is needed. Disable this only if you trigger <code>/api/cron/run</code> yourself (for example from a system crontab).",
+        "saving": "Saving...",
+        "save": "Save scheduling",
+        "lastRun": "Last scheduled run: {when}",
+        "never": "Never"
+      },
+      "errors": {
+        "saved": "Scheduling settings saved."
       }
     },
     "general": {
@@ -2372,6 +2422,8 @@
       }
     },
     "roles": {
+      "fullAccess": "Full access",
+      "fullAccessHint": "When selected, the key grants all permissions. Uncheck to restrict the key to a specific set of permissions.",
       "metaTitle": "Admin — Roles",
       "title": "Roles",
       "subtitle": "Permission sets assigned to staff accounts.",

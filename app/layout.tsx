@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeTokens } from "@/lib/theme-tokens";
@@ -50,6 +50,10 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const locale = await getLocale();
   const messages = await getMessages();
+  const translateCommon = await getTranslations({
+    locale,
+    namespace: "Common",
+  });
 
   return (
     <html
@@ -63,7 +67,7 @@ export default async function RootLayout({
             href="#main-content"
             className="bg-primary text-primary-foreground sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:px-4 focus:py-2"
           >
-            Skip to content
+            {translateCommon("skipToContent")}
           </a>
           <ThemeProvider
             attribute="class"

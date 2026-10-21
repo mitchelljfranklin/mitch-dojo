@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -14,10 +17,14 @@ import { SchedulingForm } from "../scheduling-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Scheduling" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.scheduling");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminSchedulingPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.scheduling");
   const [cronLastRunRow, cronSettings] = await Promise.all([
     prisma.appSetting.findUnique({ where: { key: "cron.lastRun" } }),
     getCronSettings(),
@@ -30,19 +37,16 @@ export default async function AdminSchedulingPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Scheduling</h1>
-        <p className="text-muted-foreground text-sm">
-          The built-in scheduler and its reminders.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Scheduler</CardTitle>
-          <CardDescription>
-            Class, payment, birthday, and trial reminders; recurring invoice
-            generation; log pruning; the orphaned-file sweep.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <SchedulingForm

@@ -336,6 +336,7 @@ export async function saveSchedulingSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.scheduling.errors");
 
   const internalSchedulerEnabled =
     formData.get("internalSchedulerEnabled") === "on";
@@ -350,7 +351,7 @@ export async function saveSchedulingSettings(
       "Setting",
       "scheduling",
     );
-  return { ok: true, message: "Scheduling settings saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function saveEmailSettings(
@@ -418,44 +419,6 @@ export async function saveEmailSettings(
   if (user)
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_SETTINGS, "Setting", "email");
   return { ok: true, message: translateErrors("saved") };
-}
-
-export async function sendSmtpTestAction(
-  previousState: SettingsActionState,
-  formData: FormData,
-): Promise<SettingsActionState> {
-  await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
-
-  const recipientRaw = (formData.get("recipient") as string)?.trim() ?? "";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientRaw)) {
-    return { ok: false, message: "Enter a valid recipient email address." };
-  }
-
-  const { getEmailSettings } = await import("@/lib/settings");
-  const { smtpHost } = await getEmailSettings();
-  if (!smtpHost) {
-    return {
-      ok: false,
-      message: "Save your SMTP settings before sending a test email.",
-    };
-  }
-
-  const { sendTestEmail } = await import("@/lib/email/mailer");
-  const user = await getCurrentUser();
-  const result = await sendTestEmail(recipientRaw, user?.id);
-
-  if (result.ok) {
-    if (user)
-      await logAudit(
-        user.id,
-        AUDIT_ACTIONS.UPDATE_SETTINGS,
-        "Setting",
-        "email.test",
-      );
-    return { ok: true, message: `Test email sent to ${recipientRaw}.` };
-  }
-
-  return { ok: false, message: result.message };
 }
 
 export async function saveMembershipsSettings(

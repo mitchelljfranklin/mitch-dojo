@@ -28,4 +28,17 @@ describe("message catalogs", () => {
       );
     }
   });
+
+  it("never uses a dot inside a message key segment", () => {
+    function assertKeys(value: unknown, locale: string): void {
+      if (typeof value !== "object" || value === null) return;
+      for (const [key, child] of Object.entries(value)) {
+        expect(key, `${locale} key "${key}"`).not.toContain(".");
+        assertKeys(child, locale);
+      }
+    }
+    for (const locale of LOCALES) {
+      assertKeys(CATALOGS[locale], locale);
+    }
+  });
 });

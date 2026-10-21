@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 const SCROLL_THRESHOLD = 300;
 
 export function ScrollToTop() {
+  const translate = useTranslations("Common");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function ScrollToTop() {
       size="icon"
       variant="secondary"
       className="fixed right-6 bottom-6 z-50 shadow-md"
-      aria-label="Scroll to top"
+      aria-label={translate("scrollToTop")}
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
     >
       <ChevronUp className="size-5" />

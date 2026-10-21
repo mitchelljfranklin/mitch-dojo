@@ -12,9 +12,13 @@ export async function Breadcrumbs({
   segments: BreadcrumbSegment[];
 }) {
   const translate = await getTranslations("Nav");
+  const translateCommon = await getTranslations("Common");
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
+    <nav
+      aria-label={translateCommon("breadcrumb")}
+      className="flex items-center gap-1.5 text-sm"
+    >
       <Link
         href="/dashboard"
         className="text-muted-foreground hover:text-foreground transition-colors"

@@ -23,7 +23,21 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "save": "Guardar",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "close": "Cerrar",
+    "sidebar": "Barra lateral",
+    "sidebarDescription": "Muestra la barra lateral móvil.",
+    "breadcrumb": "Migas de pan",
+    "scrollToTop": "Volver arriba",
+    "skipToContent": "Saltar al contenido"
+  },
+  "Errors": {
+    "title": "Algo salió mal",
+    "description": "Se produjo un error inesperado. Inténtalo de nuevo o contacta con soporte.",
+    "profileDescription": "No se pudo cargar tu perfil. Inténtalo de nuevo o contacta con soporte.",
+    "tryAgain": "Reintentar",
+    "notFoundDescription": "La página que buscas no existe o se ha movido.",
+    "backToDashboard": "Volver al panel"
   },
   "Email": {
     "footer": "Este correo lo envió tu dojo. Si el botón no funciona, copia y pega el enlace en tu navegador.",
@@ -2088,6 +2102,24 @@
         "entity": "Entidad"
       },
       "deleted": "Eliminado",
+      "deletedUser": "Usuario eliminado",
+      "settings": {
+        "organization": "Organización",
+        "appearance": "Apariencia",
+        "sign-in": "Inicio de sesión y SSO",
+        "audit-retention": "Retención de auditoría",
+        "email-log-retention": "Retención del registro de correo",
+        "scheduling": "Programación",
+        "email": "Correo",
+        "memberships": "Ajustes de membresía",
+        "communications": "Comunicación",
+        "email-templates": "Plantillas de correo",
+        "communicationsSample": "Correo de muestra",
+        "storage": "Almacenamiento",
+        "sso": "Inicio de sesión único",
+        "ssoBreakGlass": "URL de emergencia",
+        "agreement": "Documento de acuerdo"
+      },
       "page": "Página {page} de {totalPages} ({count, plural, one {# entrada} other {# entradas}})",
       "meta": {
         "clarificationRequested": "aclaración solicitada"
@@ -2228,6 +2260,24 @@
         "requiresProvider": "Activa al menos un proveedor SSO (con ID de cliente y secreto) antes de desactivar el inicio de sesión local.",
         "ssoSaved": "Ajustes SSO guardados.",
         "sessionsSaved": "Seguridad de inicio de sesión guardada."
+      }
+    },
+    "scheduling": {
+      "metaTitle": "Administración — Programación",
+      "title": "Programación",
+      "subtitle": "El programador integrado y sus recordatorios.",
+      "cardTitle": "Programador",
+      "cardDescription": "Recordatorios de clase, pago, cumpleaños y pruebas; generación de facturas recurrentes; limpieza de registros; barrido de archivos huérfanos.",
+      "form": {
+        "runInside": "Ejecutar las tareas programadas dentro de la aplicación",
+        "hint": "Cuando está activo, la aplicación comprueba cada cinco minutos los recordatorios de clase, pago, cumpleaños y pruebas, las facturas recurrentes, la limpieza de registros y de archivos huérfanos — no hace falta un cron externo. Desactívalo solo si tú mismo lanzas <code>/api/cron/run</code> (por ejemplo desde un crontab del sistema).",
+        "saving": "Guardando...",
+        "save": "Guardar programación",
+        "lastRun": "Última ejecución programada: {when}",
+        "never": "Nunca"
+      },
+      "errors": {
+        "saved": "Ajustes de programación guardados."
       }
     },
     "general": {
@@ -2372,6 +2422,8 @@
       }
     },
     "roles": {
+      "fullAccess": "Acceso total",
+      "fullAccessHint": "Cuando está seleccionado, la clave concede todos los permisos. Desmárcalo para limitar la clave a un conjunto concreto de permisos.",
       "metaTitle": "Administración — Roles",
       "title": "Roles",
       "subtitle": "Conjuntos de permisos asignados a las cuentas de personal.",

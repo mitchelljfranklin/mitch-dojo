@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,28 +18,17 @@ export function SchedulingForm({
   cronLastRun,
   internalSchedulerEnabled,
 }: SchedulingFormProps) {
+  const translate = useTranslations("Admin.scheduling.form");
+  const formatter = useFormatter();
   const [state, action, isPending] = useActionState(
     saveSchedulingSettings,
     undefined,
   );
   useActionFeedback(state);
 
-  const cronLabel = (() => {
-    if (!cronLastRun) return "Never";
-    const then = new Date(cronLastRun);
-    const diffMs = new Date().getTime() - then.getTime();
-    if (diffMs < 0) return "just now";
-    const minutes = Math.floor(diffMs / 60000);
-    if (minutes < 1) return "less than a minute ago";
-    if (minutes === 1) return "1 minute ago";
-    if (minutes < 60) return `${minutes} minutes ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours === 1) return "1 hour ago";
-    if (hours < 24) return `${hours} hours ago`;
-    const days = Math.floor(hours / 24);
-    if (days === 1) return "1 day ago";
-    return `${days} days ago`;
-  })();
+  const lastRun = cronLastRun
+    ? formatter.relativeTime(new Date(cronLastRun), new Date())
+    : translate("never");
 
   return (
     <form action={action} className="flex flex-col gap-6">
@@ -51,29 +41,28 @@ export function SchedulingForm({
             defaultChecked={internalSchedulerEnabled}
           />
           <Label htmlFor="internalSchedulerEnabled">
-            Run scheduled jobs inside the app
+            {translate("runInside")}
           </Label>
         </div>
         <p className="text-muted-foreground text-xs">
-          When enabled, the application checks every five minutes for class,
-          payment, birthday, and trial reminders, recurring invoices, log
-          pruning, and orphaned file cleanup — no external cron job is needed.
-          Disable this only if you trigger{" "}
-          <code className="bg-muted mx-1 rounded px-1 py-0.5 text-[11px]">
-            /api/cron/run
-          </code>{" "}
-          yourself (for example from a system crontab).
+          {translate.rich("hint", {
+            code: (chunks) => (
+              <code className="bg-muted mx-1 rounded px-1 py-0.5 text-[11px]">
+                {chunks}
+              </code>
+            ),
+          })}
         </p>
       </div>
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending} size="sm">
-          {isPending ? "Saving..." : "Save scheduling"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
 
-      <p className="text-muted-foreground text-xs">
-        Last scheduled run: {cronLabel}
+      <p className="text-muted-foreground text-xs" suppressHydrationWarning>
+        {translate("lastRun", { when: lastRun })}
       </p>
     </form>
   );

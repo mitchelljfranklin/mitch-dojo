@@ -47,7 +47,7 @@ plan without asking.
   charts), Reports (attendance, celebrations, revenue), Profile
   (account, password), and Admin (General, Appearance, Storage, Locations,
   Users, Roles, Memberships settings, Communication, Documents, Verifications,
-  Email/SMTP, Templates, Campaigns, Email log, Audit log, Health,
+  Email/SMTP, Templates, Campaigns, Email log, Audit log, Health, Scheduling,
   Sign-in/SSO). Outbound email shells and generated PDFs follow the school
   default language; admin-authored email templates and document text stay as
   written.

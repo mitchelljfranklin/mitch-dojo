@@ -183,6 +183,8 @@ export async function createCampaign(input: {
 export type CampaignRow = {
   id: string;
   subject: string;
+  audienceType: string;
+  audienceRefId: string | null;
   audienceLabel: string;
   recipientCount: number;
   sentCount: number;
@@ -199,6 +201,8 @@ export async function listCampaigns(limit = 50): Promise<CampaignRow[]> {
     select: {
       id: true,
       subject: true,
+      audienceType: true,
+      audienceRefId: true,
       audienceLabel: true,
       recipientCount: true,
       sentCount: true,
