@@ -1,8 +1,19 @@
+import { fileURLToPath } from "node:url";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
+  resolve: {
+    alias: {
+      // Vitest lacks Next's `react-server` export condition, so the real
+      // `next-intl/server` resolves to its client entry and throws from
+      // server actions exercised by the integration suites.
+      "next-intl/server": fileURLToPath(
+        new URL("./lib/i18n/test-server.ts", import.meta.url),
+      ),
+    },
+  },
   test: {
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
