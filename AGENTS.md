@@ -50,7 +50,8 @@ plan without asking.
   Email/SMTP, Templates, Campaigns, Email log, Audit log, Health, Scheduling,
   Sign-in/SSO). Outbound email shells follow the school default language;
   generated PDFs follow the viewer's locale; admin-authored email templates and
-  document text stay as written.
+  document text stay as written. Adding a language:
+  `docs/advanced/adding-a-language.md`.
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

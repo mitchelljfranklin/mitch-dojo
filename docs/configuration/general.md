@@ -21,7 +21,7 @@ The **Default language** is what staff and visitors see until they choose anothe
 
 Automated emails use the school default, since recipients do not have their own language setting. Generated PDFs (invoices, report cards, attendance sheets, printable agreements) follow the viewer’s selected language, falling back to the school default. Email shells, test messages, and PDF labels are translated; the subject/body copy you write under [Templates](./templates) stays exactly as authored.
 
-The app currently ships with English and Spanish. Adding another language is a code change (a new message catalog and locale entry), not a settings toggle.
+The app currently ships with English and Spanish. Adding another language is a code change (a new message catalog, locale entry, and loader) — see [Adding a Language](../advanced/adding-a-language), not a settings toggle.
 
 ::: note There is no in-app time zone setting
 The dojo's time zone comes from the deployment container's `TZ` environment variable (the compose files default to `Australia/Brisbane`). Check-in, reminders, and analytics all key off the server's local day — see the [deployment time zone note](../deployment/docker#time-zone).

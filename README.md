@@ -154,6 +154,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Per-device language selector that switches without reloading or discarding form state
 - Staff UI, public booking, member portal, check-in, automated emails, and PDFs translated
 - Authored content (email templates, agreement documents, names) stays exactly as written
+- Adding another language is a documented code change — see [Adding a Language](docs/advanced/adding-a-language.md)
 
 ### Access Control
 - 3 system roles (Admin, Trainer, Viewer) + custom roles

@@ -72,6 +72,7 @@ const sidebar = [
       { text: "Cron & Scheduler", link: "/advanced/cron" },
       { text: "Security", link: "/advanced/security" },
       { text: "Dual-Mode Database", link: "/advanced/dual-mode-database" },
+      { text: "Adding a Language", link: "/advanced/adding-a-language" },
     ],
   },
   {
