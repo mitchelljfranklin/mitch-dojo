@@ -75,6 +75,15 @@
 - Health & medical section on the student record (medications, conditions, injuries) gated by a dedicated PHI permission
 - **Incident reports / accident book** — dated, severity-rated incidents optionally linked to a student and location, with open/closed tracking and a per-student history
 
+## Languages
+
+- **Twelve languages** ship today: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian
+- A school-wide default in Admin → General, plus a per-device selector; switching is a soft refresh that keeps unsaved form values
+- Staff UI, auth screens, public booking, member portal, QR check-in, automated emails, and PDF labels are translated
+- Authored content — email templates, agreement documents, plan/course names, notes, custom role names — stays exactly as written
+- PDFs bundle Noto Sans families for Latin/Cyrillic, Arabic, Devanagari, and Japanese/Korean/Simplified Chinese; Arabic/Hindi shaping and Arabic RTL pagination are best-effort
+- The ten languages added after English/Spanish are initial machine-assisted translations; native review is welcome
+
 ## Platform
 
 - **White-label** — your org name and logo on the booking page, member portal, check-in screens, login screens, and every email; separate light/dark logo variants so single-colour badges stay visible everywhere, with a choice of logo for emails; editable booking-page copy

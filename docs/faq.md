@@ -26,6 +26,9 @@ Not yet. Payments are recorded manually (cash/transfer/terminal). Stripe/SEPA/Pa
 **How do I migrate from a spreadsheet?**
 CSV. Import students first, then attendance and belt history — see [Importing History](./user-guides/importing-history). Everything exports back out to CSV too.
 
+**Can I use Mitch‑Dojo in another language?**
+Yes. English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian ship today. Set the school-wide default in [Admin → General](./configuration/general), or switch language per device with the header selector. The ten languages added after English/Spanish are initial machine-assisted translations, so native review is welcome. PDFs bundle Noto fonts; Arabic/Hindi shaping and Arabic RTL are best-effort. See [Adding a Language](./advanced/adding-a-language) for adding another one.
+
 **What if I outgrow the embedded database?**
 Switch `DATABASE_PROVIDER` to `postgres` — the schema is identical in both modes. See [Dual-Mode Database](./advanced/dual-mode-database).
 

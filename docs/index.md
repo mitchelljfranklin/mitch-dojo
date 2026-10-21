@@ -33,6 +33,8 @@ features:
     details: A public trial-booking page with a full lead pipeline, plus a read-only member portal your students access via magic links.
   - title: White-label, SSO & RBAC
     details: Your logo and colours on every public surface and email. Sign in via Entra ID, Google, or OIDC with auto-provisioning. Three system roles plus custom roles with fine-grained permissions.
+  - title: 12 Languages
+    details: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian — per-device switching, a school-wide default, translated emails, and bundled PDF fonts.
   - title: Self-Hosted
     details: Docker Compose with PostgreSQL, or a single container with an embedded database. Local disk or S3/Azure storage. Runs anywhere.
 ---
