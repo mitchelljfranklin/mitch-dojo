@@ -307,7 +307,9 @@ function EmailLogRow({
           ? (log.errorMessage ?? translate("detail.sendFailed"))
           : translate("detail.accepted")}
       </TableCell>
-      <TableCell className="text-xs">{log.sentByName}</TableCell>
+      <TableCell className="text-xs">
+        {log.sentByName === "System" ? translate("system") : log.sentByName}
+      </TableCell>
       {canRetry ? (
         <TableCell>
           {isRetryable(log) ? (

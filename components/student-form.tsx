@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
@@ -123,6 +123,7 @@ function StudentFormInner({
 }: StudentFormProps) {
   const translate = useTranslations("Students.form");
   const translateStatus = useTranslations("Students.status");
+  const locale = useLocale();
   const [state, formAction, isPending] = useActionState<
     StudentFormState,
     FormData
@@ -273,7 +274,7 @@ function StudentFormInner({
               <option value="">{translate("none")}</option>
               {COUNTRIES.map((code) => (
                 <option key={code} value={code}>
-                  {countryName(code)}
+                  {countryName(code, locale)}
                 </option>
               ))}
             </select>

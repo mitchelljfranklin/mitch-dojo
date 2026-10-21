@@ -121,7 +121,7 @@ export async function duplicateRoleAction(formData: FormData): Promise<void> {
     );
     // Surface the failure - without this the admin sees a dead button.
     const reason =
-      error instanceof Error ? error.message : "Unknown database error";
+      error instanceof Error ? error.message : translate("unknownError");
     redirect(
       `/admin/roles?roleError=${encodeURIComponent(
         translate("duplicateFailed", { reason }),
@@ -152,7 +152,7 @@ export async function deleteRoleAction(formData: FormData): Promise<void> {
       error instanceof Error ? error.message : String(error),
     );
     const reason =
-      error instanceof Error ? error.message : "Unknown database error";
+      error instanceof Error ? error.message : translate("unknownError");
     redirect(
       `/admin/roles?roleError=${encodeURIComponent(
         translate("deleteFailed", { reason }),

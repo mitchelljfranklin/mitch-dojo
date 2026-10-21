@@ -60,8 +60,18 @@ export async function retryEmailSendAction(
       : { error: translate("retryFailed") };
   }
 
-  const { name: appName } = await getOrganizationSettings();
-  const tokens = await regenerateTokens(log.type, log.dedupKey, appName);
+  const { name: appName, defaultLocale } = await getOrganizationSettings();
+  const translateEmail = await getTranslations({
+    locale: defaultLocale,
+    namespace: "Email",
+  });
+  const tokens = await regenerateTokens(
+    log.type,
+    log.dedupKey,
+    appName,
+    defaultLocale,
+    translateEmail("at"),
+  );
   if (!tokens) {
     return {
       error: translate("missingRecord"),
@@ -98,6 +108,8 @@ async function regenerateTokens(
   type: string,
   dedupKey: string | null,
   appName: string,
+  locale: string,
+  atLabel: string,
 ): Promise<Record<string, string> | null> {
   // Portal links contain a one-time raw token that is never stored — a
   // retry issues a FRESH portal link for the same member.
@@ -146,7 +158,7 @@ async function regenerateTokens(
     return {
       studentName: `${student.firstName} ${student.lastName}`,
       className: session.course.name,
-      classTime: `${formatDate(session.date)} at ${session.startTime}`,
+      classTime: `${formatDate(session.date, locale)} ${atLabel} ${session.startTime}`,
       appName,
     };
   }
@@ -168,7 +180,7 @@ async function regenerateTokens(
     return {
       studentName: `${invoice.student.firstName} ${invoice.student.lastName}`,
       invoiceNumber: String(invoice.number),
-      dueDate: formatDate(invoice.dueDate),
+      dueDate: formatDate(invoice.dueDate, locale),
       appName,
     };
   }

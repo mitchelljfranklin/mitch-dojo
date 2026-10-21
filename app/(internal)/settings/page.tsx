@@ -1,11 +1,16 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { resolveSettingsTabHref } from "@/lib/admin-redirect";
 import { buildFilterQueryString } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Settings" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Nav");
+  return { title: translate("items.admin") };
+}
 
 // The settings area moved to /admin. Map legacy /settings?tab=<x> deep links
 // (bookmarks, dashboard chips, pre-rename integrations) to their new

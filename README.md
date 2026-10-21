@@ -149,6 +149,12 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Choice of logo for emails (primary, or the dark variant on a dark plate)
 - Editable booking-page headline and description; custom colours, radius, and layout
 
+### Languages
+- English and Spanish out of the box, with a school-wide **default language** in Admin → General
+- Per-device language selector that switches without reloading or discarding form state
+- Staff UI, public booking, member portal, check-in, automated emails, and PDFs translated
+- Authored content (email templates, agreement documents, names) stays exactly as written
+
 ### Access Control
 - 3 system roles (Admin, Trainer, Viewer) + custom roles
 - 24 granular `resource:action` permissions

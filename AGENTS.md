@@ -48,9 +48,9 @@ plan without asking.
   (account, password), and Admin (General, Appearance, Storage, Locations,
   Users, Roles, Memberships settings, Communication, Documents, Verifications,
   Email/SMTP, Templates, Campaigns, Email log, Audit log, Health, Scheduling,
-  Sign-in/SSO). Outbound email shells and generated PDFs follow the school
-  default language; admin-authored email templates and document text stay as
-  written.
+  Sign-in/SSO). Outbound email shells follow the school default language;
+  generated PDFs follow the viewer's locale; admin-authored email templates and
+  document text stay as written.
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ function OrganizationFormInner({
   defaultLocale,
 }: OrganizationFormProps) {
   const translate = useTranslations("Admin.general");
+  const locale = useLocale();
   const [state, formAction, isPending] = useActionState(
     saveOrganizationSettings,
     initialState,
@@ -92,7 +93,7 @@ function OrganizationFormInner({
           <option value="">{translate("none")}</option>
           {COUNTRIES.map((code) => (
             <option key={code} value={code}>
-              {countryName(code)}
+              {countryName(code, locale)}
             </option>
           ))}
         </select>

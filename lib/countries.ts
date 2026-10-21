@@ -1,11 +1,11 @@
 // ISO 3166-1 alpha-2 country codes (the full current set). Display names come
-// from a committed, generated map (lib/country-names.ts) so the server and the
+// from committed, generated maps (lib/country-names.ts) so the server and the
 // browser always render the same label — Intl.DisplayNames data differs between
 // runtimes and caused hydration mismatches. Stored on students as the code;
-// shown as the country's English name; CSV export writes the name and import
-// accepts either the name or the code, case-insensitively.
+// shown in the active locale; CSV export writes the English name and import
+// accepts either the English/Spanish name or the code, case-insensitively.
 
-import { COUNTRY_NAMES } from "./country-names";
+import { COUNTRY_NAMES, COUNTRY_NAMES_ES } from "./country-names";
 
 const COUNTRY_CODES = [
   "AD",
@@ -267,14 +267,17 @@ export function isValidCountryCode(value: string): value is CountryCode {
   return (COUNTRY_CODES as readonly string[]).includes(value.toUpperCase());
 }
 
-// English country name for an alpha-2 code ("AU" → "Australia").
-export function countryName(code: string): string {
+// Localized country name for an alpha-2 code ("AU" → "Australia").
+export function countryName(code: string, locale = "en"): string {
   const upper = code.toUpperCase();
-  return COUNTRY_NAMES[upper] ?? upper;
+  const localized = locale.toLowerCase().startsWith("es")
+    ? COUNTRY_NAMES_ES[upper]
+    : COUNTRY_NAMES[upper];
+  return localized ?? COUNTRY_NAMES[upper] ?? upper;
 }
 
-// Resolves a CSV import value — country name or alpha-2 code,
-// case-insensitive — to a code. Null when nothing matches.
+// Resolves a CSV import value — country name (English or Spanish) or alpha-2
+// code, case-insensitive — to a code. Null when nothing matches.
 export function resolveCountryCode(value: string): string | null {
   const trimmed = value.trim();
   if (trimmed.length === 0) return null;
@@ -285,7 +288,9 @@ export function resolveCountryCode(value: string): string | null {
 
   const lower = trimmed.toLowerCase();
   const match = COUNTRY_CODES.find(
-    (code) => countryName(code).toLowerCase() === lower,
+    (code) =>
+      countryName(code).toLowerCase() === lower ||
+      countryName(code, "es").toLowerCase() === lower,
   );
   return match ?? null;
 }

@@ -7,6 +7,7 @@ import {
   getOrganizationSettings,
 } from "@/lib/settings";
 import { formatDate, formatDateUtc } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 
 // Reminder jobs for the scheduler. Each job is idempotent via NotificationLog
 // dedup keys stored in the assessmentId column: once a key has ANY log row
@@ -18,6 +19,22 @@ import { formatDate, formatDateUtc } from "@/lib/utils";
 // large dojo can't outrun the 5-minute scheduler interval. Unhandled
 // candidates carry no dedup row, so the next tick picks them up.
 const MAX_REMINDER_SENDS_PER_TICK = 50;
+
+// Reminder emails follow the school default language (there is no per-recipient
+// locale and cron has no request locale), so date tokens are formatted to match
+// the email shell.
+async function getReminderContext(): Promise<{
+  appName: string;
+  defaultLocale: string;
+  atLabel: string;
+}> {
+  const { name: appName, defaultLocale } = await getOrganizationSettings();
+  const translateEmail = await getTranslations({
+    locale: defaultLocale,
+    namespace: "Email",
+  });
+  return { appName, defaultLocale, atLabel: translateEmail("at") };
+}
 
 export type ReminderResults = {
   classRemindersSent: number;
@@ -87,7 +104,7 @@ export async function sendClassReminders(
   const settings = await getCommunicationsSettings();
   if (!settings.classRemindersEnabled) return 0;
 
-  const { name: appName } = await getOrganizationSettings();
+  const { appName, defaultLocale, atLabel } = await getReminderContext();
   const windowStart = now;
   const windowEnd = new Date(
     now.getTime() + settings.classReminderHoursBefore * 3_600_000,
@@ -145,7 +162,7 @@ export async function sendClassReminders(
         {
           studentName: `${student.firstName} ${student.lastName}`,
           className: session.course.name,
-          classTime: `${formatDate(session.date)} at ${session.startTime}`,
+          classTime: `${formatDate(session.date, defaultLocale)} ${atLabel} ${session.startTime}`,
           appName,
         },
         { assessmentId: dedupKey },
@@ -165,7 +182,7 @@ export async function sendPaymentReminders(
   const settings = await getCommunicationsSettings();
   if (!settings.paymentRemindersEnabled) return 0;
 
-  const { name: appName } = await getOrganizationSettings();
+  const { appName, defaultLocale } = await getReminderContext();
   const today = startOfToday(now);
   const dueSoonCutoff = addDays(today, settings.paymentReminderDaysBeforeDue);
   const overdueCutoff = addDays(today, -settings.paymentReminderOverdueDays);
@@ -208,7 +225,7 @@ export async function sendPaymentReminders(
       {
         studentName: `${invoice.student.firstName} ${invoice.student.lastName}`,
         invoiceNumber: String(invoice.number),
-        dueDate: formatDate(invoice.dueDate),
+        dueDate: formatDate(invoice.dueDate, defaultLocale),
         appName,
       },
       { assessmentId: dedupKey },
@@ -226,7 +243,7 @@ export async function sendBirthdayEmails(
   const settings = await getCommunicationsSettings();
   if (!settings.birthdayEmailsEnabled) return 0;
 
-  const { name: appName } = await getOrganizationSettings();
+  const { appName } = await getReminderContext();
   const today = startOfToday(now);
   const month = today.getUTCMonth();
   const day = today.getUTCDate();
@@ -286,7 +303,7 @@ export async function sendTrialFollowUps(
   const settings = await getCommunicationsSettings();
   if (!settings.trialFollowUpsEnabled) return 0;
 
-  const { name: appName } = await getOrganizationSettings();
+  const { appName } = await getReminderContext();
   const today = startOfToday(now);
   const cutoff = new Date(today);
   cutoff.setUTCDate(cutoff.getUTCDate() - settings.trialFollowUpDaysAfterJoin);
@@ -362,7 +379,7 @@ export async function sendAgreementReminders(): Promise<number> {
   const documents = await listDocuments(true);
   if (documents.length === 0) return 0;
 
-  const { name: appName } = await getOrganizationSettings();
+  const { appName } = await getReminderContext();
   const students = await prisma.student.findMany({
     where: { status: { in: ["ACTIVE", "TRIAL"] } },
     select: {
@@ -422,7 +439,7 @@ export async function sendVerificationReminders(
   const settings = await getCommunicationsSettings();
   if (!settings.verificationRemindersEnabled) return 0;
 
-  const { name: appName } = await getOrganizationSettings();
+  const { appName, defaultLocale } = await getReminderContext();
   const windowEnd = addDays(
     startOfToday(now),
     settings.verificationReminderDaysBefore,
@@ -465,7 +482,7 @@ export async function sendVerificationReminders(
         {
           trainerName: record.trainer.name,
           verificationName: record.type.name,
-          expiryDate: formatDateUtc(record.expiresAt),
+          expiryDate: formatDateUtc(record.expiresAt, defaultLocale),
           appName,
         },
         { assessmentId: dedupKey },

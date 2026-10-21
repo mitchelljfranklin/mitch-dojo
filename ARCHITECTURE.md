@@ -103,6 +103,7 @@ its own belt ladder and grading criteria.
 | ORM | Prisma | ^7 | Typed DB access + migrations |
 | Auth | Auth.js (NextAuth v5) | ^5 | JWT sessions, credentials provider |
 | UI | Tailwind CSS 4 + shadcn/ui | — | Design tokens, accessible primitives |
+| i18n | next-intl | ^4 | Cookie-based locale (English + Spanish) |
 | Charts | recharts | ^3 | Dashboards (later phase) |
 | Email | Nodemailer + React Email | — | SMTP delivery, templates |
 | PDF | @react-pdf/renderer | ^4 | Reports (later phase) |
@@ -349,3 +350,8 @@ SMTP: provider-agnostic (configured in Settings)
 7. **Historical import over synthetic credits** — migrating schools import
    dated rows (which create real past sessions) rather than a per-student
    starting-credit offset, keeping the data model honest.
+8. **Cookie-based locale, no `[locale]` URL segment** — staff and public
+   visitors pick a language per device (`NEXT_LOCALE`), with Admin → General
+   providing the school-wide default. Automated email uses that default;
+   generated PDFs follow the viewer's locale. Authored content (templates,
+   documents, names) is never translated automatically.

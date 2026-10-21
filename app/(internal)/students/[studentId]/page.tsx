@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ export default async function StudentDetailPage({
   const translate = await getTranslations("Students");
   const translateDetail = await getTranslations("Students.detail");
   const formatter = await getFormatter();
+  const locale = await getLocale();
   const canEdit = hasPermission(user.permissions, PERMISSIONS.STUDENTS_EDIT);
   const canViewMedical = hasPermission(
     user.permissions,
@@ -307,7 +308,7 @@ export default async function StudentDetailPage({
                   student.city,
                   student.state,
                   student.postcode,
-                  student.country ? countryName(student.country) : "",
+                  student.country ? countryName(student.country, locale) : "",
                 ]
                   .filter((part) => part && part.length > 0)
                   .join(", ") || null

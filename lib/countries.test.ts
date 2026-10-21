@@ -23,9 +23,16 @@ describe("countries", () => {
     expect(countryName("FK")).toBe("Falkland Islands");
   });
 
+  it("names countries in Spanish when requested", () => {
+    expect(countryName("GB", "es")).toBe("Reino Unido");
+    expect(countryName("US", "es")).toBe("Estados Unidos");
+    expect(countryName("DE", "es")).toBe("Alemania");
+  });
+
   it("names every supported country code", () => {
     for (const code of COUNTRIES) {
       expect(countryName(code), code).not.toBe(code);
+      expect(countryName(code, "es"), `${code} (es)`).not.toBe(code);
     }
   });
 
@@ -34,6 +41,8 @@ describe("countries", () => {
     expect(resolveCountryCode("australia")).toBe("AU");
     expect(resolveCountryCode("gb")).toBe("GB");
     expect(resolveCountryCode("  Japan  ")).toBe("JP");
+    expect(resolveCountryCode("Reino Unido")).toBe("GB");
+    expect(resolveCountryCode("estados unidos")).toBe("US");
     expect(resolveCountryCode("Atlantis")).toBeNull();
     expect(resolveCountryCode("")).toBeNull();
   });

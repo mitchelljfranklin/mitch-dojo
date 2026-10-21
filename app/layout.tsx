@@ -31,13 +31,15 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 
   const orgName = org.name || "My Dojo";
+  const locale = await getLocale();
+  const translate = await getTranslations({ locale, namespace: "Metadata" });
   const icons = appearance.logoKey
     ? [{ url: `/api/brand/logo?v=${appearance.logoKey}` }]
     : [{ url: "/favicon.ico" }];
 
   return {
     title: { template: `%s — ${orgName}`, default: orgName },
-    description: "Open-source dojo management software",
+    description: translate("description"),
     icons,
   };
 }

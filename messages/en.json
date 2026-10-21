@@ -29,7 +29,11 @@
     "sidebarDescription": "Displays the mobile sidebar.",
     "breadcrumb": "Breadcrumb",
     "scrollToTop": "Scroll to top",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "step": "Step {number}:"
+  },
+  "Metadata": {
+    "description": "Open-source dojo management software"
   },
   "Errors": {
     "title": "Something went wrong",
@@ -1860,6 +1864,7 @@
       },
       "retry": "Retry",
       "retrying": "Retrying…",
+      "system": "System",
       "types": {
         "INVITE": "Invite",
         "REMINDER": "Reminder",
@@ -2463,7 +2468,8 @@
         "missing": "Missing role.",
         "updateFailed": "Could not update the role.",
         "duplicateFailed": "Could not duplicate the role: {reason}",
-        "deleteFailed": "Could not delete the role: {reason}"
+        "deleteFailed": "Could not delete the role: {reason}",
+        "unknownError": "Unknown database error."
       },
       "systemRoles": {
         "Admin": "Admin",

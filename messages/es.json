@@ -29,7 +29,11 @@
     "sidebarDescription": "Muestra la barra lateral móvil.",
     "breadcrumb": "Migas de pan",
     "scrollToTop": "Volver arriba",
-    "skipToContent": "Saltar al contenido"
+    "skipToContent": "Saltar al contenido",
+    "step": "Paso {number}:"
+  },
+  "Metadata": {
+    "description": "Software de gestión de dojos de código abierto"
   },
   "Errors": {
     "title": "Algo salió mal",
@@ -1860,6 +1864,7 @@
       },
       "retry": "Reintentar",
       "retrying": "Reintentando…",
+      "system": "Sistema",
       "types": {
         "INVITE": "Invitación",
         "REMINDER": "Recordatorio",
@@ -2463,7 +2468,8 @@
         "missing": "Falta el rol.",
         "updateFailed": "No se pudo actualizar el rol.",
         "duplicateFailed": "No se pudo duplicar el rol: {reason}",
-        "deleteFailed": "No se pudo eliminar el rol: {reason}"
+        "deleteFailed": "No se pudo eliminar el rol: {reason}",
+        "unknownError": "Error de base de datos desconocido."
       },
       "systemRoles": {
         "Admin": "Administrador",

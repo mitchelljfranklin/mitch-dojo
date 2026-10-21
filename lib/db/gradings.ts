@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getDisciplineProgress, recordPromotion } from "@/lib/db/belts";
 import { sendEmail } from "@/lib/email/mailer";
 import { getOrganizationSettings } from "@/lib/settings";
+import { formatDateUtc } from "@/lib/utils";
 
 // A grading day: the eligible students are snapshotted at creation with their
 // next belt as the target, then outcomes are recorded (which award the belt).
@@ -165,8 +166,8 @@ export async function sendGradingInvites(eventId: string): Promise<number> {
   });
   if (!event) throw new Error("Grading event not found.");
 
-  const { name: appName } = await getOrganizationSettings();
-  const eventDate = event.date.toISOString().slice(0, 10);
+  const { name: appName, defaultLocale } = await getOrganizationSettings();
+  const eventDate = formatDateUtc(event.date, defaultLocale);
   let sent = 0;
 
   for (const row of event.students) {
