@@ -203,7 +203,7 @@
     }
   },
   "Dashboard": {
-    "metaTitle": "계기반",
+    "metaTitle": "대시보드",
     "welcome": "환영",
     "welcomeNamed": "환영, {name}",
     "overview": "{org} — 도장 관리 개요.",
@@ -223,8 +223,8 @@
     "styleGuide": "구성요소 스타일 가이드 보기 →"
   },
   "Students": {
-    "metaTitle": "재학생",
-    "title": "재학생",
+    "metaTitle": "학생",
+    "title": "학생",
     "subtitle": "도장에서 훈련하는 모든 사람.",
     "actions": {
       "households": "가구",
@@ -656,8 +656,8 @@
       "6": "토요일"
     },
     "schedule": {
-      "metaTitle": "주간 일정",
-      "title": "주간 일정",
+      "metaTitle": "일정",
+      "title": "일정",
       "subtitle": "모든 코스와 위치에서 반복되는 교육 시간입니다.",
       "emptyTitle": "시간표가 비어있습니다",
       "emptyDescription": "주간 교육 시간이 포함된 코스를 추가하면 여기에 표시됩니다.",
@@ -853,8 +853,8 @@
     }
   },
   "Belts": {
-    "metaTitle": "벨트 및 등급",
-    "title": "벨트 및 등급",
+    "metaTitle": "벨트 및 승급",
+    "title": "벨트 및 승급",
     "subtitle": "분야별 벨트 사다리 및 학생 발전.",
     "actions": {
       "viewCourses": "강좌 보기",
@@ -1059,8 +1059,8 @@
     }
   },
   "Memberships": {
-    "metaTitle": "멤버십",
-    "title": "멤버십",
+    "metaTitle": "회원권",
+    "title": "회원권",
     "subtitle": "플랜 회원이 구독합니다. 학교 전체 — 하나의 멤버십으로 학생의 모든 교육이 가능합니다.",
     "actions": {
       "invoices": "송장",
@@ -1135,8 +1135,8 @@
       "generatedAndSkipped": "생성됨 {generated, plural, one {# 송장} other {# 송장}}; 건너뛰었습니다 {skipped, plural, one {# 주기} other {# 사이클}} 출석 없이(출석 제한 계획)"
     },
     "invoices": {
-      "metaTitle": "송장",
-      "title": "송장",
+      "metaTitle": "청구서",
+      "title": "청구서",
       "subtitle": "{count, plural, one {# 송장} other {# 송장}} · 반복 송장은 스케줄러에 의해 생성됩니다.",
       "empty": "이 필터와 일치하는 청구서가 없습니다.",
       "filters": {
@@ -1294,8 +1294,8 @@
     }
   },
   "Trials": {
-    "metaTitle": "시험",
-    "title": "시험",
+    "metaTitle": "체험",
+    "title": "체험",
     "subtitle": "평가판 파이프라인 — 접촉, 일류 및 전환을 통해 리드를 이동합니다.",
     "actions": {
       "openBooking": "예약 페이지 열기"
@@ -1531,8 +1531,8 @@
     }
   },
   "Analytics": {
-    "metaTitle": "해석학",
-    "title": "해석학",
+    "metaTitle": "분석",
+    "title": "분석",
     "subtitle": "회원, 출석률, 유지율, 수익을 한눈에 볼 수 있습니다.",
     "filters": {
       "locationAria": "위치별로 참석 필터링",

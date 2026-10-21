@@ -223,8 +223,8 @@
     "styleGuide": "コンポーネントのスタイルガイドを表示 →"
   },
   "Students": {
-    "metaTitle": "学生",
-    "title": "学生",
+    "metaTitle": "生徒",
+    "title": "生徒",
     "subtitle": "あなたの道場でトレーニングする皆さん。",
     "actions": {
       "households": "世帯",
@@ -656,8 +656,8 @@
       "6": "土曜日"
     },
     "schedule": {
-      "metaTitle": "週間スケジュール",
-      "title": "週間スケジュール",
+      "metaTitle": "スケジュール",
+      "title": "スケジュール",
       "subtitle": "すべてのコースと場所で繰り返し行われるトレーニング時間。",
       "emptyTitle": "時刻表は空いています",
       "emptyDescription": "毎週のトレーニング時間を含むコースを追加すると、ここに表示されます。",
@@ -853,8 +853,8 @@
     }
   },
   "Belts": {
-    "metaTitle": "ベルトとグレード",
-    "title": "ベルトとグレード",
+    "metaTitle": "帯と昇級",
+    "title": "帯と昇級",
     "subtitle": "ベルトラダーと分野ごとの生徒の進歩。",
     "actions": {
       "viewCourses": "コースを見る",
@@ -1059,8 +1059,8 @@
     }
   },
   "Memberships": {
-    "metaTitle": "メンバーシップ",
-    "title": "メンバーシップ",
+    "metaTitle": "会員",
+    "title": "会員",
     "subtitle": "メンバーが加入しているプラ​​ン。学校全体 — 1 つのメンバーシップで生徒のト​​レーニングすべてがカバーされます。",
     "actions": {
       "invoices": "請求書",
@@ -1294,8 +1294,8 @@
     }
   },
   "Trials": {
-    "metaTitle": "試練",
-    "title": "試練",
+    "metaTitle": "体験",
+    "title": "体験",
     "subtitle": "トライアルパイプライン — コンタクト、ファーストクラス、コンバージョンを通じてリードを移動します。",
     "actions": {
       "openBooking": "予約ページを開く"
@@ -1449,8 +1449,8 @@
     }
   },
   "Incidents": {
-    "metaTitle": "事件",
-    "title": "事件",
+    "metaTitle": "インシデント",
+    "title": "インシデント",
     "subtitle": "事故簿 – 傷害と事件。オプションで生徒と場所に関連付けられます。",
     "filters": {
       "open": "開ける （{count})",

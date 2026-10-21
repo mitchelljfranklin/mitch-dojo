@@ -203,7 +203,7 @@
     }
   },
   "Dashboard": {
-    "metaTitle": "仪表板",
+    "metaTitle": "仪表盘",
     "welcome": "欢迎",
     "welcomeNamed": "欢迎， {name}",
     "overview": "{org} — 道场管理概述。",
@@ -656,8 +656,8 @@
       "6": "周六"
     },
     "schedule": {
-      "metaTitle": "每周日程",
-      "title": "每周日程",
+      "metaTitle": "日程",
+      "title": "日程",
       "subtitle": "所有课程和地点的重复培训时间。",
       "emptyTitle": "时间表是空的",
       "emptyDescription": "添加具有每周培训时间的课程，它们将显示在此处。",
@@ -734,8 +734,8 @@
     }
   },
   "Attendance": {
-    "metaTitle": "出席率",
-    "title": "出席率",
+    "metaTitle": "出勤",
+    "title": "出勤",
     "subtitle": "每一次会议，无论是过去的还是即将到来的——打开任何工作表即可查看或标记它。",
     "sessionsTitle": "会议",
     "sessionsDescription": "默认窗口涵盖过去 4 周和接下来的 2 周 - 调整日期以进一步旅行。",
@@ -800,14 +800,14 @@
       "attendanceAria": "出席人数 {name}",
       "notMarked": "未标记",
       "invalid": "检查出勤条目并重试。",
-      "saved": "Attendance saved."
+      "saved": "出勤已保存。"
     },
     "past": {
-      "button": "Add past attendance",
-      "title": "Add past attendance",
+      "button": "添加过去的出勤",
+      "title": "添加过去的出勤",
       "description": "Record a training {name} 在安排本次会议之前参加 - 例如被遗忘的标记或导入的历史。",
       "course": "课程",
-      "inactive": " — inactive",
+      "inactive": "— 未激活",
       "noCourses": "该学生所在位置尚不存在任何课程。",
       "date": "参加日期",
       "status": "地位",
@@ -820,8 +820,8 @@
       "future": "选择今天或更早的日期。",
       "courseMissing": "该课程已不复存在。",
       "location": "学生未分配到该课程的位置。",
-      "already": "Already marked ({status}) for that date.",
-      "added": "Past attendance added."
+      "already": "该日期已标记（{status}）。",
+      "added": "已添加过去的出勤。"
     },
     "import": {
       "metaTitle": "导入出席人数",
@@ -848,21 +848,21 @@
       "studentNotFound": "排 {row}: student not found.",
       "studentAmbiguous": "排 {row}：学生姓名与多个学生匹配。",
       "studentLocation": "排 {row}：学生不在该课程所在的位置。",
-      "imported": "Imported trainings: {imported} ({skipped} already recorded).",
+      "imported": "已导入训练记录：{imported}（{skipped} 条已记录）。",
       "none": "No attendance imported.第一个错误： {error}"
     }
   },
   "Belts": {
-    "metaTitle": "Belts & gradings",
-    "title": "Belts & gradings",
+    "metaTitle": "腰带与晋级",
+    "title": "腰带与晋级",
     "subtitle": "每个学科的腰带阶梯和学生进步。",
     "actions": {
       "viewCourses": "查看课程",
-      "newDiscipline": "New discipline",
+      "newDiscipline": "新建学科",
       "importHistory": "导入历史记录"
     },
     "empty": {
-      "title": "No disciplines yet",
+      "title": "还没有学科",
       "description": "创建一个学科（例如空手道、柔术）来设置其腰带阶梯。课程与学科相关，因此所有教授该学科的地点都可以共享进展。"
     },
     "card": {
@@ -1059,8 +1059,8 @@
     }
   },
   "Memberships": {
-    "metaTitle": "会员资格",
-    "title": "会员资格",
+    "metaTitle": "会员",
+    "title": "会员",
     "subtitle": "会员订阅的计划。全校范围——一个会员资格涵盖学生的所有培训。",
     "actions": {
       "invoices": "发票",
@@ -1294,8 +1294,8 @@
     }
   },
   "Trials": {
-    "metaTitle": "试炼",
-    "title": "试炼",
+    "metaTitle": "试课",
+    "title": "试课",
     "subtitle": "试用管道——通过接触、一流和转化来移动潜在客户。",
     "actions": {
       "openBooking": "打开预订页面"
@@ -1350,8 +1350,8 @@
     }
   },
   "Trainers": {
-    "metaTitle": "运动鞋",
-    "title": "运动鞋",
+    "metaTitle": "教练",
+    "title": "教练",
     "subtitle": "负责您课程的讲师。有些可能还有员工帐户。",
     "actions": {
       "viewCourses": "查看课程",
@@ -1434,8 +1434,8 @@
     }
   },
   "Compliance": {
-    "metaTitle": "遵守",
-    "title": "遵守",
+    "metaTitle": "合规",
+    "title": "合规",
     "subtitle": "协议仍在等待签署。当文档从未被签名或自上次签名以来已更新时，该文档被视为未完成。",
     "stats": {
       "students": "有作业要做的学生",
@@ -2482,7 +2482,7 @@
         "locations": "地点",
         "classes": "课程及时间表",
         "attendance": "出席率",
-        "belts": "Belts & gradings",
+        "belts": "腰带与晋级",
         "memberships": "会员资格和付款",
         "analytics": "分析",
         "communications": "通讯",

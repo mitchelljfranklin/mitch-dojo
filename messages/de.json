@@ -203,7 +203,7 @@
     }
   },
   "Dashboard": {
-    "metaTitle": "Armaturenbrett",
+    "metaTitle": "Dashboard",
     "welcome": "Willkommen",
     "welcomeNamed": "Willkommen, {name}",
     "overview": "{org} – Übersicht über das Dojo-Management.",
@@ -223,8 +223,8 @@
     "styleGuide": "Sehen Sie sich den Komponenten-Styleguide an →"
   },
   "Students": {
-    "metaTitle": "Studenten",
-    "title": "Studenten",
+    "metaTitle": "Schüler",
+    "title": "Schüler",
     "subtitle": "Alle, die an Ihren Dojo-Standorten trainieren.",
     "actions": {
       "households": "Haushalte",
@@ -607,8 +607,8 @@
     }
   },
   "Classes": {
-    "metaTitle": "Klassen",
-    "title": "Klassen",
+    "metaTitle": "Kurse",
+    "title": "Kurse",
     "subtitle": "Die Kurse finden an Ihren Dojo-Standorten statt.",
     "actions": {
       "schedule": "Wochenplan",
@@ -656,8 +656,8 @@
       "6": "Samstag"
     },
     "schedule": {
-      "metaTitle": "Wochenplan",
-      "title": "Wochenplan",
+      "metaTitle": "Zeitplan",
+      "title": "Zeitplan",
       "subtitle": "Wiederkehrende Trainingszeiten über alle Kurse und Standorte hinweg.",
       "emptyTitle": "Der Stundenplan ist leer",
       "emptyDescription": "Fügen Sie Kurse mit wöchentlichen Trainingszeiten hinzu und diese werden hier angezeigt.",
@@ -734,8 +734,8 @@
     }
   },
   "Attendance": {
-    "metaTitle": "Teilnahme",
-    "title": "Teilnahme",
+    "metaTitle": "Anwesenheit",
+    "title": "Anwesenheit",
     "subtitle": "Für jede vergangene und bevorstehende Sitzung – öffnen Sie ein beliebiges Blatt, um es anzuzeigen oder zu markieren.",
     "sessionsTitle": "Sitzungen",
     "sessionsDescription": "Das Standardfenster umfasst die letzten 4 Wochen und die nächsten 2 – passen Sie die Daten an, um weitere Reisen zu ermöglichen.",
@@ -1294,8 +1294,8 @@
     }
   },
   "Trials": {
-    "metaTitle": "Prüfungen",
-    "title": "Prüfungen",
+    "metaTitle": "Probetraining",
+    "title": "Probetraining",
     "subtitle": "Testpipeline – Leiten Sie Leads durch Kontakt, Erstunterricht und Konvertierung weiter.",
     "actions": {
       "openBooking": "Buchungsseite öffnen"
@@ -1434,8 +1434,8 @@
     }
   },
   "Compliance": {
-    "metaTitle": "Einhaltung",
-    "title": "Einhaltung",
+    "metaTitle": "Compliance",
+    "title": "Compliance",
     "subtitle": "Die Vereinbarungen warten noch auf eine Unterzeichnung. Ein Dokument gilt als ausstehend, wenn es nie unterzeichnet wurde oder wenn es seit der letzten Signatur aktualisiert wurde.",
     "stats": {
       "students": "Studenten, die noch viel zu tun haben",
@@ -1531,8 +1531,8 @@
     }
   },
   "Analytics": {
-    "metaTitle": "Analytik",
-    "title": "Analytik",
+    "metaTitle": "Analysen",
+    "title": "Analysen",
     "subtitle": "Mitglieder, Anwesenheit, Bindung und Umsatz auf einen Blick.",
     "filters": {
       "locationAria": "Filtern Sie die Anwesenheit nach Standort",

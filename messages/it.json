@@ -203,7 +203,7 @@
     }
   },
   "Dashboard": {
-    "metaTitle": "Pannello di controllo",
+    "metaTitle": "Dashboard",
     "welcome": "Benvenuto",
     "welcomeNamed": "Benvenuto, {name}",
     "overview": "{org} - Panoramica sulla gestione del dojo.",
@@ -519,8 +519,8 @@
       "added": "Allegato aggiunto."
     },
     "households": {
-      "metaTitle": "Famiglie",
-      "title": "Famiglie",
+      "metaTitle": "Nuclei familiari",
+      "title": "Nuclei familiari",
       "subtitle": "Raggruppare i fratelli sotto un unico contatto familiare. Assegnare uno studente a un nucleo familiare dal suo record (modulo di modifica).",
       "allTitle": "Tutte le famiglie",
       "allDescription": "Il contatto con i fratelli viene ereditato quando uno studente si unisce a una famiglia.",
@@ -607,8 +607,8 @@
     }
   },
   "Classes": {
-    "metaTitle": "Classi",
-    "title": "Classi",
+    "metaTitle": "Corsi",
+    "title": "Corsi",
     "subtitle": "I corsi si svolgono nelle sedi del tuo dojo.",
     "actions": {
       "schedule": "Programma settimanale",
@@ -656,8 +656,8 @@
       "6": "Sabato"
     },
     "schedule": {
-      "metaTitle": "Programma settimanale",
-      "title": "Programma settimanale",
+      "metaTitle": "Orario",
+      "title": "Orario",
       "subtitle": "Tempi di formazione ricorrenti in tutti i corsi e sedi.",
       "emptyTitle": "L'orario è vuoto",
       "emptyDescription": "Aggiungi corsi con orari di formazione settimanali e appariranno qui.",
@@ -734,8 +734,8 @@
     }
   },
   "Attendance": {
-    "metaTitle": "Partecipazione",
-    "title": "Partecipazione",
+    "metaTitle": "Presenze",
+    "title": "Presenze",
     "subtitle": "Ogni sessione, passata e futura: apri qualsiasi foglio per visualizzarlo o contrassegnarlo.",
     "sessionsTitle": "Sessioni",
     "sessionsDescription": "La finestra predefinita copre le ultime 4 settimane e le successive 2: modifica le date per viaggiare più lontano.",
@@ -853,8 +853,8 @@
     }
   },
   "Belts": {
-    "metaTitle": "Cinture e classificazioni",
-    "title": "Cinture e classificazioni",
+    "metaTitle": "Cinture e gradi",
+    "title": "Cinture e gradi",
     "subtitle": "Scale di cintura e progressione degli studenti per disciplina.",
     "actions": {
       "viewCourses": "Visualizza i corsi",
@@ -1059,8 +1059,8 @@
     }
   },
   "Memberships": {
-    "metaTitle": "Appartenenze",
-    "title": "Appartenenze",
+    "metaTitle": "Iscrizioni",
+    "title": "Iscrizioni",
     "subtitle": "I membri dei piani si iscrivono. A livello scolastico: un abbonamento copre tutta la formazione di uno studente.",
     "actions": {
       "invoices": "Fatture",
@@ -1350,8 +1350,8 @@
     }
   },
   "Trainers": {
-    "metaTitle": "Formatori",
-    "title": "Formatori",
+    "metaTitle": "Istruttori",
+    "title": "Istruttori",
     "subtitle": "Istruttori che gestiscono le tue lezioni. Alcuni possono anche avere conti del personale.",
     "actions": {
       "viewCourses": "Visualizza i corsi",
@@ -1531,8 +1531,8 @@
     }
   },
   "Analytics": {
-    "metaTitle": "Analitica",
-    "title": "Analitica",
+    "metaTitle": "Analisi",
+    "title": "Analisi",
     "subtitle": "Membri, presenze, fidelizzazione ed entrate in sintesi.",
     "filters": {
       "locationAria": "Filtra le presenze per località",
@@ -1572,8 +1572,8 @@
     }
   },
   "Reports": {
-    "metaTitle": "Rapporti",
-    "title": "Rapporti",
+    "metaTitle": "Report",
+    "title": "Report",
     "subtitle": "Partecipazioni, celebrazioni e entrate. Ogni report viene esportato in CSV.",
     "exportCsv": "Esporta CSV",
     "attendance": {

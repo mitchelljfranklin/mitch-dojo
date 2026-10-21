@@ -223,8 +223,8 @@
     "styleGuide": "Afficher le guide de style des composants →"
   },
   "Students": {
-    "metaTitle": "Étudiants",
-    "title": "Étudiants",
+    "metaTitle": "Élèves",
+    "title": "Élèves",
     "subtitle": "Tous ceux qui s’entraînent dans vos dojos.",
     "actions": {
       "households": "Ménages",
@@ -519,8 +519,8 @@
       "added": "Pièce jointe ajoutée."
     },
     "households": {
-      "metaTitle": "Ménages",
-      "title": "Ménages",
+      "metaTitle": "Foyers",
+      "title": "Foyers",
       "subtitle": "Regroupez les frères et sœurs sous un seul contact familial. Affectez un élève à un foyer à partir de son dossier (formulaire de modification).",
       "allTitle": "Tous les ménages",
       "allDescription": "Le contact entre frères et sœurs est hérité lorsqu'un étudiant rejoint un foyer.",
@@ -656,8 +656,8 @@
       "6": "Samedi"
     },
     "schedule": {
-      "metaTitle": "Horaire hebdomadaire",
-      "title": "Horaire hebdomadaire",
+      "metaTitle": "Planning",
+      "title": "Planning",
       "subtitle": "Horaires de formation récurrents sur tous les cours et sur tous les sites.",
       "emptyTitle": "L'horaire est vide",
       "emptyDescription": "Ajoutez des cours avec des horaires de formation hebdomadaires et ils apparaîtront ici.",
@@ -734,8 +734,8 @@
     }
   },
   "Attendance": {
-    "metaTitle": "Présence",
-    "title": "Présence",
+    "metaTitle": "Présences",
+    "title": "Présences",
     "subtitle": "Chaque session, passée et à venir, ouvrez n'importe quelle feuille pour l'afficher ou la marquer.",
     "sessionsTitle": "Séances",
     "sessionsDescription": "La fenêtre par défaut couvre les 4 dernières semaines et les 2 suivantes — ajustez les dates pour voyager plus loin.",
@@ -853,8 +853,8 @@
     }
   },
   "Belts": {
-    "metaTitle": "Ceintures et classements",
-    "title": "Ceintures et classements",
+    "metaTitle": "Ceintures et grades",
+    "title": "Ceintures et grades",
     "subtitle": "Echelles de ceinture et progression des élèves par discipline.",
     "actions": {
       "viewCourses": "Voir les cours",
@@ -1294,8 +1294,8 @@
     }
   },
   "Trials": {
-    "metaTitle": "Essais",
-    "title": "Essais",
+    "metaTitle": "Cours d’essai",
+    "title": "Cours d’essai",
     "subtitle": "Pipeline d'essai : déplacez les prospects via le contact, la première classe et la conversion.",
     "actions": {
       "openBooking": "Ouvrir la page de réservation"
@@ -1350,8 +1350,8 @@
     }
   },
   "Trainers": {
-    "metaTitle": "Formateurs",
-    "title": "Formateurs",
+    "metaTitle": "Instructeurs",
+    "title": "Instructeurs",
     "subtitle": "Des instructeurs qui animent vos cours. Certains peuvent également avoir des comptes personnels.",
     "actions": {
       "viewCourses": "Voir les cours",
@@ -1531,8 +1531,8 @@
     }
   },
   "Analytics": {
-    "metaTitle": "Analytique",
-    "title": "Analytique",
+    "metaTitle": "Analyses",
+    "title": "Analyses",
     "subtitle": "Membres, fréquentation, fidélisation et revenus en un coup d'œil.",
     "filters": {
       "locationAria": "Filtrer la fréquentation par emplacement",

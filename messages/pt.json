@@ -656,8 +656,8 @@
       "6": "Sábado"
     },
     "schedule": {
-      "metaTitle": "Programação semanal",
-      "title": "Programação semanal",
+      "metaTitle": "Horário",
+      "title": "Horário",
       "subtitle": "Tempos de treinamento recorrentes em todos os cursos e locais.",
       "emptyTitle": "O horário está vazio",
       "emptyDescription": "Adicione cursos com horários de treinamento semanais e eles aparecerão aqui.",
@@ -734,8 +734,8 @@
     }
   },
   "Attendance": {
-    "metaTitle": "Presença",
-    "title": "Presença",
+    "metaTitle": "Presenças",
+    "title": "Presenças",
     "subtitle": "Cada sessão, passada e futura — abra qualquer planilha para visualizá-la ou marcá-la.",
     "sessionsTitle": "Sessões",
     "sessionsDescription": "A janela padrão cobre as últimas 4 semanas e as próximas 2 – ajuste as datas para viajar mais.",
@@ -853,8 +853,8 @@
     }
   },
   "Belts": {
-    "metaTitle": "Cintos e classificações",
-    "title": "Cintos e classificações",
+    "metaTitle": "Faixas e graduações",
+    "title": "Faixas e graduações",
     "subtitle": "Escadas de faixa e progressão dos alunos por disciplina.",
     "actions": {
       "viewCourses": "Ver cursos",
@@ -1059,8 +1059,8 @@
     }
   },
   "Memberships": {
-    "metaTitle": "Associações",
-    "title": "Associações",
+    "metaTitle": "Mensalidades",
+    "title": "Mensalidades",
     "subtitle": "Planos que os membros assinam. Para toda a escola — uma associação cobre todo o treinamento do aluno.",
     "actions": {
       "invoices": "Faturas",
@@ -1294,8 +1294,8 @@
     }
   },
   "Trials": {
-    "metaTitle": "Testes",
-    "title": "Testes",
+    "metaTitle": "Aulas experimentais",
+    "title": "Aulas experimentais",
     "subtitle": "Pipeline de teste – mova leads por meio de contato, primeira classe e conversão.",
     "actions": {
       "openBooking": "Abrir página de reserva"
@@ -1350,8 +1350,8 @@
     }
   },
   "Trainers": {
-    "metaTitle": "Treinadores",
-    "title": "Treinadores",
+    "metaTitle": "Instrutores",
+    "title": "Instrutores",
     "subtitle": "Instrutores que ministram suas aulas. Alguns também podem ter contas de funcionários.",
     "actions": {
       "viewCourses": "Ver cursos",
@@ -1531,8 +1531,8 @@
     }
   },
   "Analytics": {
-    "metaTitle": "Análise",
-    "title": "Análise",
+    "metaTitle": "Análises",
+    "title": "Análises",
     "subtitle": "Membros, participação, retenção e receita em resumo.",
     "filters": {
       "locationAria": "Filtrar atendimento por local",
