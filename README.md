@@ -149,13 +149,32 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Choice of logo for emails (primary, or the dark variant on a dark plate)
 - Editable booking-page headline and description; custom colours, radius, and layout
 
-### Languages
-- **12 languages**: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian, with a school-wide **default language** in Admin → General
-- Per-device language selector that switches without reloading or discarding form state
-- Staff UI, public booking, member portal, check-in, automated emails, and PDFs translated (PDF labels fall back to English for scripts not covered by the bundled Helvetica font)
-- Authored content (email templates, agreement documents, names) stays exactly as written
-- The ten added languages are **initial machine-assisted translations** and should be reviewed by native speakers before being treated as final copy
-- Adding another language is a documented code change — see [Adding a Language](docs/advanced/adding-a-language.md)
+### Languages & translation
+- **12 languages**, selectable per device and configurable as the school default in Admin → General
+- Language is stored in a cookie (`NEXT_LOCALE`); there is no `/en/` or `/es/` URL prefix. Switching is a soft refresh, so typed form values and selections survive
+- Staff UI, auth screens, public booking, member portal, QR check-in, automated emails, and PDF labels are translated
+- **Authored content stays as written**: email template copy, agreement documents, course/plan names, notes, and custom role names are never machine-translated
+
+| Language | Code | Status |
+|---|---|---|
+| English | `en` | Source catalog |
+| Spanish | `es` | Complete |
+| Portuguese | `pt` | Initial machine-assisted translation |
+| French | `fr` | Initial machine-assisted translation |
+| German | `de` | Initial machine-assisted translation |
+| Italian | `it` | Initial machine-assisted translation |
+| Japanese | `ja` | Initial machine-assisted translation |
+| Korean | `ko` | Initial machine-assisted translation |
+| Chinese (Simplified) | `zh` | Initial machine-assisted translation |
+| Arabic | `ar` | Initial machine-assisted translation; RTL layout is best-effort |
+| Hindi | `hi` | Initial machine-assisted translation |
+| Russian | `ru` | Initial machine-assisted translation |
+
+**Translation status.** English and Spanish are the maintained reference catalogs. The other ten are an initial machine-assisted pass: placeholders, ICU plurals, rich-text tags, key parity, and date/currency formatting are validated automatically, but the wording still benefits from native review. Corrections are welcome — edit the relevant `messages/<code>.json` value and run the catalog tests.
+
+**PDF limitation.** Invoices, report cards, attendance sheets, and printable agreements are localized for Latin-script locales (English, Spanish, Portuguese, French, German, Italian). The bundled Helvetica font cannot render Japanese, Korean, Chinese, Arabic, Hindi, or Russian, so those PDF labels currently fall back to English; authored names in those scripts may still not render. Embedding Noto fonts is the next step.
+
+**Adding a language.** The process is documented in [Adding a Language](docs/advanced/adding-a-language.md): add a catalog, register the locale, and add the loader. The parity test fails until every key exists.
 
 ### Access Control
 - 3 system roles (Admin, Trainer, Viewer) + custom roles
