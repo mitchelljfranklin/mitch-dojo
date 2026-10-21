@@ -26,6 +26,11 @@ export default function GlobalError({
           <p className="text-muted-foreground text-sm">
             A critical error occurred. Please try again or contact support.
           </p>
+          {error.digest ? (
+            <p className="text-muted-foreground font-mono text-xs select-all">
+              Error reference: {error.digest}
+            </p>
+          ) : null}
           <Button onClick={() => window.location.reload()}>Try again</Button>
         </div>
       </body>
