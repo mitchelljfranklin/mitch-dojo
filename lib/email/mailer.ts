@@ -1,6 +1,7 @@
 import { render } from "@react-email/components";
 import { type Prisma } from "../../prisma/generated/prisma/client";
 import { marked } from "marked";
+import { getTranslations } from "next-intl/server";
 import nodemailer from "nodemailer";
 
 import { DynamicEmail } from "@/emails/dynamic";
@@ -174,11 +175,19 @@ export async function sendEmail(
   tokens: Record<string, string>,
   options?: SendEmailOptions,
 ): Promise<SendEmailResult> {
-  const [emailSettings, templates, appearance] = await Promise.all([
-    getEmailSettings(),
-    getEmailTemplateSettings(),
-    getAppearanceSettings(),
-  ]);
+  const [emailSettings, templates, appearance, organization] =
+    await Promise.all([
+      getEmailSettings(),
+      getEmailTemplateSettings(),
+      getAppearanceSettings(),
+      getOrganizationSettings(),
+    ]);
+  // Outbound email follows the school's default language: recipients have no
+  // per-person language setting, and cron sends have no request locale.
+  const translate = await getTranslations({
+    locale: organization.defaultLocale,
+    namespace: "Email",
+  });
 
   // Absolute logo URL — email clients have no base URL, so the logo must be
   // publicly reachable at the deployed app origin. The email variant chooses
@@ -250,7 +259,7 @@ export async function sendEmail(
     await updateNotificationLogStatus(
       notificationLogId,
       "FAILED",
-      "SMTP is not configured.",
+      translate("smtpNotConfigured"),
     );
     return { ok: false, subject: resolvedSubject, notificationLogId };
   }
@@ -266,6 +275,7 @@ export async function sendEmail(
         heading: resolvedSubject,
         body: resolvedBody,
         htmlBody,
+        footer: translate("footer"),
         logoUrl,
         logoVariant,
       }),
@@ -281,7 +291,9 @@ export async function sendEmail(
     return { ok: true, subject: resolvedSubject, notificationLogId };
   } catch (sendError: unknown) {
     const errorMessage =
-      sendError instanceof Error ? sendError.message : "unknown error";
+      sendError instanceof Error
+        ? sendError.message
+        : translate("unknownError");
     console.error("Failed to send email:", errorMessage);
     await updateNotificationLogStatus(
       notificationLogId,
@@ -302,10 +314,15 @@ export async function sendBulkEmail(
   body: string,
   options?: { assessmentId?: string; sentById?: string },
 ): Promise<SendEmailResult> {
-  const [emailSettings, appearance] = await Promise.all([
+  const [emailSettings, appearance, organization] = await Promise.all([
     getEmailSettings(),
     getAppearanceSettings(),
+    getOrganizationSettings(),
   ]);
+  const translate = await getTranslations({
+    locale: organization.defaultLocale,
+    namespace: "Email",
+  });
 
   const useDarkLogo =
     appearance.emailLogoVariant === "dark" && Boolean(appearance.logoDarkKey);
@@ -334,7 +351,7 @@ export async function sendBulkEmail(
     await updateNotificationLogStatus(
       notificationLogId,
       "FAILED",
-      "SMTP is not configured.",
+      translate("smtpNotConfigured"),
     );
     return { ok: false, subject, notificationLogId };
   }
@@ -346,7 +363,14 @@ export async function sendBulkEmail(
 
   try {
     const html = await render(
-      DynamicEmail({ heading: subject, body, htmlBody, logoUrl, logoVariant }),
+      DynamicEmail({
+        heading: subject,
+        body,
+        htmlBody,
+        footer: translate("footer"),
+        logoUrl,
+        logoVariant,
+      }),
     );
     await transport.sendMail({
       from: `${emailSettings.fromName} <${emailFrom}>`,
@@ -358,7 +382,9 @@ export async function sendBulkEmail(
     return { ok: true, subject, notificationLogId };
   } catch (sendError: unknown) {
     const errorMessage =
-      sendError instanceof Error ? sendError.message : "unknown error";
+      sendError instanceof Error
+        ? sendError.message
+        : translate("unknownError");
     console.error("Failed to send campaign email:", errorMessage);
     await updateNotificationLogStatus(
       notificationLogId,
@@ -374,20 +400,24 @@ export async function sendTestEmail(
   sentById?: string,
   updateLogId?: string,
 ): Promise<{ ok: boolean; message: string }> {
-  const [settings, { name: orgName }] = await Promise.all([
+  const [settings, organization] = await Promise.all([
     getEmailSettings(),
     getOrganizationSettings(),
   ]);
+  const translate = await getTranslations({
+    locale: organization.defaultLocale,
+    namespace: "Email",
+  });
   if (!settings.smtpHost) {
-    return { ok: false, message: "SMTP is not configured." };
+    return { ok: false, message: translate("smtpNotConfigured") };
   }
 
   const transport = await getTransporter();
   if (!transport) {
-    return { ok: false, message: "Failed to create transporter." };
+    return { ok: false, message: translate("transporterFailed") };
   }
 
-  const subject = `${orgName} — SMTP test`;
+  const subject = translate("testSubject", { appName: organization.name });
 
   const notificationLogId = updateLogId
     ? updateLogId
@@ -404,13 +434,17 @@ export async function sendTestEmail(
       from: `${settings.fromName} <${settings.fromAddress || settings.smtpUser}>`,
       to,
       subject,
-      text: "Your SMTP settings are working correctly.",
+      text: translate("testBody"),
     });
 
     await updateNotificationLogStatus(notificationLogId, "SENT", null);
-    return { ok: true, message: "Test email sent." };
+    return { ok: true, message: translate("testSent") };
   } catch (sendError: unknown) {
-    const errorMessage = `Failed: ${sendError instanceof Error ? sendError.message : "unknown error"}`;
+    const detail =
+      sendError instanceof Error
+        ? sendError.message
+        : translate("unknownError");
+    const errorMessage = translate("testFailed", { detail });
     await updateNotificationLogStatus(
       notificationLogId,
       "FAILED",

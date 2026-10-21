@@ -4,6 +4,7 @@ import {
   getOrganizationSettings,
 } from "@/lib/settings";
 import { formatClassTime } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 
 // One branded alert per staff recipient when a public /book submission
 // creates a trial. Best-effort: sendEmail already logs failures to the
@@ -28,19 +29,30 @@ export async function sendBookingStaffAlert(booking: {
   if (!communications.bookingStaffAlertsEnabled) return;
   if (communications.bookingStaffAlertRecipients.length === 0) return;
 
+  const translate = await getTranslations({
+    locale: organization.defaultLocale,
+    namespace: "Email",
+  });
+
   const contact =
     [booking.email, booking.phone].filter(Boolean).join(" / ") ||
-    "not provided";
+    translate("bookingStaff.contactNotProvided");
   const bookingFor =
     booking.bookingFor === "child"
       ? booking.guardianName
-        ? `Child (guardian: ${booking.guardianName})`
-        : "Child"
-      : "Adult";
+        ? translate("bookingStaff.childWithGuardian", {
+            guardian: booking.guardianName,
+          })
+        : translate("bookingStaff.child")
+      : translate("bookingStaff.adult");
   const studentName = `${booking.firstName} ${booking.lastName}`.trim();
   const classTime =
-    formatClassTime(booking.sessionDate, booking.sessionStartTime) ??
-    "no preference";
+    formatClassTime(
+      booking.sessionDate,
+      booking.sessionStartTime,
+      translate("at"),
+      organization.defaultLocale,
+    ) ?? translate("bookingStaff.noPreference");
 
   for (const recipient of communications.bookingStaffAlertRecipients) {
     try {
@@ -52,7 +64,8 @@ export async function sendBookingStaffAlert(booking: {
           studentName,
           bookingFor,
           contact,
-          className: booking.sessionCourseName || "no preference",
+          className:
+            booking.sessionCourseName || translate("bookingStaff.noPreference"),
           classTime,
         },
         { assessmentId: `booking-staff:${booking.studentId}` },

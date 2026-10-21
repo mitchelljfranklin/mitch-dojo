@@ -49,14 +49,31 @@ const utcDateFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
-export function formatDate(value: Date | string | number): string {
+export function formatDate(
+  value: Date | string | number,
+  locale?: string,
+): string {
   const date = value instanceof Date ? value : new Date(value);
-  return dateFormatter.format(date);
+  if (!locale) return dateFormatter.format(date);
+  return new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-export function formatDateUtc(value: Date | string | number): string {
+export function formatDateUtc(
+  value: Date | string | number,
+  locale?: string,
+): string {
   const date = value instanceof Date ? value : new Date(value);
-  return utcDateFormatter.format(date);
+  if (!locale) return utcDateFormatter.format(date);
+  return new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 // Booking emails: the schedule part of a class (calendar day + start time),
@@ -64,18 +81,24 @@ export function formatDateUtc(value: Date | string | number): string {
 export function formatClassTime(
   isoDate: string | null,
   startTime: string | null,
+  connector = "at",
+  locale?: string,
 ): string | null {
   if (!isoDate) return null;
-  const day = formatDateUtc(`${isoDate}T00:00:00.000Z`);
-  return startTime ? `${day} at ${startTime}` : day;
+  const day = formatDateUtc(`${isoDate}T00:00:00.000Z`, locale);
+  return startTime ? `${day} ${connector} ${startTime}` : day;
 }
 
 // Money is stored as integer cents; currency is an ISO 4217 code from
 // Settings → Memberships. Invalid codes fall back to plain formatting rather
 // than throwing in the render path.
-export function formatMoney(cents: number, currency = "USD"): string {
+export function formatMoney(
+  cents: number,
+  currency = "USD",
+  locale?: string,
+): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
     }).format(cents / 100);

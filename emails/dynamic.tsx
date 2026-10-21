@@ -12,6 +12,7 @@ type DynamicEmailProps = {
   heading: string;
   body: string;
   htmlBody?: string;
+  footer: string;
   // Absolute URL to the dojo logo (public route) — rendered when the dojo
   // has uploaded one. Must be absolute: email clients have no base URL.
   logoUrl?: string;
@@ -25,6 +26,7 @@ export function DynamicEmail({
   heading,
   body,
   htmlBody,
+  footer,
   logoUrl,
   logoVariant = "primary",
 }: DynamicEmailProps) {
@@ -94,8 +96,7 @@ export function DynamicEmail({
               fontSize: "12px",
             }}
           >
-            This email was sent by your dojo. If the button does not work, copy
-            and paste the link into your browser.
+            {footer}
           </Text>
         </Container>
       </Body>
@@ -106,6 +107,8 @@ export function DynamicEmail({
 DynamicEmail.PreviewProps = {
   heading: "Annual review",
   body: "Welcome to My Dojo.",
+  footer:
+    "This email was sent by your dojo. If the button does not work, copy and paste the link into your browser.",
   logoUrl: "http://localhost:3000/api/brand/logo?v=demo.png",
   logoVariant: "primary",
 } satisfies DynamicEmailProps;

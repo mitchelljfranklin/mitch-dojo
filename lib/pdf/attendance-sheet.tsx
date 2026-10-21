@@ -3,6 +3,7 @@ import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { formatDateUtc } from "@/lib/utils";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
+import type { AttendancePdfLabels } from "./labels";
 
 export type AttendanceSheetEntry = {
   name: string;
@@ -25,13 +26,6 @@ export type AttendanceSheetData = AttendanceSheetInput & {
   presentCount: number;
   trainedCount: number;
   unmarkedCount: number;
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  PRESENT: "Present",
-  LATE: "Late",
-  EXCUSED: "Excused",
-  ABSENT: "Absent",
 };
 
 // Pure shaping: status counts for the totals row.
@@ -57,21 +51,28 @@ export function shapeAttendanceSheet(
 const CELL_NAME = { flex: 1 };
 const CELL_STATUS = { width: 90, textAlign: "right" as const };
 
-function statusLabel(status: string | null): string {
+function statusLabel(
+  status: string | null,
+  labels: AttendancePdfLabels,
+): string {
   if (!status) return "—";
-  return STATUS_LABELS[status] ?? status;
+  return labels.statuses[status] ?? status;
 }
 
 export function AttendanceSheetPdfDocument({
   brand,
   data,
+  labels,
 }: {
   brand: PdfBrand;
   data: AttendanceSheetData;
+  labels: AttendancePdfLabels;
 }) {
+  const date = formatDateUtc(data.date, labels.locale);
+
   return (
     <Document
-      title={`${data.courseName} — attendance ${formatDateUtc(data.date)}`}
+      title={`${data.courseName} — ${labels.title} ${date}`}
       author={brand.orgName}
     >
       <Page size="A4" style={pdfStyles.page}>
@@ -79,32 +80,35 @@ export function AttendanceSheetPdfDocument({
 
         <View>
           <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
-            Attendance — {data.courseName}
+            {labels.title} — {data.courseName}
           </Text>
           <Text style={pdfStyles.muted}>
-            {formatDateUtc(data.date)} · {data.startTime}–{data.endTime} ·{" "}
-            {data.locationName}
-            {data.trainerName ? ` · Trainer: ${data.trainerName}` : ""}
+            {date} · {data.startTime}–{data.endTime} · {data.locationName}
+            {data.trainerName
+              ? ` · ${labels.trainer}: ${data.trainerName}`
+              : ""}
           </Text>
           {data.status === "CANCELLED" ? (
             <Text style={{ fontFamily: "Helvetica-Bold", color: "#b91c1c" }}>
-              This session was cancelled.
+              {labels.cancelled}
             </Text>
           ) : null}
         </View>
 
-        <Text style={pdfStyles.sectionTitle}>Roster</Text>
+        <Text style={pdfStyles.sectionTitle}>{labels.roster}</Text>
         <View style={pdfStyles.tableHeader}>
-          <Text style={CELL_NAME}>Student</Text>
-          <Text style={CELL_STATUS}>Status</Text>
+          <Text style={CELL_NAME}>{labels.student}</Text>
+          <Text style={CELL_STATUS}>{labels.status}</Text>
         </View>
         {data.entries.length === 0 ? (
-          <Text style={pdfStyles.muted}>No students assigned.</Text>
+          <Text style={pdfStyles.muted}>{labels.noStudents}</Text>
         ) : (
           data.entries.map((entry, index) => (
             <View key={index} style={pdfStyles.tableRow} wrap={false}>
               <Text style={CELL_NAME}>{entry.name}</Text>
-              <Text style={CELL_STATUS}>{statusLabel(entry.status)}</Text>
+              <Text style={CELL_STATUS}>
+                {statusLabel(entry.status, labels)}
+              </Text>
             </View>
           ))
         )}
@@ -116,20 +120,18 @@ export function AttendanceSheetPdfDocument({
           ]}
         >
           <Text style={CELL_NAME}>
-            {data.entries.length} student
-            {data.entries.length === 1 ? "" : "s"}
+            {labels.studentCount(data.entries.length)}
             {data.unmarkedCount > 0
-              ? ` · ${data.unmarkedCount} not marked`
+              ? ` · ${labels.notMarked(data.unmarkedCount)}`
               : ""}
           </Text>
           <Text style={CELL_STATUS}>
-            {data.presentCount} present · {data.trainedCount} trained
+            {labels.totals(data.presentCount, data.trainedCount)}
           </Text>
         </View>
 
         <Text style={pdfStyles.footer} fixed>
-          {brand.orgName} — attendance for {data.courseName} on{" "}
-          {formatDateUtc(data.date)}
+          {labels.footer(brand.orgName, data.courseName, date)}
         </Text>
       </Page>
     </Document>

@@ -19,6 +19,8 @@ Change the organization name here and it propagates everywhere: sidebar, browser
 
 The **Default language** is what staff and visitors see until they choose another one. On the public [booking page](../user-guides/trials), the language selector overrides it for that visitor and the choice is remembered in a cookie. Setting it to Español makes the booking page open in Spanish for everyone who has not switched back to English.
 
+Automated emails and generated PDFs (invoices, report cards, attendance sheets, printable agreements) use the school default, since recipients do not have their own language setting. The email shell, test messages, and generated PDF labels are translated; the subject/body copy you write under [Templates](./templates) stays exactly as authored.
+
 The app currently ships with English and Spanish. Adding another language is a code change (a new message catalog and locale entry), not a settings toggle.
 
 ::: note There is no in-app time zone setting

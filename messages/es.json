@@ -25,6 +25,107 @@
     "save": "Guardar",
     "saving": "Guardando..."
   },
+  "Email": {
+    "footer": "Este correo lo envió tu dojo. Si el botón no funciona, copia y pega el enlace en tu navegador.",
+    "smtpNotConfigured": "SMTP no está configurado.",
+    "unknownError": "error desconocido",
+    "testSubject": "{appName} — Prueba SMTP",
+    "testBody": "Tus ajustes SMTP funcionan correctamente.",
+    "testSent": "Correo de prueba enviado.",
+    "testFailed": "Falló: {detail}",
+    "transporterFailed": "No se pudo crear el transporte.",
+    "at": "a las",
+    "sampleStudent": "Estudiante de ejemplo",
+    "sampleClass": "Clase de ejemplo",
+    "sampleClassTime": "Mañana a las 18:00",
+    "booking": {
+      "chosenClass": "la clase que elegiste",
+      "trialClass": "clase de prueba"
+    },
+    "bookingStaff": {
+      "contactNotProvided": "no facilitado",
+      "adult": "Adulto",
+      "child": "Menor",
+      "childWithGuardian": "Menor (tutor: {guardian})",
+      "noPreference": "sin preferencia"
+    }
+  },
+  "Pdf": {
+    "invoice": {
+      "title": "Factura",
+      "issued": "Emitida",
+      "due": "Vence",
+      "statusVoid": "Anulada",
+      "statusPaid": "Pagada",
+      "statusOverdue": "Vencida",
+      "statusOpen": "Abierta",
+      "lineItems": "Conceptos",
+      "description": "Descripción",
+      "quantity": "Cant.",
+      "amount": "Importe",
+      "subtotal": "Subtotal",
+      "taxFallback": "Impuesto",
+      "total": "Total",
+      "payments": "Pagos",
+      "noPayments": "Todavía no hay pagos registrados.",
+      "date": "Fecha",
+      "method": "Método",
+      "reference": "Referencia",
+      "balanceDue": "Saldo pendiente",
+      "notes": "Notas",
+      "footer": "Generado por {org} — factura #{number} · {date}"
+    },
+    "paymentMethods": {
+      "CASH": "Efectivo",
+      "BANK_TRANSFER": "Transferencia bancaria",
+      "CARD_TERMINAL": "Terminal de tarjeta",
+      "OTHER": "Otro"
+    },
+    "reportCard": {
+      "documentSuffix": "informe de progreso",
+      "progressLine": "Informe de progreso — generado el {date}",
+      "currentRank": "Rango actual",
+      "noBelts": "Todavía no se ha otorgado ningún cinturón.",
+      "since": "desde",
+      "trainingSummary": "Resumen de entrenamiento",
+      "sessionsAllTime": "Sesiones asistidas (total)",
+      "sessionsLast30": "Sesiones asistidas (últimos 30 días)",
+      "balanceDue": "Saldo pendiente",
+      "beltHistory": "Historial de cinturones",
+      "noHistory": "Sin historial registrado.",
+      "belt": "Cinturón",
+      "discipline": "Disciplina",
+      "awarded": "Otorgado",
+      "footer": "{org} — informe de progreso de {student}"
+    },
+    "attendance": {
+      "title": "Asistencia",
+      "trainer": "Instructor",
+      "cancelled": "Esta sesión se canceló.",
+      "roster": "Lista",
+      "student": "Alumno",
+      "status": "Estado",
+      "noStudents": "No hay alumnos asignados.",
+      "studentCount": "{count, plural, one {# alumno} other {# alumnos}}",
+      "notMarked": "{count} sin marcar",
+      "totals": "{present} presentes · {trained} entrenados",
+      "footer": "{org} — asistencia de {course} el {date}"
+    },
+    "attendanceStatuses": {
+      "PRESENT": "Presente",
+      "LATE": "Tarde",
+      "EXCUSED": "Justificado",
+      "ABSENT": "Ausente"
+    },
+    "agreement": {
+      "version": "versión {version}",
+      "member": "Miembro (o tutor)",
+      "signature": "Firma",
+      "date": "Fecha",
+      "dateSigned": "Fecha de firma",
+      "footer": "{org} — {title} (v{version}) de {student}"
+    }
+  },
   "Nav": {
     "dashboard": "Panel",
     "backToWorkspace": "Volver al espacio de trabajo",

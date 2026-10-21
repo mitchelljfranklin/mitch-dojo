@@ -9,6 +9,7 @@ import { getMembershipsSettings } from "@/lib/settings";
 import { TRAINED_STATUSES } from "@/lib/schemas/attendance";
 import { resolvePdfBrand } from "@/lib/pdf/brand";
 import { ReportCardPdfDocument, shapeReportCard } from "@/lib/pdf/report-card";
+import { getReportCardPdfLabels } from "@/lib/pdf/labels";
 import { computeInvoiceFinancials } from "@/lib/db/memberships";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,7 @@ export async function GET(
     openInvoices,
     settings,
     brand,
+    labels,
     photoDataUrl,
     trainedTotal,
     trainedLast30Days,
@@ -69,6 +71,7 @@ export async function GET(
     }),
     getMembershipsSettings(),
     resolvePdfBrand(),
+    getReportCardPdfLabels(),
     loadPhotoDataUrl(student.photoKey),
     // Generic training summary (Present + Late), not per-discipline.
     prisma.attendance.count({
@@ -113,7 +116,7 @@ export async function GET(
   });
 
   const buffer = await renderToBuffer(
-    <ReportCardPdfDocument brand={brand} data={data} />,
+    <ReportCardPdfDocument brand={brand} data={data} labels={labels} />,
   );
 
   const fileName = `report-${student.firstName}-${student.lastName}`

@@ -3,6 +3,7 @@ import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { formatMoney, formatDate, formatDateUtc } from "@/lib/utils";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
+import type { InvoicePdfLabels } from "./labels";
 
 // Data shaping is pure (unit-tested); the document component only renders.
 
@@ -74,41 +75,40 @@ const CELL_DESC = { flex: 1 };
 const CELL_NUM = { width: 60, textAlign: "right" as const };
 const CELL_MONEY = { width: 90, textAlign: "right" as const };
 
-const METHOD_LABELS: Record<string, string> = {
-  CASH: "Cash",
-  BANK_TRANSFER: "Bank transfer",
-  CARD_TERMINAL: "Card terminal",
-  OTHER: "Other",
-};
-
-export function paymentMethodLabel(method: string): string {
-  return METHOD_LABELS[method] ?? method;
+export function paymentMethodLabel(
+  method: string,
+  labels: Record<string, string>,
+): string {
+  return labels[method] ?? method;
 }
 
-function statusLabel(data: InvoicePdfData): string {
-  if (data.status === "VOID") return "Void";
-  if (data.status === "PAID") return "Paid";
-  return data.isOverdue ? "Overdue" : "Open";
+function statusLabel(data: InvoicePdfData, labels: InvoicePdfLabels): string {
+  if (data.status === "VOID") return labels.statusVoid;
+  if (data.status === "PAID") return labels.statusPaid;
+  return data.isOverdue ? labels.statusOverdue : labels.statusOpen;
 }
 
 export function InvoicePdfDocument({
   brand,
   data,
+  labels,
 }: {
   brand: PdfBrand;
   data: InvoicePdfData;
+  labels: InvoicePdfLabels;
 }) {
-  const money = (cents: number) => formatMoney(cents, data.currency);
+  const money = (cents: number) =>
+    formatMoney(cents, data.currency, labels.locale);
 
   return (
-    <Document title={`Invoice ${data.number}`} author={brand.orgName}>
+    <Document title={`${labels.title} ${data.number}`} author={brand.orgName}>
       <Page size="A4" style={pdfStyles.page}>
         <PdfBrandHeader brand={brand} />
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View>
             <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
-              Invoice #{data.number}
+              {labels.title} #{data.number}
             </Text>
             <Text style={pdfStyles.muted}>{data.studentName}</Text>
             {data.locationName ? (
@@ -117,8 +117,8 @@ export function InvoicePdfDocument({
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text>
-              Issued: {formatDateUtc(data.issueDate)} · Due:{" "}
-              {formatDate(data.dueDate)}
+              {labels.issued}: {formatDateUtc(data.issueDate, labels.locale)} ·{" "}
+              {labels.due}: {formatDate(data.dueDate, labels.locale)}
             </Text>
             <Text
               style={{
@@ -126,16 +126,16 @@ export function InvoicePdfDocument({
                 color: data.isOverdue ? "#b91c1c" : brand.accentHex,
               }}
             >
-              {statusLabel(data)}
+              {statusLabel(data, labels)}
             </Text>
           </View>
         </View>
 
-        <Text style={pdfStyles.sectionTitle}>Line items</Text>
+        <Text style={pdfStyles.sectionTitle}>{labels.lineItems}</Text>
         <View style={pdfStyles.tableHeader}>
-          <Text style={CELL_DESC}>Description</Text>
-          <Text style={CELL_NUM}>Qty</Text>
-          <Text style={CELL_MONEY}>Amount</Text>
+          <Text style={CELL_DESC}>{labels.description}</Text>
+          <Text style={CELL_NUM}>{labels.quantity}</Text>
+          <Text style={CELL_MONEY}>{labels.amount}</Text>
         </View>
         {data.items.map((item, index) => (
           <View key={index} style={pdfStyles.tableRow} wrap={false}>
@@ -149,38 +149,42 @@ export function InvoicePdfDocument({
         {(data.taxCents ?? 0) > 0 ? (
           <>
             <View style={pdfStyles.tableRow}>
-              <Text style={CELL_DESC}>Subtotal</Text>
+              <Text style={CELL_DESC}>{labels.subtotal}</Text>
               <Text style={CELL_MONEY}>
                 {money(data.totalCents - (data.taxCents ?? 0))}
               </Text>
             </View>
             <View style={pdfStyles.tableRow}>
-              <Text style={CELL_DESC}>{data.taxLabel ?? "Tax"}</Text>
+              <Text style={CELL_DESC}>
+                {data.taxLabel ?? labels.taxFallback}
+              </Text>
               <Text style={CELL_MONEY}>{money(data.taxCents ?? 0)}</Text>
             </View>
           </>
         ) : null}
         <View style={[pdfStyles.tableRow, { fontFamily: "Helvetica-Bold" }]}>
-          <Text style={CELL_DESC}>Total</Text>
+          <Text style={CELL_DESC}>{labels.total}</Text>
           <Text style={CELL_MONEY}>{money(data.totalCents)}</Text>
         </View>
 
-        <Text style={pdfStyles.sectionTitle}>Payments</Text>
+        <Text style={pdfStyles.sectionTitle}>{labels.payments}</Text>
         {data.payments.length === 0 ? (
-          <Text style={pdfStyles.muted}>No payments recorded yet.</Text>
+          <Text style={pdfStyles.muted}>{labels.noPayments}</Text>
         ) : (
           <>
             <View style={pdfStyles.tableHeader}>
-              <Text style={CELL_DESC}>Date</Text>
-              <Text style={CELL_DESC}>Method</Text>
-              <Text style={CELL_DESC}>Reference</Text>
-              <Text style={CELL_MONEY}>Amount</Text>
+              <Text style={CELL_DESC}>{labels.date}</Text>
+              <Text style={CELL_DESC}>{labels.method}</Text>
+              <Text style={CELL_DESC}>{labels.reference}</Text>
+              <Text style={CELL_MONEY}>{labels.amount}</Text>
             </View>
             {data.payments.map((payment, index) => (
               <View key={index} style={pdfStyles.tableRow} wrap={false}>
-                <Text style={CELL_DESC}>{formatDate(payment.paidAt)}</Text>
                 <Text style={CELL_DESC}>
-                  {paymentMethodLabel(payment.method)}
+                  {formatDate(payment.paidAt, labels.locale)}
+                </Text>
+                <Text style={CELL_DESC}>
+                  {paymentMethodLabel(payment.method, labels.paymentMethods)}
                 </Text>
                 <Text style={CELL_DESC}>{payment.reference ?? "—"}</Text>
                 <Text style={CELL_MONEY}>{money(payment.amountCents)}</Text>
@@ -195,20 +199,23 @@ export function InvoicePdfDocument({
             { fontFamily: "Helvetica-Bold", marginTop: 8 },
           ]}
         >
-          <Text style={CELL_DESC}>Balance due</Text>
+          <Text style={CELL_DESC}>{labels.balanceDue}</Text>
           <Text style={CELL_MONEY}>{money(data.balanceCents)}</Text>
         </View>
 
         {data.notes ? (
           <>
-            <Text style={pdfStyles.sectionTitle}>Notes</Text>
+            <Text style={pdfStyles.sectionTitle}>{labels.notes}</Text>
             <Text>{data.notes}</Text>
           </>
         ) : null}
 
         <Text style={pdfStyles.footer} fixed>
-          Generated by {brand.orgName} — invoice #{data.number} ·{" "}
-          {formatDate(new Date())}
+          {labels.footer(
+            brand.orgName,
+            data.number,
+            formatDate(new Date(), labels.locale),
+          )}
         </Text>
       </Page>
     </Document>

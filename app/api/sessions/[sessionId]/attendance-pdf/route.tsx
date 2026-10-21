@@ -8,6 +8,7 @@ import {
   AttendanceSheetPdfDocument,
   shapeAttendanceSheet,
 } from "@/lib/pdf/attendance-sheet";
+import { getAttendancePdfLabels } from "@/lib/pdf/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,10 @@ export async function GET(
     return new Response("Session not found", { status: 404 });
   }
 
-  const brand = await resolvePdfBrand();
+  const [brand, labels] = await Promise.all([
+    resolvePdfBrand(),
+    getAttendancePdfLabels(),
+  ]);
   const data = shapeAttendanceSheet({
     courseName: session.courseName,
     locationName: session.locationName,
@@ -44,7 +48,7 @@ export async function GET(
   });
 
   const buffer = await renderToBuffer(
-    <AttendanceSheetPdfDocument brand={brand} data={data} />,
+    <AttendanceSheetPdfDocument brand={brand} data={data} labels={labels} />,
   );
 
   const fileName = `attendance-${session.courseName}-${session.date

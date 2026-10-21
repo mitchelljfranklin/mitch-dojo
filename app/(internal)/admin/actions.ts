@@ -629,10 +629,11 @@ export async function sendCommunicationSampleAction(
   }
 
   const { sendEmail } = await import("@/lib/email/mailer");
+  const translateEmail = await getTranslations("Email");
   const result = await sendEmail(recipientRaw, "classReminder", {
-    studentName: "Sample Student",
-    className: "Sample Class",
-    classTime: "Tomorrow at 18:00",
+    studentName: translateEmail("sampleStudent"),
+    className: translateEmail("sampleClass"),
+    classTime: translateEmail("sampleClassTime"),
     appName: String(formData.get("appName") ?? "mitch-dojo"),
   });
 

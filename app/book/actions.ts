@@ -9,6 +9,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { createTrialBooking } from "@/lib/db/trials";
 import { logSystemAudit, AUDIT_ACTIONS } from "@/lib/db/audit";
 import { formatClassTime } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 
 const BOOKINGS_PER_HOUR = 5;
 
@@ -146,9 +147,17 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     getOrganizationSettings(),
   ]);
   if (communications.bookingConfirmationsEnabled && parsed.data.email) {
+    const translate = await getTranslations({
+      locale: organization.defaultLocale,
+      namespace: "Email",
+    });
     const classTime =
-      formatClassTime(sessionDate || null, sessionStartTime || null) ??
-      "your chosen class";
+      formatClassTime(
+        sessionDate || null,
+        sessionStartTime || null,
+        translate("at"),
+        organization.defaultLocale,
+      ) ?? translate("booking.chosenClass");
     try {
       await sendEmail(
         parsed.data.email,
@@ -157,7 +166,7 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
           appName: organization.name,
           studentName:
             `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
-          className: sessionCourseName || "trial class",
+          className: sessionCourseName || translate("booking.trialClass"),
           classTime,
         },
         { assessmentId: `booking:${result.studentId}` },

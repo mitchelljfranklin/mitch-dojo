@@ -6,6 +6,7 @@ import { getInvoiceDetail } from "@/lib/db/memberships";
 import { portalHasStudent } from "@/lib/db/portal";
 import { resolvePdfBrand } from "@/lib/pdf/brand";
 import { InvoicePdfDocument, shapeInvoiceForPdf } from "@/lib/pdf/invoice";
+import { getInvoicePdfLabels } from "@/lib/pdf/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +27,10 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
 
-  const [settings, brand] = await Promise.all([
+  const [settings, brand, labels] = await Promise.all([
     getMembershipsSettings(),
     resolvePdfBrand(),
+    getInvoicePdfLabels(),
   ]);
 
   const data = shapeInvoiceForPdf({
@@ -56,7 +58,7 @@ export async function GET(
   });
 
   const buffer = await renderToBuffer(
-    <InvoicePdfDocument brand={brand} data={data} />,
+    <InvoicePdfDocument brand={brand} data={data} labels={labels} />,
   );
 
   return new Response(new Uint8Array(buffer), {

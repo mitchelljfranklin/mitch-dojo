@@ -3,6 +3,7 @@ import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { formatDate, formatDateUtc, formatMoney } from "@/lib/utils";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
+import type { ReportCardPdfLabels } from "./labels";
 
 export type ReportCardBelt = {
   disciplineName: string;
@@ -43,13 +44,15 @@ export function shapeReportCard(input: ReportCardInput): ReportCardData {
 export function ReportCardPdfDocument({
   brand,
   data,
+  labels,
 }: {
   brand: PdfBrand;
   data: ReportCardData;
+  labels: ReportCardPdfLabels;
 }) {
   return (
     <Document
-      title={`${data.studentName} — progress report`}
+      title={`${data.studentName} — ${labels.documentSuffix}`}
       author={brand.orgName}
     >
       <Page size="A4" style={pdfStyles.page}>
@@ -67,14 +70,14 @@ export function ReportCardPdfDocument({
               {data.studentName}
             </Text>
             <Text style={pdfStyles.muted}>
-              Progress report — generated {formatDate(data.generatedAt)}
+              {labels.progressLine(formatDate(data.generatedAt, labels.locale))}
             </Text>
           </View>
         </View>
 
-        <Text style={pdfStyles.sectionTitle}>Current rank</Text>
+        <Text style={pdfStyles.sectionTitle}>{labels.currentRank}</Text>
         {data.currentByDiscipline.length === 0 ? (
-          <Text style={pdfStyles.muted}>No belts awarded yet.</Text>
+          <Text style={pdfStyles.muted}>{labels.noBelts}</Text>
         ) : (
           data.currentByDiscipline.map((belt) => (
             <View
@@ -97,48 +100,50 @@ export function ReportCardPdfDocument({
               <Text
                 style={[pdfStyles.muted, { width: 90, textAlign: "right" }]}
               >
-                since {formatDateUtc(belt.awardedAt)}
+                {labels.since} {formatDateUtc(belt.awardedAt, labels.locale)}
               </Text>
             </View>
           ))
         )}
 
-        <Text style={pdfStyles.sectionTitle}>Training summary</Text>
+        <Text style={pdfStyles.sectionTitle}>{labels.trainingSummary}</Text>
         <View style={pdfStyles.tableRow}>
-          <Text style={{ flex: 1 }}>Sessions attended (all time)</Text>
+          <Text style={{ flex: 1 }}>{labels.sessionsAllTime}</Text>
           <Text style={{ fontFamily: "Helvetica-Bold" }}>
             {data.trainedTotal}
           </Text>
         </View>
         <View style={pdfStyles.tableRow}>
-          <Text style={{ flex: 1 }}>Sessions attended (last 30 days)</Text>
+          <Text style={{ flex: 1 }}>{labels.sessionsLast30}</Text>
           <Text style={{ fontFamily: "Helvetica-Bold" }}>
             {data.trainedLast30Days}
           </Text>
         </View>
         <View style={pdfStyles.tableRow}>
-          <Text style={{ flex: 1 }}>Balance due</Text>
+          <Text style={{ flex: 1 }}>{labels.balanceDue}</Text>
           <Text style={{ fontFamily: "Helvetica-Bold" }}>
-            {formatMoney(data.balanceCents, data.currency)}
+            {formatMoney(data.balanceCents, data.currency, labels.locale)}
           </Text>
         </View>
 
-        <Text style={pdfStyles.sectionTitle}>Belt history</Text>
+        <Text style={pdfStyles.sectionTitle}>{labels.beltHistory}</Text>
         {data.belts.length === 0 ? (
-          <Text style={pdfStyles.muted}>No history recorded.</Text>
+          <Text style={pdfStyles.muted}>{labels.noHistory}</Text>
         ) : (
           <>
             <View style={pdfStyles.tableHeader}>
-              <Text style={{ flex: 1 }}>Belt</Text>
-              <Text style={{ flex: 1 }}>Discipline</Text>
-              <Text style={{ width: 100, textAlign: "right" }}>Awarded</Text>
+              <Text style={{ flex: 1 }}>{labels.belt}</Text>
+              <Text style={{ flex: 1 }}>{labels.discipline}</Text>
+              <Text style={{ width: 100, textAlign: "right" }}>
+                {labels.awarded}
+              </Text>
             </View>
             {data.belts.map((belt, index) => (
               <View key={index} style={pdfStyles.tableRow} wrap={false}>
                 <Text style={{ flex: 1 }}>{belt.beltName}</Text>
                 <Text style={{ flex: 1 }}>{belt.disciplineName}</Text>
                 <Text style={{ width: 100, textAlign: "right" }}>
-                  {formatDateUtc(belt.awardedAt)}
+                  {formatDateUtc(belt.awardedAt, labels.locale)}
                 </Text>
               </View>
             ))}
@@ -146,7 +151,7 @@ export function ReportCardPdfDocument({
         )}
 
         <Text style={pdfStyles.footer} fixed>
-          {brand.orgName} — progress report for {data.studentName}
+          {labels.footer(brand.orgName, data.studentName)}
         </Text>
       </Page>
     </Document>

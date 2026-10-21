@@ -1,6 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 
 import { PdfBrandHeader, pdfStyles, type PdfBrand } from "./brand";
+import type { AgreementPdfLabels } from "./labels";
 
 export type AgreementPdfInput = {
   documentTitle: string;
@@ -31,9 +32,11 @@ export function shapeAgreementPdf(input: AgreementPdfInput): AgreementPdfData {
 export function AgreementPdfDocument({
   brand,
   data,
+  labels,
 }: {
   brand: PdfBrand;
   data: AgreementPdfData;
+  labels: AgreementPdfLabels;
 }) {
   return (
     <Document
@@ -46,7 +49,7 @@ export function AgreementPdfDocument({
         <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
           {data.documentTitle}
         </Text>
-        <Text style={pdfStyles.muted}>version {data.version}</Text>
+        <Text style={pdfStyles.muted}>{labels.versionLine(data.version)}</Text>
 
         <View style={{ marginTop: 12, gap: 8 }}>
           {data.lines.map((line, index) =>
@@ -68,7 +71,7 @@ export function AgreementPdfDocument({
         <View style={{ marginTop: 32, gap: 24 }}>
           <View>
             <Text style={pdfStyles.muted}>
-              Member (or guardian) — {data.studentName}
+              {labels.member} — {data.studentName}
             </Text>
             <View
               style={{
@@ -78,10 +81,12 @@ export function AgreementPdfDocument({
                 marginTop: 18,
               }}
             />
-            <Text style={[pdfStyles.muted, { fontSize: 8 }]}>Signature</Text>
+            <Text style={[pdfStyles.muted, { fontSize: 8 }]}>
+              {labels.signature}
+            </Text>
           </View>
           <View>
-            <Text style={pdfStyles.muted}>Date</Text>
+            <Text style={pdfStyles.muted}>{labels.date}</Text>
             <View
               style={{
                 borderBottomWidth: 1,
@@ -90,13 +95,19 @@ export function AgreementPdfDocument({
                 marginTop: 18,
               }}
             />
-            <Text style={[pdfStyles.muted, { fontSize: 8 }]}>Date signed</Text>
+            <Text style={[pdfStyles.muted, { fontSize: 8 }]}>
+              {labels.dateSigned}
+            </Text>
           </View>
         </View>
 
         <Text style={pdfStyles.footer} fixed>
-          {data.orgName} — {data.documentTitle} (v{data.version}) for{" "}
-          {data.studentName}
+          {labels.footer(
+            data.orgName,
+            data.documentTitle,
+            data.version,
+            data.studentName,
+          )}
         </Text>
       </Page>
     </Document>

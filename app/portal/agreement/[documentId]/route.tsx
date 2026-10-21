@@ -6,6 +6,7 @@ import { getAgreementDocumentById } from "@/lib/db/agreements";
 import { portalHasStudent } from "@/lib/db/portal";
 import { resolvePdfBrand } from "@/lib/pdf/brand";
 import { AgreementPdfDocument, shapeAgreementPdf } from "@/lib/pdf/agreement";
+import { getAgreementPdfLabels } from "@/lib/pdf/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +27,11 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
 
-  const [document, student, brand] = await Promise.all([
+  const [document, student, brand, labels] = await Promise.all([
     getAgreementDocumentById(documentId),
     getStudent(studentId),
     resolvePdfBrand(),
+    getAgreementPdfLabels(),
   ]);
   if (!document || !student) {
     return new Response("Not found", { status: 404 });
@@ -44,7 +46,7 @@ export async function GET(
   });
 
   const buffer = await renderToBuffer(
-    <AgreementPdfDocument brand={brand} data={data} />,
+    <AgreementPdfDocument brand={brand} data={data} labels={labels} />,
   );
 
   const fileName = `${document.title}-${student.firstName}-${student.lastName}`

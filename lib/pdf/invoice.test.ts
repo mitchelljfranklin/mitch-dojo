@@ -63,15 +63,28 @@ describe("shapeInvoiceForPdf", () => {
   });
 });
 
+const PAYMENT_METHOD_LABELS = {
+  CASH: "Cash",
+  BANK_TRANSFER: "Bank transfer",
+  CARD_TERMINAL: "Card terminal",
+  OTHER: "Other",
+};
+
 describe("paymentMethodLabel", () => {
   it("maps known methods to friendly labels", () => {
-    expect(paymentMethodLabel("CASH")).toBe("Cash");
-    expect(paymentMethodLabel("BANK_TRANSFER")).toBe("Bank transfer");
-    expect(paymentMethodLabel("CARD_TERMINAL")).toBe("Card terminal");
-    expect(paymentMethodLabel("OTHER")).toBe("Other");
+    expect(paymentMethodLabel("CASH", PAYMENT_METHOD_LABELS)).toBe("Cash");
+    expect(paymentMethodLabel("BANK_TRANSFER", PAYMENT_METHOD_LABELS)).toBe(
+      "Bank transfer",
+    );
+    expect(paymentMethodLabel("CARD_TERMINAL", PAYMENT_METHOD_LABELS)).toBe(
+      "Card terminal",
+    );
+    expect(paymentMethodLabel("OTHER", PAYMENT_METHOD_LABELS)).toBe("Other");
   });
 
   it("falls back to the raw value for unknown methods", () => {
-    expect(paymentMethodLabel("SOMETHING")).toBe("SOMETHING");
+    expect(paymentMethodLabel("SOMETHING", PAYMENT_METHOD_LABELS)).toBe(
+      "SOMETHING",
+    );
   });
 });
