@@ -36,6 +36,31 @@ function flattenKeys(value: unknown, prefix = ""): string[] {
   );
 }
 
+function flattenMessages(
+  value: unknown,
+  prefix = "",
+  out: Record<string, string> = {},
+): Record<string, string> {
+  if (typeof value !== "object" || value === null) {
+    out[prefix] = String(value);
+    return out;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    flattenMessages(child, prefix ? `${prefix}.${key}` : key, out);
+  }
+  return out;
+}
+
+function placeholders(value: string): string[] {
+  return [
+    ...new Set(
+      [...value.matchAll(/\{\s*([a-zA-Z][\w]*)\s*[,}]/g)].map(
+        (match) => match[1]!,
+      ),
+    ),
+  ].sort();
+}
+
 describe("message catalogs", () => {
   it("defines a catalog entry for every configured locale", () => {
     for (const locale of LOCALES) {
@@ -62,6 +87,18 @@ describe("message catalogs", () => {
     }
     for (const locale of LOCALES) {
       assertKeys(CATALOGS[locale], locale);
+    }
+  });
+
+  it("keeps ICU placeholders in sync with the default catalog", () => {
+    const defaultMessages = flattenMessages(CATALOGS.en);
+    for (const locale of LOCALES) {
+      const messages = flattenMessages(CATALOGS[locale]);
+      for (const [key, text] of Object.entries(defaultMessages)) {
+        expect(placeholders(messages[key] ?? ""), `${locale} ${key}`).toEqual(
+          placeholders(text),
+        );
+      }
     }
   });
 });
