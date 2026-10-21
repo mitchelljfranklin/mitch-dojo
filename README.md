@@ -171,7 +171,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 | Hindi | `hi` | Initial machine-assisted translation |
 | Russian | `ru` | Initial machine-assisted translation |
 
-**Translation status.** English and Spanish are the maintained reference catalogs. The other ten are an initial machine-assisted pass: placeholders, ICU plurals, rich-text tags, key parity, and date/currency formatting are validated automatically, but the wording still benefits from native review. Corrections are welcome — edit the relevant `messages/<code>.json` value and run the catalog tests.
+**Translation status.** English and Spanish are the maintained reference catalogs. The other ten are an initial machine-assisted pass. Key parity, ICU placeholder consistency, and key-name validity are enforced by the catalog tests; ICU structure was validated when the catalogs were generated, and dates/numbers/currency use locale-aware formatting. Wording still benefits from native review. Corrections are welcome — edit the relevant `messages/<code>.json` value and run the catalog tests.
 
 **PDF fonts.** PDFs use bundled Noto Sans families — Latin/Cyrillic, Arabic, Devanagari, and regional Japanese/Korean/Simplified Chinese — so all twelve languages can render without falling back to English. The fonts are OFL-licensed. Arabic and Hindi require complex-script shaping, and Arabic needs RTL pagination; both are best-effort and should be checked with real names before relying on them for official documents. CJK and Latin/Cyrillic rendering are straightforward.
 
