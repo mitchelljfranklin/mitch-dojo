@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -13,28 +16,29 @@ import { StorageForm } from "../storage-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Storage" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.storage");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminStoragePage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.storage");
   const storageSettings = await getStorageSettingsView();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Storage</h1>
-        <p className="text-muted-foreground text-sm">
-          Where brand files, student photos, and attachments live.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>File storage</CardTitle>
-          <CardDescription>
-            Configure the storage provider. Changing providers does not migrate
-            existing files.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <StorageForm defaults={storageSettings} />

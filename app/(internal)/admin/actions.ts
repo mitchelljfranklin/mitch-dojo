@@ -239,6 +239,7 @@ export async function saveSignInSecuritySettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.signIn.errors");
 
   const parsePositiveInt = (
     value: FormDataEntryValue | null,
@@ -280,7 +281,7 @@ export async function saveSignInSecuritySettings(
       "Setting",
       "sign-in",
     );
-  return { ok: true, message: "Sign-in security saved." };
+  return { ok: true, message: translate("sessionsSaved") };
 }
 
 export async function saveAuditRetentionSettings(
@@ -302,7 +303,8 @@ export async function saveAuditRetentionSettings(
       "Setting",
       "audit-retention",
     );
-  return { ok: true, message: "Audit retention saved." };
+  const translate = await getTranslations("Admin.audit.errors");
+  return { ok: true, message: translate("retentionSaved") };
 }
 
 export async function saveEmailLogRetentionSettings(
@@ -743,6 +745,7 @@ export async function testStorageConnectionAction(
   _formData: FormData,
 ): Promise<{ ok: boolean; message: string }> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.storage.errors");
 
   // Probes the SAVED storage configuration (save before testing): write a
   // small file, read it back, compare, then delete it.
@@ -757,16 +760,16 @@ export async function testStorageConnectionAction(
     if (!readBack.equals(payload)) {
       return {
         ok: false,
-        message: "Storage test failed: the file did not read back correctly.",
+        message: translate("testMismatch"),
       };
     }
-    return { ok: true, message: "Storage connection OK." };
+    return { ok: true, message: translate("testOk") };
   } catch (error: unknown) {
     return {
       ok: false,
-      message: `Storage test failed: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      message: translate("testFailed", {
+        detail: error instanceof Error ? error.message : String(error),
+      }),
     };
   }
 }
@@ -776,6 +779,7 @@ export async function saveStorageSettings(
   formData: FormData,
 ): Promise<{ ok: boolean; message: string }> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.storage.errors");
 
   const existing = await getStorageSettings();
   const raw: Record<string, string> = {
@@ -802,7 +806,7 @@ export async function saveStorageSettings(
   if (!parsed.success) {
     return {
       ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+      message: translate("invalid"),
     };
   }
 
@@ -819,8 +823,7 @@ export async function saveStorageSettings(
   ) {
     return {
       ok: false,
-      message:
-        "S3 requires a bucket, region, access key ID, and secret access key.",
+      message: translate("incompleteS3"),
     };
   }
   if (
@@ -829,7 +832,7 @@ export async function saveStorageSettings(
   ) {
     return {
       ok: false,
-      message: "Azure Blob requires a connection string and container name.",
+      message: translate("incompleteAzure"),
     };
   }
 
@@ -845,7 +848,7 @@ export async function saveStorageSettings(
     );
   }
 
-  return { ok: true, message: "Storage settings saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function saveSsoSettings(
@@ -853,6 +856,7 @@ export async function saveSsoSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.signIn.errors");
 
   const roleIdRaw = String(formData.get("autoProvisionRoleId") ?? "").trim();
   const update = {
@@ -885,8 +889,7 @@ export async function saveSsoSettings(
   if (update.disableLocalAuth && !anyProviderReady) {
     return {
       ok: false,
-      message:
-        "Enable at least one SSO provider (with client ID and secret) before disabling local sign-in.",
+      message: translate("requiresProvider"),
     };
   }
 
@@ -896,7 +899,7 @@ export async function saveSsoSettings(
     await logAudit(user.id, AUDIT_ACTIONS.UPDATE_SETTINGS, "Setting", "sso");
   }
 
-  return { ok: true, message: "SSO settings saved." };
+  return { ok: true, message: translate("ssoSaved") };
 }
 
 export type BreakGlassUrlState =

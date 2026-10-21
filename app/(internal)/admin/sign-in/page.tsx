@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -15,10 +18,14 @@ import { SsoForm } from "../sso-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Sign-in & SSO" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.signIn");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminSignInPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.signIn");
   const operations = await getOperationsSettings();
   const sso = await getSsoSettings();
   const roles = await listRoles();
@@ -26,20 +33,16 @@ export default async function AdminSignInPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Sign-in & SSO</h1>
-        <p className="text-muted-foreground text-sm">
-          How staff authenticate — identity providers, single sign-on, and
-          session security.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Single sign-on</CardTitle>
-          <CardDescription>
-            Sign in through Microsoft, Google, or any OpenID Connect provider.
-            First-time SSO sign-ins can be provisioned automatically.
-          </CardDescription>
+          <CardTitle>{translate("ssoTitle")}</CardTitle>
+          <CardDescription>{translate("ssoDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <SsoForm
@@ -64,10 +67,8 @@ export default async function AdminSignInPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Sessions & rate limits</CardTitle>
-          <CardDescription>
-            Sign-in throttling and automatic logout for idle sessions.
-          </CardDescription>
+          <CardTitle>{translate("sessionsTitle")}</CardTitle>
+          <CardDescription>{translate("sessionsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <SignInSecurityForm

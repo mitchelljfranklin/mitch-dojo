@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export function StorageForm(props: StorageFormProps) {
 }
 
 function StorageFormInner({ defaults }: StorageFormProps) {
+  const translate = useTranslations("Admin.storage.form");
   const [state, formAction, isPending] = useActionState(
     saveStorageSettings,
     initialState,
@@ -46,7 +48,7 @@ function StorageFormInner({ defaults }: StorageFormProps) {
       <form action={formAction} className="grid gap-6">
         <div className="grid gap-4 sm:max-w-md">
           <div className="grid gap-2">
-            <Label htmlFor="storage-provider">Provider</Label>
+            <Label htmlFor="storage-provider">{translate("provider")}</Label>
             <Select
               key={defaults.provider}
               name="provider"
@@ -56,15 +58,13 @@ function StorageFormInner({ defaults }: StorageFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="local">Local disk</SelectItem>
-                <SelectItem value="s3">Amazon S3</SelectItem>
-                <SelectItem value="azure">Azure Blob</SelectItem>
+                <SelectItem value="local">{translate("localDisk")}</SelectItem>
+                <SelectItem value="s3">{translate("s3")}</SelectItem>
+                <SelectItem value="azure">{translate("azure")}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-muted-foreground text-xs">
-              Changing providers does not migrate existing files. Files stored
-              with the previous provider remain accessible only if you switch
-              back.
+              {translate("providerHint")}
             </p>
           </div>
         </div>
@@ -72,9 +72,9 @@ function StorageFormInner({ defaults }: StorageFormProps) {
         <Separator />
 
         <div className="grid gap-4 sm:max-w-md">
-          <h3 className="text-sm font-medium">Amazon S3</h3>
+          <h3 className="text-sm font-medium">{translate("s3Heading")}</h3>
           <div className="grid gap-2">
-            <Label htmlFor="s3-bucket">Bucket</Label>
+            <Label htmlFor="s3-bucket">{translate("bucket")}</Label>
             <Input
               id="s3-bucket"
               name="s3Bucket"
@@ -82,16 +82,16 @@ function StorageFormInner({ defaults }: StorageFormProps) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="s3-region">Region</Label>
+            <Label htmlFor="s3-region">{translate("region")}</Label>
             <Input
               id="s3-region"
               name="s3Region"
               defaultValue={defaults.s3Region}
-              placeholder="e.g. us-east-1"
+              placeholder={translate("regionPlaceholder")}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="s3-accessKeyId">Access key ID</Label>
+            <Label htmlFor="s3-accessKeyId">{translate("accessKeyId")}</Label>
             <Input
               id="s3-accessKeyId"
               name="s3AccessKeyId"
@@ -99,7 +99,7 @@ function StorageFormInner({ defaults }: StorageFormProps) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="s3-secretAccessKey">Secret access key</Label>
+            <Label htmlFor="s3-secretAccessKey">{translate("secretKey")}</Label>
             <Input
               id="s3-secretAccessKey"
               name="s3SecretAccessKey"
@@ -108,7 +108,7 @@ function StorageFormInner({ defaults }: StorageFormProps) {
               placeholder={defaults.s3SecretConfigured ? "········" : ""}
             />
             <p className="text-muted-foreground text-xs">
-              Stored encrypted at rest. Leave blank to keep the existing value.
+              {translate("secretHint")}
             </p>
           </div>
         </div>
@@ -116,9 +116,11 @@ function StorageFormInner({ defaults }: StorageFormProps) {
         <Separator />
 
         <div className="grid gap-4 sm:max-w-md">
-          <h3 className="text-sm font-medium">Azure Blob</h3>
+          <h3 className="text-sm font-medium">{translate("azureHeading")}</h3>
           <div className="grid gap-2">
-            <Label htmlFor="azure-containerName">Container name</Label>
+            <Label htmlFor="azure-containerName">
+              {translate("containerName")}
+            </Label>
             <Input
               id="azure-containerName"
               name="azureContainerName"
@@ -126,7 +128,9 @@ function StorageFormInner({ defaults }: StorageFormProps) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="azure-connectionString">Connection string</Label>
+            <Label htmlFor="azure-connectionString">
+              {translate("connectionString")}
+            </Label>
             <Input
               id="azure-connectionString"
               name="azureConnectionString"
@@ -137,22 +141,21 @@ function StorageFormInner({ defaults }: StorageFormProps) {
               }
             />
             <p className="text-muted-foreground text-xs">
-              Stored encrypted at rest. Leave blank to keep the existing value.
+              {translate("secretHint")}
             </p>
           </div>
         </div>
 
         <Button type="submit" disabled={isPending} className="w-fit">
-          {isPending ? "Saving…" : "Save storage settings"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </form>
 
       <form action={testAction} className="flex flex-col gap-2">
         <div>
-          <h3 className="text-sm font-medium">Test connection</h3>
+          <h3 className="text-sm font-medium">{translate("testTitle")}</h3>
           <p className="text-muted-foreground text-xs">
-            Writes, reads, and deletes a small probe file using the saved
-            configuration. Save your changes first.
+            {translate("testHint")}
           </p>
         </div>
         <Button
@@ -161,7 +164,7 @@ function StorageFormInner({ defaults }: StorageFormProps) {
           disabled={isTesting}
           className="w-fit"
         >
-          {isTesting ? "Testing…" : "Test storage connection"}
+          {isTesting ? translate("testing") : translate("test")}
         </Button>
       </form>
     </div>

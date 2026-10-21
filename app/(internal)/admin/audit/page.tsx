@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import {
   Card,
@@ -20,7 +22,10 @@ import { saveAuditRetentionSettings } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Audit log" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.audit");
+  return { title: translate("metaTitle") };
+}
 
 type AdminAuditPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -34,6 +39,7 @@ export default async function AdminAuditPage({
     user.permissions,
     PERMISSIONS.SETTINGS_MANAGE,
   );
+  const translate = await getTranslations("Admin.audit");
   const auditRetention = await getAuditRetention();
   const query = await searchParams;
   const users = (await listStaffAccounts()).map((account) => ({
@@ -44,18 +50,16 @@ export default async function AdminAuditPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Audit log</h1>
-        <p className="text-muted-foreground text-sm">
-          Administrative and system activity across the platform.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Audit log</CardTitle>
-          <CardDescription>
-            Filter by action, user, or date range.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* The audit query is the slowest on this page — stream it so the
@@ -69,10 +73,9 @@ export default async function AdminAuditPage({
       {canManageSettings ? (
         <Card>
           <CardHeader>
-            <CardTitle>Retention</CardTitle>
+            <CardTitle>{translate("retention.title")}</CardTitle>
             <CardDescription>
-              Audit rows older than this are pruned by the scheduler. Set 0 to
-              keep them forever.
+              {translate("retention.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -80,8 +83,8 @@ export default async function AdminAuditPage({
               key={auditRetention}
               action={saveAuditRetentionSettings}
               fieldName="auditRetention"
-              label="Keep audit logs for (days)"
-              help="Default 0 (keep forever)."
+              label={translate("retention.label")}
+              help={translate("retention.help")}
               value={auditRetention}
             />
           </CardContent>

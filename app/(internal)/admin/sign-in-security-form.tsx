@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ export function SignInSecurityForm({
   passwordResetPerMin,
   breakGlassPerMin,
 }: SignInSecurityFormProps) {
+  const translate = useTranslations("Admin.signIn.sessions");
   const [state, action, isPending] = useActionState(
     saveSignInSecuritySettings,
     undefined,
@@ -30,10 +32,9 @@ export function SignInSecurityForm({
   return (
     <form action={action} className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="loginRateLimit">Login rate limit (per minute)</Label>
+        <Label htmlFor="loginRateLimit">{translate("loginRateLimit")}</Label>
         <p className="text-muted-foreground text-xs">
-          Maximum sign-in attempts per IP address per minute. Increase for
-          shared-office environments behind a single public IP.
+          {translate("loginRateLimitHint")}
         </p>
         <Input
           id="loginRateLimit"
@@ -46,10 +47,11 @@ export function SignInSecurityForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="sessionTimeoutMinutes">Auto-logout (minutes)</Label>
+        <Label htmlFor="sessionTimeoutMinutes">
+          {translate("sessionTimeout")}
+        </Label>
         <p className="text-muted-foreground text-xs">
-          Automatically sign out after this many minutes of inactivity. Set to 0
-          to disable. Minimum 5 minutes when enabled.
+          {translate("sessionTimeoutHint")}
         </p>
         <Input
           id="sessionTimeoutMinutes"
@@ -63,10 +65,10 @@ export function SignInSecurityForm({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="passwordResetPerMin">
-          Password reset requests (per minute)
+          {translate("passwordReset")}
         </Label>
         <p className="text-muted-foreground text-xs">
-          Maximum password-reset emails per IP address per minute.
+          {translate("passwordResetHint")}
         </p>
         <Input
           id="passwordResetPerMin"
@@ -79,12 +81,9 @@ export function SignInSecurityForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="breakGlassPerMin">
-          Break-glass attempts (per minute)
-        </Label>
+        <Label htmlFor="breakGlassPerMin">{translate("breakGlass")}</Label>
         <p className="text-muted-foreground text-xs">
-          Maximum break-glass token verifications per IP address per minute on
-          the login page.
+          {translate("breakGlassHint")}
         </p>
         <Input
           id="breakGlassPerMin"
@@ -98,7 +97,7 @@ export function SignInSecurityForm({
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={isPending} size="sm">
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>
