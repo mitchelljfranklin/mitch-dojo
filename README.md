@@ -150,10 +150,11 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - Editable booking-page headline and description; custom colours, radius, and layout
 
 ### Languages
-- English and Spanish out of the box, with a school-wide **default language** in Admin → General
+- **12 languages**: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian, with a school-wide **default language** in Admin → General
 - Per-device language selector that switches without reloading or discarding form state
-- Staff UI, public booking, member portal, check-in, automated emails, and PDFs translated
+- Staff UI, public booking, member portal, check-in, automated emails, and PDFs translated (PDF labels fall back to English for scripts not covered by the bundled Helvetica font)
 - Authored content (email templates, agreement documents, names) stays exactly as written
+- The ten added languages are **initial machine-assisted translations** and should be reviewed by native speakers before being treated as final copy
 - Adding another language is a documented code change — see [Adding a Language](docs/advanced/adding-a-language.md)
 
 ### Access Control

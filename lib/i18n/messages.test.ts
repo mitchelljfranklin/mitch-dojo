@@ -1,10 +1,33 @@
 import { describe, expect, it } from "vitest";
 
+import ar from "../../messages/ar.json";
+import de from "../../messages/de.json";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
+import fr from "../../messages/fr.json";
+import hi from "../../messages/hi.json";
+import itMessages from "../../messages/it.json";
+import ja from "../../messages/ja.json";
+import ko from "../../messages/ko.json";
+import pt from "../../messages/pt.json";
+import ru from "../../messages/ru.json";
+import zh from "../../messages/zh.json";
 import { LOCALES } from "./config";
 
-const CATALOGS: Record<string, unknown> = { en, es };
+const CATALOGS: Record<string, unknown> = {
+  en,
+  es,
+  pt,
+  fr,
+  de,
+  it: itMessages,
+  ja,
+  ko,
+  zh,
+  ar,
+  hi,
+  ru,
+};
 
 function flattenKeys(value: unknown, prefix = ""): string[] {
   if (typeof value !== "object" || value === null) return [prefix];

@@ -21,7 +21,7 @@ describe("organizationSettingsSchema", () => {
 
   it("rejects an unsupported language", () => {
     const result = organizationSettingsSchema.safeParse({
-      defaultLocale: "de",
+      defaultLocale: "zz",
     });
     expect(result.success).toBe(false);
   });

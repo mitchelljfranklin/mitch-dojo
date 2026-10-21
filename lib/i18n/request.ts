@@ -12,6 +12,16 @@ const MESSAGE_LOADERS: Record<
 > = {
   en: () => import("../../messages/en.json"),
   es: () => import("../../messages/es.json"),
+  pt: () => import("../../messages/pt.json"),
+  fr: () => import("../../messages/fr.json"),
+  de: () => import("../../messages/de.json"),
+  it: () => import("../../messages/it.json"),
+  ja: () => import("../../messages/ja.json"),
+  ko: () => import("../../messages/ko.json"),
+  zh: () => import("../../messages/zh.json"),
+  ar: () => import("../../messages/ar.json"),
+  hi: () => import("../../messages/hi.json"),
+  ru: () => import("../../messages/ru.json"),
 };
 
 export default getRequestConfig(async () => {

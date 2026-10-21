@@ -6,6 +6,7 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeTokens } from "@/lib/theme-tokens";
+import { localeDirection } from "@/lib/i18n/config";
 import { getAppearanceSettings, getOrganizationSettings } from "@/lib/settings";
 
 const geistSans = Geist({
@@ -60,6 +61,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      dir={localeDirection(locale)}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >

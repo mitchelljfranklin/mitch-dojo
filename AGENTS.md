@@ -33,8 +33,11 @@ plan without asking.
   + SSO (Microsoft Entra ID / Google / generic OIDC with break-glass URL)
 - **Tailwind CSS v4 + shadcn/ui** — UI; themed via CSS-variable design tokens
   (light + dark)
-- **next-intl** — cookie-based locale (`NEXT_LOCALE`), English default with a
-  Spanish catalog; the school default is configurable in Admin → General.
+- **next-intl** — cookie-based locale (`NEXT_LOCALE`), English default with
+  English, Spanish, Portuguese, French, German, Italian, Japanese, Korean,
+  Chinese, Arabic, Hindi, and Russian catalogs; the school default is
+  configurable in Admin → General. The ten added languages are initial
+  machine-assisted translations pending native review.
   Catalogs live in `messages/`, resolution in `lib/i18n/`. Translated
   surfaces: public booking, member portal, QR check-in, auth screens, the
   staff shell/dashboard, the full Students domain (list, form, detail,
@@ -49,7 +52,8 @@ plan without asking.
   Users, Roles, Memberships settings, Communication, Documents, Verifications,
   Email/SMTP, Templates, Campaigns, Email log, Audit log, Health, Scheduling,
   Sign-in/SSO). Outbound email shells follow the school default language;
-  generated PDFs follow the viewer's locale; admin-authored email templates and
+  generated PDFs follow the viewer's locale (non-Latin scripts fall back to
+  English labels until fonts are embedded); admin-authored email templates and
   document text stay as written. Adding a language:
   `docs/advanced/adding-a-language.md`.
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates

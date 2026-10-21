@@ -1,12 +1,12 @@
 # Adding a Language
 
-The app ships with English and Spanish. Adding another language is a code change — there is no in-app "install language" button — but it is deliberately mechanical.
+The app ships with twelve languages: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian. Adding another language is a code change — there is no in-app "install language" button — but it is deliberately mechanical. The ten languages after English/Spanish are initial machine-assisted translations; native review is recommended before treating them as final copy.
 
 There is no `[locale]` URL segment. The active language comes from a cookie (`NEXT_LOCALE`), then the school default in Admin → General, then `Accept-Language`, then English.
 
 ## 1. Add the message catalog
 
-Create `messages/<code>.json`, using the ISO language code as the filename (`fr.json`, `pt.json`, `de.json`).
+Create `messages/<code>.json`, using the ISO language code as the filename (`nl.json`).
 
 Copy `messages/en.json` as the starting point and translate the **values only**:
 
@@ -22,12 +22,13 @@ Copy `messages/en.json` as the starting point and translate the **values only**:
 Edit `lib/i18n/config.ts`:
 
 ```ts
-export const LOCALES = ["en", "es", "fr"] as const;
+export const LOCALES = ["en", "es", "fr", "nl"] as const;
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   en: "English",
   es: "Español",
   fr: "Français",
+  nl: "Nederlands",
 };
 ```
 
@@ -45,6 +46,7 @@ const MESSAGE_LOADERS: Record<
   en: () => import("../../messages/en.json"),
   es: () => import("../../messages/es.json"),
   fr: () => import("../../messages/fr.json"),
+  nl: () => import("../../messages/nl.json"),
 };
 ```
 
@@ -73,7 +75,7 @@ npm run docs:build
 Relevant tests:
 
 - `lib/i18n/messages.test.ts` — key parity, no dotted keys.
-- `lib/settings/schema.test.ts` — if the new code is `de`, update the "unsupported language" fixture (it currently uses `de` as its rejection example).
+- `lib/settings/schema.test.ts` — if the new code is the current "unsupported language" fixture (`zz`), change that example.
 - Add the new language to the smoke/visual checks if you maintain them.
 
 Then run the app, switch to the new language, and spot-check:
@@ -86,9 +88,10 @@ Then run the app, switch to the new language, and spot-check:
 
 ## Language-specific caveats
 
-- **Country names** have committed English and Spanish maps (`lib/country-names.ts`). Other locales currently fall back to English. Add `COUNTRY_NAMES_<code>` and extend `countryName()` if full country-name coverage is required. CSV import accepts English and Spanish names; add the new map there too.
-- **Non-Latin scripts**: the UI font is Geist with `subsets: ["latin"]`, and PDFs use Helvetica. Cyrillic, Greek, CJK, Arabic, etc. need font additions; PDFs specifically need an embedded font that covers the script.
-- **Right-to-left languages** are not supported out of the box. Add `dir` to the root `<html>` and audit physical layout utilities (`left`/`right`, icons, charts) before claiming RTL support.
+- **Country names** have committed maps for all twelve shipped locales (`lib/country-names.ts`). Adding a new language means generating one more map (or accepting English fallback) and extending `countryName()` if full country-name coverage is required. CSV import accepts the shipped names; add the new map there too.
+- **PDF fonts**: PDFs use the built-in Helvetica (Latin only). For the shipped Japanese, Korean, Chinese, Arabic, Hindi, and Russian locales, PDF labels currently fall back to English so documents stay readable; authored names in those scripts may still not render. Embedding Noto fonts is the next step for fully localized PDFs.
+- **UI fonts**: Geist is configured with the `latin` subset. CJK, Devanagari, and Arabic glyphs rely on the operating system's fallback fonts; bundle Noto UI fonts if consistent rendering across devices matters.
+- **Right-to-left languages**: Arabic sets `dir="rtl"` on the root element, but the layout has not had a full RTL audit; treat Arabic as best-effort until physical `left`/`right` utilities and icons are reviewed.
 - **Authored content is not translated automatically**: seeded email templates, agreement documents, course/plan names, and custom role names stay as written. Translate templates in Admin → Templates, and documents in Admin → Documents, if needed.
 - **`app/global-error.tsx`** stays English by design — it renders outside the i18n provider when the root layout itself has failed.
 - **`app/style-guide`** is developer-only and stays English.

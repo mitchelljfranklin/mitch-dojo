@@ -26,8 +26,8 @@ describe("resolveLocale", () => {
   it("ignores an unsupported cookie and school default, then uses the header", () => {
     expect(
       resolveLocale({
-        cookieLocale: "de",
-        organizationDefault: "fr",
+        cookieLocale: "nl",
+        organizationDefault: "sv",
         acceptLanguage: "es-MX,es;q=0.9",
       }),
     ).toBe("es");
@@ -38,7 +38,7 @@ describe("resolveLocale", () => {
       resolveLocale({
         cookieLocale: null,
         organizationDefault: null,
-        acceptLanguage: "fr-FR,fr;q=0.9",
+        acceptLanguage: "nl-NL,nl;q=0.9",
       }),
     ).toBe("en");
   });
@@ -51,15 +51,17 @@ describe("localeFromAcceptLanguage", () => {
 
   it("treats a regional tag as its base language", () => {
     expect(localeFromAcceptLanguage("es-AR")).toBe("es");
+    expect(localeFromAcceptLanguage("pt-BR")).toBe("pt");
+    expect(localeFromAcceptLanguage("de-DE")).toBe("de");
   });
 
   it("skips unsupported languages and zero-quality entries", () => {
-    expect(localeFromAcceptLanguage("de, es;q=0, en;q=0.5")).toBe("en");
+    expect(localeFromAcceptLanguage("nl, es;q=0, en;q=0.5")).toBe("en");
   });
 
   it("returns undefined without a usable header", () => {
     expect(localeFromAcceptLanguage(null)).toBeUndefined();
     expect(localeFromAcceptLanguage("")).toBeUndefined();
-    expect(localeFromAcceptLanguage("de-DE,de;q=0.9")).toBeUndefined();
+    expect(localeFromAcceptLanguage("nl-NL,nl;q=0.9")).toBeUndefined();
   });
 });

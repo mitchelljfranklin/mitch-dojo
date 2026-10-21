@@ -5,7 +5,11 @@
 // shown in the active locale; CSV export writes the English name and import
 // accepts either the English/Spanish name or the code, case-insensitively.
 
-import { COUNTRY_NAMES, COUNTRY_NAMES_ES } from "./country-names";
+import {
+  COUNTRY_NAMES,
+  COUNTRY_NAMES_ES,
+  COUNTRY_NAMES_LOCALIZED,
+} from "./country-names";
 
 const COUNTRY_CODES = [
   "AD",
@@ -270,13 +274,21 @@ export function isValidCountryCode(value: string): value is CountryCode {
 // Localized country name for an alpha-2 code ("AU" → "Australia").
 export function countryName(code: string, locale = "en"): string {
   const upper = code.toUpperCase();
-  const localized = locale.toLowerCase().startsWith("es")
-    ? COUNTRY_NAMES_ES[upper]
-    : COUNTRY_NAMES[upper];
-  return localized ?? COUNTRY_NAMES[upper] ?? upper;
+  const base = locale.split("-")[0]?.toLowerCase() ?? "en";
+  const names =
+    base === "es"
+      ? COUNTRY_NAMES_ES
+      : (COUNTRY_NAMES_LOCALIZED[base] ?? COUNTRY_NAMES);
+  return names[upper] ?? COUNTRY_NAMES[upper] ?? upper;
 }
 
-// Resolves a CSV import value — country name (English or Spanish) or alpha-2
+const COUNTRY_NAME_MAPS = [
+  COUNTRY_NAMES,
+  COUNTRY_NAMES_ES,
+  ...Object.values(COUNTRY_NAMES_LOCALIZED),
+];
+
+// Resolves a CSV import value — country name (any shipped locale) or alpha-2
 // code, case-insensitive — to a code. Null when nothing matches.
 export function resolveCountryCode(value: string): string | null {
   const trimmed = value.trim();
@@ -287,10 +299,8 @@ export function resolveCountryCode(value: string): string | null {
   }
 
   const lower = trimmed.toLowerCase();
-  const match = COUNTRY_CODES.find(
-    (code) =>
-      countryName(code).toLowerCase() === lower ||
-      countryName(code, "es").toLowerCase() === lower,
+  const match = COUNTRY_CODES.find((code) =>
+    COUNTRY_NAME_MAPS.some((names) => names[code]?.toLowerCase() === lower),
   );
   return match ?? null;
 }

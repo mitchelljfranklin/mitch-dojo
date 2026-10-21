@@ -3,6 +3,16 @@ import { getLocale, getTranslations } from "next-intl/server";
 // PDFs render outside the React tree (react-pdf), so labels are resolved here
 // and passed in as plain values. The locale follows the request cookie, with
 // the school default as the fallback chosen by the request config.
+//
+// @react-pdf's built-in Helvetica covers WinAnsi (Latin) only. Until embedded
+// Noto fonts are added, scripts outside that range fall back to English labels
+// so a PDF is still readable rather than rendering blank glyphs.
+const PDF_LATIN_LOCALES = new Set(["en", "es", "pt", "fr", "de", "it"]);
+
+async function resolvePdfLocale(): Promise<string> {
+  const requested = await getLocale();
+  return PDF_LATIN_LOCALES.has(requested) ? requested : "en";
+}
 
 export type InvoicePdfLabels = {
   locale: string;
@@ -32,7 +42,7 @@ export type InvoicePdfLabels = {
 };
 
 export async function getInvoicePdfLabels(): Promise<InvoicePdfLabels> {
-  const locale = await getLocale();
+  const locale = await resolvePdfLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
@@ -89,7 +99,7 @@ export type ReportCardPdfLabels = {
 };
 
 export async function getReportCardPdfLabels(): Promise<ReportCardPdfLabels> {
-  const locale = await getLocale();
+  const locale = await resolvePdfLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
@@ -130,7 +140,7 @@ export type AttendancePdfLabels = {
 };
 
 export async function getAttendancePdfLabels(): Promise<AttendancePdfLabels> {
-  const locale = await getLocale();
+  const locale = await resolvePdfLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
@@ -177,7 +187,7 @@ export type AgreementPdfLabels = {
 };
 
 export async function getAgreementPdfLabels(): Promise<AgreementPdfLabels> {
-  const locale = await getLocale();
+  const locale = await resolvePdfLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
