@@ -1,7 +1,7 @@
 # Mitch‑Dojo — Architecture Solution Design Document
 
 > **Version:** 0.1.0 (Phase 11b)
-> **Last Updated:** September 2026
+> **Last Updated:** October 2026
 > **Audience:** Engineering, Security, Operations
 > **Status:** Approved
 
@@ -103,7 +103,7 @@ its own belt ladder and grading criteria.
 | ORM | Prisma | ^7 | Typed DB access + migrations |
 | Auth | Auth.js (NextAuth v5) | ^5 | JWT sessions, credentials provider |
 | UI | Tailwind CSS 4 + shadcn/ui | — | Design tokens, accessible primitives |
-| i18n | next-intl | ^4 | Cookie-based locale (English + Spanish) |
+| i18n | next-intl | ^4 | Cookie-based locale (12 languages) |
 | Charts | recharts | ^3 | Dashboards (later phase) |
 | Email | Nodemailer + React Email | — | SMTP delivery, templates |
 | PDF | @react-pdf/renderer | ^4 | Reports (later phase) |

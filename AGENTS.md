@@ -174,8 +174,8 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   Without Next's `react-server` export condition the real package resolves
   to its client entry and every server action that formats a message throws
   before touching the database; the stub keeps integration tests exercising
-  the real Prisma/business logic with the committed catalogs. Keep it in sync
-  when adding a locale.
+  the real Prisma/business logic with the committed catalogs. Keep it and the
+  `CATALOGS` map in `lib/i18n/messages.test.ts` in sync when adding a locale.
 - **CI runs typecheck + lint + format:check + build on every push** —
   `npm run format` before pushing; Prettier failures are the top CI rejection.
   `.prettierignore` excludes `*.md` and `docs/`, so `format:check` does **not**

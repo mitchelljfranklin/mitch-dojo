@@ -277,6 +277,7 @@ export async function sendEmail(
         htmlBody,
         footer: translate("footer"),
         logoUrl,
+        logoAlt: organization.name,
         logoVariant,
       }),
     );
@@ -369,6 +370,7 @@ export async function sendBulkEmail(
         htmlBody,
         footer: translate("footer"),
         logoUrl,
+        logoAlt: organization.name,
         logoVariant,
       }),
     );

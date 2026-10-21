@@ -16,6 +16,7 @@ type DynamicEmailProps = {
   // Absolute URL to the dojo logo (public route) — rendered when the dojo
   // has uploaded one. Must be absolute: email clients have no base URL.
   logoUrl?: string;
+  logoAlt?: string;
   // Which logo variant the URL points at: "primary" renders bare (it is
   // made for light backgrounds and email clients are white); "dark" (a
   // white knockout badge) renders on a dark plate so it stays visible.
@@ -28,6 +29,7 @@ export function DynamicEmail({
   htmlBody,
   footer,
   logoUrl,
+  logoAlt = "",
   logoVariant = "primary",
 }: DynamicEmailProps) {
   const paragraphs = body.split("\n").filter((line) => line.length > 0);
@@ -55,7 +57,7 @@ export function DynamicEmail({
               >
                 <Img
                   src={logoUrl}
-                  alt="Dojo logo"
+                  alt={logoAlt}
                   style={{
                     maxHeight: "48px",
                     maxWidth: "180px",
@@ -67,7 +69,7 @@ export function DynamicEmail({
             ) : (
               <Img
                 src={logoUrl}
-                alt="Dojo logo"
+                alt={logoAlt}
                 style={{
                   maxHeight: "64px",
                   maxWidth: "200px",
@@ -110,5 +112,6 @@ DynamicEmail.PreviewProps = {
   footer:
     "This email was sent by your dojo. If the button does not work, copy and paste the link into your browser.",
   logoUrl: "http://localhost:3000/api/brand/logo?v=demo.png",
+  logoAlt: "My Dojo",
   logoVariant: "primary",
 } satisfies DynamicEmailProps;

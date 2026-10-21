@@ -1,3 +1,4 @@
+import { parse, TYPE } from "@formatjs/icu-messageformat-parser";
 import { describe, expect, it } from "vitest";
 
 import ar from "../../messages/ar.json";
@@ -51,14 +52,83 @@ function flattenMessages(
   return out;
 }
 
-function placeholders(value: string): string[] {
-  return [
-    ...new Set(
-      [...value.matchAll(/\{\s*([a-zA-Z][\w]*)\s*[,}]/g)].map(
-        (match) => match[1]!,
-      ),
-    ),
-  ].sort();
+function collectArguments(value: string): string[] {
+  const argumentsByName = new Set<string>();
+
+  function collectFromElements(elements: ReturnType<typeof parse>): void {
+    for (const element of elements) {
+      if (
+        element.type === TYPE.argument ||
+        element.type === TYPE.number ||
+        element.type === TYPE.date ||
+        element.type === TYPE.time ||
+        element.type === TYPE.select ||
+        element.type === TYPE.plural
+      ) {
+        argumentsByName.add(element.value);
+      }
+
+      if (element.type === TYPE.plural || element.type === TYPE.select) {
+        for (const option of Object.values(element.options)) {
+          collectFromElements(option.value);
+        }
+      }
+
+      if (element.type === TYPE.tag) {
+        collectFromElements(element.children);
+      }
+    }
+  }
+
+  collectFromElements(parse(value));
+  return [...argumentsByName].sort();
+}
+
+function collectControls(value: string): Map<string, Set<string>> {
+  const controls = new Map<string, Set<string>>();
+
+  function collectFromElements(elements: ReturnType<typeof parse>): void {
+    for (const element of elements) {
+      if (element.type === TYPE.plural || element.type === TYPE.select) {
+        const controlKey = `${element.type}:${element.value}`;
+        if (!controls.has(controlKey)) controls.set(controlKey, new Set());
+        const options = controls.get(controlKey)!;
+        for (const optionName of Object.keys(element.options)) {
+          options.add(optionName);
+        }
+        for (const option of Object.values(element.options)) {
+          collectFromElements(option.value);
+        }
+      }
+
+      if (element.type === TYPE.tag) {
+        collectFromElements(element.children);
+      }
+    }
+  }
+
+  collectFromElements(parse(value));
+  return controls;
+}
+
+function expectControlsCovered(
+  source: string,
+  target: string,
+  label: string,
+): void {
+  const sourceControls = collectControls(source);
+  const targetControls = collectControls(target);
+
+  for (const [controlKey, sourceOptions] of sourceControls) {
+    const targetOptions = targetControls.get(controlKey);
+    expect(targetOptions, `${label} is missing ${controlKey}`).toBeDefined();
+    for (const optionName of sourceOptions) {
+      expect(
+        targetOptions?.has(optionName),
+        `${label} is missing ${controlKey}.${optionName}`,
+      ).toBe(true);
+    }
+  }
 }
 
 describe("message catalogs", () => {
@@ -90,14 +160,34 @@ describe("message catalogs", () => {
     }
   });
 
-  it("keeps ICU placeholders in sync with the default catalog", () => {
+  it("parses every ICU message", () => {
+    for (const locale of LOCALES) {
+      const messages = flattenMessages(CATALOGS[locale]);
+      for (const [key, text] of Object.entries(messages)) {
+        expect(() => parse(text), `${locale} ${key}`).not.toThrow();
+      }
+    }
+  });
+
+  it("keeps ICU arguments in sync with the default catalog", () => {
     const defaultMessages = flattenMessages(CATALOGS.en);
     for (const locale of LOCALES) {
       const messages = flattenMessages(CATALOGS[locale]);
       for (const [key, text] of Object.entries(defaultMessages)) {
-        expect(placeholders(messages[key] ?? ""), `${locale} ${key}`).toEqual(
-          placeholders(text),
-        );
+        expect(
+          collectArguments(messages[key] ?? ""),
+          `${locale} ${key}`,
+        ).toEqual(collectArguments(text));
+      }
+    }
+  });
+
+  it("keeps plural and select options from the default catalog", () => {
+    const defaultMessages = flattenMessages(CATALOGS.en);
+    for (const locale of LOCALES) {
+      const messages = flattenMessages(CATALOGS[locale]);
+      for (const [key, text] of Object.entries(defaultMessages)) {
+        expectControlsCovered(text, messages[key] ?? "", `${locale} ${key}`);
       }
     }
   });

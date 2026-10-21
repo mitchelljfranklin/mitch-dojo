@@ -59,7 +59,7 @@ test.describe("history import", () => {
     await page.goto("/attendance/import");
     await page.getByLabel("CSV file").setInputFiles(csvPath);
     await page.getByRole("button", { name: "Import" }).click();
-    await expect(page.getByText(/Imported 2 trainings/).first()).toBeVisible();
+    await expect(page.getByText(/Imported trainings: 2/).first()).toBeVisible();
   });
 
   test("imports belt history from CSV and shows it on the student record", async ({
@@ -82,7 +82,9 @@ test.describe("history import", () => {
     await page.getByLabel("Discipline").selectOption({ label: "E2E Karate" });
     await page.getByLabel("CSV file").setInputFiles(csvPath);
     await page.getByRole("button", { name: "Import" }).click();
-    await expect(page.getByText(/Imported 1 promotion/).first()).toBeVisible();
+    await expect(
+      page.getByText(/Imported promotions: 1/).first(),
+    ).toBeVisible();
 
     await page.goto("/students");
     await page.getByText("E2E Attend Kid").first().click();

@@ -52,9 +52,18 @@ const MESSAGE_LOADERS: Record<
 
 The `Record<Locale, …>` type makes TypeScript fail until the loader exists.
 
+## 4. Update the test fixtures
+
+Add the locale to both fixture maps so the test suite exercises it:
+
+- `lib/i18n/messages.test.ts` — import the catalog and add it to `CATALOGS`.
+- `lib/i18n/test-server.ts` — import the catalog and add it to `MESSAGES` (the Vitest stand-in for `next-intl/server`).
+
+The catalog parity test fails without the first change; the second keeps integration tests using the right language instead of silently falling back to English.
+
 ## What updates automatically
 
-Once the three changes above are in place:
+Once the changes above are in place:
 
 - The header/public-page language selector lists the new language.
 - **Admin → General → Default language** offers it as a school-wide default.
@@ -74,7 +83,7 @@ npm run docs:build
 
 Relevant tests:
 
-- `lib/i18n/messages.test.ts` — key parity, no dotted keys.
+- `lib/i18n/messages.test.ts` — key parity, no dotted keys, ICU parsing, argument parity, and plural/select structure.
 - `lib/settings/schema.test.ts` — if the new code is the current "unsupported language" fixture (`zz`), change that example.
 - Add the new language to the smoke/visual checks if you maintain them.
 
@@ -103,6 +112,7 @@ Then run the app, switch to the new language, and spot-check:
 - [ ] `LOCALES` updated
 - [ ] `LOCALE_LABELS` updated with the native name
 - [ ] `MESSAGE_LOADERS` updated
+- [ ] `messages.test.ts` and `test-server.ts` fixture maps updated
 - [ ] Placeholders and ICU plurals preserved
 - [ ] Tests, build, and docs build pass
 - [ ] Runtime smoke check in the new language

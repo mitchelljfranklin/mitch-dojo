@@ -171,11 +171,11 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 | Hindi | `hi` | Initial machine-assisted translation |
 | Russian | `ru` | Initial machine-assisted translation |
 
-**Translation status.** English and Spanish are the maintained reference catalogs. The other ten are an initial machine-assisted pass. Key parity, ICU placeholder consistency, and key-name validity are enforced by the catalog tests; ICU structure was validated when the catalogs were generated, and dates/numbers/currency use locale-aware formatting. Wording still benefits from native review. Corrections are welcome — edit the relevant `messages/<code>.json` value and run the catalog tests.
+**Translation status.** English and Spanish are the maintained reference catalogs. The other ten are an initial machine-assisted pass. Key parity, ICU parsing, argument parity, plural/select structure, and key-name validity are enforced by the catalog tests; dates/numbers/currency use locale-aware formatting. Wording still benefits from native review. Corrections are welcome — edit the relevant `messages/<code>.json` value and run the catalog tests.
 
 **PDF fonts.** PDFs use bundled Noto Sans families — Latin/Cyrillic, Arabic, Devanagari, and regional Japanese/Korean/Simplified Chinese — so all twelve languages can render without falling back to English. The fonts are OFL-licensed. Arabic and Hindi require complex-script shaping, and Arabic needs RTL pagination; both are best-effort and should be checked with real names before relying on them for official documents. CJK and Latin/Cyrillic rendering are straightforward.
 
-**Adding a language.** The process is documented in [Adding a Language](docs/advanced/adding-a-language.md): add a catalog, register the locale, and add the loader. The parity test fails until every key exists.
+**Adding a language.** The process is documented in [Adding a Language](docs/advanced/adding-a-language.md): add a catalog, register the locale, add the loader, and update the test fixture maps. The parity test fails until every key exists.
 
 ### Access Control
 - 3 system roles (Admin, Trainer, Viewer) + custom roles
