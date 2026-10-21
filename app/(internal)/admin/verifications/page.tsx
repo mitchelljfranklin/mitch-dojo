@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import { FlashToast } from "@/components/flash-toast";
 import {
   Card,
@@ -14,7 +17,10 @@ import { VerificationTypesManager } from "./verification-types-manager";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Verifications" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.verifications");
+  return { title: translate("metaTitle") };
+}
 
 type AdminVerificationsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -24,6 +30,7 @@ export default async function AdminVerificationsPage({
   searchParams,
 }: AdminVerificationsPageProps) {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.verifications");
   const query = await searchParams;
   const types = await listVerificationTypes();
 
@@ -33,20 +40,16 @@ export default async function AdminVerificationsPage({
         <FlashToast message={query.error} variant="error" />
       ) : null}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Verifications</h1>
-        <p className="text-muted-foreground text-sm">
-          Credential types your trainers may need. Record the details against
-          each trainer on the Trainers page.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Verification types</CardTitle>
-          <CardDescription>
-            Fully school-managed, so the same set works in any state or country.
-            Mark a type Required to flag trainers who have not recorded it.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <VerificationTypesManager types={types} />

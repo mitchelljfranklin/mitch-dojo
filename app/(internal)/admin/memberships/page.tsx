@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -13,28 +16,29 @@ import { MembershipsForm } from "../memberships-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Memberships" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.memberships");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminMembershipsPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.memberships");
   const membershipsSettings = await getMembershipsSettings();
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Memberships</h1>
-        <p className="text-muted-foreground text-sm">
-          Currency display, invoice due dates, and overdue behaviour.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Memberships & payments</CardTitle>
-          <CardDescription>
-            Plans are managed on the Memberships page; these are the school-wide
-            billing rules.
-          </CardDescription>
+          <CardTitle>{translate("cardTitle")}</CardTitle>
+          <CardDescription>{translate("cardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <MembershipsForm

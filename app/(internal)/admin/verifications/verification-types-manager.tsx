@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ActionForm } from "@/components/action-form";
@@ -46,6 +47,8 @@ function TypeSheet({
   type?: VerificationTypeView;
   trigger: (open: () => void) => React.ReactNode;
 }) {
+  const translate = useTranslations("Admin.verifications");
+  const translateCommon = useTranslations("Common");
   const [open, setOpen] = useState(false);
   const action = type
     ? updateVerificationTypeAction
@@ -71,11 +74,12 @@ function TypeSheet({
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
             <SheetTitle>
-              {type ? "Edit verification type" : "New verification type"}
+              {type
+                ? translate("sheet.editTitle")
+                : translate("sheet.newTitle")}
             </SheetTitle>
             <SheetDescription>
-              A credential your trainers may need — e.g. Working with Children
-              Check, First Aid, insurance.
+              {translate("sheet.description")}
             </SheetDescription>
           </SheetHeader>
           <ActionForm
@@ -87,18 +91,22 @@ function TypeSheet({
               <input type="hidden" name="typeId" value={type.id} />
             ) : null}
             <div className="grid gap-2">
-              <Label htmlFor={`${idPrefix}-name`}>Name *</Label>
+              <Label htmlFor={`${idPrefix}-name`}>
+                {translate("sheet.name")}
+              </Label>
               <Input
                 id={`${idPrefix}-name`}
                 name="name"
                 required
                 maxLength={80}
                 defaultValue={type?.name}
-                placeholder="e.g. Working with Children Check"
+                placeholder={translate("sheet.namePlaceholder")}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`${idPrefix}-description`}>Description</Label>
+              <Label htmlFor={`${idPrefix}-description`}>
+                {translate("sheet.descriptionLabel")}
+              </Label>
               <Textarea
                 id={`${idPrefix}-description`}
                 name="description"
@@ -108,7 +116,7 @@ function TypeSheet({
             </div>
             <div className="grid gap-2">
               <Label htmlFor={`${idPrefix}-validity`}>
-                Default validity (months)
+                {translate("sheet.validity")}
               </Label>
               <Input
                 id={`${idPrefix}-validity`}
@@ -116,28 +124,28 @@ function TypeSheet({
                 type="number"
                 min={1}
                 max={120}
-                placeholder="Optional"
+                placeholder={translate("sheet.validityPlaceholder")}
                 defaultValue={type?.defaultValidityMonths ?? ""}
               />
             </div>
             <div className="flex flex-col gap-3">
               <label className="flex w-fit items-center gap-2 text-sm">
                 <Checkbox name="required" defaultChecked={type?.required} />
-                Required for all trainers
+                {translate("sheet.requiredCheckbox")}
               </label>
               <label className="flex w-fit items-center gap-2 text-sm">
                 <Checkbox
                   name="requiresExpiry"
                   defaultChecked={type?.requiresExpiry}
                 />
-                Records should carry an expiry date
+                {translate("sheet.expiryCheckbox")}
               </label>
               <label className="flex w-fit items-center gap-2 text-sm">
                 <Checkbox
                   name="isActive"
                   defaultChecked={type ? type.isActive : true}
                 />
-                Active
+                {translate("sheet.activeCheckbox")}
               </label>
             </div>
             {state && "error" in state ? (
@@ -153,11 +161,15 @@ function TypeSheet({
             <SheetFooter>
               {saved ? (
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Done
+                  {translate("sheet.done")}
                 </Button>
               ) : (
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Saving..." : type ? "Save changes" : "Create"}
+                  {isPending
+                    ? translate("sheet.saving")
+                    : type
+                      ? translate("sheet.saveChanges")
+                      : translate("sheet.create")}
                 </Button>
               )}
               <Button
@@ -165,7 +177,7 @@ function TypeSheet({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {translateCommon("cancel")}
               </Button>
             </SheetFooter>
           </ActionForm>
@@ -180,18 +192,21 @@ export function VerificationTypesManager({
 }: {
   types: VerificationTypeView[];
 }) {
+  const translate = useTranslations("Admin.verifications");
+  const translateCommon = useTranslations("Common");
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
         <TypeSheet
-          trigger={(open) => <Button onClick={open}>New type</Button>}
+          trigger={(open) => (
+            <Button onClick={open}>{translate("newType")}</Button>
+          )}
         />
       </div>
 
       {types.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No verification types yet — add one to start tracking credentials.
-        </p>
+        <p className="text-muted-foreground text-sm">{translate("empty")}</p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
           {types.map((type) => (
@@ -204,22 +219,22 @@ export function VerificationTypesManager({
                   {type.name}
                   {type.required ? (
                     <Badge variant="secondary" className="text-xs">
-                      Required
+                      {translate("required")}
                     </Badge>
                   ) : null}
                   {type.requiresExpiry ? (
                     <Badge variant="outline" className="text-xs">
-                      Expiry
+                      {translate("expiry")}
                     </Badge>
                   ) : null}
                   {type.isActive ? null : (
                     <Badge variant="outline" className="text-xs">
-                      Inactive
+                      {translate("inactive")}
                     </Badge>
                   )}
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  {type.recordCount} record{type.recordCount === 1 ? "" : "s"}
+                  {translate("recordCount", { count: type.recordCount })}
                   {type.description ? ` · ${type.description}` : ""}
                 </span>
               </div>
@@ -228,7 +243,7 @@ export function VerificationTypesManager({
                   type={type}
                   trigger={(open) => (
                     <Button variant="outline" size="sm" onClick={open}>
-                      Edit
+                      {translate("edit")}
                     </Button>
                   )}
                 />
@@ -240,7 +255,7 @@ export function VerificationTypesManager({
                     value={type.isActive ? "false" : "true"}
                   />
                   <Button type="submit" variant="ghost" size="sm">
-                    {type.isActive ? "Disable" : "Enable"}
+                    {type.isActive ? translate("disable") : translate("enable")}
                   </Button>
                 </form>
                 <form
@@ -249,11 +264,11 @@ export function VerificationTypesManager({
                 >
                   <input type="hidden" name="typeId" value={type.id} />
                   <ConfirmDialog
-                    title="Delete verification type?"
+                    title={translate("deleteTitle")}
                     description={
                       type.recordCount > 0
-                        ? "This type has records against it — disable it instead."
-                        : `${type.name} will be removed.`
+                        ? translate("deleteHasRecords")
+                        : translate("deleteConfirm", { name: type.name })
                     }
                     formId={`delete-verification-type-${type.id}`}
                   >
@@ -263,7 +278,7 @@ export function VerificationTypesManager({
                       size="sm"
                       className="text-destructive"
                     >
-                      Delete
+                      {translateCommon("delete")}
                     </Button>
                   </ConfirmDialog>
                 </form>

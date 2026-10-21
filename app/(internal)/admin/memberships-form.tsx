@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +36,7 @@ function MembershipsFormInner({
   taxLabel,
   blockCheckinOnOutstandingAgreements,
 }: MembershipsFormProps) {
+  const translate = useTranslations("Admin.memberships.form");
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
     FormData
@@ -44,20 +46,20 @@ function MembershipsFormInner({
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="currency">Currency</Label>
+        <Label htmlFor="currency">{translate("currency")}</Label>
         <Input
           id="currency"
           name="currency"
           defaultValue={currency}
           maxLength={3}
-          placeholder="e.g. USD, EUR, GBP"
+          placeholder={translate("currencyPlaceholder")}
         />
         <p className="text-muted-foreground text-xs">
-          ISO 4217 code used to display plan prices and invoice totals.
+          {translate("currencyHint")}
         </p>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="invoiceDueDays">Invoice due days</Label>
+        <Label htmlFor="invoiceDueDays">{translate("invoiceDueDays")}</Label>
         <Input
           id="invoiceDueDays"
           name="invoiceDueDays"
@@ -67,12 +69,12 @@ function MembershipsFormInner({
           defaultValue={invoiceDueDays}
         />
         <p className="text-muted-foreground text-xs">
-          Generated invoices are due this many days after issue.
+          {translate("invoiceDueDaysHint")}
         </p>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="suspendAfterOverdueDays">
-          Suspend check-in after overdue days
+          {translate("suspendAfter")}
         </Label>
         <Input
           id="suspendAfterOverdueDays"
@@ -83,21 +85,20 @@ function MembershipsFormInner({
           defaultValue={suspendAfterOverdueDays}
         />
         <p className="text-muted-foreground text-xs">
-          Members with an unpaid invoice this many days past due cannot use QR
-          check-in. Set 0 to never suspend.
+          {translate("suspendAfterHint")}
         </p>
       </div>
       <div className="flex flex-col gap-2">
-        <Label>Invoice generation</Label>
+        <Label>{translate("generationTitle")}</Label>
         <p className="text-muted-foreground text-xs">
-          The scheduler creates invoices at the start of each billing cycle.
+          {translate("generationHint")}
         </p>
         <label className="flex w-fit items-center gap-2 text-sm">
           <Checkbox
             name="autoGenerateInvoices"
             defaultChecked={autoGenerateInvoices}
           />
-          Generate recurring invoices automatically
+          {translate("autoGenerate")}
         </label>
       </div>
       <div className="grid gap-2">
@@ -106,15 +107,14 @@ function MembershipsFormInner({
             name="blockCheckinOnOutstandingAgreements"
             defaultChecked={blockCheckinOnOutstandingAgreements}
           />
-          Block QR check-in until agreements are signed
+          {translate("blockCheckin")}
         </label>
         <p className="text-muted-foreground text-xs">
-          When on, members with an unsigned or out-of-date agreement are asked
-          to sign before checking in. Staff can always mark attendance manually.
+          {translate("blockCheckinHint")}
         </p>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="taxRatePercent">Tax / GST rate (%)</Label>
+        <Label htmlFor="taxRatePercent">{translate("taxRate")}</Label>
         <Input
           id="taxRatePercent"
           name="taxRatePercent"
@@ -124,18 +124,15 @@ function MembershipsFormInner({
           step="0.01"
           defaultValue={taxRatePercent}
         />
-        <Label htmlFor="taxLabel">Tax label</Label>
+        <Label htmlFor="taxLabel">{translate("taxLabel")}</Label>
         <Input
           id="taxLabel"
           name="taxLabel"
           maxLength={20}
           defaultValue={taxLabel}
-          placeholder="e.g. GST"
+          placeholder={translate("taxLabelPlaceholder")}
         />
-        <p className="text-muted-foreground text-xs">
-          Applied to new invoices and captured at issue time, so changing the
-          rate later never rewrites history.
-        </p>
+        <p className="text-muted-foreground text-xs">{translate("taxHint")}</p>
       </div>
       {state && !state.ok ? (
         <p className="text-destructive text-sm" role="alert">
@@ -149,7 +146,7 @@ function MembershipsFormInner({
       ) : null}
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save membership settings"}
+          {isPending ? translate("saving") : translate("save")}
         </Button>
       </div>
     </form>

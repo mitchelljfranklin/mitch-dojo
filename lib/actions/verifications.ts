@@ -57,9 +57,10 @@ export async function createVerificationTypeAction(
   formData: FormData,
 ): Promise<VerificationActionState> {
   const actor = await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.verifications.errors");
   const parsed = parseTypeInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
   try {
     const { id } = await createVerificationType(parsed.data);
@@ -72,11 +73,11 @@ export async function createVerificationTypeAction(
     );
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A verification type with that name already exists." };
+      return { error: translate("duplicate") };
     }
     throw error;
   }
-  return { ok: true, message: "Verification type created." };
+  return { ok: true, message: translate("created") };
 }
 
 export async function updateVerificationTypeAction(
@@ -84,10 +85,11 @@ export async function updateVerificationTypeAction(
   formData: FormData,
 ): Promise<VerificationActionState> {
   const actor = await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.verifications.errors");
   const typeId = getField(formData, "typeId");
   const parsed = parseTypeInput(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return { error: translate("invalid") };
   }
   try {
     await updateVerificationType(typeId, parsed.data);
@@ -99,11 +101,11 @@ export async function updateVerificationTypeAction(
     );
   } catch (error: unknown) {
     if (isUniqueNameError(error)) {
-      return { error: "A verification type with that name already exists." };
+      return { error: translate("duplicate") };
     }
     throw error;
   }
-  return { ok: true, message: "Verification type updated." };
+  return { ok: true, message: translate("updated") };
 }
 
 export async function toggleVerificationTypeAction(
@@ -131,8 +133,13 @@ export async function deleteVerificationTypeAction(
   try {
     await deleteVerificationType(typeId);
   } catch (error: unknown) {
+    const translate = await getTranslations("Admin.verifications.errors");
     const message =
-      error instanceof Error ? error.message : "Could not delete the type.";
+      error instanceof Error && error.message.includes("records against")
+        ? translate("deleteBlocked")
+        : error instanceof Error
+          ? error.message
+          : translate("deleteFailed");
     redirect(`/admin/verifications?error=${encodeURIComponent(message)}`);
   }
   await logAudit(

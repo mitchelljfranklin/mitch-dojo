@@ -1777,6 +1777,117 @@
         "retentionSaved": "Email log retention saved."
       }
     },
+    "memberships": {
+      "metaTitle": "Admin — Memberships",
+      "title": "Memberships",
+      "subtitle": "Currency display, invoice due dates, and overdue behaviour.",
+      "cardTitle": "Memberships & payments",
+      "cardDescription": "Plans are managed on the Memberships page; these are the school-wide billing rules.",
+      "form": {
+        "currency": "Currency",
+        "currencyPlaceholder": "e.g. USD, EUR, GBP",
+        "currencyHint": "ISO 4217 code used to display plan prices and invoice totals.",
+        "invoiceDueDays": "Invoice due days",
+        "invoiceDueDaysHint": "Generated invoices are due this many days after issue.",
+        "suspendAfter": "Suspend check-in after overdue days",
+        "suspendAfterHint": "Members with an unpaid invoice this many days past due cannot use QR check-in. Set 0 to never suspend.",
+        "generationTitle": "Invoice generation",
+        "generationHint": "The scheduler creates invoices at the start of each billing cycle.",
+        "autoGenerate": "Generate recurring invoices automatically",
+        "blockCheckin": "Block QR check-in until agreements are signed",
+        "blockCheckinHint": "When on, members with an unsigned or out-of-date agreement are asked to sign before checking in. Staff can always mark attendance manually.",
+        "taxRate": "Tax / GST rate (%)",
+        "taxLabel": "Tax label",
+        "taxLabelPlaceholder": "e.g. GST",
+        "taxHint": "Applied to new invoices and captured at issue time, so changing the rate later never rewrites history.",
+        "saving": "Saving...",
+        "save": "Save membership settings"
+      },
+      "errors": {
+        "invalid": "Check the membership settings and try again.",
+        "saved": "Membership settings saved."
+      }
+    },
+    "documents": {
+      "metaTitle": "Admin — Documents",
+      "title": "Documents",
+      "subtitle": "The agreements members read and sign — privacy notices, consent forms, safety expectations, or anything else you add. Editing a document creates a new version and requires members to re-sign it; disabled documents are hidden from members.",
+      "disabled": "Disabled",
+      "signedBy": "Signed by {count, plural, one {# member} other {# members}} on the current version.",
+      "enable": "Enable",
+      "disable": "Disable",
+      "deleteTitle": "Delete document?",
+      "deleteDescription": "\"{title}\" and all of its versions and signatures will be permanently removed. Disable it instead if you only want to hide it.",
+      "versionHistory": "Version history ({count})",
+      "columns": {
+        "version": "Version",
+        "title": "Title",
+        "savedBy": "Saved by"
+      },
+      "addTitle": "Add a document",
+      "addDescription": "A new agreement starts at version 0 — its first edit becomes version 1. Members see it by its title.",
+      "form": {
+        "title": "Title",
+        "titleHint": "The title is the document's name everywhere — member portal, compliance cards, and printed forms.",
+        "body": "Document body (Markdown)",
+        "bodyHint": "Saving creates <strong>version {version}</strong> — every member must re-sign the new version. The previous version and its signatures stay as history.",
+        "saving": "Saving…",
+        "saveVersion": "Save as version {version}",
+        "newTitlePlaceholder": "e.g. Code of conduct",
+        "adding": "Adding…",
+        "add": "Add document"
+      },
+      "errors": {
+        "titleRequired": "Give the document a title.",
+        "bodyRequired": "The document body cannot be empty.",
+        "added": "Document added (version 0) — members can sign it now.",
+        "saved": "Saved as version {version} — members must re-sign the new version."
+      }
+    },
+    "verifications": {
+      "metaTitle": "Admin — Verifications",
+      "title": "Verifications",
+      "subtitle": "Credential types your trainers may need. Record the details against each trainer on the Trainers page.",
+      "cardTitle": "Verification types",
+      "cardDescription": "Fully school-managed, so the same set works in any state or country. Mark a type Required to flag trainers who have not recorded it.",
+      "newType": "New type",
+      "empty": "No verification types yet — add one to start tracking credentials.",
+      "required": "Required",
+      "expiry": "Expiry",
+      "inactive": "Inactive",
+      "recordCount": "{count, plural, one {# record} other {# records}}",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "deleteTitle": "Delete verification type?",
+      "deleteHasRecords": "This type has records against it — disable it instead.",
+      "deleteConfirm": "{name} will be removed.",
+      "sheet": {
+        "editTitle": "Edit verification type",
+        "newTitle": "New verification type",
+        "description": "A credential your trainers may need — e.g. Working with Children Check, First Aid, insurance.",
+        "name": "Name *",
+        "namePlaceholder": "e.g. Working with Children Check",
+        "descriptionLabel": "Description",
+        "validity": "Default validity (months)",
+        "validityPlaceholder": "Optional",
+        "requiredCheckbox": "Required for all trainers",
+        "expiryCheckbox": "Records should carry an expiry date",
+        "activeCheckbox": "Active",
+        "done": "Done",
+        "saveChanges": "Save changes",
+        "create": "Create",
+        "saving": "Saving..."
+      },
+      "errors": {
+        "invalid": "Check the verification type and try again.",
+        "duplicate": "A verification type with that name already exists.",
+        "created": "Verification type created.",
+        "updated": "Verification type updated.",
+        "deleteBlocked": "This type has records against it — disable it instead of deleting.",
+        "deleteFailed": "Could not delete the type."
+      }
+    },
     "general": {
       "metaTitle": "Admin — General",
       "title": "General",

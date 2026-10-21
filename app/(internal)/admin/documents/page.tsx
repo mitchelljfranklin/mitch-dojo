@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import {
   Card,
   CardContent,
@@ -20,10 +23,15 @@ import { AgreementDocForm, AddDocumentForm } from "./agreement-doc-form";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Documents" };
+export async function generateMetadata(): Promise<Metadata> {
+  const translate = await getTranslations("Admin.documents");
+  return { title: translate("metaTitle") };
+}
 
 export default async function AdminDocumentsPage() {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.documents");
+  const translateCommon = await getTranslations("Common");
   const documents = await listDocuments(false);
   const versionsPerDocument = await Promise.all(
     documents.map((document) => listDocumentVersions(document.id)),
@@ -32,13 +40,10 @@ export default async function AdminDocumentsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Documents</h1>
-        <p className="text-muted-foreground text-sm">
-          The agreements members read and sign — privacy notices, consent forms,
-          safety expectations, or anything else you add. Editing a document
-          creates a new version and requires members to re-sign it; disabled
-          documents are hidden from members.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {translate("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm">{translate("subtitle")}</p>
       </div>
 
       {documents.map((document, index) => {
@@ -54,13 +59,13 @@ export default async function AdminDocumentsPage() {
                   <span className="truncate">{document.title}</span>
                   <Badge variant="secondary">v{document.version}</Badge>
                   {document.enabled ? null : (
-                    <Badge variant="outline">Disabled</Badge>
+                    <Badge variant="outline">{translate("disabled")}</Badge>
                   )}
                 </CardTitle>
                 <CardDescription>
-                  Signed by {document.signatureCount} member
-                  {document.signatureCount === 1 ? "" : "s"} on the current
-                  version.
+                  {translate("signedBy", {
+                    count: document.signatureCount,
+                  })}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -72,13 +77,16 @@ export default async function AdminDocumentsPage() {
                     value={document.enabled ? "off" : "on"}
                   />
                   <Button type="submit" variant="outline" size="sm">
-                    {document.enabled ? "Disable" : "Enable"}
+                    {document.enabled
+                      ? translate("disable")
+                      : translate("enable")}
                   </Button>
                 </form>
                 <ConfirmDialog
-                  title="Delete document?"
-                  description={`"${document.title}" and all of its versions and signatures will be permanently removed. Disable it instead if you only want to hide it.`}
-                  confirmLabel="Delete"
+                  title={translate("deleteTitle")}
+                  description={translate("deleteDescription", {
+                    title: document.title,
+                  })}
                   formId={`delete-document-${document.id}`}
                 >
                   <Button
@@ -87,7 +95,7 @@ export default async function AdminDocumentsPage() {
                     size="sm"
                     className="text-destructive"
                   >
-                    Delete
+                    {translateCommon("delete")}
                   </Button>
                 </ConfirmDialog>
                 <form
@@ -108,7 +116,7 @@ export default async function AdminDocumentsPage() {
 
               <details className="text-sm">
                 <summary className="text-muted-foreground cursor-pointer text-xs">
-                  Version history ({versions.length})
+                  {translate("versionHistory", { count: versions.length })}
                 </summary>
                 <div className="mt-2">
                   <Table rows={versions} />
@@ -121,11 +129,8 @@ export default async function AdminDocumentsPage() {
 
       <Card className="border-dashed">
         <CardHeader>
-          <CardTitle>Add a document</CardTitle>
-          <CardDescription>
-            A new agreement starts at version 0 — its first edit becomes version
-            1. Members see it by its title.
-          </CardDescription>
+          <CardTitle>{translate("addTitle")}</CardTitle>
+          <CardDescription>{translate("addDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <AddDocumentForm />
@@ -135,7 +140,7 @@ export default async function AdminDocumentsPage() {
   );
 }
 
-function Table({
+async function Table({
   rows,
 }: {
   rows: {
@@ -146,14 +151,21 @@ function Table({
     createdByName: string | null;
   }[];
 }) {
+  const translate = await getTranslations("Admin.documents");
   return (
     <div className="rounded-lg border">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-muted/40 text-muted-foreground border-b text-left text-xs">
-            <th className="px-3 py-2 font-medium">Version</th>
-            <th className="px-3 py-2 font-medium">Title</th>
-            <th className="px-3 py-2 font-medium">Saved by</th>
+            <th className="px-3 py-2 font-medium">
+              {translate("columns.version")}
+            </th>
+            <th className="px-3 py-2 font-medium">
+              {translate("columns.title")}
+            </th>
+            <th className="px-3 py-2 font-medium">
+              {translate("columns.savedBy")}
+            </th>
           </tr>
         </thead>
         <tbody>

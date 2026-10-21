@@ -461,6 +461,7 @@ export async function saveMembershipsSettings(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.memberships.errors");
 
   const parsed = membershipsSettingsSchema.safeParse({
     currency: formData.get("currency") ?? "USD",
@@ -475,7 +476,7 @@ export async function saveMembershipsSettings(
   if (!parsed.success) {
     return {
       ok: false,
-      message: parsed.error.issues[0]?.message ?? "Invalid input.",
+      message: translate("invalid"),
     };
   }
 
@@ -488,7 +489,7 @@ export async function saveMembershipsSettings(
       "Setting",
       "memberships",
     );
-  return { ok: true, message: "Membership settings saved." };
+  return { ok: true, message: translate("saved") };
 }
 
 export async function saveCommunicationsSettings(
@@ -655,15 +656,16 @@ export async function saveAgreementDocumentAction(
   formData: FormData,
 ): Promise<SettingsActionState> {
   await requirePermission(PERMISSIONS.SETTINGS_MANAGE);
+  const translate = await getTranslations("Admin.documents.errors");
 
   const documentId = String(formData.get("documentId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const bodyMarkdown = String(formData.get("bodyMarkdown") ?? "");
   if (!title) {
-    return { ok: false, message: "Give the document a title." };
+    return { ok: false, message: translate("titleRequired") };
   }
   if (bodyMarkdown.trim().length === 0) {
-    return { ok: false, message: "The document body cannot be empty." };
+    return { ok: false, message: translate("bodyRequired") };
   }
 
   const user = await getCurrentUser();
@@ -696,9 +698,7 @@ export async function saveAgreementDocumentAction(
   return {
     ok: true,
     message:
-      version === 0
-        ? "Document added (version 0) — members can sign it now."
-        : `Saved as version ${version} — members must re-sign the new version.`,
+      version === 0 ? translate("added") : translate("saved", { version }),
   };
 }
 

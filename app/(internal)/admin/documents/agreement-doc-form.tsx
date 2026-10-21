@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ function AgreementDocFormInner({
   bodyMarkdown,
   version,
 }: AgreementDocFormProps) {
+  const translate = useTranslations("Admin.documents.form");
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
     FormData
@@ -39,7 +41,7 @@ function AgreementDocFormInner({
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="documentId" value={documentId} />
       <div className="grid gap-2">
-        <Label htmlFor={`title-${documentId}`}>Title</Label>
+        <Label htmlFor={`title-${documentId}`}>{translate("title")}</Label>
         <Input
           id={`title-${documentId}`}
           name="title"
@@ -48,12 +50,11 @@ function AgreementDocFormInner({
           className="max-w-md"
         />
         <p className="text-muted-foreground text-xs">
-          The title is the document&apos;s name everywhere — member portal,
-          compliance cards, and printed forms.
+          {translate("titleHint")}
         </p>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor={`body-${documentId}`}>Document body (Markdown)</Label>
+        <Label htmlFor={`body-${documentId}`}>{translate("body")}</Label>
         <Textarea
           id={`body-${documentId}`}
           name="bodyMarkdown"
@@ -62,9 +63,10 @@ function AgreementDocFormInner({
           className="font-mono text-xs"
         />
         <p className="text-muted-foreground text-xs">
-          Saving creates <strong>version {version + 1}</strong> — every member
-          must re-sign the new version. The previous version and its signatures
-          stay as history.
+          {translate.rich("bodyHint", {
+            version: version + 1,
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
       </div>
       {state && !state.ok ? (
@@ -74,7 +76,9 @@ function AgreementDocFormInner({
       ) : null}
       <div>
         <Button type="submit" size="sm" disabled={isPending}>
-          {isPending ? "Saving…" : `Save as version ${version + 1}`}
+          {isPending
+            ? translate("saving")
+            : translate("saveVersion", { version: version + 1 })}
         </Button>
       </div>
     </form>
@@ -82,6 +86,7 @@ function AgreementDocFormInner({
 }
 
 export function AddDocumentForm() {
+  const translate = useTranslations("Admin.documents.form");
   const [state, formAction, isPending] = useActionState<
     SettingsActionState,
     FormData
@@ -91,18 +96,18 @@ export function AddDocumentForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="new-document-title">Title</Label>
+        <Label htmlFor="new-document-title">{translate("title")}</Label>
         <Input
           id="new-document-title"
           name="title"
           required
           maxLength={120}
-          placeholder="e.g. Code of conduct"
+          placeholder={translate("newTitlePlaceholder")}
           className="max-w-md"
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="new-document-body">Document body (Markdown)</Label>
+        <Label htmlFor="new-document-body">{translate("body")}</Label>
         <Textarea
           id="new-document-body"
           name="bodyMarkdown"
@@ -128,7 +133,7 @@ export function AddDocumentForm() {
           variant="secondary"
           disabled={isPending}
         >
-          {isPending ? "Adding…" : "Add document"}
+          {isPending ? translate("adding") : translate("add")}
         </Button>
       </div>
     </form>

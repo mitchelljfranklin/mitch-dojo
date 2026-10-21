@@ -46,7 +46,8 @@ plan without asking.
   agreements), Incidents (accident book, reports), Analytics (overview,
   charts), Reports (attendance, celebrations, revenue), Profile
   (account, password), and Admin (General, Appearance, Locations, Users,
-  Roles, Communication, Email/SMTP, Templates, Campaigns, Email log).
+  Roles, Memberships settings, Communication, Documents, Verifications,
+  Email/SMTP, Templates, Campaigns, Email log).
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

@@ -1777,6 +1777,117 @@
         "retentionSaved": "Retención del registro de correo guardada."
       }
     },
+    "memberships": {
+      "metaTitle": "Administración — Membresías",
+      "title": "Membresías",
+      "subtitle": "Visualización de la moneda, vencimiento de facturas y comportamiento en mora.",
+      "cardTitle": "Membresías y pagos",
+      "cardDescription": "Los planes se gestionan en la página Membresías; estas son las reglas de facturación de toda la escuela.",
+      "form": {
+        "currency": "Moneda",
+        "currencyPlaceholder": "p. ej. USD, EUR, GBP",
+        "currencyHint": "Código ISO 4217 usado para mostrar los precios de los planes y los totales de las facturas.",
+        "invoiceDueDays": "Días de vencimiento de la factura",
+        "invoiceDueDaysHint": "Las facturas generadas vencen estos días después de su emisión.",
+        "suspendAfter": "Suspender el check-in tras días de mora",
+        "suspendAfterHint": "Los miembros con una factura impagada con estos días de retraso no pueden usar el check-in QR. Pon 0 para no suspender nunca.",
+        "generationTitle": "Generación de facturas",
+        "generationHint": "El programador crea las facturas al inicio de cada ciclo de facturación.",
+        "autoGenerate": "Generar facturas recurrentes automáticamente",
+        "blockCheckin": "Bloquear el check-in QR hasta firmar los acuerdos",
+        "blockCheckinHint": "Cuando está activo, los miembros con un acuerdo sin firmar o desactualizado deben firmarlo antes de registrarse. El personal siempre puede pasar lista manualmente.",
+        "taxRate": "Tasa de impuesto / IVA (%)",
+        "taxLabel": "Etiqueta del impuesto",
+        "taxLabelPlaceholder": "p. ej. IVA",
+        "taxHint": "Se aplica a las facturas nuevas y se captura al emitirlas, así que cambiar la tasa después nunca reescribe el historial.",
+        "saving": "Guardando...",
+        "save": "Guardar ajustes de membresía"
+      },
+      "errors": {
+        "invalid": "Revisa los ajustes de membresía e inténtalo de nuevo.",
+        "saved": "Ajustes de membresía guardados."
+      }
+    },
+    "documents": {
+      "metaTitle": "Administración — Documentos",
+      "title": "Documentos",
+      "subtitle": "Los acuerdos que los miembros leen y firman — avisos de privacidad, formularios de consentimiento, normas de seguridad o cualquier otro que añadas. Editar un documento crea una nueva versión y exige que los miembros lo vuelvan a firmar; los documentos desactivados se ocultan a los miembros.",
+      "disabled": "Desactivado",
+      "signedBy": "Firmado por {count, plural, one {# miembro} other {# miembros}} en la versión actual.",
+      "enable": "Activar",
+      "disable": "Desactivar",
+      "deleteTitle": "¿Eliminar el documento?",
+      "deleteDescription": "«{title}» y todas sus versiones y firmas se eliminarán de forma permanente. Desactívalo si solo quieres ocultarlo.",
+      "versionHistory": "Historial de versiones ({count})",
+      "columns": {
+        "version": "Versión",
+        "title": "Título",
+        "savedBy": "Guardado por"
+      },
+      "addTitle": "Añadir un documento",
+      "addDescription": "Un acuerdo nuevo empieza en la versión 0 — su primera edición pasa a ser la versión 1. Los miembros lo ven por su título.",
+      "form": {
+        "title": "Título",
+        "titleHint": "El título es el nombre del documento en todas partes — portal del miembro, tarjetas de cumplimiento y formularios impresos.",
+        "body": "Cuerpo del documento (Markdown)",
+        "bodyHint": "Al guardar se crea la <strong>versión {version}</strong> — todos los miembros deben volver a firmarla. La versión anterior y sus firmas quedan como historial.",
+        "saving": "Guardando…",
+        "saveVersion": "Guardar como versión {version}",
+        "newTitlePlaceholder": "p. ej. Código de conducta",
+        "adding": "Añadiendo…",
+        "add": "Añadir documento"
+      },
+      "errors": {
+        "titleRequired": "Ponle un título al documento.",
+        "bodyRequired": "El cuerpo del documento no puede estar vacío.",
+        "added": "Documento añadido (versión 0) — los miembros ya pueden firmarlo.",
+        "saved": "Guardado como versión {version} — los miembros deben volver a firmar la nueva versión."
+      }
+    },
+    "verifications": {
+      "metaTitle": "Administración — Verificaciones",
+      "title": "Verificaciones",
+      "subtitle": "Tipos de credencial que tus instructores pueden necesitar. Registra los detalles de cada instructor en la página Instructores.",
+      "cardTitle": "Tipos de verificación",
+      "cardDescription": "Totalmente gestionado por la escuela, así que el mismo conjunto sirve en cualquier estado o país. Marca un tipo como Obligatorio para señalar a los instructores que no lo han registrado.",
+      "newType": "Nuevo tipo",
+      "empty": "Todavía no hay tipos de verificación — añade uno para empezar a controlar credenciales.",
+      "required": "Obligatorio",
+      "expiry": "Caducidad",
+      "inactive": "Inactivo",
+      "recordCount": "{count, plural, one {# registro} other {# registros}}",
+      "edit": "Editar",
+      "enable": "Activar",
+      "disable": "Desactivar",
+      "deleteTitle": "¿Eliminar el tipo de verificación?",
+      "deleteHasRecords": "Este tipo tiene registros asociados — desactívalo en su lugar.",
+      "deleteConfirm": "Se eliminará {name}.",
+      "sheet": {
+        "editTitle": "Editar tipo de verificación",
+        "newTitle": "Nuevo tipo de verificación",
+        "description": "Una credencial que tus instructores pueden necesitar — p. ej. certificado de trabajo con menores, primeros auxilios, seguro.",
+        "name": "Nombre *",
+        "namePlaceholder": "p. ej. Certificado de trabajo con menores",
+        "descriptionLabel": "Descripción",
+        "validity": "Validez por defecto (meses)",
+        "validityPlaceholder": "Opcional",
+        "requiredCheckbox": "Obligatorio para todos los instructores",
+        "expiryCheckbox": "Los registros deben incluir fecha de caducidad",
+        "activeCheckbox": "Activo",
+        "done": "Hecho",
+        "saveChanges": "Guardar cambios",
+        "create": "Crear",
+        "saving": "Guardando..."
+      },
+      "errors": {
+        "invalid": "Revisa el tipo de verificación e inténtalo de nuevo.",
+        "duplicate": "Ya existe un tipo de verificación con ese nombre.",
+        "created": "Tipo de verificación creado.",
+        "updated": "Tipo de verificación actualizado.",
+        "deleteBlocked": "Este tipo tiene registros asociados — desactívalo en lugar de eliminarlo.",
+        "deleteFailed": "No se pudo eliminar el tipo."
+      }
+    },
     "general": {
       "metaTitle": "Administración — General",
       "title": "General",
