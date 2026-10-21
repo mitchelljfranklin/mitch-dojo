@@ -993,6 +993,10 @@
         "create": "Crear grado",
         "cancel": "Cancelar"
       },
+      "errors": {
+        "nameRequired": "El nombre del grado es obligatorio.",
+        "invalidDate": "Introduce una fecha de grado válida."
+      },
       "created": "Grado creado.",
       "event": {
         "metaTitle": "Grado",
@@ -1185,7 +1189,7 @@
         "invalidMethod": "Elige un método de pago.",
         "invalidDate": "Introduce una fecha de pago válida.",
         "nothing": "No hay nada que registrar — esas facturas ya están saldadas.",
-        "recorded": "Pagos registrados: {recorded}{skipped, plural, =0 {} other {; # omitidos}}.",
+        "recorded": "Pagos registrados: {recorded, plural, one {# pago} other {# pagos}}{skipped, plural, =0 {} other {; # omitidos}}.",
         "recordedPayment": "Pago registrado."
       },
       "new": {
@@ -1224,6 +1228,7 @@
         "enrollment": "Inscripción: {plan}",
         "summary": "Resumen",
         "subtotal": "Subtotal",
+        "tax": "Impuesto",
         "total": "Total",
         "paid": "Pagado",
         "balance": "Saldo",

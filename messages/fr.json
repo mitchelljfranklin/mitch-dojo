@@ -993,6 +993,10 @@
         "create": "Créer une notation",
         "cancel": "Annuler"
       },
+      "errors": {
+        "nameRequired": "Le nom du classement est requis.",
+        "invalidDate": "Saisissez une date de classement valide."
+      },
       "created": "Notation créée.",
       "event": {
         "metaTitle": "Classement",
@@ -1224,6 +1228,7 @@
         "enrollment": "Inscription: {plan}",
         "summary": "Résumé",
         "subtotal": "Total",
+        "tax": "Impôt",
         "total": "Total",
         "paid": "Payé",
         "balance": "Équilibre",

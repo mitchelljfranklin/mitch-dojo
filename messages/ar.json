@@ -993,6 +993,10 @@
         "create": "إنشاء الدرجات",
         "cancel": "يلغي"
       },
+      "errors": {
+        "nameRequired": "اسم الدرجة مطلوب.",
+        "invalidDate": "أدخل تاريخ درجة صالحًا."
+      },
       "created": "تم إنشاء الدرجات.",
       "event": {
         "metaTitle": "الدرجات",
@@ -1224,6 +1228,7 @@
         "enrollment": "التسجيل: {plan}",
         "summary": "ملخص",
         "subtotal": "المجموع الفرعي",
+        "tax": "ضريبة",
         "total": "المجموع",
         "paid": "مدفوع",
         "balance": "توازن",

@@ -993,6 +993,10 @@
         "create": "Criar avaliação",
         "cancel": "Cancelar"
       },
+      "errors": {
+        "nameRequired": "O nome da classificação é obrigatório.",
+        "invalidDate": "Introduza uma data de classificação válida."
+      },
       "created": "Classificação criada.",
       "event": {
         "metaTitle": "Classificação",
@@ -1224,6 +1228,7 @@
         "enrollment": "Inscrição: {plan}",
         "summary": "Resumo",
         "subtotal": "Subtotal",
+        "tax": "Imposto",
         "total": "Total",
         "paid": "Pago",
         "balance": "Equilíbrio",

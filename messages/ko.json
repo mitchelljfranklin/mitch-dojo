@@ -993,6 +993,10 @@
         "create": "채점 생성",
         "cancel": "취소"
       },
+      "errors": {
+        "nameRequired": "등급 이름은 필수입니다.",
+        "invalidDate": "유효한 등급 날짜를 입력하세요."
+      },
       "created": "등급이 생성되었습니다.",
       "event": {
         "metaTitle": "채점",
@@ -1224,6 +1228,7 @@
         "enrollment": "등록: {plan}",
         "summary": "요약",
         "subtotal": "소계",
+        "tax": "세",
         "total": "총",
         "paid": "유급의",
         "balance": "균형",

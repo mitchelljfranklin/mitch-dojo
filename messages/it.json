@@ -82,7 +82,7 @@
       "quantity": "Qtà",
       "amount": "Quantità",
       "subtotal": "Subtotale",
-      "taxFallback": "Tassare",
+      "taxFallback": "Imposta",
       "total": "Totale",
       "payments": "Pagamenti",
       "noPayments": "Nessun pagamento ancora registrato.",
@@ -993,6 +993,10 @@
         "create": "Crea valutazione",
         "cancel": "Cancellare"
       },
+      "errors": {
+        "nameRequired": "Il nome della classificazione è obbligatorio.",
+        "invalidDate": "Inserisci una data di classificazione valida."
+      },
       "created": "Valutazione creata.",
       "event": {
         "metaTitle": "Classificazione",
@@ -1224,6 +1228,7 @@
         "enrollment": "Iscrizione: {plan}",
         "summary": "Riepilogo",
         "subtotal": "Totale parziale",
+        "tax": "Imposta",
         "total": "Totale",
         "paid": "Pagato",
         "balance": "Bilancia",

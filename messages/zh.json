@@ -993,6 +993,10 @@
         "create": "创建评分",
         "cancel": "取消"
       },
+      "errors": {
+        "nameRequired": "评分名称为必填项。",
+        "invalidDate": "请输入有效的评分日期。"
+      },
       "created": "评分已创建。",
       "event": {
         "metaTitle": "等级",
@@ -1224,6 +1228,7 @@
         "enrollment": "注册： {plan}",
         "summary": "概括",
         "subtotal": "小计",
+        "tax": "税",
         "total": "全部的",
         "paid": "有薪酬的",
         "balance": "平衡",

@@ -993,6 +993,10 @@
         "create": "Benotung erstellen",
         "cancel": "Stornieren"
       },
+      "errors": {
+        "nameRequired": "Der Name der Benotung ist erforderlich.",
+        "invalidDate": "Geben Sie ein gültiges Benotungsdatum ein."
+      },
       "created": "Benotung erstellt.",
       "event": {
         "metaTitle": "Benotung",
@@ -1224,6 +1228,7 @@
         "enrollment": "Einschreibung: {plan}",
         "summary": "Zusammenfassung",
         "subtotal": "Zwischensumme",
+        "tax": "Steuer",
         "total": "Gesamt",
         "paid": "Bezahlt",
         "balance": "Gleichgewicht",

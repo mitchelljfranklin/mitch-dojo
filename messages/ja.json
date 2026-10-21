@@ -993,6 +993,10 @@
         "create": "グレーディングの作成",
         "cancel": "キャンセル"
       },
+      "errors": {
+        "nameRequired": "グレーディング名は必須です。",
+        "invalidDate": "有効なグレーディング日を入力してください。"
+      },
       "created": "グレーディングが作成されました。",
       "event": {
         "metaTitle": "グレーディング",
@@ -1224,6 +1228,7 @@
         "enrollment": "登録: {plan}",
         "summary": "まとめ",
         "subtotal": "小計",
+        "tax": "税",
         "total": "合計",
         "paid": "有料",
         "balance": "バランス",

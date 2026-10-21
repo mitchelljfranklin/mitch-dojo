@@ -993,6 +993,10 @@
         "create": "Create grading",
         "cancel": "Cancel"
       },
+      "errors": {
+        "nameRequired": "Grading name is required.",
+        "invalidDate": "Enter a valid grading date."
+      },
       "created": "Grading created.",
       "event": {
         "metaTitle": "Grading",
@@ -1224,6 +1228,7 @@
         "enrollment": "Enrollment: {plan}",
         "summary": "Summary",
         "subtotal": "Subtotal",
+        "tax": "Tax",
         "total": "Total",
         "paid": "Paid",
         "balance": "Balance",
