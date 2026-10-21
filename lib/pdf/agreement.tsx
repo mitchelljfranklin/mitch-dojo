@@ -43,10 +43,16 @@ export function AgreementPdfDocument({
       title={`${data.documentTitle} — ${data.studentName}`}
       author={brand.orgName}
     >
-      <Page size="A4" style={pdfStyles.page}>
+      <Page
+        size="A4"
+        style={[
+          pdfStyles.page,
+          { fontFamily: labels.fontFamily, direction: labels.direction },
+        ]}
+      >
         <PdfBrandHeader brand={brand} />
 
-        <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
+        <Text style={{ fontWeight: "bold", fontSize: 16 }}>
           {data.documentTitle}
         </Text>
         <Text style={pdfStyles.muted}>{labels.versionLine(data.version)}</Text>
@@ -54,10 +60,7 @@ export function AgreementPdfDocument({
         <View style={{ marginTop: 12, gap: 8 }}>
           {data.lines.map((line, index) =>
             line.heading ? (
-              <Text
-                key={index}
-                style={{ fontFamily: "Helvetica-Bold", fontSize: 12 }}
-              >
+              <Text key={index} style={{ fontWeight: "bold", fontSize: 12 }}>
                 {line.text}
               </Text>
             ) : (

@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
     // from node_modules in the standalone output.
     "@react-pdf/renderer",
   ],
+  // Bundled PDF fonts are read from disk at render time; copy them into the
+  // standalone output for the staff API and member-portal PDF routes.
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./lib/pdf/fonts/**/*"],
+    "/portal/**/*": ["./lib/pdf/fonts/**/*"],
+  },
 };
 
 const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");

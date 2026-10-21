@@ -1,5 +1,9 @@
 import { Image, StyleSheet, Text, View } from "@react-pdf/renderer";
 
+import { registerPdfFonts } from "./fonts";
+
+registerPdfFonts();
+
 // Shared branded shell for generated PDFs. Light background by nature —
 // the primary (light-background) logo variant is the right one here.
 // Inline styles throughout: @react-pdf/renderer has no CSS-variable support.
@@ -10,7 +14,7 @@ export const pdfStyles = StyleSheet.create({
     paddingBottom: 48,
     paddingHorizontal: 44,
     fontSize: 10,
-    fontFamily: "Helvetica",
+    fontFamily: "NotoSans",
     color: "#18181b",
   },
   brandRow: {
@@ -21,7 +25,7 @@ export const pdfStyles = StyleSheet.create({
   },
   brandName: {
     fontSize: 14,
-    fontFamily: "Helvetica-Bold",
+    fontWeight: "bold",
     color: "#18181b",
   },
   brandLogo: {
@@ -36,7 +40,7 @@ export const pdfStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 11,
-    fontFamily: "Helvetica-Bold",
+    fontWeight: "bold",
     marginBottom: 6,
     marginTop: 14,
   },
@@ -47,7 +51,7 @@ export const pdfStyles = StyleSheet.create({
     borderBottomColor: "#e4e4e7",
     paddingVertical: 5,
     paddingHorizontal: 6,
-    fontFamily: "Helvetica-Bold",
+    fontWeight: "bold",
   },
   tableRow: {
     flexDirection: "row",

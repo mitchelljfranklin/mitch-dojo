@@ -55,7 +55,13 @@ export function ReportCardPdfDocument({
       title={`${data.studentName} — ${labels.documentSuffix}`}
       author={brand.orgName}
     >
-      <Page size="A4" style={pdfStyles.page}>
+      <Page
+        size="A4"
+        style={[
+          pdfStyles.page,
+          { fontFamily: labels.fontFamily, direction: labels.direction },
+        ]}
+      >
         <PdfBrandHeader brand={brand} />
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -66,7 +72,7 @@ export function ReportCardPdfDocument({
             />
           ) : null}
           <View>
-            <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
               {data.studentName}
             </Text>
             <Text style={pdfStyles.muted}>
@@ -94,9 +100,7 @@ export function ReportCardPdfDocument({
                 }}
               />
               <Text style={{ flex: 1 }}>{belt.disciplineName}</Text>
-              <Text style={{ fontFamily: "Helvetica-Bold" }}>
-                {belt.beltName}
-              </Text>
+              <Text style={{ fontWeight: "bold" }}>{belt.beltName}</Text>
               <Text
                 style={[pdfStyles.muted, { width: 90, textAlign: "right" }]}
               >
@@ -109,19 +113,15 @@ export function ReportCardPdfDocument({
         <Text style={pdfStyles.sectionTitle}>{labels.trainingSummary}</Text>
         <View style={pdfStyles.tableRow}>
           <Text style={{ flex: 1 }}>{labels.sessionsAllTime}</Text>
-          <Text style={{ fontFamily: "Helvetica-Bold" }}>
-            {data.trainedTotal}
-          </Text>
+          <Text style={{ fontWeight: "bold" }}>{data.trainedTotal}</Text>
         </View>
         <View style={pdfStyles.tableRow}>
           <Text style={{ flex: 1 }}>{labels.sessionsLast30}</Text>
-          <Text style={{ fontFamily: "Helvetica-Bold" }}>
-            {data.trainedLast30Days}
-          </Text>
+          <Text style={{ fontWeight: "bold" }}>{data.trainedLast30Days}</Text>
         </View>
         <View style={pdfStyles.tableRow}>
           <Text style={{ flex: 1 }}>{labels.balanceDue}</Text>
-          <Text style={{ fontFamily: "Helvetica-Bold" }}>
+          <Text style={{ fontWeight: "bold" }}>
             {formatMoney(data.balanceCents, data.currency, labels.locale)}
           </Text>
         </View>

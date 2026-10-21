@@ -1,21 +1,16 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { pdfFontFamily, type PdfFontFamily } from "./fonts";
+
 // PDFs render outside the React tree (react-pdf), so labels are resolved here
 // and passed in as plain values. The locale follows the request cookie, with
-// the school default as the fallback chosen by the request config.
-//
-// @react-pdf's built-in Helvetica covers WinAnsi (Latin) only. Until embedded
-// Noto fonts are added, scripts outside that range fall back to English labels
-// so a PDF is still readable rather than rendering blank glyphs.
-const PDF_LATIN_LOCALES = new Set(["en", "es", "pt", "fr", "de", "it"]);
-
-async function resolvePdfLocale(): Promise<string> {
-  const requested = await getLocale();
-  return PDF_LATIN_LOCALES.has(requested) ? requested : "en";
-}
+// the school default as the fallback chosen by the request config. Each
+// document also receives its bundled Noto font family and text direction.
 
 export type InvoicePdfLabels = {
   locale: string;
+  fontFamily: PdfFontFamily;
+  direction: "ltr" | "rtl";
   title: string;
   issued: string;
   due: string;
@@ -42,11 +37,13 @@ export type InvoicePdfLabels = {
 };
 
 export async function getInvoicePdfLabels(): Promise<InvoicePdfLabels> {
-  const locale = await resolvePdfLocale();
+  const locale = await getLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
     locale,
+    fontFamily: pdfFontFamily(locale),
+    direction: locale === "ar" ? "rtl" : "ltr",
     title: translate("invoice.title"),
     issued: translate("invoice.issued"),
     due: translate("invoice.due"),
@@ -81,6 +78,8 @@ export async function getInvoicePdfLabels(): Promise<InvoicePdfLabels> {
 
 export type ReportCardPdfLabels = {
   locale: string;
+  fontFamily: PdfFontFamily;
+  direction: "ltr" | "rtl";
   documentSuffix: string;
   currentRank: string;
   noBelts: string;
@@ -99,11 +98,13 @@ export type ReportCardPdfLabels = {
 };
 
 export async function getReportCardPdfLabels(): Promise<ReportCardPdfLabels> {
-  const locale = await resolvePdfLocale();
+  const locale = await getLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
     locale,
+    fontFamily: pdfFontFamily(locale),
+    direction: locale === "ar" ? "rtl" : "ltr",
     documentSuffix: translate("reportCard.documentSuffix"),
     currentRank: translate("reportCard.currentRank"),
     noBelts: translate("reportCard.noBelts"),
@@ -125,6 +126,8 @@ export async function getReportCardPdfLabels(): Promise<ReportCardPdfLabels> {
 
 export type AttendancePdfLabels = {
   locale: string;
+  fontFamily: PdfFontFamily;
+  direction: "ltr" | "rtl";
   title: string;
   trainer: string;
   cancelled: string;
@@ -140,11 +143,13 @@ export type AttendancePdfLabels = {
 };
 
 export async function getAttendancePdfLabels(): Promise<AttendancePdfLabels> {
-  const locale = await resolvePdfLocale();
+  const locale = await getLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
     locale,
+    fontFamily: pdfFontFamily(locale),
+    direction: locale === "ar" ? "rtl" : "ltr",
     title: translate("attendance.title"),
     trainer: translate("attendance.trainer"),
     cancelled: translate("attendance.cancelled"),
@@ -173,6 +178,8 @@ export async function getAttendancePdfLabels(): Promise<AttendancePdfLabels> {
 
 export type AgreementPdfLabels = {
   locale: string;
+  fontFamily: PdfFontFamily;
+  direction: "ltr" | "rtl";
   member: string;
   signature: string;
   date: string;
@@ -187,11 +194,13 @@ export type AgreementPdfLabels = {
 };
 
 export async function getAgreementPdfLabels(): Promise<AgreementPdfLabels> {
-  const locale = await resolvePdfLocale();
+  const locale = await getLocale();
   const translate = await getTranslations({ locale, namespace: "Pdf" });
 
   return {
     locale,
+    fontFamily: pdfFontFamily(locale),
+    direction: locale === "ar" ? "rtl" : "ltr",
     member: translate("agreement.member"),
     signature: translate("agreement.signature"),
     date: translate("agreement.date"),

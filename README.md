@@ -153,6 +153,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - **12 languages**, selectable per device and configurable as the school default in Admin → General
 - Language is stored in a cookie (`NEXT_LOCALE`); there is no `/en/` or `/es/` URL prefix. Switching is a soft refresh, so typed form values and selections survive
 - Staff UI, auth screens, public booking, member portal, QR check-in, automated emails, and PDF labels are translated
+- PDFs bundle **Noto Sans** families for Latin/Cyrillic, Arabic, Devanagari, and Japanese/Korean/Simplified Chinese
 - **Authored content stays as written**: email template copy, agreement documents, course/plan names, notes, and custom role names are never machine-translated
 
 | Language | Code | Status |
@@ -172,7 +173,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 **Translation status.** English and Spanish are the maintained reference catalogs. The other ten are an initial machine-assisted pass: placeholders, ICU plurals, rich-text tags, key parity, and date/currency formatting are validated automatically, but the wording still benefits from native review. Corrections are welcome — edit the relevant `messages/<code>.json` value and run the catalog tests.
 
-**PDF limitation.** Invoices, report cards, attendance sheets, and printable agreements are localized for Latin-script locales (English, Spanish, Portuguese, French, German, Italian). The bundled Helvetica font cannot render Japanese, Korean, Chinese, Arabic, Hindi, or Russian, so those PDF labels currently fall back to English; authored names in those scripts may still not render. Embedding Noto fonts is the next step.
+**PDF fonts.** PDFs use bundled Noto Sans families — Latin/Cyrillic, Arabic, Devanagari, and regional Japanese/Korean/Simplified Chinese — so all twelve languages can render without falling back to English. The fonts are OFL-licensed. Arabic and Hindi require complex-script shaping, and Arabic needs RTL pagination; both are best-effort and should be checked with real names before relying on them for official documents. CJK and Latin/Cyrillic rendering are straightforward.
 
 **Adding a language.** The process is documented in [Adding a Language](docs/advanced/adding-a-language.md): add a catalog, register the locale, and add the loader. The parity test fails until every key exists.
 

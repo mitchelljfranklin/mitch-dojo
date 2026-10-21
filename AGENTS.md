@@ -52,10 +52,11 @@ plan without asking.
   Users, Roles, Memberships settings, Communication, Documents, Verifications,
   Email/SMTP, Templates, Campaigns, Email log, Audit log, Health, Scheduling,
   Sign-in/SSO). Outbound email shells follow the school default language;
-  generated PDFs follow the viewer's locale (non-Latin scripts fall back to
-  English labels until fonts are embedded); admin-authored email templates and
-  document text stay as written. Adding a language:
-  `docs/advanced/adding-a-language.md`.
+  generated PDFs follow the viewer's locale and bundle Noto Sans families for
+  Latin/Cyrillic, Arabic, Devanagari, and Japanese/Korean/Simplified Chinese
+  (Arabic/Hindi shaping and Arabic RTL pagination are best-effort);
+  admin-authored email templates and document text stay as written. Adding a
+  language: `docs/advanced/adding-a-language.md`.
 - **Nodemailer over SMTP** — provider-agnostic email; **React Email** templates
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)

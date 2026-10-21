@@ -75,11 +75,17 @@ export function AttendanceSheetPdfDocument({
       title={`${data.courseName} — ${labels.title} ${date}`}
       author={brand.orgName}
     >
-      <Page size="A4" style={pdfStyles.page}>
+      <Page
+        size="A4"
+        style={[
+          pdfStyles.page,
+          { fontFamily: labels.fontFamily, direction: labels.direction },
+        ]}
+      >
         <PdfBrandHeader brand={brand} />
 
         <View>
-          <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 16 }}>
             {labels.title} — {data.courseName}
           </Text>
           <Text style={pdfStyles.muted}>
@@ -89,7 +95,7 @@ export function AttendanceSheetPdfDocument({
               : ""}
           </Text>
           {data.status === "CANCELLED" ? (
-            <Text style={{ fontFamily: "Helvetica-Bold", color: "#b91c1c" }}>
+            <Text style={{ fontWeight: "bold", color: "#b91c1c" }}>
               {labels.cancelled}
             </Text>
           ) : null}
@@ -114,10 +120,7 @@ export function AttendanceSheetPdfDocument({
         )}
 
         <View
-          style={[
-            pdfStyles.tableRow,
-            { fontFamily: "Helvetica-Bold", marginTop: 8 },
-          ]}
+          style={[pdfStyles.tableRow, { fontWeight: "bold", marginTop: 8 }]}
         >
           <Text style={CELL_NAME}>
             {labels.studentCount(data.entries.length)}

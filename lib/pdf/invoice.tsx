@@ -102,12 +102,18 @@ export function InvoicePdfDocument({
 
   return (
     <Document title={`${labels.title} ${data.number}`} author={brand.orgName}>
-      <Page size="A4" style={pdfStyles.page}>
+      <Page
+        size="A4"
+        style={[
+          pdfStyles.page,
+          { fontFamily: labels.fontFamily, direction: labels.direction },
+        ]}
+      >
         <PdfBrandHeader brand={brand} />
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View>
-            <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 16 }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
               {labels.title} #{data.number}
             </Text>
             <Text style={pdfStyles.muted}>{data.studentName}</Text>
@@ -122,7 +128,7 @@ export function InvoicePdfDocument({
             </Text>
             <Text
               style={{
-                fontFamily: "Helvetica-Bold",
+                fontWeight: "bold",
                 color: data.isOverdue ? "#b91c1c" : brand.accentHex,
               }}
             >
@@ -162,7 +168,7 @@ export function InvoicePdfDocument({
             </View>
           </>
         ) : null}
-        <View style={[pdfStyles.tableRow, { fontFamily: "Helvetica-Bold" }]}>
+        <View style={[pdfStyles.tableRow, { fontWeight: "bold" }]}>
           <Text style={CELL_DESC}>{labels.total}</Text>
           <Text style={CELL_MONEY}>{money(data.totalCents)}</Text>
         </View>
@@ -194,10 +200,7 @@ export function InvoicePdfDocument({
         )}
 
         <View
-          style={[
-            pdfStyles.tableRow,
-            { fontFamily: "Helvetica-Bold", marginTop: 8 },
-          ]}
+          style={[pdfStyles.tableRow, { fontWeight: "bold", marginTop: 8 }]}
         >
           <Text style={CELL_DESC}>{labels.balanceDue}</Text>
           <Text style={CELL_MONEY}>{money(data.balanceCents)}</Text>

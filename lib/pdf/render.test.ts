@@ -25,6 +25,8 @@ const BRAND: PdfBrand = {
 
 const INVOICE_LABELS: InvoicePdfLabels = {
   locale: "es",
+  fontFamily: "NotoSans",
+  direction: "ltr",
   title: "Factura",
   issued: "Emitida",
   due: "Vence",
@@ -58,6 +60,8 @@ const INVOICE_LABELS: InvoicePdfLabels = {
 
 const REPORT_CARD_LABELS: ReportCardPdfLabels = {
   locale: "es",
+  fontFamily: "NotoSans",
+  direction: "ltr",
   documentSuffix: "informe de progreso",
   currentRank: "Rango actual",
   noBelts: "Sin cinturones.",
@@ -78,6 +82,8 @@ const REPORT_CARD_LABELS: ReportCardPdfLabels = {
 
 const ATTENDANCE_LABELS: AttendancePdfLabels = {
   locale: "es",
+  fontFamily: "NotoSans",
+  direction: "ltr",
   title: "Asistencia",
   trainer: "Instructor",
   cancelled: "Sesión cancelada.",
@@ -100,6 +106,8 @@ const ATTENDANCE_LABELS: AttendancePdfLabels = {
 
 const AGREEMENT_LABELS: AgreementPdfLabels = {
   locale: "es",
+  fontFamily: "NotoSans",
+  direction: "ltr",
   member: "Miembro (o tutor)",
   signature: "Firma",
   date: "Fecha",
@@ -217,5 +225,61 @@ describe("PDF documents", () => {
       }) as ReactElement<DocumentProps>,
     );
     expect(startsWithPdf(buffer)).toBe(true);
+  });
+
+  it("renders Arabic, Devanagari, and Japanese text with bundled fonts", async () => {
+    const samples = [
+      {
+        locale: "ar",
+        fontFamily: "NotoSansArabic" as const,
+        direction: "rtl" as const,
+        studentName: "محمد أحمد",
+      },
+      {
+        locale: "hi",
+        fontFamily: "NotoSansDevanagari" as const,
+        direction: "ltr" as const,
+        studentName: "आर्यन शर्मा",
+      },
+      {
+        locale: "ja",
+        fontFamily: "NotoSansJP" as const,
+        direction: "ltr" as const,
+        studentName: "山田 太郎",
+      },
+    ];
+
+    for (const sample of samples) {
+      const data = shapeReportCard({
+        studentName: sample.studentName,
+        photoDataUrl: null,
+        belts: [
+          {
+            disciplineName: sample.studentName,
+            beltName: sample.studentName,
+            colorHex: "#facc15",
+            awardedAt: new Date("2026-06-01"),
+          },
+        ],
+        trainedTotal: 12,
+        trainedLast30Days: 3,
+        balanceCents: 0,
+        currency: "USD",
+        generatedAt: new Date("2026-10-21"),
+      });
+      const buffer = await renderToBuffer(
+        createElement(ReportCardPdfDocument, {
+          brand: BRAND,
+          data,
+          labels: {
+            ...REPORT_CARD_LABELS,
+            locale: sample.locale,
+            fontFamily: sample.fontFamily,
+            direction: sample.direction,
+          },
+        }) as ReactElement<DocumentProps>,
+      );
+      expect(startsWithPdf(buffer), sample.locale).toBe(true);
+    }
   });
 });
