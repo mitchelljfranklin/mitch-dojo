@@ -205,7 +205,7 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 
 | Layer | Technology |
 |-------|-----------|
-| Runtime | Node.js >= 22 |
+| Runtime | Node.js 22.23.4+, 24.22.1+, or 26.12.1+ |
 | Framework | Next.js 16 (App Router) + TypeScript strict |
 | Database | PostgreSQL 17 + Prisma ^7 (or embedded PGlite) |
 | UI | Tailwind CSS v4 + shadcn/ui (light/dark) |

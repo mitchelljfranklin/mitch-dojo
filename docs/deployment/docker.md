@@ -41,7 +41,7 @@ docker compose up -d --build
 
 This starts:
 
-- **app** — the Next.js standalone server (node:22-slim)
+- **app** - the Next.js standalone server (node:22.23.4-slim)
 - **db** — PostgreSQL 17 with a persistent volume
 
 The entrypoint applies `prisma migrate deploy` and seeds system roles + default settings once (idempotent, marker-file guarded), then serves.

@@ -123,7 +123,7 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 ## Commands
 
-- `npm run dev` — local dev server (Node >= 22; `.nvmrc` pins 22)
+- `npm run dev` - local dev server (Node 22.23.4+, 24.22.1+, or 26.12.1+; `.nvmrc` pins 22.23.4)
 - `npm run build` — production build (must pass before any gate sign-off);
   also copies `static`/`public` into `.next/standalone`
   (`scripts/prepare-standalone.mjs`) so `npm run start` and e2e hydrate
