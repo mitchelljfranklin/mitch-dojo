@@ -7,13 +7,15 @@ Organization identity — the name everything else picks up.
 | Setting | Default | Notes |
 |---|---|---|
 | **Organization name** | "My Dojo" | Used across the UI, public pages, portal, check-in screens, and as the `{{appName}}` token in every email template |
-| **Support email** | empty | Shown as the contact address where appropriate |
+| **Support email** | empty | Stored as the school's contact address; it is not injected into public pages or email templates automatically |
 | **Default language** | English | Language used across the app and public pages unless someone picks another with the language selector. Ships with English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian |
 | **Default country** | none | Preselects the country on the student form's address section (ISO 3166 code) |
 
 ## Why the org name matters
 
-Change the organization name here and it propagates everywhere: sidebar, browser titles, the [booking page](../user-guides/trials), the [member portal](../user-guides/member-portal), check-in screens, and every email via the `{{appName}}` token. One place, no hunting.
+Change the organization name here and it propagates everywhere: sidebar, browser titles, the [booking page](../user-guides/trials), the [member portal](../user-guides/member-portal), check-in screens, PDFs, and every email via the `{{appName}}` token. One place, no hunting.
+
+For logos, colours, layout, and booking-page copy, continue to [Appearance & branding](./appearance). The email From name/address is separate — set it under [Email](./email).
 
 ## Default language
 

@@ -40,7 +40,7 @@ const sidebar = [
     items: [
       { text: "Admin Overview", link: "/configuration/overview" },
       { text: "General", link: "/configuration/general" },
-      { text: "Appearance", link: "/configuration/appearance" },
+      { text: "Appearance & branding", link: "/configuration/appearance" },
       { text: "Storage", link: "/configuration/storage" },
       { text: "Memberships", link: "/configuration/memberships" },
       { text: "Communication", link: "/configuration/communication" },
@@ -84,7 +84,7 @@ const sidebar = [
 export default defineConfig({
   title: "Mitch‑Dojo",
   description:
-    "Open-source, self-hosted dojo management — students, classes, attendance, belts, memberships, and communication",
+    "Open-source, self-hosted, white-label dojo management — students, classes, attendance, belts, memberships, communication, and your own branding",
   lang: "en-US",
   srcDir: ".",
   base: "/",

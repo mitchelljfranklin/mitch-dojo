@@ -23,10 +23,10 @@
 | 8 | Analytics (attendance trend, revenue, retention, members per location) |
 | 9 | Trials & leads (pipeline, public /book, follow-up emails) |
 | 10 | Member portal (magic links, read-only view incl. balance) |
-| 11 | White-label (org branding + logo on public/member surfaces and emails, editable booking copy) |
+| 11 | White-label (organization name, light/dark logos, colours, layout, booking copy, email identity, branded PDFs) |
 | — | Student address details (street/city/state/postcode/country with org default) |
 | — | Email log + retry (ported from mitch-risk; dashboard failed-email chip) |
-| — | Admin area restructure (sidebar regrouping; settings tabs → 17 sections in 7 groups at /admin/* with a /settings shim) |
+| — | Admin area restructure (sidebar regrouping; settings tabs → 18 sections in 7 groups at /admin/* with a /settings shim) |
 | — | SSO + break glass (Entra ID / Google / OIDC, JIT provisioning, SSO-only mode with anti-lock-out, single-use break-glass URLs) |
 | — | Compliance: health & medical section (PHI, students:medical permission), school-managed agreement documents (add/rename/disable/delete, versioned from v0), digital portal signing + staff-recorded paper fallback + printable forms |
 

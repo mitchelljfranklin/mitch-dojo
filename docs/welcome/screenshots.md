@@ -20,4 +20,5 @@
 | `booking.png` | The public `/book` trial-booking page (child mode) |
 | `portal.png` | The read-only member portal with the Documents & consent card |
 | `admin.png` | The Admin area (General page) |
+| `admin-appearance.png` | Admin → Appearance & branding — logos, colours, and booking copy |
 | `admin-documents.png` | Admin → Documents (versioned agreements) |

@@ -36,7 +36,7 @@ principles:
 | 8 | **Analytics**: dedicated page — overview counters, weekly attendance trend with location filter, monthly recorded-revenue chart, at-risk retention list, members per location. Invoices may carry an optional location for per-location revenue; recurring invoices stay school-wide and count only towards "All locations" | Done |
 | 9 | **Trials & leads**: dedicated trial pipeline (New → Contacted → First class → Converted/Lost) with stage actions and conversion stats; open public `/book` page (rate-limited, honeypot) that creates a TRIAL student with a chosen class; scheduler trial follow-up emails with editable template | Done |
 | 10 | **Member portal**: staff-emailed magic links (hashed tokens, 30-day expiry, student → guardian fallback); read-only `/portal` — progress + belts, upcoming classes, recent attendance, invoices/balance; expired-token cron pruning | Done |
-| 11 | **White-label**: org name on all public/member surfaces (booking, portal, check-in), dojo logo on those pages and in every email, editable booking-page headline + description in Admin → Appearance, org-branded email identities | Done |
+| 11 | **White-label**: organization name across public/member surfaces, login, staff UI, PDFs, and email tokens; light/dark logos with an email logo choice; runtime primary/secondary colours, radius, content width, and booking copy in Admin → Appearance; email From identity under Admin → Email | Done |
 | 11b | **Student address details**: structured address (line/city/postcode) on the student record, form, detail view, and CSV import/export; saving an edit returns to the student's display page with a flash toast | Done |
 | — | **Admin area**: sidebar regrouping (Overview/Operations/People/Management) and the settings area restructured into 18 sections across 7 groups (Workspace, Storage, Programs, Email, Locations, Access & security, Platform) at `/admin/*` with a `/settings` compatibility shim | Done |
 | 11c | **SSO + break glass** (ported from mitch-risk): Microsoft Entra ID / Google / generic OIDC sign-in with DB-backed encrypted client secrets, email-match linking, JIT provisioning with a default role, allowed-domain restriction, SSO-only mode with anti-lock-out, and single-use break-glass URLs (24h, bcrypt-hashed, rate-limited) | Done |
@@ -96,7 +96,7 @@ its own belt ladder and grading criteria.
 
 | Layer | Technology | Version | Purpose |
 |---|---|---|---|
-| Runtime | Node.js | >= 22 | Application runtime |
+| Runtime | Node.js | 22.23.4+ / 24.22.1+ / 26.12.1+ | Application runtime |
 | Framework | Next.js | 16 (App Router) | Full-stack server + client |
 | Language | TypeScript | ^6 (strict) | Type safety |
 | Database | PostgreSQL | 17 (or embedded via PGlite) | Relational persistence |
@@ -290,7 +290,7 @@ width, booking-page copy), operations (login throttle, session timeout,
 retention, scheduler toggle), files, storage (local/S3/Azure), email (SMTP;
 password AES-256-GCM encrypted at rest), email templates, memberships,
 communications, sso (provider toggles/client IDs; secrets encrypted). Managed
-across the 17-section Admin area. Only deployment
+across the 18-section Admin area. Only deployment
 bootstrap belongs in env (`DATABASE_URL`/`DIR`, `AUTH_SECRET`,
 `APP_ENCRYPTION_KEY`, `APP_URL`, `CRON_SECRET`, `DATA_STORAGE_PATH`,
 `TRUSTED_PROXY_COUNT`).
@@ -312,13 +312,13 @@ must be registered there. External trigger: `GET /api/cron/run` with
 - Secrets compared in constant time (`lib/timing-safe.ts`); rate limiting
   in-memory per process.
 - Upload validation: MIME allowlist + magic bytes (`lib/upload-validation.ts`).
-- Files served only via authenticated routes; never public URLs.
+- Photos and attachments are served only via authenticated routes. The organization logo is the sole public object route, because it appears on unauthenticated pages.
 - Audit log for every state-changing admin action (`AUDIT_ACTIONS`).
 
 ## 9. Deployment Architecture
 
 ```
-Internet → reverse proxy (TLS) → Next.js standalone (node:22-slim)
+Internet → reverse proxy (TLS) → Next.js standalone (node:22.23.4-slim)
                                     ├─ Postgres mode: db (postgres:17-alpine)
                                     └─ Lite mode: PGlite in-process, volume-mounted data dir
 File storage: local-disk volume (S3/Azure swappable in Settings)

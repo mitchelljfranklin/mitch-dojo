@@ -1,6 +1,6 @@
 # Storage
 
-Where uploaded files live — student photos and attachments, and the organization logo.
+Where uploaded files live — student photos and attachments, and the light/dark organization logos.
 
 ## Provider
 
@@ -27,7 +27,7 @@ Uploads are validated beyond the extension: MIME allowlist plus magic-byte sniff
 
 ## Files are served, never exposed
 
-There are no public file URLs. Photos, attachments, and the logo are served through authenticated routes; the logo route is public (it appears on unauthenticated pages) but only serves that one object.
+Photos and attachments are never public: they are served only through authenticated routes. The organization logo is the exception — its route is public because it appears on unauthenticated booking, portal, check-in, and login pages, and it only serves logo objects.
 
 ## Lifecycle
 

@@ -38,9 +38,9 @@ Members can tick **Pause non-essential emails** to opt out of class reminders, b
 
 The portal follows the school's **Default language** ([Admin → General](../configuration/general)) and includes a language selector in the header. A member's choice is remembered in a cookie and overrides the school default. Twelve languages ship today: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian.
 
-## White-labeling
+## White-label branding
 
-The portal, the [booking page](./trials), and check-in screens all share your branding from [Admin → Appearance](../configuration/appearance) — logo, colours, and org name.
+The portal, the [booking page](./trials), and check-in screens all share your branding from [Admin → Appearance](../configuration/appearance) — logo, colours, organization name, and booking copy. The same identity flows into emails and PDFs.
 
 ## Templates
 

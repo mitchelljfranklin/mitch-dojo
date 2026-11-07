@@ -36,7 +36,7 @@ Per-IP, in-memory, per process — deliberately simple for the single-container 
 
 - MIME allowlist **plus magic-byte sniffing** — a renamed executable doesn't pass.
 - Size limits per file (default 20 MB) and extension allowlist, configurable in [Storage](../configuration/storage).
-- Files are served only through authenticated routes; there are no public object URLs.
+- Photos and attachments are served only through authenticated routes. The organization logo is the only public object route: it must load on unauthenticated booking, portal, check-in, and login pages, and it only serves logo objects.
 
 ## Public surfaces
 
@@ -46,6 +46,7 @@ Per-IP, in-memory, per process — deliberately simple for the single-container 
 | `/checkin/[location]` | Revocable token in the URL |
 | `/portal` | Hashed, expiring (30-day) single-student tokens |
 | `/login` break-glass | Single-use, 24h, bcrypt-hashed token + per-IP rate limit |
+| `/api/brand/logo` | Public by design; only serves the uploaded organization logo |
 | `/api/cron/run` | Constant-time secret + rate limit |
 
 ## Audit trail

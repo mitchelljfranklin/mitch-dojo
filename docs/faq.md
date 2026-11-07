@@ -35,8 +35,8 @@ Switch `DATABASE_PROVIDER` to `postgres` — the schema is identical in both mod
 **How is my data backed up?**
 You own it: Postgres dumps or PGlite volume snapshots, plus the file-storage mount. Recipes in [Backups](./deployment/backups).
 
-**Can I use my own logo and colours?**
-Yes — [Admin → Appearance](./configuration/appearance) white-labels the booking page, portal, check-in screens, and every email.
+**Can I white-label it as my school?**
+Yes — this is a white-label solution, not a fixed-brand product. Set your organization name under [Admin → General](./configuration/general); set light/dark logos, primary/secondary colours, radius, page width, and booking headline/description under [Admin → Appearance](./configuration/appearance). Under [Admin → Email](./configuration/email) set your From name/address and choose the email logo. Those settings show up on the staff UI, login screens, booking page, member portal, check-in screens, emails, and generated PDFs. A custom domain is configured at the reverse proxy/deployment layer (`APP_URL`), not in the app. The documentation site and source repository remain Mitch‑Dojo, and the AGPL-3.0 license still applies.
 
 **Can two instructors use it at once?**
 Yes — that's what [roles](./user-guides/rbac) are for. Give trainers the seeded Trainer role; they see floor operations, not administration.

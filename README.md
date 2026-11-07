@@ -5,7 +5,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/mitchelljfranklin/mitch-dojo)](https://github.com/mitchelljfranklin/mitch-dojo/releases/latest)
 [![GitHub stars](https://img.shields.io/github/stars/mitchelljfranklin/mitch-dojo)](https://github.com/mitchelljfranklin/mitch-dojo/stargazers)
 
-> A self-hosted dojo management solution. Free, open-source, deploy anywhere.
+> A self-hosted, white-label dojo management solution. Free, open-source, deploy anywhere.
 
 ---
 
@@ -143,11 +143,17 @@ Ideal for a Raspberry Pi or a small VPS. Both modes share one schema and one mig
 - **Compliance page** listing every member with an outstanding signature, plus optional scheduler reminders and an optional check-in gate
 - **Incident reports / accident book** — dated, severity-rated incidents linked to a student and/or location, with open/closed tracking
 
-### White-label
-- Org name and logo on the booking page, member portal, check-in screens, and every email
-- Separate **light and dark logo variants** so single-colour badges stay visible everywhere
-- Choice of logo for emails (primary, or the dark variant on a dark plate)
-- Editable booking-page headline and description; custom colours, radius, and layout
+### White-label branding
+Mitch‑Dojo is designed to run as **your school's platform**, not ours. Branding is runtime configuration in [Admin → Appearance](docs/configuration/appearance.md) and [Admin → Email](docs/configuration/email.md) — no theme files to edit or rebuild.
+
+- **Organization identity** — your school name drives the sidebar, browser titles, booking page, member portal, check-in screens, PDFs, and the `{{appName}}` email token
+- **Logo system** — upload a light-background logo and an optional dark-background variant; the app swaps them automatically with the theme, login and public pages included
+- **Email identity and logo** — set the From name/address under Admin → Email and choose which logo emails use (primary, or the dark variant on a dark plate)
+- **Your colours and layout** — primary/secondary colours, corner radius, and content width for the staff UI (brand colours apply to the light theme; dark mode keeps its contrast-tuned palette)
+- **Your booking copy** — replace the public booking headline and description with your own words
+- **Branded PDFs** — invoices, report cards, attendance sheets, and printable agreements carry your organization name and primary logo; invoices also use your primary accent colour for status
+- **Your domain** — point a custom domain at the deployment and set `APP_URL`; TLS and host routing live at the reverse proxy, not in the app
+- **Clear boundaries** — this is controlled white-labeling, not arbitrary CSS/HTML injection; the source repository and documentation remain Mitch‑Dojo, and the AGPL-3.0 license still applies
 
 ### Languages & translation
 - **12 languages**, selectable per device and configurable as the school default in Admin → General

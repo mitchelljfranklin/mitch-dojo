@@ -14,7 +14,7 @@ SMTP delivery configuration. Mitch‑Dojo sends via **Nodemailer over SMTP** —
    | **SMTP username** | The mailbox messages send from |
    | **Auth-specific secret** | Password, or OAuth2 credentials — encrypted at rest |
    | **From address** | Sender email for all notifications |
-   | **From name** | Display name (defaults to your org name) |
+   | **From name** | Display name for outgoing mail — set this to your school name; it is separate from the Organization name setting |
 
 3. **Save**, then send a test from **Admin → Templates** (sample-send) to verify delivery end-to-end.
 

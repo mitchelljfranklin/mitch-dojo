@@ -5,7 +5,7 @@ Get Mitch‑Dojo running in minutes with Docker Compose.
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed
-- [Node.js](https://nodejs.org/) >= 22 (for local development only)
+- [Node.js](https://nodejs.org/) 22.23.4+, 24.22.1+, or 26.12.1+ (for local development only)
 - [Git](https://git-scm.com/) (to clone the repository)
 
 ## Docker Compose Quickstart
@@ -68,7 +68,7 @@ After logging in, set up your dojo:
 3. **Trainers & classes** — add trainers, then create courses with their weekly training times.
 4. **Memberships** — set your currency and invoice rules under Admin → Memberships, then build your plans.
 5. **Email** — enter your SMTP details under Admin → Email and send a test from Admin → Templates.
-6. **Branding** — upload your logo and set your colours under Admin → Appearance; they appear on the booking page, member portal, check-in screens, and every email.
+6. **White-label branding** — set your organization name under Admin → General, then upload light/dark logos, colours, layout, and booking copy under Admin → Appearance. Set the email From name/address under Admin → Email. The result appears on the booking page, portal, check-in screens, staff UI, emails, and PDFs.
 7. **Add students** — import your existing members via CSV or add them one by one.
 
 ## Local Development

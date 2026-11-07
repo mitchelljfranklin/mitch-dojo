@@ -75,6 +75,17 @@
 - Health & medical section on the student record (medications, conditions, injuries) gated by a dedicated PHI permission
 - **Incident reports / accident book** — dated, severity-rated incidents optionally linked to a student and location, with open/closed tracking and a per-student history
 
+## White-label branding
+
+- **Your organization name** across the staff shell, browser titles, public booking page, member portal, check-in screens, PDFs, and the `{{appName}}` token in email templates
+- **Light and dark logo variants** — the app switches automatically with the theme, including login and public pages; emails use your primary logo or the dark variant on a dark plate
+- **Your colours and layout** — primary/secondary colours, corner radius, and content width for the staff UI; brand colours apply to the light theme, while dark mode keeps its contrast-tuned palette
+- **Your booking copy** — replace the public booking headline and description; the dojo name sits above it automatically
+- **Email identity** — From name/address, email logo, and fully editable subject/body templates
+- **Branded PDFs** — organization name and primary logo on invoices, report cards, attendance sheets, and printable agreements; invoices also use the primary accent colour for status
+- **Custom domain** — deploy behind your own hostname and set `APP_URL`; TLS and routing live at the reverse proxy
+- **Clear boundaries** — runtime white-labeling, not arbitrary CSS/HTML injection; the source repository and docs remain Mitch‑Dojo, under AGPL-3.0
+
 ## Languages
 
 - **Twelve languages** ship today: English, Spanish, Portuguese, French, German, Italian, Japanese, Korean, Chinese, Arabic, Hindi, and Russian
@@ -86,7 +97,6 @@
 
 ## Platform
 
-- **White-label** — your org name and logo on the booking page, member portal, check-in screens, login screens, and every email; separate light/dark logo variants so single-colour badges stay visible everywhere, with a choice of logo for emails; editable booking-page copy
 - **Single sign-on** — Microsoft Entra ID, Google, or any OpenID Connect provider; first sign-ins auto-provision passwordless accounts; SSO-only mode with a single-use break-glass URL for emergencies
 - **RBAC** — three seeded system roles (Admin, Trainer, Viewer) plus custom roles over 24 fine-grained permissions (incl. PHI-gated medical visibility); gated controls are hidden, never greyed out
 - **Audit log** — every state-changing admin action logged, with retention pruning

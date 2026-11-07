@@ -4,8 +4,8 @@ Operating guide for any agent or developer working in this repository.
 
 ## Project
 
-**Mitch‑Dojo** — an open-source (AGPL-3.0), self-hosted, single-dojo management
-platform for martial arts schools: students, classes/schedule, attendance &
+**Mitch‑Dojo** — an open-source (AGPL-3.0), self-hosted, white-label, single-dojo
+management platform for martial arts schools: students, classes/schedule, attendance &
 QR check-in, belts & gradings, memberships & payments (manual recording first,
 gateways later), communication, trials & leads, member portal, compliance
 (medical PHI + versioned agreements with digital signing), and retention
@@ -61,8 +61,9 @@ plan without asking.
 - **@react-pdf/renderer** — branded PDFs (invoices, student report cards,
   attendance sheets, printable agreements)
 - **Local-disk volume** — file storage behind a storage interface
-  (`lib/storage/`; S3 and Azure Blob swappable in-app); files served only via
-  authenticated routes
+  (`lib/storage/`; S3 and Azure Blob swappable in-app); photos and attachments
+  are served only via authenticated routes, while the brand logo has a public
+  route for unauthenticated pages
 - **Built-in scheduler (default) → `lib/scheduler.ts` via `instrumentation.ts`**
   — every 5 minutes runs `lib/cron/run-jobs.ts`: session + recurring-invoice
   generation, hold auto-resume, reminder emails (class/payment/birthday/trial/

@@ -6,7 +6,7 @@ Everything runtime-configurable lives in the **Admin area**, reached via the gea
 
 | Group | Sections |
 |---|---|
-| **Workspace** | [General](./general) · [Appearance](./appearance) |
+| **Workspace** | [General](./general) · [Appearance & branding](./appearance) |
 | **Storage** | [Storage](./storage) |
 | **Programs** | [Memberships](./memberships) · [Communication](./communication) · [Documents](./documents) · Verifications (see [User guide](../user-guides/verifications)) |
 | **Email** | [Email](./email) · [Templates](./templates) · [Campaigns](./communication#campaigns-bulk-email) · [Email log](./email-log) |
