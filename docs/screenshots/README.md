@@ -1,5 +1,5 @@
-Place screenshots here with the exact filenames listed in
-docs/welcome/screenshots.md:
+These are the screenshots referenced from `docs/welcome/screenshots.md`.
+Keep filenames stable when replacing an image:
 
 - dashboard.png
 - analytics.png

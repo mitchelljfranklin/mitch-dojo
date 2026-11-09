@@ -1,24 +1,73 @@
 # Screenshots
 
-> **TODO (owner):** capture these screenshots from a running instance and save
-> them into `docs/screenshots/` using the exact filenames below (light theme,
-> browser window ~1600px wide). This page currently lists the planned set;
-> screenshots will be embedded as they are added.
+A visual tour of Mitch‑Dojo, captured from a running instance in light theme.
 
-| File | What to capture |
-|---|---|
-| `dashboard.png` | The Dashboard landing page (overdue payments, failed-email chip) |
-| `analytics.png` | The Analytics page — counters, attendance trend, revenue chart |
-| `students.png` | Students list with search and status filters |
-| `student-detail.png` | A student record — agreements/consent card, belts, attendance, invoices |
-| `timetable.png` | Weekly timetable view |
-| `attendance-browser.png` | The attendance browser (all sessions, past + upcoming) |
-| `attendance-sheet.png` | A session attendance sheet |
-| `belts.png` | A discipline's belt ladder / progression page |
-| `memberships.png` | Membership plans or an invoice detail |
-| `trials.png` | The trial pipeline |
-| `booking.png` | The public `/book` trial-booking page (child mode) |
-| `portal.png` | The read-only member portal with the Documents & consent card |
-| `admin.png` | The Admin area (General page) |
-| `admin-appearance.png` | Admin → Appearance & branding — logos, colours, and booking copy |
-| `admin-documents.png` | Admin → Documents (versioned agreements) |
+## Dashboard & analytics
+
+### Dashboard
+
+![Dashboard with overdue payments and failed-email chip](../screenshots/dashboard.png)
+
+### Analytics
+
+![Analytics page with attendance and revenue charts](../screenshots/analytics.png)
+
+## Students & schedule
+
+### Students
+
+![Students list with search and status filters](../screenshots/students.png)
+
+### Student record
+
+![Student record with belts, attendance, invoices, and documents](../screenshots/student-detail.png)
+
+### Weekly timetable
+
+![Weekly timetable view](../screenshots/timetable.png)
+
+## Attendance & belts
+
+### Attendance browser
+
+![Attendance browser with past and upcoming sessions](../screenshots/attendance-browser.png)
+
+### Attendance sheet
+
+![Session attendance sheet](../screenshots/attendance-sheet.png)
+
+### Belt ladder
+
+![Belt ladder and progression page](../screenshots/belts.png)
+
+## Memberships & trials
+
+### Memberships
+
+![Membership plans](../screenshots/memberships.png)
+
+### Trial pipeline
+
+![Trial pipeline](../screenshots/trials.png)
+
+### Public booking page
+
+![Public trial-booking page](../screenshots/booking.png)
+
+## Portal & admin
+
+### Member portal
+
+![Read-only member portal with documents and consent](../screenshots/portal.png)
+
+### Admin general
+
+![Admin General page](../screenshots/admin.png)
+
+### Appearance & branding
+
+![Admin Appearance & branding page](../screenshots/admin-appearance.png)
+
+### Documents
+
+![Admin Documents page with versioned agreements](../screenshots/admin-documents.png)

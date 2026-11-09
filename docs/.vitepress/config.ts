@@ -90,6 +90,9 @@ export default defineConfig({
   base: "/",
   cleanUrls: true,
   lastUpdated: true,
+  sitemap: {
+    hostname: "https://dojo.mitchforge.com",
+  },
 
   head: [
     [

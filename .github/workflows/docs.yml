@@ -1,13 +1,13 @@
 name: Deploy Docs
-# Manual for now: GitHub Pages requires a public repo (or a paid plan) —
-# flip the push trigger back on when the repository goes public.
+# Publishes the VitePress site to GitHub Pages at dojo.mitchforge.com.
+# workflow_dispatch is kept for manual redeploys.
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [master]
-  #   paths:
-  #     - "docs/**"
-  #     - ".github/workflows/docs.yml"
+  push:
+    branches: [master]
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
 
 permissions:
   contents: read
