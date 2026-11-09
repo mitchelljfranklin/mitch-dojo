@@ -1,13 +1,33 @@
-# Mitch‑Dojo
-
-[![CI](https://img.shields.io/github/actions/workflow/status/mitchelljfranklin/mitch-dojo/ci.yml?branch=master)](https://github.com/mitchelljfranklin/mitch-dojo/actions)
-[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-brightgreen)](LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/mitchelljfranklin/mitch-dojo)](https://github.com/mitchelljfranklin/mitch-dojo/releases/latest)
-[![GitHub stars](https://img.shields.io/github/stars/mitchelljfranklin/mitch-dojo)](https://github.com/mitchelljfranklin/mitch-dojo/stargazers)
-
-> A self-hosted, white-label dojo management solution. Free, open-source, deploy anywhere.
+<div align="center">
+  <img src="docs/public/favicon.svg" width="88" alt="Mitch‑Dojo logo" />
+  <h1>Mitch‑Dojo</h1>
+  <p><strong>Run your dojo. Own your data. Brand it as your own.</strong></p>
+  <p>A self-hosted, white-label dojo management platform for martial arts schools. Free, open-source, deploy anywhere.</p>
+  <p>
+    <a href="https://github.com/mitchelljfranklin/mitch-dojo/actions"><img src="https://img.shields.io/github/actions/workflow/status/mitchelljfranklin/mitch-dojo/ci.yml?branch=master&style=flat-square" alt="CI" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-brightgreen?style=flat-square" alt="License: AGPL v3" /></a>
+    <a href="https://github.com/mitchelljfranklin/mitch-dojo/releases/latest"><img src="https://img.shields.io/github/v/release/mitchelljfranklin/mitch-dojo?style=flat-square" alt="GitHub release" /></a>
+    <a href=".nvmrc"><img src="https://img.shields.io/badge/Node-22.23.4%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 22.23.4+" /></a>
+    <a href="docker-compose.yml"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose" /></a>
+    <a href="docs/configuration/appearance.md"><img src="https://img.shields.io/badge/white--label-ready-dc2626?style=flat-square" alt="White-label ready" /></a>
+    <a href="https://github.com/mitchelljfranklin/mitch-dojo/stargazers"><img src="https://img.shields.io/github/stars/mitchelljfranklin/mitch-dojo?style=flat-square" alt="GitHub stars" /></a>
+  </p>
+  <p>
+    <a href="#quick-start">Quick start</a> ·
+    <a href="#features">Features</a> ·
+    <a href="#white-label-branding">White-label</a> ·
+    <a href="#documentation">Documentation</a> ·
+    <a href="ARCHITECTURE.md">Architecture</a>
+  </p>
+</div>
 
 ---
+
+## What it handles
+
+| 🥋 Run the floor | 💳 Run the office | 🎨 Make it yours |
+|:---|:---|:---|
+| Students, households, multi-location classes, QR check-in, belt ladders, gradings, attendance history, and CSV imports | Plans, invoices, manual payments, overdue tracking, reminders, campaigns, trial pipeline, and a member portal | White-label name, logos, and colours; 12 languages; branded booking page, emails, and PDFs |
 
 ## Why Mitch‑Dojo
 
