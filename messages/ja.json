@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} で {time} （満杯）",
       "sessionNote": "オプション — 電子メールまたは電話であなたの場所を確認します。",
       "submit": "無料トライアルを予約する",
+      "submitting": "トライアルを予約しています...",
+      "submittingHint": "ご予約を確認するまでお待ちください。このページを閉じないでください。",
       "relationships": {
         "mother": "母親",
         "father": "父親",

@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} à {time} (complet)",
       "sessionNote": "Facultatif — nous confirmerons votre place par e-mail ou par téléphone.",
       "submit": "Réserver mon essai gratuit",
+      "submitting": "Réservation de votre essai...",
+      "submittingHint": "Veuillez patienter pendant que nous confirmons votre réservation. Ne fermez pas cette page.",
       "relationships": {
         "mother": "Mère",
         "father": "Père",

@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} ~에 {time} (가득한)",
       "sessionNote": "선택 사항 – 이메일이나 전화로 자리를 확인해 드리겠습니다.",
       "submit": "무료 평가판 예약",
+      "submitting": "평가판 예약 중...",
+      "submittingHint": "예약을 확인하는 동안 잠시 기다려 주십시오. 이 페이지를 닫지 마세요.",
       "relationships": {
         "mother": "어머니",
         "father": "아버지",

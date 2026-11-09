@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} at {time} (full)",
       "sessionNote": "Optional — we will confirm your spot by email or phone.",
       "submit": "Book my free trial",
+      "submitting": "Booking your trial...",
+      "submittingHint": "Please wait while we confirm your booking. Don't close this page.",
       "relationships": {
         "mother": "Mother",
         "father": "Father",

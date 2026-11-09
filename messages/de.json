@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} bei {time} (voll)",
       "sessionNote": "Optional – wir bestätigen Ihren Platz per E-Mail oder Telefon.",
       "submit": "Buchen Sie meine kostenlose Testversion",
+      "submitting": "Buchen Sie Ihre Testversion...",
+      "submittingHint": "Bitte warten Sie, während wir Ihre Buchung bestätigen. Schließen Sie diese Seite nicht.",
       "relationships": {
         "mother": "Mutter",
         "father": "Vater",

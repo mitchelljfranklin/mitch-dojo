@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} A {time} (pieno)",
       "sessionNote": "Facoltativo: confermeremo il tuo posto tramite e-mail o telefono.",
       "submit": "Prenota la mia prova gratuita",
+      "submitting": "Prenota la tua prova...",
+      "submittingHint": "Attendi mentre confermiamo la tua prenotazione. Non chiudere questa pagina.",
       "relationships": {
         "mother": "Madre",
         "father": "Padre",

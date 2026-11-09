@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} no {time} (completo)",
       "sessionNote": "Opcional — confirmaremos sua vaga por e-mail ou telefone.",
       "submit": "Reserve meu teste gratuito",
+      "submitting": "Reservando seu teste...",
+      "submittingHint": "Aguarde enquanto confirmamos sua reserva. Não feche esta página.",
       "relationships": {
         "mother": "Mãe",
         "father": "Pai",

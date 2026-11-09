@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} 在 {time} （满的）",
       "sessionNote": "可选 - 我们将通过电子邮件或电话确认您的位置。",
       "submit": "预订我的免费试用",
+      "submitting": "正在预订试用...",
+      "submittingHint": "我们正在确认您的预订，请稍候。不要关闭此页面。",
       "relationships": {
         "mother": "母亲",
         "father": "父亲",

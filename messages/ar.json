@@ -2716,6 +2716,8 @@
       "classOptionFull": "{courseName} — {date} في {time} (ممتلىء)",
       "sessionNote": "اختياري - سنؤكد مكانك عبر البريد الإلكتروني أو الهاتف.",
       "submit": "احجز تجربتي المجانية",
+      "submitting": "جارٍ حجز تجربتك...",
+      "submittingHint": "يرجى الانتظار حتى نؤكد حجزك. لا تغلق هذه الصفحة.",
       "relationships": {
         "mother": "الأم",
         "father": "أب",

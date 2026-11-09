@@ -209,4 +209,36 @@ test.describe("trials", () => {
     await page.goto("/book?error=contact");
     await expect(page.getByText("Something went wrong")).toBeVisible();
   });
+
+  test("booking submit shows a pending state and disables the form", async ({
+    page,
+  }) => {
+    await page.route("**/book*", async (route) => {
+      if (route.request().method() === "POST") {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      }
+      await route.continue();
+    });
+
+    await page.goto("/book");
+    await page.getByLabel("First name").fill("Pending");
+    await page.getByLabel("Last name").fill("Booker");
+    await page
+      .getByLabel("Email")
+      .fill(`pending-booker-${Date.now()}@example.com`);
+    await page.getByRole("combobox", { name: "Location" }).click();
+    await page.getByRole("option", { name: "E2E Dojo", exact: true }).click();
+    await page.getByRole("combobox", { name: "Martial art" }).click();
+    await page.getByRole("option", { name: "E2E Karate" }).click();
+    await page.getByRole("button", { name: "Book my free trial" }).click();
+
+    await expect(page.getByRole("status")).toContainText(
+      "Booking your trial...",
+    );
+    await expect(page.getByLabel("First name")).toBeDisabled();
+    await expect(page.locator('button[type="submit"]')).toBeDisabled();
+    await expect(page.getByText("Booking received!")).toBeVisible({
+      timeout: 10_000,
+    });
+  });
 });
