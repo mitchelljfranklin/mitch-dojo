@@ -10,6 +10,7 @@
     <a href=".nvmrc"><img src="https://img.shields.io/badge/Node-22.23.4%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 22.23.4+" /></a>
     <a href="docker-compose.yml"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose" /></a>
     <a href="docs/configuration/appearance.md"><img src="https://img.shields.io/badge/white--label-ready-dc2626?style=flat-square" alt="White-label ready" /></a>
+    <a href="https://dojo.mitchforge.com"><img src="https://img.shields.io/badge/docs-live-646CFF?style=flat-square&logo=vitepress&logoColor=white" alt="Documentation" /></a>
     <a href="https://github.com/mitchelljfranklin/mitch-dojo/stargazers"><img src="https://img.shields.io/github/stars/mitchelljfranklin/mitch-dojo?style=flat-square" alt="GitHub stars" /></a>
   </p>
   <p>
@@ -334,7 +335,8 @@ Lite mode backs up its whole database as a volume snapshot — see the [Backups 
 
 | Document | Description |
 |----------|-------------|
-| [User Documentation](docs/index.md) | VitePress site in `docs/` — user guides, configuration, deployment (`npm run docs:dev`) |
+| [Live documentation](https://dojo.mitchforge.com) | Hosted user guides, configuration, deployment, and screenshots |
+| [User Documentation source](docs/index.md) | VitePress site in `docs/` (`npm run docs:dev`) |
 | [Architecture](ARCHITECTURE.md) | Full platform architecture, data model, and design decisions |
 | [Phase Review](phasereview.md) | Remaining and potential work, tracked openly |
 
