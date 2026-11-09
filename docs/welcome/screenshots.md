@@ -2,8 +2,8 @@
 
 > **TODO (owner):** capture these screenshots from a running instance and save
 > them into `docs/screenshots/` using the exact filenames below (light theme,
-> browser window ~1600px wide). They are referenced from this page and will
-> appear as they are added.
+> browser window ~1600px wide). This page currently lists the planned set;
+> screenshots will be embedded as they are added.
 
 | File | What to capture |
 |---|---|

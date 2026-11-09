@@ -1,7 +1,7 @@
 # Mitch‑Dojo — Architecture Solution Design Document
 
 > **Version:** 0.1.0 (Phase 11b)
-> **Last Updated:** October 2026
+> **Last Updated:** November 2026
 > **Audience:** Engineering, Security, Operations
 > **Status:** Approved
 

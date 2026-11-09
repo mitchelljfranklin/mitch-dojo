@@ -1,6 +1,6 @@
 # Phase Review — Remaining & Potential Work
 
-> **Last updated:** September 2026 (compliance feature: medical PHI + versioned agreements + digital signing)
+> **Last updated:** November 2026 (white-label documentation, localized PDFs, and release-readiness pass)
 > **Purpose:** a living checklist of everything left or worth considering,
 > so nothing lives only in conversation. Tick items off or strike them out
 > as decisions land.
@@ -84,7 +84,7 @@
 - [ ] **Coverage report** — no coverage tooling configured; add
       `vitest --coverage` to CI as an informational gate.
 
-### UX / product polish (planned September 2026 — build in this order)
+### UX / product polish (started September 2026 — completed in order)
 
 Approved plan (owner sign-off): all items, in the batch order below.
 
@@ -129,9 +129,9 @@ Approved plan (owner sign-off): all items, in the batch order below.
 
 ### Infrastructure / operational
 
-- [ ] **Backups documentation for Postgres mode** — the lite runbook
+- [x] **Backups documentation for Postgres mode** — the lite runbook
       (docs/deployment/backups.md) covers PGlite volume snapshots; Postgres-mode
-      `pg_dump` scheduling deserves the same treatment.
+      `pg_dump` scheduling is documented there too.
 - [ ] **`/api/cron/run` security review** — confirmed constant-time +
       rate-limited; a one-time penetration-style pass over public routes
       (book, portal, check-in) before go-live is cheap insurance.
