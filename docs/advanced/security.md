@@ -53,6 +53,14 @@ Per-IP, in-memory, per process — deliberately simple for the single-container 
 
 Every state-changing admin action is logged with a typed action key — append-only, survives user deletion ("Deleted user"), retention-configurable (default: forever). See [Audit Log](../configuration/audit).
 
+## Dependency & supply chain
+
+- Production dependencies are audited with `npm audit --omit=dev --audit-level=high`; CI installs from the committed lockfile with `npm ci`.
+- Dependabot tracks npm packages, GitHub Actions, and Docker base images.
+- Dependabot alerts, security updates, secret scanning, push protection, CodeQL, and private vulnerability reporting are enabled on the public repository.
+- The Docker image is built from the pinned Node.js release and the committed lockfile; stable releases are tagged.
+- See the repository [Security Policy](https://github.com/mitchelljfranklin/mitch-dojo/blob/master/SECURITY.md) for supported versions and disclosure guidance.
+
 ## Reporting
 
-Found something? Open an issue on the repository — for a self-hosted platform, a well-written issue with reproduction steps is the fastest path to a fix.
+Please report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/mitchelljfranklin/mitch-dojo/security/advisories/new) rather than opening a public issue. Never include production data, student records, medical information, or credentials in a report.
