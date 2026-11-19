@@ -98,7 +98,9 @@ test.describe("attendance", () => {
 
     await page.goto(`/checkin/${token}`);
 
-    await expect(page.getByText("Check in at E2E Dojo")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Check in at E2E Dojo" }),
+    ).toBeVisible();
     await expect(page.getByText("E2E Attend Course")).toBeVisible();
 
     // The chip may already be checked-in (green, disabled) if a previous
