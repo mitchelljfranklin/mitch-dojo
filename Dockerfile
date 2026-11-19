@@ -6,7 +6,7 @@ RUN apt-get update \
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm install --no-audit --no-fund --legacy-peer-deps
+RUN npm ci --no-audit --no-fund --legacy-peer-deps
 
 FROM base AS build
 ENV NEXT_TELEMETRY_DISABLED=1

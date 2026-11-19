@@ -119,7 +119,9 @@ test.describe("attendance", () => {
     const token = (await readFile("e2e/.checkin-token", "utf8")).trim();
 
     await page.goto(`/checkin/${token}`);
-    await expect(page.getByText("Check in at E2E Dojo")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Check in at E2E Dojo" }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Kiosk mode" }).click();
 
     // The toggle persists the mode in the URL (a tablet bookmark keeps it)
@@ -129,7 +131,9 @@ test.describe("attendance", () => {
       page.getByRole("button", { name: "Exit kiosk" }),
     ).toBeVisible();
     await expect(page.getByText("My Dojo", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("Check in at E2E Dojo")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Check in at E2E Dojo" }),
+    ).toBeVisible();
 
     // Exiting restores the standard page (brand mark back)
     await page.getByRole("button", { name: "Exit kiosk" }).click();
