@@ -56,6 +56,7 @@ Every state-changing admin action is logged with a typed action key — append-o
 ## Dependency & supply chain
 
 - Production dependencies are audited with `npm audit --omit=dev --audit-level=high`; CI installs from the committed lockfile with `npm ci`.
+- Where an advisory is patched upstream but the direct dependency has not yet widened its version range, `package.json` carries a narrow `overrides` entry instead of a fork. Each override names the minimum patched release, is scoped to the relying package where possible (`vitepress.vite`), and is removed once the parent dependency ships the fix. Overrides are reviewed on every dependency pass; the current set is `effect`, `postcss-selector-parser`, and VitePress's `vite`.
 - Dependabot tracks npm packages, GitHub Actions, and Docker base images.
 - Dependabot alerts, security updates, secret scanning, push protection, CodeQL, and private vulnerability reporting are enabled on the public repository.
 - The Docker image is built from the pinned Node.js release and the committed lockfile; stable releases are tagged.
