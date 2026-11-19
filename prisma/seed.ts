@@ -27,6 +27,10 @@ function resolveDataDir(): string {
   throw new Error("PGlite seed requires DATABASE_DIR to be set.");
 }
 
+// PGlite keeps a worker alive after Prisma disconnects. Close it explicitly
+// so a second seed invocation can open the same data directory.
+let pgliteClient: PGlite | null = null;
+
 type DefaultSetting = {
   category: string;
   key: string;
@@ -90,6 +94,7 @@ async function createClient(provider: DatabaseProvider): Promise<PrismaClient> {
     // PGlite does not create missing parent directories on first run.
     mkdirSync(dataDir, { recursive: true });
     const client = new PGlite(dataDir);
+    pgliteClient = client;
     const adapter = new PrismaPGlite(client);
     return new PrismaClient({ adapter });
   }
@@ -265,6 +270,7 @@ async function run(): Promise<void> {
     console.log("Seed complete.");
   } finally {
     await prisma.$disconnect();
+    await pgliteClient?.close();
   }
 }
 
