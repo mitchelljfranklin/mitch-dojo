@@ -71,6 +71,9 @@ jobs:
     # Validates the embedded PGlite deployment path: generate -> apply the
     # canonical migrations via the lite runner -> seed.
     runs-on: ubuntu-latest
+    # PGlite runtime upgrades have hung during initialization before; fail
+    # fast instead of holding a runner indefinitely.
+    timeout-minutes: 10
     env:
       DATABASE_PROVIDER: pglite
       DATABASE_DIR: /tmp/mitch-dojo-pglite-ci

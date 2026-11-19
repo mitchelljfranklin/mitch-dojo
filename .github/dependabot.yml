@@ -14,6 +14,10 @@ updates:
           - "minor"
           - "patch"
     ignore:
+      # PGlite minor upgrades are runtime migrations; validate them separately.
+      - dependency-name: "@electric-sql/pglite"
+        update-types:
+          - "version-update:semver-minor"
       # Type definitions follow the Node runtime; major jumps are deliberate
       # migration work, not routine dependency updates.
       - dependency-name: "@types/node"
