@@ -219,6 +219,7 @@ Mitch‑Dojo is designed to run as **your school's platform**, not ours. Brandin
 - Rate limiting on login, password reset, break-glass, booking, and the cron endpoint
 - Constant-time secret comparison; in-app secrets never returned to the client
 - Audit log for every state-changing admin action, preserved through user deletion
+- Private vulnerability reporting and a documented [security policy](SECURITY.md)
 
 ### Platform
 - Built-in 5-minute scheduler (reminders, invoices, pruning, orphan-file sweep) or external trigger via a secured endpoint
