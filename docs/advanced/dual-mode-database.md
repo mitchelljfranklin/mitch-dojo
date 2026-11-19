@@ -37,7 +37,7 @@ Seeding is idempotent in both modes (system roles, default settings, marker-file
 | No TCP access in lite mode | No pgAdmin/BI; backups are stop-copy-start of `DATABASE_DIR` ([Backups](../deployment/backups)) |
 | WASM assets in the standalone build | PGlite is externalised via `serverExternalPackages` so the Docker runtime resolves it |
 | Data directory is the whole database | Must be a mounted volume; single-process access enforced |
-| PGlite 0.5.x fails to initialise with the current Prisma adapter | Runtime stays on the 0.4.x line (`@electric-sql/pglite` `^0.4.6`); Dependabot ignores PGlite minor bumps until the adapter supports 0.5 |
+| PGlite 0.5.x ships PostgreSQL 18 and cannot open a PG17 data directory | Runtime stays on the 0.4.x line (PostgreSQL 17). Moving to 0.5 is a major-version data migration (dump from the old engine, restore into a fresh directory), not a package bump; Dependabot ignores PGlite minor upgrades until that migration ships |
 
 ## Switching modes
 
