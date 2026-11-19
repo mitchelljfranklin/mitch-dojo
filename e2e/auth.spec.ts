@@ -10,7 +10,9 @@ test.describe("authentication", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await page.waitForURL("**/dashboard");
-    await expect(page.getByText("Welcome, E2E Admin")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Welcome, E2E Admin" }),
+    ).toBeVisible();
 
     // Admin nav button in the header + sidebar Settings entry
     await expect(
