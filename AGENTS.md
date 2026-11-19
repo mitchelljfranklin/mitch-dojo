@@ -207,11 +207,18 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 ### PGlite-mode gotchas
 
-- **Stay on PGlite 0.4.x.** 0.5.x fails to initialize under Vitest and hangs
-  the `pglite-mode` CI job with the current `pglite-prisma-adapter`; 0.5.17
-  (latest at the time of writing) still failed. Dependabot ignores PGlite
-  minor bumps for this reason — re-test the whole lite path before lifting
-  that ignore.
+- **Stay on PGlite 0.4.x (PostgreSQL 17).** 0.5.x ships PostgreSQL 18, whose
+  on-disk format cannot read a PG17 data directory. In-place, an existing lite
+  install dies with `PGlite failed to initialize properly`; the data is not
+  corrupt, but it is unreadable until it is dumped from the old engine and
+  restored into a fresh instance (PGlite's documented minor-version upgrade
+  path). A **fresh** directory works fine on 0.5, so a green unit suite after
+  `rm -rf .pglite-test` proves nothing about the upgrade — that stale test
+  directory is exactly what made 0.5 look broken. After any PGlite runtime
+  change, in either direction, delete `.pglite-test`; the bare-test suite
+  opens it at import time and fails with the same opaque error. Dependabot
+  ignores PGlite minor bumps; treat 0.5 adoption as a data-migration project
+  with a tested dump/restore step, not a version bump.
 - **PGlite is single-process.** Before any command that opens the data
   directory (`npm run db:deploy:lite`, `db:seed`, or a manual PGlite script),
   verify no dev server is running on :3000 — a second process opening the

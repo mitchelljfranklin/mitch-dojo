@@ -137,6 +137,11 @@ Approved plan (owner sign-off): all items, in the batch order below.
       (book, portal, check-in) before go-live is cheap insurance.
 - [ ] **Dependency audit + upgrade pass** — `npm audit` and minor-version
       bumps at the milestone (Next 16.x, Prisma 7.x move quickly).
+- [ ] **PGlite 0.5 (PostgreSQL 18) migration** — 0.4.6 is the tip of the
+      PostgreSQL 17 line. 0.5.x ships PG18 and cannot open a PG17 data
+      directory, so adoption needs a shipped, tested data migration (dump with
+      the old engine, restore into a fresh database) plus a runbook for
+      existing lite installs. Do not take this as a plain version bump.
 
 ### Explicitly out of scope (unchanged)
 

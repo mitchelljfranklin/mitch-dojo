@@ -31,6 +31,8 @@ ls -1t /var/backups/dojo/pglite-*.tar.gz | tail -n +9 | xargs -r rm
 
 **Restore** = stop the container, extract the archive into the volume, start.
 
+Snapshots and restores are tied to the embedded PostgreSQL **major version**: a data directory or snapshot taken on one major cannot be loaded by a PGlite release built on another. Restore a lite snapshot only onto the release that produced it — see [Lite Mode → PostgreSQL major versions](./lite#postgresql-major-versions).
+
 ## Postgres mode
 
 Use standard Postgres tooling against the `db` container:

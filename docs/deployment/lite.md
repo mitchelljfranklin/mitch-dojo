@@ -43,6 +43,12 @@ docker compose -f docker-compose.lite.yml up -d
 
 (Adjust volume names to your project's prefix — check with `docker volume ls`.)
 
+### PostgreSQL major versions
+
+A PGlite release that changes the embedded PostgreSQL major version (for example PostgreSQL 17 → 18) **cannot open the previous data directory** — the engine reports `PGlite failed to initialize properly` and the snapshot restore above does not help, because the snapshot is in the old format. The data is intact; it has to be exported with the old engine and imported into a fresh database.
+
+Mitch-Dojo therefore pins the PGlite runtime to the PostgreSQL 17 line. Upgrading across that boundary is a deliberate data migration, never a routine image update — export first, then move the data into a clean database.
+
 ## Operational notes
 
 - **PGlite is real PostgreSQL** — enums, JSON, and array columns behave exactly as in server mode. The schema never forks between modes; switching is a single environment variable.
