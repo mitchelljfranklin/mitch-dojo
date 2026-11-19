@@ -2,7 +2,7 @@ import { render } from "@react-email/components";
 import { type Prisma } from "../../prisma/generated/prisma/client";
 import { marked } from "marked";
 import { getTranslations } from "next-intl/server";
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 
 import { DynamicEmail } from "@/emails/dynamic";
 import {
@@ -16,7 +16,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 // Exported for tests: builds the SMTP transport from the current settings.
-export async function getTransporter(): Promise<nodemailer.Transporter | null> {
+export async function getTransporter(): Promise<Transporter | null> {
   const settings = await getEmailSettings();
   if (!settings.smtpHost) {
     return null;
