@@ -161,6 +161,13 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
   `ensureSystemRoles()`) still resets the system roles strictly.
 - **Apply new Prisma migrations to both dev and test databases** before
   running integration tests.
+- **`package.json` `overrides` pin patched transitive releases** (`effect`,
+  `postcss-selector-parser`, and VitePress's `vite`) that their parents have
+  not widened to yet. Keep each entry scoped and minimal, and drop it once the
+  parent ships the fix. A root-level `vite` override hoists one copy for
+  VitePress and Vitest at once and breaks `npm run test`; scope it under
+  `vitepress` and re-run `npm run docs:build` plus `npm run test` after any
+  Vite change.
 - **The Prisma client lives at `prisma/generated/prisma`** (`generator client`
   uses `provider = "prisma-client"` with a custom `output`; `lib/prisma.ts`
   imports from there, not `@prisma/client`). It is gitignored — run
@@ -200,6 +207,11 @@ proxy.ts             # Next.js 16 proxy (CSP nonce + security headers)
 
 ### PGlite-mode gotchas
 
+- **Stay on PGlite 0.4.x.** 0.5.x fails to initialize under Vitest and hangs
+  the `pglite-mode` CI job with the current `pglite-prisma-adapter`; 0.5.17
+  (latest at the time of writing) still failed. Dependabot ignores PGlite
+  minor bumps for this reason — re-test the whole lite path before lifting
+  that ignore.
 - **PGlite is single-process.** Before any command that opens the data
   directory (`npm run db:deploy:lite`, `db:seed`, or a manual PGlite script),
   verify no dev server is running on :3000 — a second process opening the
