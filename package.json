@@ -45,7 +45,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.10",
     "lucide-react": "^1.76.0",
     "marked": "^18.2.1",
     "next": "16.4.6",
