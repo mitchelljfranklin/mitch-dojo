@@ -96,7 +96,7 @@ its own belt ladder and grading criteria.
 
 | Layer | Technology | Version | Purpose |
 |---|---|---|---|
-| Runtime | Node.js | 22.23.4+ / 24.22.1+ / 26.12.1+ | Application runtime |
+| Runtime | Node.js | 22.23.5+ / 24.22.1+ / 26.12.1+ | Application runtime |
 | Framework | Next.js | 16 (App Router) | Full-stack server + client |
 | Language | TypeScript | ^6 (strict) | Type safety |
 | Database | PostgreSQL | 17 (or embedded via PGlite) | Relational persistence |
@@ -318,7 +318,7 @@ must be registered there. External trigger: `GET /api/cron/run` with
 ## 9. Deployment Architecture
 
 ```
-Internet → reverse proxy (TLS) → Next.js standalone (node:22.23.4-slim)
+Internet → reverse proxy (TLS) → Next.js standalone (node:22.23.5-slim)
                                     ├─ Postgres mode: db (postgres:17-alpine)
                                     └─ Lite mode: PGlite in-process, volume-mounted data dir
 File storage: local-disk volume (S3/Azure swappable in Settings)

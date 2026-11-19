@@ -7,7 +7,7 @@
     <a href="https://github.com/mitchelljfranklin/mitch-dojo/actions"><img src="https://img.shields.io/github/actions/workflow/status/mitchelljfranklin/mitch-dojo/ci.yml?branch=master&style=flat-square" alt="CI" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-brightgreen?style=flat-square" alt="License: AGPL v3" /></a>
     <a href="https://github.com/mitchelljfranklin/mitch-dojo/releases/latest"><img src="https://img.shields.io/github/v/release/mitchelljfranklin/mitch-dojo?style=flat-square" alt="GitHub release" /></a>
-    <a href=".nvmrc"><img src="https://img.shields.io/badge/Node-22.23.4%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 22.23.4+" /></a>
+    <a href=".nvmrc"><img src="https://img.shields.io/badge/Node-22.23.5%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 22.23.5+" /></a>
     <a href="docker-compose.yml"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose" /></a>
     <a href="docs/configuration/appearance.md"><img src="https://img.shields.io/badge/white--label-ready-dc2626?style=flat-square" alt="White-label ready" /></a>
     <a href="https://dojo.mitchforge.com"><img src="https://img.shields.io/badge/docs-live-646CFF?style=flat-square&logo=vitepress&logoColor=white" alt="Documentation" /></a>
@@ -233,7 +233,7 @@ Mitch‑Dojo is designed to run as **your school's platform**, not ours. Brandin
 
 | Layer | Technology |
 |-------|-----------|
-| Runtime | Node.js 22.23.4+, 24.22.1+, or 26.12.1+ |
+| Runtime | Node.js 22.23.5+, 24.22.1+, or 26.12.1+ |
 | Framework | Next.js 16 (App Router) + TypeScript strict |
 | Database | PostgreSQL 17 + Prisma ^7 (or embedded PGlite) |
 | UI | Tailwind CSS v4 + shadcn/ui (light/dark) |
