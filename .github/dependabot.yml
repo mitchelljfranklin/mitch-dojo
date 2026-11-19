@@ -13,6 +13,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Type definitions follow the Node runtime; major jumps are deliberate
+      # migration work, not routine dependency updates.
+      - dependency-name: "@types/node"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -27,3 +33,9 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 3
+    ignore:
+      # Keep the supported Node LTS baseline stable. Major runtime upgrades
+      # require a dedicated migration, CI matrix update, and image smoke test.
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
